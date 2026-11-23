@@ -198,9 +198,11 @@ reached ally death accounting and terminal outcome bindings remain required.
 
 Format7 spell `effect.kind:"attack"` has `power`1-255, `radius`0-1 and `element:"fire"|"wind"`;
 spell MP cost and minimum/maximum range are immutable operands. Range is1-2 with minimum<=maximum.
-Only BLAZE ranks1/2 with fire and BLAST rank1 with wind enter the finite damage rule. Authored power,
-range and radius may vary within those supported bounds; no generic spell platform follows.
-Duplicate keys across healing/retreat/damage reject. Optional actor `resistance` is a packed
+BLAZE ranks1/2 with fire and BLAST rank1 with wind are examples of admitted finite damage
+ranks. Authored power, range and radius may vary within the supported bounds for each family.
+Format7 `effect.kind:"instant-death"` accepts DESOUL 1 with 8 MP and radius 0, or DESOUL 2
+with 13 MP and radius 1. Both require range 1–2. That effect takes only `kind` and `radius`.
+Duplicate spell keys across action families reject. Optional actor `resistance` is a packed
 unsigned16-bit word; omission means authored neutral0. Source profiles never infer neutral from an
 unresolved expression: `PrivateAttackSpellBindings` decodes named resistance settings or explicit
 zero and rejects unknown/ambiguous tokens. Actor growth/equipment copies retain this operand.
@@ -208,6 +210,9 @@ zero and rejects unknown/ambiguous tokens. Actor growth/equipment copies retain 
 The private binder checks exact pinned base IDs11/14, costs2/6/2, powers6/10/6, ranges1-2/1-2/1,
 radii0/1/0 and `TYPE_ATTACK|AFFECTEDBYSILENCE` for BLAZE1/BLAZE2/BLAST1. Element lookup is the
 named pinned static FIRE/WIND mapping in the [rule owner](../domain/gameplay-rules.md#finite-player-attack-spells).
+The DESOUL binding checks ID8, the two exact MP/radius pairs above, power 0, the same range and
+type, and the rank-specific source animation expression. STATUS supplies the packed resistance
+field. [DESOUL rules and private use](../domain/hostile-spells-design.md#desoul-12-implementation-and-evidence)
 Learning/MP/position/faction/status and reached accounting remain live action checks; definitions
 do not grant learning, recruitment or enemy AI. Unknown resistance expressions are Unsupported.
 

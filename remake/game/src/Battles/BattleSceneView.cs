@@ -52,6 +52,9 @@ internal sealed partial class BattleSceneView : Control
     private double _attackSpellStart;
     internal string? Error { get; private set; }
     private BattleSceneDefinition? Content => _session.ActiveBattleScenes;
+    private static bool UsesMessagePlayback(BattleSceneState state) =>
+        state.SupportSpell is not null && state.EquipmentItem is null || state.IsSilencedCast || state.AttackSpell?.IsInstantDeath == true;
+
     private bool Suppressed(BattleSceneState state) => _settings.SuppressBattleHitCoinMessages && state.CanSuppressHitCoinMessage;
     internal bool WaitingForInput => _state is { RequiresAcknowledgement: true } state && !Suppressed(state) &&
         state.Healing is not { LogicalComplete: false, AtTimedInput: false };
@@ -119,7 +122,7 @@ internal sealed partial class BattleSceneView : Control
             };
             _preparedAttackSpell = state.AttackItem is null && preparedResources is not null &&
                 Content?.Rasters.ContainsKey(preparedResources[0]) == true;
-            if (state.SupportSpell is not null && state.EquipmentItem is null || state.IsSilencedCast)
+            if (UsesMessagePlayback(state))
             {
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
                 foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
@@ -306,7 +309,7 @@ internal sealed partial class BattleSceneView : Control
         {
             return state.Healing is { LogicalComplete: false, AtTimedInput: false } ? new AdvanceSimulation(state.Token) : null;
         }
-        if (state.SupportSpell is not null && state.EquipmentItem is null || state.IsSilencedCast)
+        if (UsesMessagePlayback(state))
         {
             if (_elapsed < 0.25) return null;
             _completed = true; return new CompletePresentation(state.Token, state.CompletionKind);
@@ -692,6 +695,7 @@ internal sealed partial class BattleSceneView : Control
                 "Dodge" => LocalizedMessage("battle.scene.dodge", Target()),
                 "Ineffective" => LocalizedMessage("battle.scene.ineffective", Target()), _ => null,
             },
+            BattleScenePhase.DeathMessage when state.IsInstantDeath => LocalizedMessage("battle.scene.instant-death", Target()),
             BattleScenePhase.DeathMessage => LocalizedMessage(_session.Current.Battle.GetActor(state.Target!.Value).IsAlly
                 ? "battle.scene.ally-death" : "battle.scene.enemy-death", Target()),
             BattleScenePhase.ItemReceivedMessage => LocalizedMessage("battle.scene.received", ActorName(state.Actor), DisplayNames.Item(state.ItemReceipt!.Item.ItemId, state.ItemReceipt.Item.Name)),

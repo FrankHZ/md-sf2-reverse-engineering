@@ -190,10 +190,10 @@ ally/class or enemy/actor dictionary. Authored gestures and private resource adm
 
 ## Finite player attack spells
 
-**Implemented bounded capability, Standard rigor:** learned BLAZE1-2 and BLAST1 use the existing
+**Implemented bounded capability:** learned elemental spells and DESOUL use the existing
 `IBattleActionRule` query/admission/preparation seam. `HealingSpellDefinition` and `IHealingRule`
 continue to own healing only. Separate immutable `AttackSpellDefinition` operands and
-`Sf2AttackSpellAction` own damaging spell legality, target resolution and construction;
+`Sf2AttackSpellAction` own offensive spell legality, target resolution and construction;
 `SessionAction.AttackSpell` preserves that distinction through selection. No new scheduler,
 dispatcher, effect language or mutable state authority is introduced. Existing transaction and
 later-failure prefix rules remain in force.
@@ -207,6 +207,10 @@ sorted by deployment processing order (the private reader maps original combatan
 order). Dead, absent, allied and neutral occupants do not receive the attack. Unsupported caster
 statuses/AI and reached unknown accounting reject explicitly. Queries consume neither RNG stream;
 confirmation rechecks the same admission and constructs without publishing speculative changes.
+
+[DESOUL 1/2](hostile-spells-design.md#desoul-12-implementation-and-evidence) uses the source
+STATUS draw and a typed zero-HP death reaction. It shares ordered targets, MP, drops, kill
+EXP and outcomes. The elemental path below owns critical, variance, damage EXP and hit motion.
 
 The [spell-resolution contract](../../../docs/design/contracts/battle/spell-resolution.md) owns
 resistance, truncated quarter adjustment, 1/32 critical, two downward variance draws, proportional

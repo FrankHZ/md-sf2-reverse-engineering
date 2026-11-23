@@ -1280,6 +1280,9 @@ msgid "battle.scene.spell-growth"
 msgstr "{0}学会{2}级{1}。"
 
 #. Project-authored functional battle feedback; typed operands, not source script translation.
+msgid "battle.scene.instant-death"
+msgstr "{0}的魂魄被夺走了。"
+
 msgid "battle.scene.sleep"
 msgstr "{0}陷入睡眠。"
 
@@ -2878,6 +2881,9 @@ msgstr "造成无属性伤害。"
 
 msgid "spell-description.inflict-silence"
 msgstr "有几率使目标沉默。"
+
+msgid "spell-description.instant-death"
+msgstr "有概率使目标立即倒下。"
 
 msgid "spell-description.sleep"
 msgstr "有几率使目标睡眠。"

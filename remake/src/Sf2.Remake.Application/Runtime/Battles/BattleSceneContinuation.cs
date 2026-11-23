@@ -246,6 +246,7 @@ public sealed class BattleSceneState
     public ActorRef Actor => FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? CounterExpiry?.Actor ?? (!HasReaction ? Action.Actor : Reaction.Actor);
     public ActorRef? Target => FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ??
         CounterExpiry?.Actor ?? ReactionTarget ?? _action?.Inaction?.Target;
+    public bool IsInstantDeath => HasReaction && Reaction.Kind == BattleReactionKind.InstantDeath;
     public bool IsCurseRecoil => HasReaction && Reaction.Kind == BattleReactionKind.CurseRecoil;
     public bool CurseStoppedAttack => _action?.Inaction?.DueToCurse == true;
     public string ActionKind => IsFieldDeath ? "field-death" : StunTurn is not null ? "stun-turn" : IsPoisonTurn ? "poison-turn" : Phase == BattleScenePhase.SlowExpiredMessage ? "slow-turn" : Phase == BattleScenePhase.AttackExpiredMessage ? "attack-turn" : Phase == BattleScenePhase.BoostExpiredMessage ? "boost-turn" : IsSilenceTurn ? "silence-turn" : IsSleepTurn ? "sleep-turn" : IsSilencedCast ? "silenced-cast" :
@@ -494,7 +495,8 @@ internal static class BattleSceneContinuation
                 index++;
                 next = BattleScenePhase.TargetEnter;
                 break;
-            case BattleScenePhase.Reaction: next = BattleScenePhase.ResultMessage; break;
+            case BattleScenePhase.Reaction:
+                next = scene.IsInstantDeath ? BattleScenePhase.DeathMessage : BattleScenePhase.ResultMessage; break;
             case BattleScenePhase.ResultMessage when (scene.Reaction.ClearedStatus & PoisonCureRules.PoisonAndStun) == PoisonCureRules.PoisonAndStun:
                 next = BattleScenePhase.CureStunMessage; break;
             case BattleScenePhase.ResultMessage when CurseRules.Present(scene.Reaction.ClearedStatus) && scene.Reaction.ClearedStatus != CurseRules.Mask:

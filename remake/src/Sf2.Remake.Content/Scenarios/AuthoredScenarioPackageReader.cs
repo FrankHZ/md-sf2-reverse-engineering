@@ -137,20 +137,22 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
                     "duplicate-spell", "spells.id/level");
                 continue;
             }
-            if (Text(effect, "kind") == "attack")
+            if (Text(effect, "kind") is "attack" or "instant-death")
             {
-                Object(effect, "spell.effect", "kind", "power", "radius", "element");
-                var element = Text(effect, "element") switch
+                bool instantDeath = Text(effect, "kind") == "instant-death";
+                if (instantDeath) Object(effect, "spell.effect", "kind", "radius");
+                else Object(effect, "spell.effect", "kind", "power", "radius", "element");
+                var element = instantDeath ? AttackSpellElement.Status : Text(effect, "element") switch
                 {
                     "ice" => AttackSpellElement.Ice, "fire" => AttackSpellElement.Fire, "wind" => AttackSpellElement.Wind,
                     "neutral" => AttackSpellElement.Neutral,
                     _ => throw new BattleRuleException("attack-spell-element", "spell.effect.element", true),
                 };
                 var attack = new AttackSpellDefinition(key, (byte)Number(spell, "mpCost", 0, 255),
-                    (ushort)Number(effect, "power", 1, 255), (byte)Number(spell, "minimumRange", 1, 2),
+                    instantDeath ? (ushort)0 : (ushort)Number(effect, "power", 1, 255), (byte)Number(spell, "minimumRange", 1, 2),
                     (byte)Number(spell, "maximumRange", 1, 3), (byte)Number(effect, "radius", 0, 2), element);
                 attack.RequireSupported();
-                Require(!spells.ContainsKey(key) && !retreats.ContainsKey(key) && attacks.TryAdd(key, attack),
+                Require(!spells.ContainsKey(key) && !retreats.ContainsKey(key) && !supports.ContainsKey(key) && attacks.TryAdd(key, attack),
                     "duplicate-spell", "spells.id/level");
                 continue;
             }

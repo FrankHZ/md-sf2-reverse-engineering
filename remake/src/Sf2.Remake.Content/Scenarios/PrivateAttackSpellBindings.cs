@@ -7,7 +7,7 @@ namespace Sf2.Remake.Content.Scenarios;
 internal static class PrivateAttackSpellBindings
 {
     // Pinned spellelements.asm supplies the resistance shift for each attack spell.
-    // Only these source spell records enter the implemented damage consumer.
+    // Only these source spell records enter the implemented offensive spell consumer.
     internal static IEnumerable<AttackSpellDefinition> Spells(PrivateBattleDefinitions definitions)
     {
         foreach (var source in definitions.Spells.Values)
@@ -15,6 +15,8 @@ internal static class PrivateAttackSpellBindings
             (int Id, int Mp, int Power, int Range, int Radius, AttackSpellElement Element)? expected =
                 (source.Code, source.Level) switch
                 {
+                    ("DESOUL", 1) => (8, 8, 0, 2, 0, AttackSpellElement.Status),
+                    ("DESOUL", 2) => (8, 13, 0, 2, 1, AttackSpellElement.Status),
                     ("BLAZE", 1) => (11, 2, 6, 2, 0, AttackSpellElement.Fire),
                     ("BLAZE", 3) => (11, 10, 15, 2, 1, AttackSpellElement.Fire),
                     ("BLAST", 3) => (14, 8, 12, 2, 1, AttackSpellElement.Wind),
@@ -46,6 +48,11 @@ internal static class PrivateAttackSpellBindings
                 source.PropertiesExpression == (source.Code is "AQUA" or "KIWI" ? "TYPE_ATTACK" : "TYPE_ATTACK|AFFECTEDBYSILENCE"),
                 "source-attack-spell", "spells", true);
             byte? animation = null;
+            if (source.Code == "DESOUL")
+            {
+                string selector = source.Level == 1 ? "DESOUL" : "DESOUL|VARIATION2";
+                Require(source.AnimationExpression == selector, "source-attack-animation", "spells.animation", true);
+            }
             if (source.Code == "BLAZE" && source.Level is 1 or 2)
             {
                 string selector = source.Level == 1 ? "BLAZE" : "BLAZE|VARIATION2";
