@@ -418,9 +418,10 @@ slot. Magic and Item replace the diamond with a scrollable list below the card. 
 its bounds as offers change. In Target, the shared board cursor marks the eligible recipient and
 the recipient's card takes the card position. Back restores the chosen level, slot or command.
 
-The [implementation handoff](battle-ui-composition.md#implementation-handoff) tracks the pending
-#2080 target press and Stay inputs, #2081 inspection range, #2082 shared roster presentation, #2083
-spell descriptions and #2065 current-round readout.
+[#2080](battle-ui-composition.md#fresh-target-input-and-direct-stay) delivers fresh target input
+and direct Stay. The [implementation handoff](battle-ui-composition.md#implementation-handoff)
+tracks #2081 inspection range, #2082 shared roster presentation, #2083 spell descriptions and
+#2065 current-round readout.
 
 ### From entry to committed action
 
@@ -442,11 +443,12 @@ on the Target page, and a lighter inset marks the affected cells around the lega
 A radius-zero effect and the cursor share one cell. The remake uses a restrained 1.2-second pulse.
 Reduced Flash holds the fill steady. The original varies the tile palette during its pulse.
 
-Up/Left selects the previous eligible combatant and Down/Right the next, wrapping within the action's living, in-range
-target list. Production can repeat directional cycling while held. One cycle per press is pending under
-[#2080](battle-ui-composition.md#fresh-target-input-and-direct-stay). Hover previews a candidate from that list. A complete left-click on the same legal unit
-commits the action. A single candidate stays selected. With none,
-show the reason and Back. Returning to the command menu allows the player to reconsider the move.
+Up/Left selects the previous eligible combatant and Down/Right the next, wrapping within the
+action's living, in-range target list. Each fresh direction or Target shortcut cycles once. Release
+the key or D-pad button, or return the stick to neutral, before reusing that input. Hover previews
+a candidate from the list. A complete left-click on the same legal unit commits the action.
+A single candidate stays selected. With none, show the reason and Back. Returning to the command
+menu allows the player to reconsider the move.
 [Original grid construction](../../../docs/research/battle/battlefield-pathfinding.md#range-and-target-construction)
 and [target input](../../../docs/research/battle/battle-functions.md#confirmed-player-control-state-machine).
 
