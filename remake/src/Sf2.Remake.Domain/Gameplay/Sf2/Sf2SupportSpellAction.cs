@@ -98,10 +98,10 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
             if (writes.TryGetValue(a.Actor, out ushort word)) a = a.With(status: word);
             return a.Actor == actor ? a.With(position: destination) : a;
         }));
-        SupportItemUse? equipmentUse = null;
+        EquipmentItemUse? equipmentUse = null;
         if (item is not null)
         {
-            var wear = SupportItemUse.Apply(item, slot!.Value, prepared.GetActor(actor), seed, effects);
+            var wear = EquipmentItemUse.Apply(slot!.Value, prepared.GetActor(actor), seed, effects);
             equipmentUse = wear.Use;
             seed = wear.Seed;
             prepared = prepared.With(actors: prepared.Actors.Select(a => a.Actor == actor ? wear.Owner : a));
