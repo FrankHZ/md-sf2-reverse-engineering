@@ -190,7 +190,7 @@ internal static class FieldService
                 throw new BattleRuleException("stale-promotion", "service.offer");
             var reduced = BattleInventory.Remove(pack, item.Slot);
             if (holder.Carried.Actor == candidate.Member) loadout = reduced;
-            else updates.Add(FieldInventory.WithLoadout(holder, reduced));
+            else updates.Add(FieldInventory.WithLoadout(holder, reduced, refresh: true));
         }
         if (!PoisonTurnRules.SupportedPhysicalStatus(member.Carried.Status) || member.Carried.Progress is not { } progress)
             throw new BattleRuleException("promotion-refresh", "party.progress", true);

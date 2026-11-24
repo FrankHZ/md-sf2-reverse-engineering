@@ -170,12 +170,18 @@ public sealed class FieldServiceTests
                 ? new(attained, 76, ninja || monster ? (byte)0 : (byte)10, 20, 4, 60, [], actor.SourceLoadout) : null }
             : actor.Actor == Second ? actor with { Hp = secondHp, Status = secondStatus } : actor),
             original.MainSeed, original.ThinkingSeed, gold, original.NewBattle, original.ActiveAllies, original.ItemCustody);
+        BattleActorStartInput PromotionItemHolder(BattleActorStartInput actor, ushort item)
+        {
+            if (!pegasus) return actor with { SourceLoadout = new([item, 127, 127, 127], [63, 63, 63, 63]) };
+            var pack = new BattleSourceLoadout([item, 0, 374, 189], [63, 63, 63, 63]);
+            return actor with { SourceLoadout = pack, Progress = new BattleActorProgress(1, 200, 0, 15, 4, 30, [], pack)
+                { BaseMove = 6, CurrentStats = new(12, 42, 8) } };
+        }
         if (promotion)
             party = new(party.Encounter, party.Actors.Select(a => a.Actor == First ? a with { SourceLoadout = loadout,
                 Mp = ninja || monster ? (byte)0 : a.Mp,
                 Progress = a.Progress! with { ClassId = baseClass, SourceLoadout = loadout, Spells = spells, BaseMove = 8 } }
-                : a.Actor == Second && promotionItem is { } item ? a with
-                    { SourceLoadout = new(pegasus ? [item, 0, 374, 0] : [item, 127, 127, 127], [63, 63, 63, 63]) } : a),
+                : a.Actor == Second && promotionItem is { } item ? PromotionItemHolder(a, item) : a),
                 party.MainSeed, party.ThinkingSeed, party.Gold, party.NewBattle, [Second], party.ItemCustody);
         var session = Assert.IsType<SessionStarted>(GameSession.Start(definition,
             new ExplorationStartInput(map.Map, new("player"), new(2, 2), 1, 32, [], party))).Session;
@@ -335,7 +341,16 @@ public sealed class FieldServiceTests
         Assert.Equal(before.ActiveAllies, session.Current.Exploration.Party.ActiveAllies);
         Assert.Equal(selfHolder ? new ushort[] { 118, 0, 178, 127 } : [178, 127, 127, 127], member.Progress.SourceLoadout!.Items);
         if (selfHolder || !useWing) Assert.Same(other, Member(session, Second));
-        else Assert.Equal(new ushort[] { 118, 0, 0, 127 }, Member(session, Second).SourceLoadout!.Items);
+        else
+        {
+            var refreshed = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == Second);
+            var pack = refreshed.Carried.SourceLoadout!;
+            Assert.Equal(new ushort[] { 118, 0, 189, 127 }, pack.Items);
+            Assert.Equal(new BattleCurrentStats(12, 42, 8), other.Progress!.CurrentStats);
+            Assert.Equal(other with { SourceLoadout = pack, Progress = other.Progress with
+                { SourceLoadout = pack, CurrentStats = null } }, refreshed.Carried);
+            Assert.Equal((25, 4, 30, 6), ((int)refreshed.Attack!, (int)refreshed.Defense!, (int)refreshed.Agility!, (int)refreshed.Move!));
+        }
         var projected = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First);
         var resolved = projected.Deployment!;
         Assert.Equal(useWing ? BattleMover.Flying : BattleMover.Centaur, resolved.Definition.Mover);
