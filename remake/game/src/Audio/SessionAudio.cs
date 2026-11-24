@@ -194,17 +194,28 @@ internal sealed partial class SessionAudio : IDisposable
         {
             var current = result.Snapshot;
             if (entrySkipDelivery || current.Story.EntrySkip is not null) BeginEntrySuppression();
+            string? requestedDefault = null;
             foreach (var observation in result.Observations.Where(row => row.Sequence > _observedSequence))
             {
+                if (observation.Kind == "field-map-music-selected")
+                {
+                    requestedDefault = observation.Detail;
+                    _context = null;
+                }
+                else if (observation.RetainedFieldMusicContext is { } retained)
+                {
+                    requestedDefault = null;
+                    _context = (retained.Map, retained.Area, false);
+                }
                 if (_entrySuppressed) continue;
                 if (observation.Kind == "door-opened") Play(92);
                 else if (observation.Kind == "warp-started") Play(89);
                 else if (observation.Kind == "church-promoted") PlayPromotion();
-                else if (observation.Kind == "field-map-music-selected") _context = null;
             }
             _observedSequence = current.ObservationSequence;
             if (current.Exploration is { } world)
             {
+                if (current.Story.MapMusicPending) return;
                 var selected = ExplorationViewContext.Resolve(world, current.Story.LogicalView);
                 if (selected.Error is { } error) throw new InvalidOperationException(error);
                 int area = selected.Area;
@@ -214,6 +225,8 @@ internal sealed partial class SessionAudio : IDisposable
                     throw new InvalidOperationException("map-music-unavailable");
                 var selection = visual.Music[area];
                 Play(context.Item3 ? selection.Battle : selection.Field);
+                if (current.Story.Music is { EndStep: not null } music && music.Cue == requestedDefault && MusicCue == music.Cue)
+                    BindMusic(music.Generation, music.Cue);
                 _context = context;
             }
             else if (current.Active is ActiveBattle battle)

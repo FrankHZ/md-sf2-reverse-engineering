@@ -365,7 +365,8 @@ internal static class MapTransfer
         // its map load and entity replacement; retain the actual field scene until those calls.
         if (checkBattle && world.Party.NewBattle is not null && BattleEntry.First(definition, current.Story, target, rules, position) is { } battle)
             return BattleEntry.Select(current, continuation.Copy(continuation.Cursor,
-                returnAnchor: new(world.Map, world.PlayerEntity.Position, world.PlayerEntity.Motion.Facing)), battle, observations);
+                returnAnchor: new(world.Map, world.PlayerEntity.Position, world.PlayerEntity.Motion.Facing),
+                clearMapMusicPending: true), battle, observations);
         ExplorationState next;
         var flags = current.Story.Flags;
         if (mode == MapLoadMode.Preserve)
@@ -400,7 +401,8 @@ internal static class MapTransfer
             flags: flags,
             textWindow: new ClosedTextWindow(),
             continuation: continuation.EnteringBattle is null ? ProgramContinuation.MapLoaded : continuation.Continuation,
-            returnAnchor: continuation.EnteringBattle is null ? new(world.Map, world.PlayerEntity.Position, world.PlayerEntity.Motion.Facing) : null);
+            returnAnchor: continuation.EnteringBattle is null ? new(world.Map, world.PlayerEntity.Position, world.PlayerEntity.Motion.Facing) : null,
+            clearMapMusicPending: true);
         story = ExplorationTextRunner.Initialize(next, story);
         if (story.Display is not null && mode == MapLoadMode.Rebuild)
         {
@@ -408,6 +410,8 @@ internal static class MapTransfer
                 throw new BattleRuleException("warp-palette-binding", "map.basePalette", true);
             story = story.Copy(story.Cursor, display: story.Display with { Base = target.BasePalette, Colors = null });
         }
+        if (story.Display is { Visibility: FullFadeVisibility.Black } && definition.Exploration.Visuals is { Audio.Count: > 0 })
+            story = story.Copy(story.Cursor, mapMusicReturnDepth: story.Cursor is null ? -1 : story.Callers.Count);
         if (target.OnLoad is { } onLoad)
             story = story.Copy(onLoad, callers: story.Cursor is { } caller ? story.Callers.Append(caller) : story.Callers);
         return ProgramRunner.Commit(current, new ActiveExploration(next), story, observations, "map-transferred", map.Value);

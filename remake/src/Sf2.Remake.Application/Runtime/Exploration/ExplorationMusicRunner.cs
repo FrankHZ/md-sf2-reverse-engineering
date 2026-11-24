@@ -39,12 +39,38 @@ internal static class ExplorationMusicRunner
         int area = Area(current);
         if (!visuals.Maps.TryGetValue(world.Map, out var map) || area >= map.Music.Count)
             throw new BattleRuleException("map-music-unavailable", "story.music", true);
-        var selected = visuals.Audio.Where(pair => pair.Value.Command == map.Music[area].Field).ToArray();
+        int command = map.Music[area].Field;
+        if (command == 0) return current;
+        var selected = visuals.Audio.Where(pair => pair.Value.Command == command).ToArray();
         if (selected.Length != 1) throw new BattleRuleException("map-music-binding", "story.music", true);
         var music = Request(definition, current, selected[0].Key, new(current.ObservationSequence + 1));
         return ProgramRunner.Commit(current, current.Active,
             current.Story.Copy(current.Story.Cursor, current.Story.Wait, music: music), observations,
             "field-map-music-selected", selected[0].Key);
+    }
+
+    internal static SessionSnapshot FinishMapInitialization(ExplorationDefinition definition, SessionSnapshot current,
+        List<SessionObservation> observations)
+    {
+        var story = current.Story;
+        if (story.Cursor is not null && story.Callers.Count > story.MapMusicReturnDepth!.Value) return current;
+        if (story.Display!.Base != story.Display.Current)
+        {
+            // ExplorationLoop only requests map music on the automatic reveal branch.
+            var selected = SelectFieldMusic(definition, current, observations);
+            if (selected != current)
+                return selected.WithStory(selected.Story.Copy(story.Cursor, clearMapMusicPending: true));
+        }
+        var context = ExplorationViewContext.Require(current.Exploration!, story.LogicalView);
+        // Keep an unbound stack unbound at the destination. Field input must not
+        // infer a default for a context whose existing playback was retained.
+        var music = story.Music is { HistoryBound: false } unknown
+            ? unknown with { Map = context.Map, Area = context.Area, Battle = false }
+            : story.Music;
+        current = ProgramRunner.Commit(current, current.Active, story.Copy(story.Cursor, music: music, clearMapMusicPending: true),
+            observations, "field-map-music-retained");
+        observations[^1] = observations[^1] with { RetainedFieldMusicContext = context };
+        return current;
     }
 
     internal static MusicProgress? Request(ExplorationDefinition definition, SessionSnapshot current, string? cue, WaitToken token)
@@ -71,13 +97,13 @@ internal static class ExplorationMusicRunner
                 current.Exploration!.Map, area, null, Battle: battle);
         // The ordinary map music selection is typed content, also consumed by SessionAudio.
         string? previous = null;
-        if (definition.Visuals!.Maps.TryGetValue(current.Exploration!.Map, out var map) && area < map.Music.Count)
+        if (!current.Story.MapMusicPending && definition.Visuals!.Maps.TryGetValue(current.Exploration!.Map, out var map) && area < map.Music.Count)
         {
             int command = current.Story.SelectsBattleMusic ? map.Music[area].Battle : map.Music[area].Field;
             previous = definition.Visuals.Audio.FirstOrDefault(pair => pair.Value.Command == command).Key;
         }
         return new(token.Value, cue, Array.AsReadOnly(previous is null || previous == cue ? [] : new[] { previous }),
-            current.Exploration.Map, area, audio.ModernEndStep, Battle: battle);
+            current.Exploration!.Map, area, audio.ModernEndStep, Battle: battle);
     }
 
     // SessionAudio selects map/area/battle music at these context changes. Its older stack
@@ -85,9 +111,14 @@ internal static class ExplorationMusicRunner
     internal static StoryState InvalidateContext(ActiveSessionState active, StoryState story)
     {
         if (story.Music is not { HistoryBound: true } music) return story;
-        if (active is ActiveExploration exploration && music.Map == exploration.World.Map &&
-            music.Area == ExplorationViewContext.Require(exploration.World, story.LogicalView).Area &&
-            music.Battle == (story.SelectsBattleMusic)) return story;
+        bool carry = story.MapMusicPending && story.Wait is not MusicWait;
+        if (active is ActiveExploration exploration && music.Battle == story.SelectsBattleMusic &&
+            (music.Map == exploration.World.Map || carry))
+        {
+            int area = ExplorationViewContext.Require(exploration.World, story.LogicalView).Area;
+            if (music.Map == exploration.World.Map && music.Area == area) return story;
+            if (carry) return story.Copy(story.Cursor, story.Wait, music: music with { Map = exploration.World.Map, Area = area });
+        }
         if (story.Wait is MusicWait)
             throw new BattleRuleException("music-context-replaced", "story.music", true);
         return story.Copy(story.Cursor, story.Wait,

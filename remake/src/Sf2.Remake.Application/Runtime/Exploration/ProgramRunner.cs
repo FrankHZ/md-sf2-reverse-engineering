@@ -31,6 +31,8 @@ internal static class ProgramRunner
             {
                 if (current.Story.Wait is ChoiceWait or NameWait) current = BattleEntrySkip.Disarm(current, observations, "choice");
                 if (current.Story.Wait is not null) return Finish(Result(current, observations));
+                if (current.Story.MapMusicPending)
+                    current = ExplorationMusicRunner.FinishMapInitialization(definition.Exploration!, current, observations);
                 if (current.Story.Cursor is not { } cursor)
                 {
                     if (current.Story.Continuation == ProgramContinuation.DefeatedProgramFinished)
@@ -204,7 +206,8 @@ internal static class ProgramRunner
                             MapLoadMode.Rebuild, story, observations, rules,
                             sourcePlacement: eventWarp is not null || current.Story.EnteringBattle?.Outcome is { BattleOrigin: not null } board && returning.Map == board.BattleMap,
                             checkBattle: false);
-                        current = ExplorationMusicRunner.SelectFieldMusic(definition.Exploration!, current, observations);
+                        if (!current.Story.MapMusicPending)
+                            current = ExplorationMusicRunner.SelectFieldMusic(definition.Exploration!, current, observations);
                         continue;
                     case SourceStoryInstruction source:
                         try { active = SourceStoryRules.Apply(rules.SourceStory, definition, current, source, cursor); }
@@ -515,7 +518,7 @@ internal static class ProgramRunner
                                 ? row with { Motion = row.Motion with { AnimationCounter = 255 } } : row), spriteSize: 21));
                         }
                         var music = current.Story.Music;
-                        if (current.Story.TextSettings is not null)
+                        if (current.Story.TextSettings is not null || current.Story.MapMusicPending)
                         {
                             if (cue.Kind == PresentationCueKind.Sound)
                                 music = ExplorationMusicRunner.Request(definition.Exploration!, current, cue.Resource, token);

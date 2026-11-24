@@ -2025,7 +2025,7 @@ restore playback. Wrong, stale and duplicate receipts reject. Active-helper inte
 changed bound map, area or battle selection reports Unsupported. Changed host playback reports an adapter error.
 Missing profiles retain the raw-text boundary above. Looping/other unbound playback remains supported.
 
-The common commit boundary invalidates history and finite phase on context changes outside a helper,
+The common commit boundary invalidates history and finite phase on implicit context changes outside a helper,
 including an intermediate map/area change followed by a return. `HistoryBound` prevents that old
 stack from becoming valid again merely because the final map matches. The first subsequent explicit
 request establishes only its current cue with empty history/no finite profile; a later different
@@ -2048,6 +2048,26 @@ instructions and script/Zone return reuse their owners. No production rule names
 or a selected seed. [Verification](../verification/field-programs.md#modern-finite-music-observation)
 owns behavior cases and the bounded native JOIN return. The [current composed milestone](../../../docs/design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)
 has separate acceptance; this JOIN observation alone does not prove full-route or hardware parity.
+
+### Map initialization music
+
+For a field load with a bound black palette, the map setup owns music until it returns. This includes a preserve
+warp to a different area of the same map. The caller depth keeps the handoff pending through nested
+calls and presentation waits. On return, the two base/current palette words determine whether to
+request the field cue before the automatic reveal or retain the setup's playback and adopt the
+destination context. Sound, PreviousMusic, fade and cut still execute in program order. An equal
+cue keeps its generation, including a completed finite cue. A different cue updates the known
+stack once. The initial battle outcome program still selects its field cue at entry, and the
+later return through a black load lets the destination setup run before making the reveal decision.
+
+While the setup owns music, the common commit boundary carries known `MusicProgress` into the
+loaded map/area with its previous stack, generation and phase. The first explicit request on a
+fresh black entry starts with the history Application actually knows. A setup that retains
+playback with an unbound stack carries that uncertainty forward at the destination. Existing
+helper context guards remain in force. Scrolls, standalone scene loads and authored transfers
+without a bound black palette keep the implicit context rules above. Settled Continue uses the
+saved cue and history at the restored context. The [audio owner](../godot/audio.md#map-initialization-and-field-music)
+records the original branch and native playback observations.
 
 ### Bound white palette
 

@@ -128,7 +128,8 @@ public sealed class StoryState
         bool? entityServices = null, bool typewriting = false, FieldEventContext? eventCaller = null, bool windowFixPending = false,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, short? stepCounter = null,
         bool battleRequest = false, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null, FieldReturnAnchor? saveAnchor = null,
-        IReadOnlyDictionary<string, string>? names = null, Battles.DefeatedProgramState? defeatedScene = null, RaftBerth? raft = null, StoryItemReceipt? itemReceipt = null, byte? dialogueItem = null)
+        IReadOnlyDictionary<string, string>? names = null, Battles.DefeatedProgramState? defeatedScene = null, RaftBerth? raft = null, StoryItemReceipt? itemReceipt = null, byte? dialogueItem = null,
+        int? mapMusicReturnDepth = null)
     {
         DialogueItem = dialogueItem;
         ItemReceipt = itemReceipt;
@@ -146,6 +147,7 @@ public sealed class StoryState
         TextSettings = textSettings; LogicalText = logicalText; LogicalView = logicalView;
         EntityServices = entityServices; Typewriting = typewriting; WindowFixPending = windowFixPending;
         Music = music;
+        MapMusicReturnDepth = mapMusicReturnDepth;
         ScriptWarp = scriptWarp;
         StepCounter = stepCounter; BattleRequest = battleRequest; EgressMap = egressMap;
         FieldPlayer = fieldPlayer; EntrySkip = entrySkip;
@@ -197,6 +199,10 @@ public sealed class StoryState
     // VInt_UpdateWindows retains this across empty-window passes and map initialization.
     public bool WindowFixPending { get; }
     public MusicProgress? Music { get; }
+    // Destination setup owns music until it returns to this caller depth.
+    // A root setup uses -1 and releases music when its cursor ends.
+    internal int? MapMusicReturnDepth { get; }
+    public bool MapMusicPending => MapMusicReturnDepth is not null;
     public RaftBerth? Raft { get; }
     public byte? DialogueItem { get; }
     public StoryItemReceipt? ItemReceipt { get; }
@@ -212,7 +218,8 @@ public sealed class StoryState
         FieldEventContext? eventCaller = null, bool clearEventCaller = false, bool? windowFixPending = null,
         MusicProgress? music = null, OrdinaryWarp? scriptWarp = null, bool clearScriptWarp = false,
         short? stepCounter = null, bool? battleRequest = null, MapId? egressMap = null, FieldPlayerBinding? fieldPlayer = null, BattleEntrySkipState? entrySkip = null, bool clearEntrySkip = false, FieldReturnAnchor? saveAnchor = null,
-        Battles.DefeatedProgramState? defeatedScene = null, bool clearDefeatedScene = false, IReadOnlyDictionary<string, string>? names = null, RaftBerth? raft = null, StoryItemReceipt? itemReceipt = null, bool clearItemReceipt = false, byte? dialogueItem = null) =>
+        Battles.DefeatedProgramState? defeatedScene = null, bool clearDefeatedScene = false, IReadOnlyDictionary<string, string>? names = null, RaftBerth? raft = null, StoryItemReceipt? itemReceipt = null, bool clearItemReceipt = false, byte? dialogueItem = null,
+        int? mapMusicReturnDepth = null, bool clearMapMusicPending = false) =>
         new(flags ?? Flags, cursor, callers ?? Callers, wait, textCursor ?? TextCursor,
             continuation ?? Continuation, clearEnteringBattle ? null : enteringBattle ?? EnteringBattle, returnAnchor ?? ReturnAnchor,
             textWindow ?? TextWindow, simulationTick ?? SimulationTick, partyLists ?? PartyLists, null,
@@ -223,7 +230,8 @@ public sealed class StoryState
             clearEntityEvent || clearEventCaller ? null : eventCaller ?? entityEvent ?? EventCaller, windowFixPending ?? WindowFixPending, music ?? Music,
             clearScriptWarp ? null : scriptWarp ?? ScriptWarp, stepCounter ?? StepCounter,
             battleRequest ?? BattleRequest, egressMap ?? EgressMap,
-            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer, clearEntrySkip ? null : entrySkip ?? EntrySkip, saveAnchor ?? SaveAnchor, names ?? Names, clearDefeatedScene ? null : defeatedScene ?? DefeatedScene, raft ?? Raft, clearItemReceipt ? null : itemReceipt ?? ItemReceipt, dialogueItem ?? DialogueItem);
+            clearEnteringBattle ? null : fieldPlayer ?? FieldPlayer, clearEntrySkip ? null : entrySkip ?? EntrySkip, saveAnchor ?? SaveAnchor, names ?? Names, clearDefeatedScene ? null : defeatedScene ?? DefeatedScene, raft ?? Raft, clearItemReceipt ? null : itemReceipt ?? ItemReceipt, dialogueItem ?? DialogueItem,
+            clearMapMusicPending ? null : mapMusicReturnDepth ?? MapMusicReturnDepth);
 }
 
 public sealed record ExplorationEntity(EntityRef Entity, EntityMotionState Motion, bool Visible,

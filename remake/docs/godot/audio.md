@@ -12,6 +12,48 @@ pushes update that history; field observation is never used for an active battle
 music is still refused. See the [persistence contract](../application/battle-save-and-continue.md#implemented-ordinary-host-boundary-c)
 and [native restart observations](../verification/battle-save.md), including retained exit warnings.
 
+## Map initialization and field music
+
+**Confirmed, original source.** At pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`LoadMap` (`code/common/maps/mapload.asm`) stores `MAP_AREA_MUSIC_INDEX`.
+`ExplorationLoop` (`code/gameflow/exploration/explorationfunctions_2.asm`) calls
+`RunMapSetupInitFunction`, then calls `PlayMapMusic` and `FadeInFromBlack` only when the two
+current palette words differ from the base words. Map3's F506 setup uses `cs_5137A` to request
+`MUSIC_SAD_THEME_2` and fade in. Map19 and Map20's F507 branches use `cs_53FD8` to request
+`MUSIC_BOSS_ATTACK` and fade in. Their area defaults are TOWN and CASTLE, respectively.
+`@IsSameMusic` in `code/common/tech/interrupts/applyfadingeffectandz80busupdate.asm` suppresses a
+request matching the top of `MUSIC_STACK`, including when the finite cue has already ended.
+
+Application tracks the destination setup through its return. While it owns music,
+`SessionAudio.Observe` leaves the current stream in place and the existing presentation cues
+deliver explicit music, fade, cut and previous commands. When Application selects the area's
+default for the automatic reveal, the adapter can select it even if map and area are unchanged.
+When the setup has restored the palette, the adapter instead adopts the reported map/area for
+history observations and leaves playback where the setup left it. A duplicate cue retains its
+stream and position. The [session owner](../application/session-and-programs.md#map-initialization-music)
+owns selection timing and the scope of the carried logical history.
+
+**Confirmed, bounded Godot playback.** On the complete pre-voyage package, use a disposable copy
+of the registered Map3 slot 1 or post-tower slot 4 and enter through ordinary Continue.
+Use the [package and opening input selection](../application/pre-voyage-campaign.md#castle-to-quake-handoff-from-a-player-save-2167)
+with the locked Debug adapter. The local #2165 handoff retains the input-only driver, receipts,
+logs and exact runs. The driver reads live map, player, cue, stream position and receipts
+through the existing observation methods. It runs headless with the Dummy audio driver.
+
+| Ordinary inputs | Observed playback |
+| --- | --- |
+| F506 Map3, walk from (32,13) to the house at (3,3). Return from (54,3), stepping off the stair at (55,3) upstairs and (4,4) downstairs. Repeat. | Four transfers reached usable field control. SAD advanced from about 0.20 s at Continue to 12.00 s at the last arrival. Each transfer emitted zero music stops or starts. |
+| F507 Map19, walk from (4,3) to (6,2). Step off at Map20 (5,37) and return via (6,37). | Both arrivals kept BOSS_ATTACK, advancing from about 0.20 s to 2.71 s with zero music stops or starts. |
+| F506 Map3, exit east from (50,23) to Map44 and return west via (0,25). | The ordinary reveal selected TOWN once in Map44. The Map3 setup explicitly selected SAD once on return. Each transition stopped the previous cue once and delivered field control. |
+
+The unchanged adapter reproduced the earlier Map3 SAD → TOWN → SAD and the post-tower
+BOSS_ATTACK → CASTLE → BOSS_ATTACK sequences, each with both replacements at the same revision.
+The corrected stair routes retained the restored generation and previous stack. Each changed cue
+in the Map44 round trip pushed one history entry. The ordinary system menu accepted the live
+music and history for Record in all three cases. The runs exited successfully with no audio or
+session error and left the selected save bytes unchanged. Audible and hardware timing parity and
+other save locations remain **Unknown** at this boundary.
+
 ## Scene music context observation
 
 `SessionAudio.Observe` and Application music consume the same immutable `ExplorationViewContext`
