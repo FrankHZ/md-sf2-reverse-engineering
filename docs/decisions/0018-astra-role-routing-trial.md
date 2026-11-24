@@ -23,12 +23,20 @@ cross-Issue planning and independent integration; Issues and repository owners h
 | Responsibility | Default model / reasoning |
 | --- | --- |
 | Main-gate | `gpt-6.2-astra` / `high` |
-| All workers | `gpt-6.2-sol` / `high` |
+| Bounded design, implementation, research, documentation and audit workers | `gpt-6.2-sol` / `high` |
+| Large redesign or cross-layer architectural refactoring | `gpt-6.2-astra` / `high` |
 
-Use the worker default for new dispatches and the next authorized continuation across implementation,
-design, audit, architecture and reverse engineering. An explicit user selection takes precedence.
+Select the model at dispatch from the actual engineering responsibility. Work that substantially
+changes ownership, interfaces or a mechanism across layers starts with Astra; it need not first
+fail on Sol. An audit that only inspects existing architecture, or bounded implementation against
+an accepted design, retains the Sol default. An explicit user selection takes precedence.
 
-Escalate a worker to `gpt-6.2-astra` / `high` only for a specific reasoning problem the worker
+If a running Sol slice grows into substantial redesign or architectural refactoring, continue the
+same task with Astra at a safe boundary. Preserve its checkout, code, decisions, completed checks
+and failures; do not restart the investigation. Judge the choice by total engineering and review
+time, not model-call cost alone. A model change does not expand the approved scope.
+
+For other work, escalate a worker to `gpt-6.2-astra` / `high` for a specific reasoning problem the worker
 could not resolve. Give main-gate the unresolved question, relevant evidence and approaches
 already tried. Report a missing input, unaccepted dependency or permission limit as a blocker to
 its owner. Use the evidence already available to justify escalation.
