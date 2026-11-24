@@ -44,6 +44,7 @@ For the upgraded legacy input use `-Mode legacy -Language en`. To compare contin
 | BOLT 1 | Bowie first learns it at SDMN 22. HERO inherits his learning list and retains the book. The source rank costs 8 MP, has power 14, opponent center range 1–2 and Manhattan radius 1. The attack uses lightning resistance and HERO's integer 5/4 power modifier, giving power 17 before resistance. |
 | HEAL 4 | Sarah learns it at effective level 40. It costs 20 MP, targets one living teammate or self at range 0–1 and uses power 255 to restore all missing HP. Sarah kept the learned rank after promotion and cast it as VICR. [Vicar evidence](ordinary-promotion-classes.md#vicar-ordinary-reproduction) |
 | AURA 1 | Karna learns it at effective level 33. It costs 7 MP and restores up to 15 HP as PRST or 18 as VICR per eligible recipient in source-slot order within Manhattan radius 1 of a legal teammate center at range 0–3. Engine cases cover both classes and the shared healing EXP cap. Ordinary acquisition and casting in the connected campaign remain **Unknown**. [Vicar evidence](ordinary-promotion-classes.md#vicar-ordinary-reproduction) |
+| AURA 2–4 | Karna learns these at effective levels 41, 55 and 60. Controlled ordinary PRST2/3 casts and VICR4 casting with cold Continue are confirmed. [Recovery rules and reproduction](../domain/gameplay-rules.md#private-learned-aura-ranks) |
 
 The source operands are from the pinned USA disassembly's spell table, element table and ally growth. The [spell-resolution contract](../../../docs/design/contracts/battle/spell-resolution.md) owns the damage, promoted adjustment, full recovery and targeting evidence. [Spell terms](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm) · [Elements](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spellelements.asm) · [Bowie](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats00.asm) · [Sarah](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats01.asm) · [Karna](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats15.asm)
 
@@ -73,7 +74,7 @@ foreach ($language in 'en', 'zh-CN') {
 BLAZE 4, FREEZE 3–4 and BOLT 3–4 are available through learned private Magic.
 BOLT 2 was already bound. BLAZE, FREEZE and BOLT high ranks use the existing elemental placeholders.
 The remaining [#2016](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2016) actions are
-AURA 2–4 and DETOX 4. Retail elemental animation variants remain with
+DETOX 4. Retail elemental animation variants remain with
 [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
 [High-rank Magic](../domain/gameplay-rules.md#high-rank-elemental-magic)
 

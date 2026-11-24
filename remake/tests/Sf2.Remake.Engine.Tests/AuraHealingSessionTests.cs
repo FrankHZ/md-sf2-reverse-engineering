@@ -86,8 +86,8 @@ public sealed class AuraHealingSessionTests
             Exp = 0, ActivationWord = 0, Spells = new byte[] { 10, 77, 63, 63 } };
         var sarah = start.Allies[1] with { Level = 40, MaxHp = 58, Hp = 58, MaxMp = 42, Mp = 42, Exp = 0,
             ActivationWord = 0, Spells = new byte[] { 192, 130, 206, 68 } };
-        var karna = sarah with { Id = 15, Level = 33, MaxHp = 48, Hp = 20, MaxMp = 55, Mp = 55,
-            Spells = new byte[] { 128, 142, 67, 1 } };
+        var karna = sarah with { Id = 15, Level = 60, MaxHp = 48, Hp = 20, MaxMp = 55, Mp = 55,
+            Spells = new byte[] { 128, 206, 67, 193 } };
         start = start with { Allies = new[] { bowie, sarah, karna } };
         var definitions = PrivateBattleDefinitionReader.Read(Input("SF2_PRIVATE_STATIC_DATA"), Input("SF2_PRIVATE_ENEMY_DATA"),
             Input("SF2_PRIVATE_ENEMY_GOLD"), encounter, start);
@@ -115,6 +115,16 @@ public sealed class AuraHealingSessionTests
         Assert.Equal(new[] { leader, healer, auraCaster }, aura.Reactions.Select(hit => hit.Target));
         Assert.Equal(new[] { 15, 0, 15 }, aura.Reactions.Select(hit => hit.Amount));
         Assert.InRange(aura.Reward!.Amount, 1, 25);
+        foreach (byte rank in new byte[] { 2, 3, 4 })
+        {
+            var action = healing.Prepare(battle, auraCaster, new(8, 10), new("aura", rank),
+                rank == 4 ? auraCaster : leader, progression);
+            Assert.Equal(new[] { 11, 15, 20 }[rank - 2], action.Spell!.MpCost);
+            Assert.Equal(new[] { leader, healer, auraCaster }, action.Reactions.Select(hit => hit.Target));
+            Assert.Equal(rank == 4 ? HealingTargets.AuraAllAllies : HealingTargets.AuraRadius, action.Spell.Targets);
+            Assert.Equal(rank == 4 ? new[] { 45, 0, 28 } : rank == 3 ? new[] { 30, 0, 28 } : new[] { 15, 0, 15 },
+                action.Reactions.Select(hit => hit.Amount));
+        }
     }
 
     [Theory]
@@ -145,17 +155,28 @@ public sealed class AuraHealingSessionTests
         Assert.Equal(caster.Exp + action.Reward!.Amount, credited.Battle.GetActor(Caster).Exp);
     }
 
-    [Fact]
-    public void VicarAuraUsesLegalCentersSourceOrderAndSharedExperienceCap()
+    [Theory]
+    [InlineData(1, 7, 18)]
+    [InlineData(2, 11, 18)]
+    [InlineData(3, 15, 37)]
+    public void VicarAuraUsesLegalCentersSourceOrderAndSharedExperienceCap(byte rank, int cost, int power)
     {
         var battle = VicarBattle();
-        var action = Prepare(battle, 1);
+        var action = Prepare(battle, rank);
         Assert.Equal(new[] { "a-edge", "b-center", "m-full", "z-priest" }, action.Reactions.Select(r => r.Target.Value));
-        Assert.Equal(new[] { 18, 10, 0, 18 }, action.Reactions.Select(r => r.Amount));
+        Assert.Equal(new[] { power, 10, 0, Math.Min(power, 30) }, action.Reactions.Select(r => r.Amount));
         Assert.Equal(new long?[] { 10, 20, 25, 25 },
             action.ConstructionEffects.Where(e => e.Kind == "healing-exp-contribution").Select(e => e.After));
-        Assert.Equal(7, action.Spell!.MpCost);
-        Assert.Throws<BattleRuleException>(() => Prepare(battle, 1, new("n-neutral")));
+        Assert.Equal(cost, action.Spell!.MpCost);
+        Assert.Throws<BattleRuleException>(() => Prepare(battle, rank, new("n-neutral")));
+    }
+
+    [Fact]
+    public void VicarAura4PreservesFullRecoveryBeforePromotionScaling()
+    {
+        var action = Prepare(VicarBattle(), 4);
+        Assert.Equal(new[] { 99, 10, 60, 0, 30, 590 }, action.Reactions.Select(r => r.Amount));
+        Assert.Equal(20, action.Spell!.MpCost);
     }
 
     private static EngineBattleState VicarBattle()
@@ -172,7 +193,7 @@ public sealed class AuraHealingSessionTests
             {
                 Definition = new(actor.Actor, BattleClassRule.Vicar, 13, actor.MaxHp, actor.MaxMp,
                     actor.Attack, actor.Defense, actor.Agility, false, 5,
-                    heals.Select(heal => heal.Spell).Append(new("aura", 1)),
+                    heals.Select(heal => heal.Spell).Concat(Enumerable.Range(1, 4).Select(rank => new SpellRef("aura", (byte)rank))),
                     new(PhysicalCriticalRule.BrassGunner, Promoted: true, Leader: false, Gold: 0), BattleMover.Healer),
             };
         });
