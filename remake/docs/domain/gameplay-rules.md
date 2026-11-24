@@ -7,8 +7,8 @@
 battles through Battle26 and the named authored cases. Keep the existing High-rigor transaction
 and save agreements where the review crosses them. Dispatch each slice separately after its
 prerequisites are dispositioned. The cases below are review questions, with retained evidence
-identified where available. The identity, control and target relation review is complete.
-The five subsequent slices remain pending.
+identified where available. The identity, control and target relation review and the movement
+review are complete. The four subsequent slices remain pending.
 [Campaign boundary](../capability-status.md#campaign-feature-trace)
 
 **Shared boundary.** Content admits definitions, deployments and bindings. The session owns the
@@ -29,19 +29,10 @@ the admitted settled state through the same rules.
    control. No rule correction was required in the admitted profile.
    [Review and reproduction](hostile-spells-design.md#identity-control-and-target-relation-review) ·
    [Scripted conversion](#jaro-conversion-and-source-ally-commandset6)
-2. **Movement, terrain and occupancy.** Check the first slice's relation at the movement
-   boundary before using a provisional destination for action range. In a weighted corridor, a
-   living teammate can be traversable but cannot be a stop. A living opponent blocks the path
-   even when a confused actor searches its own side for targets. Compare reachable cells and
-   legal stops, Main Back at a legal preview, and automatic path delivery with the real
-   occupancy. Stop after one paired manual/automatic route agrees on terrain costs, occupancy
-   and the committed stop. For fixed-slot pursuit, use the existing living/cleaned slot pair.
-   Unmapped or never-placed slots stay outside the admitted rank-2 profile.
-   [Original navigation](../../../docs/design/contracts/battle/battlefield-navigation.md) ·
-   [Remake movement and selection](../capability-status.md#common-authored-battle) ·
-   [Movement rules](../../src/Sf2.Remake.Domain/Battles/Rules/BattleMovement.cs) ·
-   [Movement delivery](../../src/Sf2.Remake.Application/Runtime/Battles/BattleMovementContinuation.cs) ·
-   [Main Back and corridor cases](../../tests/Sf2.Remake.Engine.Tests/BattleMovementQueryTests.cs)
+2. **Movement, terrain and occupancy — reviewed.** Paired manual and automatic corridor
+   cases agree on weighted reach, occupied cells and the committed stop. The review corrected
+   inactive standby delivery to validate against the grid that selected its route.
+   [Review and reproduction](#movement-terrain-and-occupancy-review)
 3. **Action admission, construction and payment.** Once the stop and target operands agree,
    trace ordinary Attack, one learned spell and one carried item from choice and target queries
    through Confirm, prepared resolution and playback. At the provisional stop, compare backing
@@ -1515,6 +1506,51 @@ existing placeholder colors without supplying gameplay properties.
 algorithm with logical row boundaries; the original flat-storage probe across a row seam is not
 reproduced. Private Content maps the selected raw terrain to these semantic surfaces while retaining
 the complete source encounter for later consumers.
+
+### Movement, terrain and occupancy review
+
+[Issue #2199](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2199) covers the
+common movement boundary through the admitted Battle26 path. The original evidence includes the
+pinned movement-cost table, static player and standby occupancy calls, and the retained controlled
+weighted-grid observations. Main Back at the retained preview follows the remake's
+[battle menu return contract](../godot/battle-ui-composition.md#main-back-and-movement-reselection).
+[Original navigation](../../../docs/design/contracts/battle/battlefield-navigation.md) ·
+[Original terrain costs](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/landeffectsettingsandmovecosts.asm)
+
+- **Common grid and placement.** The mover class selects the terrain cost, and the budget is twice
+  current MOV from the committed turn origin. Actual faction blocks opposing traversal in the
+  ordinary grid even when MUDDLE changes offensive target selection. A living teammate's cell can
+  be in range but cannot be confirmed as a stop. Dead and unplaced actors do not occupy cells.
+  The paired Stone Court cases cross a friendly brush cell with Regular at cost five and Hovering at
+  cost four, reject the occupied stop, and reach the same free stop through manual movement and
+  automatic physical approach. Both hold the mover's committed position through intermediate
+  presentation. Manual range queries and preview leave resources and both seeds intact.
+  [Movement rules](../../src/Sf2.Remake.Domain/Battles/Rules/BattleMovement.cs) ·
+  [Corridor cases](../../tests/Sf2.Remake.Engine.Tests/BattleMovementQueryTests.cs)
+- **Cancellation and live MOV.** Main Back resumes at an in-budget preview with the original
+  origin and no return delivery. Reopening and closing the menu spends no extra budget. Removing
+  a MOV ring can make the preview unaffordable. Main Back then reverses the validated preview
+  path, retains the ring change and allows reselection from the origin with current MOV. The
+  ring case observes the reverse delivery, original placement and unchanged seeds.
+  [Equipment and movement cases](../../tests/Sf2.Remake.Engine.Tests/AttackItemSessionTests.cs)
+- **Source automatic routes.** Standby propagates terrain reach separately from its occupied-stop
+  check. Its decreasing-cost walker can retain an earlier direction and deliver an actual path
+  costing more than the stop's propagated cost. A varied MOV 2 standby case reaches a free
+  cost-four stop by a cost-five route through an occupied brush tile. The decision previously
+  failed with `decision-rule-failure` because admission substituted the ordinary opposing-occupancy
+  grid for the standby grid. Carrying the selected grid permits admission to reconstruct the exact
+  route with current terrain and MOV. The continuation places the actor only at the free stop
+  and consumes no additional RNG. The existing fixed-slot cases still pursue the living slot and
+  Stay after death cleanup. Unknown or never-placed bindings remain outside the admitted MUDDLE 2
+  profile.
+  [Standby regression](../../tests/Sf2.Remake.Engine.Tests/SourceEnemyAiTests.cs) ·
+  [Fixed-slot cases](../../tests/Sf2.Remake.Engine.Tests/MuddleConfusedTurnTests.cs) ·
+  [Movement delivery](../../src/Sf2.Remake.Application/Runtime/Battles/BattleMovementContinuation.cs)
+
+Run `uv run sf2 verify engine` for the authored corridor, equipment, standby and fixed-slot cases
+and the retained weighted-grid comparisons. These engine observations cover logical placement and
+delivery. Original runtime coverage of the specific standby crossing, its natural-story exposure,
+and wider route equivalence and rendered timing remain **Unknown**.
 
 ## Ordinary Medical Herb battle action
 

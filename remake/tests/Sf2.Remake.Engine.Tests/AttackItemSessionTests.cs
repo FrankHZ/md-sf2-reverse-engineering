@@ -134,6 +134,38 @@ public sealed class AttackItemSessionTests
         Assert.Equal(new ushort[] { 22, 127, 127, 127 }, session.Current.Battle.GetActor(Caster).SourceLoadout!.Items);
     }
 
+    [Fact]
+    public void MainBackAfterRemovingMovementGearUsesReducedBudgetFromTheOriginalOrigin()
+    {
+        var session = Prepare([150, 16, 127, 127], ring: true);
+        var initial = session.Current.Battle;
+        var origin = initial.GetActor(Caster).Position!;
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.South)));
+        Accept(session, new Confirm());
+        Accept(session, new BeginEquipment());
+        Accept(session, new SelectEquipment(BattleEquipment.RemoveRingChoice));
+        Accept(session, new Confirm());
+
+        var preview = session.Current.Selection!.Preview;
+        Assert.True(preview.Cost > session.Current.Battle.GetActor(Caster).Move * 2);
+        var back = Accept(session, new Cancel());
+        var movement = Assert.IsType<BattleMovementState>(back.Snapshot.BattleMovement);
+        Assert.Equal(BattleMovementPurpose.Return, movement.Purpose);
+        Assert.Equal(preview.Path.Reverse(), movement.Path);
+        var returned = FinishMovement(session, back).Snapshot;
+        var range = session.QueryBattleMovementRange()!;
+        Assert.Equal(origin, range.Origin);
+        Assert.Equal(origin, returned.Selection!.Preview.Destination);
+        Assert.Equal(origin, returned.Battle.GetActor(Caster).Position);
+        Assert.Equal(new ushort[] { 22, 16, 127, 127 }, returned.Battle.GetActor(Caster).SourceLoadout!.Items);
+        Assert.Equal(initial.MainSeed, returned.Battle.MainSeed);
+        Assert.Equal(initial.ThinkingSeed, returned.Battle.ThinkingSeed);
+        Assert.DoesNotContain(preview.Destination, range.ReachableCells);
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
+        Assert.Equal("movement-range", Send(session, new Move(ExplorationDirection.South)).Failure!.Code);
+    }
+
     private static GameSession Prepare(ushort[] words, bool lethal = false, bool ring = false)
     {
         var admitted = Admitted("attack-spells");

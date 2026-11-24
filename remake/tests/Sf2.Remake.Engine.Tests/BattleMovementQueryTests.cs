@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Application.Runtime.Exploration;
@@ -76,6 +77,76 @@ public sealed class BattleMovementQueryTests
         Assert.Equal(new MapPosition(8, 3), committed.Snapshot.Battle.GetActor(range.Actor).Position);
         Assert.Single(committed.Observations, e => e.Kind == "action-committed" && e.Actor == range.Actor);
         Assert.Equal("stale-input", session.Submit(commit).Failure!.Code);
+    }
+
+    [Theory]
+    [InlineData("regular", 3, 5)]
+    [InlineData("hovering", 2, 4)]
+    public void ManualAndAutomaticCorridorDeliveryUseTheSameTerrainAndOccupiedStops(string mover, int move, int cost)
+    {
+        GameSession Corridor(bool automatic) => Start("stone-court", d =>
+        {
+            var terrain = d["terrains"]![0]!;
+            terrain["legend"]!["b"] = new JsonObject
+                { ["surface"] = "brush", ["protection"] = "heavy" };
+            var rows = terrain["rows"]!.AsArray();
+            for (int y = 0; y < rows.Count; y++) rows[y] = y == 3 ? "#ppbpppp#" : "#########";
+            var positions = automatic ? new[] { 5, 7, 2, 3, 6 } : new[] { 2, 3, 5, 6, 7 };
+            var placements = d["encounters"]![0]!["placements"]!;
+            for (int index = 0; index < positions.Length; index++)
+            {
+                placements[index]!["x"] = positions[index];
+                placements[index]!["y"] = 3;
+            }
+            int moverIndex = automatic ? 2 : 0;
+            d["actors"]![moverIndex]!["move"] = move;
+            d["actors"]![moverIndex]!["physical"]!["movementType"] = mover;
+            if (automatic) placements[2]!["aiStrategy"] = "attack-then-approach";
+        });
+
+        var origin = new MapPosition(2, 3);
+        var peer = new MapPosition(3, 3);
+        var stop = new MapPosition(4, 3);
+        var enemy = new MapPosition(5, 3);
+        MapPosition[] path = [origin, peer, stop];
+
+        var manual = Corridor(false);
+        var initial = manual.Current.Battle;
+        var range = manual.QueryBattleMovementRange()!;
+        Assert.Contains(peer, range.ReachableCells);
+        Assert.DoesNotContain(peer, range.Destinations);
+        Assert.DoesNotContain(enemy, range.ReachableCells);
+        FinishMovement(manual, Accept(manual, new Move(ExplorationDirection.East)));
+        Assert.Equal("occupied-destination", Send(manual, new Confirm()).Failure!.Code);
+        FinishMovement(manual, Accept(manual, new Move(ExplorationDirection.East)));
+        Assert.Equal(path, manual.Current.Selection!.Preview.Path);
+        Assert.Equal(cost, manual.Current.Selection.Preview.Cost);
+        Assert.Equal(origin, manual.Current.Battle.GetActor(range.Actor).Position);
+        Assert.Equal("movement-range", Send(manual, new Move(ExplorationDirection.East)).Failure!.Code);
+        Assert.Equal(initial.MainSeed, manual.Current.Battle.MainSeed);
+        Assert.Equal(initial.ThinkingSeed, manual.Current.Battle.ThinkingSeed);
+        Accept(manual, new Confirm());
+        Assert.Equal(stop, Accept(manual, new CommitBattleStay()).Snapshot.Battle.GetActor(range.Actor).Position);
+        Assert.Equal(peer, manual.Current.Battle.GetActor(new("lookout")).Position);
+
+        var auto = Corridor(true);
+        var raider = new ActorRef("raider");
+        var scavenger = new ActorRef("scavenger");
+        var automaticRange = BattleMovement.Range(auto.Current.Battle, raider);
+        Assert.Equal(range.ReachableCells, automaticRange.ReachableCells);
+        Assert.Equal(range.Destinations, automaticRange.Destinations);
+        Assert.Equal(cost, BattleMovement.Grid(auto.Current.Battle, raider).CostAt(stop));
+        var delivery = Stay(auto);
+        var movement = Assert.IsType<BattleMovementState>(delivery.Snapshot.BattleMovement);
+        Assert.Equal(BattleMovementPurpose.Automatic, movement.Purpose);
+        Assert.Equal(raider, movement.Actor);
+        Assert.Equal(path, movement.Path);
+        var first = Accept(auto, new CompletePresentation(movement.Token, movement.CompletionKind));
+        Assert.Equal(origin, first.Snapshot.Battle.GetActor(raider).Position);
+        Assert.Equal(peer, first.Snapshot.Battle.GetActor(scavenger).Position);
+        var settled = FinishBattleScenes(auto, first);
+        Assert.Equal(stop, settled.Snapshot.Battle.GetActor(raider).Position);
+        Assert.Equal(peer, settled.Snapshot.Battle.GetActor(scavenger).Position);
     }
 
     [Theory]

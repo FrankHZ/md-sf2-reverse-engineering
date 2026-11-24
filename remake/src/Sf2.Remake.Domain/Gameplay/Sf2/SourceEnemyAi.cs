@@ -81,7 +81,8 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
             BattleMovement.RequireStop(prepared, actorRef, decision.Destination, decision.Grid);
             prepared = prepared.With(thinkingSeed: Image(decision.SeedAfter), actors: prepared.Actors.Select(
                 unit => unit.Actor == actorRef ? unit.With(aiMemory: decision.MemoryAfter) : unit));
-            return new(prepared, effects.AsReadOnly(), decision.Destination, BattleMovement.Route(actor.Position, decision.MoveString));
+            return new(prepared, effects.AsReadOnly(), decision.Destination,
+                BattleMovement.Route(actor.Position, decision.MoveString)) { MovementGrid = decision.Grid };
         }
 
         // GetAiCommandset reads the dedicated combatant byte; the activation filler nibble
