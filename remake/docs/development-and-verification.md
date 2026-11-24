@@ -1397,6 +1397,11 @@ presentation claim follows. Earlier #1047/#1341/#1343 failures/results remain pr
 
 ## Scope
 
+For new or changed Godot UI, first compose or extend native controls, containers, Theme, focus
+and signals, including for game-specific interactions. When retaining custom handling, identify
+the player requirement and the specific gap in the native mechanism in the owning design or PR.
+[Member and Settings examples](godot/ui-architecture.md#native-controls-for-members-and-settings)
+
 Checks that do not require a real foreground window run in the background by default, using the
 existing [headless native launch](#authored-field-player-return) for suitable native state/input/layout observations. A Hidden wrapper
 does not ensure its game child cannot take focus. Use foreground only for evidence that requires

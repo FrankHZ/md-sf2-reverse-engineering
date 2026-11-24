@@ -1,37 +1,19 @@
 # Godot UI responsibilities and refactoring design
 
-[Issue #2089](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2089) governs this
-documentation slice. The inspected base is `3bff875d994758c30b44086bebf57c64346a0dfd`,
-which includes the phase composition, fresh Target input, inspection range and shared roster.
-**High rigor** applies because several queued changes touch the same decision, reading and layout
-paths and past scene-by-scene review missed adjacent behavior. The current milestone is shared
-description reading, visible inspection return and allied compact-card levels under
-[#2113](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2113). It consumes the accepted
-[#2107](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2107) decision boundary.
-The design preserves the accepted
-[visual language](ui-design-language.md), [battle phase layout](battle-ui-composition.md#phase-focus-and-return),
-[field and service behavior](field-and-shop.md) and [host/save return](host-ui.md).
+The current decision in [#2191](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2191)
+is how to migrate two production surfaces: the complete field/battle member page and Settings
+with its child pages. **High rigor** applies because moving input from the root to Godot controls
+can change which player action fires when a page opens, closes or remounts. This milestone delivers
+a design and [three bounded implementation slices](#finite-implementation-slices). Each needs a
+separate dispatch. The [campaign capability trace](../capability-status.md#campaign-feature-trace)
+records shipped behavior.
 
-[#2090](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2090) sets the current
-product constraint for battle Main. At `277cb0dad2ce7dc7a6f34a7443426d422d48e25f`,
-`BattleMenuLayout._Ready` mounts `CompactCommandList(Commands)` and
-`BattleCommandMenu.Handle` steps through its vertical rows with Up/Down. The
-`DiamondCommandButton` type supplies icon controls in both layouts. At `434c2ae9` (#2084)
-the mount changes to a freestanding diamond, with different directional selection. That is
-the layout in the inspected base and the one the player reported. Main-gate confirmed that
-this change exceeded the requested scope. Restore the vertical list and its navigation under
-#2090 while retaining #2079's focus, reader and resize work and #2080–#2082 behavior. The
-remaining design and [decision presenter](#migration-and-independent-acceptance) consume the
-restored vertical list.
-
-The investigation covers representative battle decisions, read-only inspection, field Party and
-preparation, service and dialogue routing, system Menu and replacement. It follows the action and
-turn rules only where the UI needs their data. Gameplay adjudication, costs, AI, save format,
-completion protocols, authored content and visual direction remain with their existing owners.
-Static inspection and retained observations were sufficient to choose a design. No new runtime run
-was needed. The remaining costs are implementation and review of the affected seams, with short
-actual-instance checks on disposable inputs. No asset acquisition, large data run or campaign
-replay is required.
+The baseline for these two surfaces is `22e52720`. Both callers already use the
+[complete member page](battle-ui-composition.md#shared-member-page-2154). Battle Main already
+uses the [vertical command list](battle-ui-composition.md#vertical-battle-main-2090), with
+the accepted blue rows and mapped Up/Down. The [visual language](ui-design-language.md),
+[battle phases](battle-ui-composition.md#phase-focus-and-return), [field services](field-and-shop.md)
+and [host return](host-ui.md) supply the player contracts.
 
 ## Current ownership and transition paths
 
@@ -112,14 +94,13 @@ mount](../../game/src/GameRoot.cs) · [Pause and recovery](../../game/src/Entry/
 `PresentationCanvas` and the world viewport provide coordinate/layer boundaries. `BattleMenuLayout`
 measures and clips the decision UI and reports visible hit areas. `BattleSceneView.RefreshGeometry`
 can reflow a paused close-up from live delivery. Roster rows own local textures, actor focus and
-scroll. Field and battle callers own query and capability. The field summary borrows the selected
-row texture and clears the borrow on tree exit. `IdentityIcons` prepares decoded replacements before
+scroll. Field and battle callers own query and capability. The shared page borrows the selected row texture for its portrait and clears the borrow on tree exit. `IdentityIcons` prepares decoded replacements before
 disposal of the old set. `GameRoot.ReleaseSession` detaches and frees old view nodes before ending
 replaced-session audio. A battle view may also leave/reenter the tree during field handoff without
 being retired. [Layout](../../game/src/Battles/BattleMenuLayout.cs) ·
 [Playback](../../game/src/Battles/BattleSceneView.cs) ·
-[Roster](../../game/src/UI/MemberRosterView.cs) · [Field
-summary](../../game/src/Exploration/PartyStatusView.cs) · [Identity
+[Roster](../../game/src/UI/MemberRosterView.cs) · [Shared
+summary](../../game/src/UI/MemberPageView.cs) · [Identity
 textures](../../game/src/UI/IdentityIcons.cs)
 
 Preserve the useful boundaries. `BattleChoices` tests offers through the same selected rule and
@@ -137,9 +118,186 @@ step arrival policies are important counterexamples to a common repeat, press or
 [Host Menu](../../game/src/Entry/SystemMenuView.cs) ·
 [Accepted roster observation](battle-ui-composition.md#reproduce-the-shared-roster)
 
+## Native controls for members and Settings
+
+**Recommendation.** Give containers responsibility for child geometry and give each open page one
+Godot focus owner. Use native GUI dispatch to pick the visible control under the pointer. Extend
+a control or its owning presenter where the game distinguishes *reading* a row from *acting* on it.
+Keep the existing `GameInput` mapping and host precedence. This removes two concrete maintenance
+costs: adjusting coordinates in multiple controls when text wraps, and reconciling a painted index
+with the button that actually received input.
+
+The [adapter](../../game/Sf2.Remake.Godot.csproj) pins Godot .NET 4.7.2. The API at the installed
+engine revision supplies focus neighbours, deferred focus placement, clipped GUI input, focus
+following and release-mode button signals. A plain button is sufficient for an ordinary choice.
+An `ItemList` can represent a simple single selection, but the member rows compose a portrait,
+wrapped condition, status treatment and an independently readable sheet. Reuse those children
+in focusable rows. A UI plugin would still need the same admission, return and input contracts.
+There is no uncovered control requirement in these two pages that justifies adopting one.
+[Containers](https://docs.godotengine.org/en/stable/tutorials/ui/gui_containers.html) ·
+[Theme inheritance](https://docs.godotengine.org/en/stable/tutorials/ui/gui_skinning.html) ·
+[Focus navigation](https://docs.godotengine.org/en/stable/tutorials/ui/gui_navigation.html) ·
+[4.7.2 Control](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/doc/classes/Control.xml) ·
+[BaseButton](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/doc/classes/BaseButton.xml) ·
+[ScrollContainer](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/doc/classes/ScrollContainer.xml)
+
+### Member page from either caller
+
+**Confirmed** in the shared page: the roster already has a `ScrollContainer`, wrapped labels and a
+`VBoxContainer`. The footer already measures its hint in an `HBoxContainer`. Yet every footer
+projection calls `MemberPageView.Arrange`, which places the roster, arrows, sheet, borrowed portrait
+and summary by coordinates. `PartyDetailsPanel.Arrange` positions attributes and reading panes a
+second time. `HandlePointer`, `Hit` and `HitItem` walk labels and intersect rectangles to rediscover
+the visible actor or slot. [Member page](../../game/src/UI/MemberPageView.cs) ·
+[Roster](../../game/src/UI/MemberRosterView.cs) · [Sheet](../../game/src/Exploration/PartyDetailsPanel.cs)
+
+- Keep the fitted design canvas and cap the page width. Inside a margin, stack header, expanding
+  body, optional field summary and measured footer. In the body, place the framed roster beside
+  the expanding sheet. Keep its arrows in their own row. Group portrait/name/class and the two
+  gauges above an attribute grid, a spell column with its fixed 196px reader beneath, and an
+  independent full-height pack. Give the four numbered rows their 88px minimum, wrapped text and
+  reserved icon/marker space. Scroll excess inside its own pane. Collapsing a missing field summary
+  must still preserve the page's reading measure. Inherit panel insets, column gaps, fonts and
+  focus styles from the page theme. This replaces both member layout formulas and
+  `ArrangeSummaryRow`. The direct board Full sheet has its own `ArrangeInspection` and 4× icons.
+- Preserve one selected `ActorRef` as the identity of the sheet while the player reads another pane.
+  On open, place focus on that actor, the spell reader or the current item according to the entry.
+  Empty rosters still expose the empty message and Back. In the roster, focusable rows wrap in
+  member order. Target cycles the three panes, Left/Right switches actor from any pane, and Up/Down
+  in Spells scrolls while Up/Down in Items selects a numbered slot. A blank slot clears the prior
+  description. Derive pane/active marker from the focused control. Keep the actor and slot as
+  reading selections and restore by identity after refresh, including the existing nearest-survivor
+  rule. Use native focus following or the roster's existing deferred `EnsureControlVisible` when
+  a mapped selection changes. Restore the saved scroll on Back. Wheel reading changes only scroll.
+- Use GUI-picked rows for actor and slot clicks and buttons for arrows, selector and footer.
+  A mouse-down on a focusable button can take focus before release. For a row that changes the
+  sheet, put the pointer button inside the keyboard-focusable row, give the button no focus and
+  stop mouse propagation there. On validated release, focus its row and project the selection.
+  Dragging out leaves the previous actor/slot visible. Keep arrows and footer pointer targets
+  from stealing the pane's focus. An unavailable
+  member stays focusable for its condition or missing-detail message. The field caller supplies
+  records, gold and Prepare/Magic/Item and can submit only through the revision-bound preparation
+  flow. Battle Confirm on this sheet has no primary action. Back returns to Options and then Cursor.
+  Actor/slot browsing cannot advance either session. [Field caller](../../game/src/Exploration/PartyStatusView.cs) ·
+  [Battle caller](../../game/src/Battles/BattleInspectionView.cs) · [Four-slot contract](../capability-status.md#party-details-capacity)
+
+### Settings and its children
+
+**Confirmed** in `SettingsView.ShowPage`: choices already are wrapped `Button` children of a
+scrollable column or footer. Every value edit rebuilds them. They ignore the mouse and have
+focus disabled. `Handle` walks `_selected`, `Paint` selects each button's style, and
+`HandlePointer` computes clipped hit bounds and a second selection. Help similarly draws native
+Previous/Next buttons and picks them by rectangle. [Settings](../../game/src/UI/SettingsView.cs) ·
+[Help](../../game/src/UI/ControlsHelpView.cs) · [Entry theme](../../game/src/UI/StoryTheme.cs)
+
+- Retain the capped panel, expanding choices, fixed details area and footer. Let the centered
+  container own positioning, with one outer size cap if needed. On the same page update changed
+  captions, availability and message in place. Build rows on page/choice-set change. Connect
+  `FocusEntered` to details and the existing marker, and activate a choice by its ID. Use the
+  inherited normal/hover/pressed/disabled/focus styles. Retire the parallel selected-index loop,
+  focus painting loop and list-wide hit scan. On intentional pointer motion, transfer focus to
+  the hovered eligible row. A stationary pointer during keyboard navigation or reflow must leave
+  the focused row alone.
+- Initially focus the saved enabled ID or first enabled choice (Display at the ordinary root).
+  Set explicit neighbours through the column and footer, including wrap. Keep unavailable values
+  and reasons visible. Skip disabled actions in mixed menus. On all-read-only value pages give
+  the rows native reading focus and muted styling, suppress activation in the existing presenter,
+  and keep mapped Cancel and right-click usable. Continue to store parent page, row ID and list
+  scroll in the local stack. After Back restore focus first, then the retained scroll after layout.
+  A deferred restore applies only while its original page still owns input.
+- Left/Right adjusts the focused value or scrolls choices. Target pages the overflowing details.
+  Wheel input goes to the region under the pointer and leaves selection alone. Help reads
+  installed bindings, with Left/Right/Confirm turning a page and Up/Down reading. Battle Speed
+  retains its two-row adjust-and-save semantics. Preserve Controls → Change controls → device /
+  alternative → capture → review and the draft across nested Back. Keep raw capture, reserved
+  cancellation, disconnect recovery and duplicate/required-family refusal in their existing owners.
+  Only host Apply prepares and publishes the mapping, graphics and language and writes preferences.
+  A refused Apply leaves the draft available and the installed map intact. [Editor](../../game/src/UI/SettingsView.Bindings.cs) ·
+  [Host](../../game/src/Entry/SettingsHost.cs) · [Store](../../game/src/Input/SettingsStore.cs) ·
+  [Remapping contract](input-remapping.md#editing-a-binding)
+
+### One event from device to page and back
+
+1. Keep window recovery, release barriers and raw binding capture ahead of ordinary page input
+   in `GameRoot._Input`. For a migrated page, update device hints and resolve physical key/pad
+   events once using the installed `GameInput` actions. Consume these events there, including
+   unmapped keys, echoes and neutral releases, so default `ui_*` bindings cannot activate a row
+   after a remap. Translate an admitted navigation step to the focused control's explicit neighbour
+   (`FindValidFocusNeighbor` / `GrabFocus`). Dispatch Confirm for the focused ID or page-specific
+   operation once. Both mapped activation and native pointer signals call the same operation.
+   For a mapped Apply or capture opener, pass its actual key/button/axis event synchronously.
+   A parameterless `Pressed` signal cannot identify which old binding must release. A completed
+   mouse click has already released: keep it out of the host's non-mouse release drain. Preserve
+   the member page's entry/Prepare-return neutral barrier.
+2. For pointer events, the root yields to GUI picking only on the active migrated surface, before
+   forwarding to any covered field, board or system menu. Use a full-page input shield, ignored
+   decorative children, clipped scroll containers and a release-mode button. Stop wheel propagation
+   at the modal boundary. Intercept right-button edges for the active page before GUI delivery so Back works over a child that stops mouse input.
+   Raw Capture still sees keyboard/pad first. Its visible pointer Cancel must have one route as well.
+   Cover and restore the same caller through the existing host pause, audio and disarm operations.
+   Keep battle cell navigation, Target fresh-edge rules, movement repeat and wait delivery on their
+   existing owners. [Root](../../game/src/GameRoot.cs) · [Device edges](../../game/src/Input/GameInput.cs) ·
+   [Input order](https://docs.godotengine.org/en/stable/tutorials/inputs/inputevent.html)
+3. Use the GUI-picked control as the target. Where a native click can rearm after leaving and
+   re-entering, use the existing gesture cancellation policy as a small veto on the single
+   activation callback. Keep only press identity, button, visible bounds and caller boundary
+   needed to reject drag-out/back-in, chord/double click, scroll, resize, changed actor/page,
+   cover or window exit. Right-click uses a matched press/release on the same page. A stale
+   release after any transition is consumed. Retire the migrated callers' manual rectangle
+   searches and direct click dispatch together. Other `MenuPointer` consumers keep their own
+   boundaries. [Gesture contract](../../game/src/Input/MenuPointer.cs)
+
+### Hide, remount and disposal
+
+Build a node's owned children and connect their local signals once. When hidden or covered, clear
+armed presses, remember the reading identity/scroll and withdraw focus from the covered subtree.
+On same-session return, restore focus only after it is visible and still current. For subscriptions
+to a longer-lived window, connect on each `_EnterTree` and disconnect on its matching `_ExitTree`.
+Godot ordinarily calls `_Ready` once per instance. The #2152 command rows subscribed to
+`Window.MouseExited` in `_Ready` and unsubscribed on tree exit. The retained menu then missed
+window exit after remount. #2154 restored the pair on tree entry/exit. Settings and Help currently
+pair `_Ready` with `_ExitTree` for window size but are normally freed on close. If reused across
+detach, move that subscription with the mount. Keep row-signal lifetimes tied to their row and
+reject callbacks from a retired page. Clear the sheet's borrowed portrait before disposing the row
+texture and rebind from the live actor on remount. A replacement session gets fresh UI state.
+[Observed failure and correction](battle-ui-composition.md#reproduce-registered-portraits) ·
+[Command menu](../../game/src/Battles/BattleCommandMenu.cs) ·
+[Node lifecycle](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/doc/classes/Node.xml)
+
+### Finite implementation slices
+
+Estimates are engineer-days for one implementer including debugging, visual review and independent
+review time. They assume the owned installation, production preview and existing disposable inputs.
+Each PR replaces one production path with its consumers and can be reverted with those consumers.
+
+| Player outcome, in delivery order | Main risk and acceptance before proceeding | Estimate |
+| --- | --- | --- |
+| 1. Read a complete member sheet in field and battle. Replace the shared page's body, summary and member-only detail layout with containers. Keep current input during this layout change. | In F5 and F8 compare EN/zh-CN at 1600×900 and 1920×1080. Read the long member name, absent/defeated condition, fourth slot and description together. Check that the arrows, records, Prepare and fixed footer clear the text. Select slot four, then an empty slot. Return from actual Prepare with the same actor and scroll. Check the adjacent direct Full sheet. | 2–3 days |
+| 2. Edit a preference or binding and return to the same caller. Switch Settings, nested choices and Help to native focus and GUI picking together. Use the existing entry, draft, capture and store owners. This establishes the mapped-event handoff in the host. | In F10 open Display and read a long detail. Switch keyboard → pad → mouse, edit, Back and Cancel. Follow Controls into capture/review, Apply with the old Confirm held, and try both the old and new bindings after release. Check a refused Apply and a read-only page. Cover a field caller and a retained battle target. Resize or lose focus mid-press, then resume with the same phase and candidate and no extra command. Check direct Battle Speed return. | 3–5 days |
+| 3. Browse members and slots by any mapped device, then resume play. Consume slice 1's layout and slice 2's root handoff in the two member callers. Remove their old hit/selection routing at cutover. | Use the long and empty roster cases. Switch member from Items, wheel a different pane and cancel a drag over another row. Check Prepare Back, read-only Member → Options → Cursor and a held release over the board. After detaching/re-entering the same view, one window-exit gesture cancels once and one fresh click acts once. Check live focus/texture, session revision and errors. | 2–4 days |
+
+The three slices have a preliminary effort estimate of **7–12 engineer-days**. It comes from static
+inspection without an implementation pilot. Agent elapsed time remains unscheduled. Re-estimate the
+remaining work after slice 1 using its actual implementation and review effort. The main uncertainty is how GUI focus
+on mouse-down interacts with release cancellation and host remapping. Witness that boundary in slice 2
+before sharing its handoff. Reassess if a slice needs global focus state, a second input map or a
+consumer outside these two entries. The design itself required only static inspection.
+
+Use the [production demo routes](../../game/probes/previews/README.md#scene-ownership) for actual
+appearance and reading comfort. F5's public sample can display the unsupported Prepare outcome.
+Use the [connected route](battle-ui-composition.md#reproduce-registered-portraits) for actual Prepare.
+Use the [host observation](../verification/host.md#battle-system-settings-observation) and
+[remap observation](input-remapping.md#reproduce-the-installed-controls) for input and state.
+[#2147](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2147) owns broader scene/subpage
+coverage. Necessary pictures belong only to the dedicated UI demo and stay ignored locally.
+Gameplay acceptance reads live input, state, projection and errors. **Unknown** until implementation:
+the new focus/gesture behavior and actual appearance on those routes. Existing witnesses describe
+the shipped controls. Physical-device comfort retains its existing player-review boundary.
+
 ## Findings and limits
 
-**Confirmed** findings below describe a source-demonstrable path or discrepancy at the named base.
+The pre-migration findings from [#2089](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2089)
+refer to `3bff875d`. The implemented decisions and reading behavior have their own linked witnesses.
 A static defect is actionable within that boundary. **Inferred** findings specify the maintenance or
 runtime consequence that has yet to be witnessed. Prior native acceptance applies to its named paths.
 
@@ -159,7 +317,7 @@ installed. The accepted Back corridor reached the correct final page. [Inspected
 menu](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/3bff875d994758c30b44086bebf57c64346a0dfd/remake/game/src/Battles/BattleCommandMenu.cs) ·
 [Current submission and transition](../../game/src/Battles/BattleSessionView.Decision.cs)
 
-### Non-activation buttons reach the board
+### Pre-migration board pointer classification
 
 P2. **Confirmed at the inspected base.** Migration 1 classifies these events before selecting.
 
@@ -206,13 +364,12 @@ describe which actual authored inputs exercise each view. The fixed review windo
 production viewport. Desktop window recovery and device/appearance acceptance retain their
 ordinary separate review boundaries.
 
-### Parallel route eligibility can drift
+### Risk from parallel route eligibility
 
-P2. **Confirmed** independent predicates. **Inferred** drift outside the observed routes.
+P2. **Confirmed** independent predicates in the #2089 inspection. **Inferred** drift outside the observed routes.
 
-Battle action admission, pointer, navigation repeat and projection each check related wait/cover/stage
-conditions. `BattleCommandMenu.Visible` and `Targeting` also determine how `GameRoot` decodes a
-direction. Field independently routes mapped input, pointer, draw calls and clock. For example pointer
+At that base, battle action admission, pointer, navigation repeat and projection checked related
+wait/cover/stage conditions. Today the root asks the battle presenter for its direction policy. Field independently routes mapped input, pointer, draw calls and clock. For example pointer
 forwards open Party before the general field guard and leaves part of that guard to Party/Prepare, while
 mapped input reaches Party after rejecting presenter failure and handoff. Some of the differences are
 needed by services and the field-to-battle handoff. Matching predicates across layers is fragile when
@@ -244,8 +401,8 @@ binding](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleActionBindings.cs)
 
 P3. **Confirmed** lifetime assumptions. **Inferred** stale-borrow and partial-publication risk.
 
-Roster texture replacement detaches the current row handle then disposes it. Field summary borrows that
-handle and is rebound later in the same `Present`. Preparation hides it and retains row focus. A
+Roster texture replacement updates the row handle then disposes the old one. The shared member page
+borrows the selected handle and rebinds it in `PresentRoster`. Preparation hides it and retains row focus. A
 projection failure partway through a multi-row update or use of such a borrow across a detach would
 challenge this synchronous assumption. `MemberRosterView._ExitTree` drops row textures.
 `BattleMenuLayout` retains its icon set across reparent, `BattleMapViewport` releases on
@@ -254,7 +411,7 @@ overlay. Current handoff retains only the permissible board during return. Tree 
 unsafe generic destroy signal. The accepted registered portraits observation exercised both callers and
 reported live textures and zero disposed-texture errors. Portrait leaks and failed reparent remain Unknown. Keep each texture owner and name its valid borrow, remount and error boundary when changing
 that caller. [Roster](../../game/src/UI/MemberRosterView.cs) ·
-[Summary](../../game/src/Exploration/PartyStatusView.cs) · [Layout icon
+[Summary](../../game/src/UI/MemberPageView.cs) · [Layout icon
 lifetime](../../game/src/Battles/BattleMenuLayout.cs) · [Board
 lifetime](../../game/src/Battles/BattleMapViewport.cs) · [Playback
 lifetime](../../game/src/Battles/BattleSceneView.cs)
@@ -326,7 +483,7 @@ query boundaries.
   resolved focus and candidate, including a rejected initial target. Terminal/failure/hand-off
   results invalidate the old interaction. This retires the menu's synchronous submit-and-reread
   contract without moving scene clocks or suppressing actual gameplay events.
-- **Controls** render allowed actions, captions, reasons and focus from that value. They return
+- **Battle decision controls** render allowed actions, captions, reasons and focus from that value. They return
   clipped rectangles or stable action IDs from actual geometry. A layout rectangle may block
   board input without being an activation target. A disabled row may still be readable if the
   caller allows it, with the same explicit refusal for mapped and pointer activation. Classify
@@ -391,11 +548,9 @@ query boundaries.
 
 ## Migration and independent acceptance
 
-These are integration boundaries for future dispatch. The principal owners below identify
-overlap. Declare implementation paths against the then-current main. Each slice ships one
-input, reading or query responsibility and removes its superseded path in the same PR. Before
-acceptance, roll back a slice as a unit with its direct consumers. After dependent work lands,
-revert consumers first or together. Use a single production path with disposable UI state.
+The first two battle and reading boundaries below are implemented. The target-footprint query
+remains a separate proposal. The [native UI slices](#finite-implementation-slices) consume the
+shipped player behavior.
 
 1. **Coherent battle action entry, rejection and Back (#2107).** `BattleSessionView` owns local
    focus and the action/target submission sequence. `BattleDecision` supplies the menu, board,
@@ -418,8 +573,7 @@ revert consumers first or together. Use a single production path with disposable
    Field Party follows this reader contract in [#2094](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2094).
    Its independent spell, inventory and reading regions keep the four carried positions and their
    item text visible together. Field summaries align live party gold and the selected member's
-   record with shared metrics. Battle Member continues to use the shared detail controls in its
-   own inspection layout. [Current field behavior and verification](field-and-shop.md#reproduce-four-slot-capacity-and-accounting)
+   record with shared metrics. Battle Member mounts the complete shared page with its own read query and Back. [Current field behavior and verification](field-and-shop.md#reproduce-four-slot-capacity-and-accounting)
 3. **Rule-backed battle target footprint.** After slice 1 for the final adapter integration
    (the pure rule/query work can be scoped independently), replace `BattleActionRangeView`'s
    spell lookup and distance/party selection with selected-action geometry from the authoritative
@@ -431,25 +585,6 @@ revert consumers first or together. Use a single production path with disposable
    for no state/RNG/payment changes from reading. Cover new rules with small engine behavior
    assertions where needed. Revert the query and consumer together before downstream uses.
 
-**Existing issue order.** Slices 2 and 3 consume the decision boundary from #2107. #2090 owns
-the restored vertical Main and its acceptance. Slice 2 can use free reading directions on the
-vertical page where the existing controls permit them. #2083 consumes the shared reader and
-coherent Back from those slices. Serialize target geometry changes that touch
-`BattleChoices` or `BattleMenuLayout`.
-The [Prepare command rows](#prepare-command-rows)
-use the current reader and catalog. #2085 retains ownership of card level and
-inspection wording/hits. Handle the Target input/feedback findings attached to it in slice 1 and
-the reading/inspection findings in slice 2. This is one disposition for each reported behavior.
-
-[#2068](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2068) artwork,
-[#2070](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2070) dialogue portraits,
-[#2073](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2073) story wait/Confirm,
-and [#2062](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2062) field pickup
-guidance keep their separate capability scopes. Their accepted entry points support independent delivery.
-Serialize overlapping playback/field writers and call out any real shared input/lifetime need
-when it arises. #1456 play can continue independently. Broad #1616 aesthetic choices and the
-paused #1716 exit issue stay in their respective owners.
-
 [Independent review](ui-scene-review.md#review-changed-ui-responsibilities) complements the
 existing scene feature checks. The accepted [#2079 review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/2084#issuecomment-7087838808)
 exercised final Target Back, legal/rejected gestures, wheel overflow, multiple recipients and
@@ -459,5 +594,5 @@ mouse buttons, mapped overflow or a full-party item's preview. The
 retained focus and live textures on a real bounded path. It did not generalize that lifetime
 to arbitrary detach or partial decode failure. Check one adjacent path that can contradict the
 changed ownership claim. Reuse the affected native observations and the existing adapter build
-for implementation. The present audit uses direct source and document checks, scope and link verification, and
+for implementation. Documentation-only design changes use direct source and document checks, scope and link verification, and
 `uv run sf2 verify plan --base origin/main --head HEAD` on the committed candidate.

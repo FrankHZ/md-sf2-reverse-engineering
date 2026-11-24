@@ -32,7 +32,7 @@ remain outside it. Pointer hit testing intersects the reading viewport, includin
 Left/Right and the mouse wheel read long reasons without activating unavailable commands.
 
 Settings opens a 960px capped panel with four categories: Display & text, Gameplay aids,
-Controls, and Debug & diagnostics. Apply and Back/Close are the only top-level actions.
+Controls, and Debug & diagnostics. Apply is the root footer button. Mapped Cancel or a completed right-click backs out or closes the page.
 Enter a category to edit values; Back restores its launching row and scroll. Left/Right changes
 a value or scrolls the choices. A fixed-height area below the choices holds descriptions, errors
 and technical statistics. Use the displayed Read details binding or wheel over that area when
@@ -40,6 +40,8 @@ text overflows. Reading details keeps the choice focus, scroll and action positi
 appear on the Debug page when enabled. Controls → Change controls and Controls → Help share the Settings draft. Help reads
 installed bindings; only Apply publishes edits. See [changing controls](input-remapping.md)
 for capture, review, reset and refusal behavior. Battle Speed remains a separate two-row caller.
+The [native Settings design](ui-architecture.md#settings-and-its-children) covers the proposed change
+to focus and event delivery across these same routes.
 
 Gameplay aids → Hold speed cycles through 1.5×, 2×, 2.5× and 3×. The row shows the draft
 multiplier and its details show the installed Accelerate binding. Apply installs and saves the
