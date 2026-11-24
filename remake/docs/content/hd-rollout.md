@@ -113,8 +113,8 @@ A visual row selects either its inline bank or `hdTerrainFile`, with a conventio
 path such as `hd/terrain/map-4.json`. Keep the companion keyed to its map ID, with the existing
 `hdBlocks` and optional `hdBlockContexts` shapes and checked raster identity, dimensions and PNG
 contracts. The reader verifies the resolved package path and checks each bounded bank separately.
-Use 8 MiB per companion as an initial admission bound, with size checked before read. The pilot
-measures the margin for the largest map and the retained encoded bytes across the package.
+Start with an 8 MiB admission bound per companion and check size before reading. Measure the
+margin on Map4 and Map66 and the retained encoded bytes across the package.
 Keep immutable encoded bytes and the existing map model.
 Preserve the bound on each bank, reject a missing declared file, path escapes, mismatched IDs or
 duplicate keys, and keep decoding off the draw path except for the existing on-demand texture
@@ -150,47 +150,147 @@ A 64×64 plane took 8.773 s to filter, 0.069 s for 256 crops/encodes and 113 MiB
 intermediates were 768² and 3072² at L1. All delivered envelopes were 96². Mean base64 was
 1,233 and 1,226 bytes. The script used Pillow 11.3.0 and measured the Windows process working
 set including imports. These numbers bound the sampled process and omit live residency and
-package writes. Retained commands and receipts are worktree-local under `local/issue2172/`.
+package writes.
 
 | Family or stage | Estimate and scope |
 | --- | --- |
 | Terrain production | 47,315 plane-cell visits across declared areas/overlays before patches and battle crops. Map3 emits about 0.22 contexts per such visit. Use 0.15–0.35 contexts/cell for planning, about 13k–22k rasters including centers. At 1.25–1.5 KiB per encoded/serialized row allow roughly 16–33 MiB including the existing Map3 fields, before atypical scene or animation growth. At 36 KiB decoded per raster, all-at-once upload would cost about 457–773 MiB before driver overhead. Filter/encode cost scales with cells and sampled patches. Allow 3–6 minutes serial for static terrain, including margin for copies and packaging. |
 | Field actors, portraits, UI | 489 ordinary strips with 451 distinct encoded inputs, nine alternate strips with three distinct inputs, and 46 distinct atlases. A literal 4× of all unique originals gives about 45 MiB decoded before copies. The 236 world icon states add at most about 6 MiB decoded. Retain only the early selector closure. Measure PNG sizes and toggle/load latency before projecting inline budget. |
 | Battle assets | Seven pre-boarding close-up documents contain 2,287 bindings and 376 distinct encoded inputs. Actor-frame selections give 316 body/87 unique, 256 weapon/28, 62 ground/backdrop/15. The other 176 effect/death and 1,477 UI bindings resolve to 35 and 211 distinct payloads within their families. At 4× logical density, 2× pixel dimensions for existing doubled bodies/weapon/scenery imply about 80 MiB unique decoded across those groups. Keep palette identities and frame semantics even when derived bytes can be reused between encounters. Generate once per eligible source and treatment, then measure actual document growth separately. Measure the caller's effect/identity/cursor shapes independently. |
-| Entry and package | Six original sibling PNGs total 41,692 bytes. Six 1024×896 RGBA surfaces occupy 21 MiB decoded. Private disk starts at about 34.37 GiB free. Budget one staged output of up to 512 MiB plus 512 MiB for bounded scratch and receipts, with at least 1 GiB free after both. Preserve the prior stable package and existing relative dependencies. One fresh complete candidate per stage, with serial generation and promotion. Cloud calls and service billing are zero. |
+| Entry and package | Six original sibling PNGs total 41,692 bytes. Six 1024×896 RGBA surfaces occupy 21 MiB decoded. Private disk starts at about 34.37 GiB free. Allow an initial 512 MiB for one staged output and 512 MiB for bounded scratch and receipts, with at least 1 GiB free after both. Preserve the prior stable package and existing relative dependencies. One fresh complete candidate per stage, with serial generation and promotion. Cloud calls and service billing are zero. |
 
 **Inferred** planning figures above. Input PNG compression, scripted context density and exact
-number of early selectors vary. Allocate at most 1 GiB process peak for the initial offline
-terrain pilot, and use 120 MiB as the planning ceiling for the world JSON before the format's
-hard limit. Escalate sizing if real Map4/Map66 contexts or encoded bytes exceed the table's
-range, if Settings Apply exceeds one second after admission on the owner machine, or if
-residency grows across the same two visits and toggle cycle. Measure the offline peak, output
-bytes and elapsed time first, then Godot admission, first Apply and repeat visit. Compare
-against the same host and registered selection. GPU residency and full-route elapsed time are
-**Unknown**. Treat an overrun as a sizing result and retain the receipt.
+number of early selectors vary. Allow 1 GiB process peak for the offline terrain pilot. The
+8 MiB companion bound, 120 MiB world JSON planning ceiling, one-second first Apply target and
+512 MiB staged-output allowance are engineering starting values chosen for this design.
+The implementation owner can revise them from the Map4/Map66 measurements within the delegated
+scope. Record measured file size, offline process peak and elapsed time, then Godot admission,
+first Apply and residency during repeat visits and a toggle round trip. Keep the existing
+128 MiB world reader limit. Track where an estimate exceeded its initial range and link the
+receipt with the revised value. GPU residency and full-route elapsed time are **Unknown**.
 
-To reproduce the census, dot-source `local/private-inputs.ps1` and select
-`derived/issue2156/pre-voyage-map3-l1-v1` under `SF2_SHARED_INPUT_ROOT`. Pass its world, main
-scene, entry and opening-input directory to `package_files`. Join world `maps[].id` to
-`presentation.maps[].map` by the table above. Count center rows, contextual rasters, keys and
-base64 lengths separately. For battles, read `main-scenes.json` and the selected
-`encounters[].battleScenes` for Battles02–07, using each actor's `frames`/`weaponFrames` and
-each scene's `background`/`ground` and `terrainScenes` keys. Group by the admitted
-`(width, height, format, sha256)` to estimate unique inputs. Resolve the six entry image filenames
-from `resources`. The animation census matches the low ten tile-word bits against
-`runtime/retail-v1/maps/index.json:records.maps[].animations.entries`. The census and sample
-scripts run as follows in the producing checkout.
+### Reproduce the census and sample
+
+From the repository root, load the [registered private input configuration](../../../docs/operations/local-private-inputs.md).
+The tracked collector resolves the closed package and its constituent file sizes.
 
 ```powershell
 . ./local/private-inputs.ps1
 $base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2156/pre-voyage-map3-l1-v1'
-uv run --locked python -B local/issue2172/inventory.py $base
-uv run --locked python -B local/issue2172/scene-census.py $base
-# $mapIndex selects the prepared retail maps/index.json.
-uv run --locked python -B local/issue2172/animation-census.py $base $mapIndex
-# $gfx selects the existing pinned graphics checkout.
-uv run --locked --with pillow==11.3.0 python -B local/issue2172/sample.py $gfx 16
-uv run --locked --with pillow==11.3.0 python -B local/issue2172/sample.py $gfx 64
+@'
+import sys
+from pathlib import Path
+from time import perf_counter
+
+from sf2tool.remake_private_package import package_files
+
+base = Path(sys.argv[1])
+world = base / "world.json"
+start = perf_counter()
+files = package_files(world, base / "main-scenes.json", base / "entry/entry.json",
+                      base / "opening-inputs")
+elapsed = perf_counter() - start
+print(len(files), sum(path.stat().st_size for path in files.values()), world.stat().st_size)
+print(f"closure discovery {elapsed:.3f}s")
+'@ | uv run --locked python -B - $base
+```
+
+For a process-peak comparison, use the Windows working-set probe in the authored control below
+as the final step of the package collector command.
+
+Use these fields for the read-only census. Open one scene document at a time and count distinct
+payloads by their declared identities.
+
+- Join `world.maps[].id` to `world.presentation.maps[].map` by the map table above. Sum
+  `len(blocks)` and count distinct `atlas.sha256`. For the plane-cell bound, sum each area's
+  inclusive width × height, counting it twice when either overlay offset is nonzero.
+  For Map3, count `hdBlocks`, `hdBlockContexts` and the sum of each context's `len(neighbors)`.
+  Count distinct raster `sha256` values and measure the length of each `data` string in both
+  banks. For the serialized sizes, encode the two arrays separately with Python
+  `json.dumps(array, separators=(",", ":"))` and count UTF-8 bytes.
+- Count sprite `directions`, alternate `graphics` strips, portrait `raster` and the world menu
+  and identity maps separately. For Battles01–07, read `main-scenes.json` and the six
+  `encounters[].battleScenes` selections paired with Battles02–07. Classify raster keys using
+  each actor's `frames` and `weaponFrames`, the default and `terrainScenes` `background` and
+  `ground` keys, then the `identity-icon.`, `command-menu.`, `battlefield-menu.` and
+  `battle-cursor.` prefixes. The remaining keys are effects and death art in these documents.
+  Count bindings before grouping by `(width, height, format, sha256)`. Estimate decoded RGBA
+  bytes as `width * height * 4` per unique group. Sum the sizes of the six files selected
+  by the entry document's `resources[].file`.
+- Within the prepared `runtime/retail-v1/maps/index.json`, join `records.maps[].id` to the
+  selected map IDs. For each map, union the half-open target intervals from its
+  `animations.entries` (`targetStartTile` through `targetStartTile + tileCount`).
+  Count each block once if any of its nine words masked with `0x3ff` is in that union.
+  Check that each `animations.tileset` has its corresponding `tileset-<id>.4bpp` sibling.
+
+Set `$gfx` to the existing pinned graphics checkout for the authored control below.
+Each run reports its Windows peak working set. Crop encoding stays in memory.
+
+```powershell
+foreach ($size in 16, 64) {
+@'
+import ctypes
+import sys
+import time
+from pathlib import Path
+from statistics import mean
+
+from PIL import Image
+from sf2tool.remake_map3_ramp import TerrainFilter, load_filter, png_raster
+
+class Memory(ctypes.Structure):
+    _fields_ = [("cb", ctypes.c_ulong), ("faults", ctypes.c_ulong)] + [
+        (name, ctypes.c_size_t) for name in ("peak", "rss", "peak_paged", "paged",
+                                             "peak_nonpaged", "nonpaged", "pagefile", "peak_pagefile")]
+
+def peak_mib():
+    counters = Memory()
+    counters.cb = ctypes.sizeof(counters)
+    ctypes.windll.kernel32.GetCurrentProcess.restype = ctypes.c_void_p
+    handle = ctypes.windll.kernel32.GetCurrentProcess()
+    if not ctypes.windll.psapi.GetProcessMemoryInfo(ctypes.c_void_p(handle), ctypes.byref(counters),
+                                                    counters.cb):
+        raise ctypes.WinError()
+    return counters.peak / 2**20
+
+colors = ((0, 0, 0, 0), (0, 0, 0, 255), (42, 76, 37, 255), (75, 119, 54, 255),
+          (84, 102, 132, 255), (111, 142, 182, 255), (147, 91, 46, 255), (198, 136, 64, 255))
+
+def authored_block(seed):
+    pixels = []
+    tone = 2 + 2 * (seed % 3)
+    for y in range(24):
+        for x in range(24):
+            if (x - 10 - seed % 5) ** 2 + (y - 12) ** 2 < 26 and seed % 3 == 0:
+                color = 0
+            elif (x + y + seed) % 37 == 0:
+                color = 1
+            else:
+                color = tone + ((x + y) % 2 if (x + 2 * y + seed) % 11 < 8 else 0)
+            pixels.extend(colors[color])
+    return Image.frombytes("RGBA", (24, 24), bytes(pixels))
+
+size = int(sys.argv[2])
+filter_ = TerrainFilter([authored_block(i) for i in range(32)], load_filter(Path(sys.argv[1])))
+layout = [[(x + y * 7 + x * y) % 32 for x in range(size)] for y in range(size)]
+start = time.perf_counter()
+result = filter_.plane(layout)
+filtered = time.perf_counter()
+selection = [(i * 97) % (size ** 2) for i in range(min(size ** 2, 256))]
+sizes = []
+for cell in selection:
+    x, y = (cell % size) * 48, (cell // size) * 48
+    raster = png_raster(result.crop((x, y, x + 48, y + 48)))
+    sizes.append(len(raster["data"]))
+end = time.perf_counter()
+print(f"{size}x{size} plane, {len(selection)} crop encodes, {result.width}x{result.height} L1, "
+      f'{raster["width"]}x{raster["height"]} output')
+print(f"filter {filtered-start:.3f} s; crop/encode {end-filtered:.3f} s; "
+      f"peak working set {peak_mib():.2f} MiB; mean/max base64 "
+      f"{mean(sizes):.1f}/{max(sizes)} bytes")
+'@ | uv run --locked --with pillow==11.3.0 python -B - $gfx $size
+    if ($LASTEXITCODE -ne 0) { throw 'Terrain control failed' }
+}
 ```
 
 For the baseline production command and native probes, use the [accepted Map3 replay](asset-inventory.md#complete-private-package-and-rebuild-2156),
