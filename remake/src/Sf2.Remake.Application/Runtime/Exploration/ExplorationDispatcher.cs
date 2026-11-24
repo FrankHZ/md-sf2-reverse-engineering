@@ -46,7 +46,9 @@ internal static class ExplorationDispatcher
             continuation: start.EntryProgram is null ? ProgramContinuation.MapLoaded : ProgramContinuation.FieldInput,
             partyLists: definition.Exploration.PartyFlags is { } partyFlags ? MapPartyMembership.Rebuild(start.Flags, partyFlags) : null,
             display: start.Display, textSettings: start.TextSettings, stepCounter: start.StepCounter ?? map.Caravan?.InitialStepCounter,
-            egressMap: start.EgressMap, names: start.Names);
+            egressMap: start.EgressMap, names: start.Names,
+            mapMusicReturnDepth: start.EntryProgram is null && start.Display is { Visibility: FullFadeVisibility.Black } &&
+                definition.Exploration.Visuals is { Audio.Count: > 0 } ? -1 : null);
         story = ExplorationTextRunner.Initialize(world, story);
         return new(Guid.NewGuid(), 0, 0, new ActiveExploration(world), story, SessionStopReason.SimulationWait);
     }

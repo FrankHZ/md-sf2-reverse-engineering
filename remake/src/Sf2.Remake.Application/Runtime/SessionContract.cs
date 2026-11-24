@@ -213,6 +213,8 @@ public sealed record SessionObservation(long Sequence, long Revision, string Kin
 {
     public FieldGrowthResult? FieldGrowth { get; init; }
     public ushort FieldCuredStatus { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public ExplorationViewContext? RetainedFieldMusicContext { get; init; }
 }
 public sealed record ProgramControlRead(Guid SessionId, long Sequence, long Revision,
     ProgramLocation Source, string Operation, ProgramLocation? Cursor,
