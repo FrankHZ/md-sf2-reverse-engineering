@@ -191,10 +191,10 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/game-vision.md",
-      "sourceSha256": "4618f5ec1dd4c98029e75de05f8ebb4bacf437094ba4cd8ad743703bb7e6e49e",
-      "mirrorSha256": "c2ce59b35dfe950b23199b9284a35cefae756314af9e7adbaa98cd7629b66902",
+      "sourceSha256": "d4700dee4d1b2816d656128a39dd58e36beb9b80cc6a723ea45cc9a3e043cf7d",
+      "mirrorSha256": "a97f6e553489c94e26eddbdd1551ea89254dd6d132694990bda9c867a17ffd55",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
-      "translatedDate": "2026-11-20"
+      "translatedDate": "2026-11-24"
     },
     {
       "source": "docs/design/synthesis/analyses/battle-design-analysis-pilot.md",
@@ -1101,20 +1101,20 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/gameplay-overview.md",
-      "sourceSha256": "702ba73e8a1eb8170d1741795593eaafbfba12a7d195882b313637b8be5c3f27",
-      "mirrorSha256": "2f4f2bbe0d49850d833348851cd49a339f1e9a254cae2f038183660bd4cc2a7a",
+      "sourceSha256": "455c05172690589793966a467dc43f4faa3942afea5891cebc3cec8686058e05",
+      "mirrorSha256": "64d24d3fe14ff51069fcaa0432f59a80bcb695a015c29ad206df21a01f1cd68b",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
-      "translatedDate": "2026-11-20"
+      "translatedDate": "2026-11-24"
     },
     {
       "source": "docs/design/synthesis/themes/map-design-principles.md",
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/map-design-principles.md",
-      "sourceSha256": "e8f64ede84b7418cef0a81e89412c82b46af2eff09e365661c072eefd2bd3972",
-      "mirrorSha256": "a408ca759fa3a11c616f3da3aec741d0b8a2d8d1c14070508ee62894e6bf8156",
+      "sourceSha256": "6800c2404f53543deaf110b1754c24fd3a0f34b38a83a2c5e8b630863cc26a16",
+      "mirrorSha256": "106691821ea73084c7fecb263d705de113004f552dab9e12a2f14103c84d0f25",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
-      "translatedDate": "2026-11-20"
+      "translatedDate": "2026-11-24"
     },
     {
       "source": "docs/design/synthesis/themes/progression-and-economy.md",
