@@ -8,7 +8,7 @@
 
 - **看得懂的控制。** 熟悉的图标配持续显示的本地化标签和清晰焦点，必要时显示成本及拒绝原因。首个里程碑以默认键盘 A 布局为必需，C 布局作为补充。游戏支持范围内提供英文和简体中文。参阅[界面设计（英文源）](../../../remake/docs/godot/ui-design-language.md)及[游戏本地化 #1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468)。
 - **阅读和节奏由玩家掌握。** 瞬显或一次展开不会为跳过的文字补播语音，已经在播放的语音尾部仍可完成。展开保留原有确认步骤和玩法时间。跳过战前演出仍执行必须完成的逻辑并交回操作。战斗速度仅改变适用消息的呈现。参阅[快显语音（英文源）](../../../remake/docs/godot/audio.md#accepted-fast-text-speech-policy)、[跳过战前演出（英文源）](../../../remake/docs/application/session-and-programs.md#battle-entry-skip-agreement)和[战斗速度（英文源）](../../../remake/docs/godot/presentation.md#battle-speed-and-selective-messages-1650)。
-- **可选的引导和加速。** 渡海前可关闭的引导显示当前目标，已知时还给出目的地。按住 Shift 可使适用的探索和战斗暂时以 1.5 倍速度进行，松开即恢复。必须完成的效果和玩家选择各自保留时序。参阅[目标引导（英文源）](../../../remake/docs/godot/objective-guidance.md)及[按住加速（英文源）](../../../remake/docs/godot/modernization-design.md#held-15-acceleration-1619)。
+- **可选的引导和加速。** 渡海前可关闭的引导显示当前目标，已知时还给出目的地。按住加速键（默认 Shift）可让适用的探索和战斗按设置倍率运行，默认 1.5 倍，最高 3 倍。松开即恢复正常速度。必须完成的效果和玩家选择各自保留时序。参阅[目标引导（英文源）](../../../remake/docs/godot/objective-guidance.md)及[按住加速（英文源）](../../../remake/docs/godot/modernization-design.md#held-15-acceleration-1619)。
 - **时间和等待有明确后果。** 有限音乐的逻辑结束与实际播完分别处理。宿主延迟不会带来额外玩法机会；这可能影响随机序列。玩家等待在已有适用条件的交互和阶段中开放。参阅[音乐等待](contracts/interface/music-wait-service.md)及[玩法等待依据（英文源）](../contracts/milestones/map3-battle01-continuous-scenario.md#evidenced-gameplay-waits)。
 - **通过明确的存档边界继续。** 符合条件时可在场地或战斗中存档。继续游戏须恢复可操作状态，失败时提供明确的恢复路径。参阅[场地存档资格（英文源）](../../../remake/docs/application/opening-session-lifecycle.md#eligibility-and-restoration-recipes)和[战斗继续（英文源）](../../../remake/docs/application/battle-save-and-continue.md)。
 

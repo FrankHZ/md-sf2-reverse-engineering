@@ -96,6 +96,7 @@ internal sealed partial class SettingsView : Control
             new("speed", T("ui.settings.speed", _draft.CharactersPerSecond), ReadOnly)],
         Page.Assist => [new("flash", T("ui.settings.flash", Toggle(_draft.ReducedFlash)), ReadOnly),
             new("guidance", T("ui.settings.guidance", Toggle(_draft.ModernGuidance)), ReadOnly),
+            new("acceleration", T("ui.settings.acceleration", _draft.AccelerationMultiplier), ReadOnly),
             new("defaults", T("ui.settings.defaults"), ReadOnly)],
         Page.Debug => [new("diagnostics", T("ui.settings.debug", Toggle(_draft.ShowDebugDiagnostics)), ReadOnly),
             new("victory", T("ui.settings.auto-victory", Toggle(_draft.DebugAutoVictory)), ReadOnly)],
@@ -151,6 +152,7 @@ internal sealed partial class SettingsView : Control
             Page.Display when BattleContext && _rows[_selected].Id == "language" => T("ui.settings.battle-language"),
             Page.Display when BattleContext && _rows[_selected].Id == "text" => T("ui.settings.battle-text"),
             Page.Assist when _rows[_selected].Id == "guidance" => T("host.setting-description-10"),
+            Page.Assist when _rows[_selected].Id == "acceleration" => T("ui.settings.acceleration-detail", Input.CompactHint(GameAction.Accelerate)),
             Page.Debug when BattleContext && _rows[_selected].Id == "victory" => T("ui.settings.battle-auto-victory"),
             Page.Battle => Notice ?? T("battle.speed.mapping"), _ => EditorMessage() };
         bool diagnostics = _page == Page.Debug && Input.Settings.ShowDebugDiagnostics;
@@ -205,7 +207,7 @@ internal sealed partial class SettingsView : Control
     }
 
     private static bool IsValue(string id) => id is "language" or "graphics" or "text" or "speed" or "convention" or
-        "flash" or "guidance" or "diagnostics" or "victory" or "battle-speed" or "messages";
+        "flash" or "guidance" or "acceleration" or "diagnostics" or "victory" or "battle-speed" or "messages";
 
     internal void HandlePointer(InputEvent input)
     {
@@ -256,6 +258,7 @@ internal sealed partial class SettingsView : Control
             case "language": _draft.Language = _draft.Language == "en" ? "zh-CN" : "en"; break;
             case "graphics": _draft.GraphicsMode = _draft.GraphicsMode == "original" ? "hd" : "original"; break;
             case "guidance": _draft.ModernGuidance = !_draft.ModernGuidance; break;
+            case "acceleration": _draft.ChangeAccelerationMultiplier(direction); break;
             case "diagnostics": _draft.ShowDebugDiagnostics = !_draft.ShowDebugDiagnostics; break;
             case "victory": _draft.DebugAutoVictory = !_draft.DebugAutoVictory; break;
             case "battle-speed": if (!ReadOnly) _draft.ChangeBattleSpeed(direction); break;

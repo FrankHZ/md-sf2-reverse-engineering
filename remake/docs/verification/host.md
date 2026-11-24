@@ -3169,6 +3169,64 @@ adapter Release and necessary Debug build, direct source/docs/private checks and
 planner/actual CI. The unchanged source-path limitation in normal toolchain verification and completed
 old aggregate failures remain failures; this UI change does not require another full aggregate run.
 
+## Hold speed preference (#2168)
+
+Use the [Hold speed observer](../../game/probes/engine_hold_speed_observation.gd) with the
+[locked Debug adapter](../development-and-verification.md#locked-net-workflow). Load the worktree's
+private configuration in the launch process and set fresh worktree-local TEMP and application-data
+directories. Select the [complete pre-voyage package](../content/asset-inventory.md#complete-private-package-and-rebuild-2156).
+Set `SF2_PRIVATE_EXPLORATION_CONTENT`, `SF2_PRIVATE_BATTLE_SCENE_CONTENT` and
+`SF2_PRIVATE_ENTRY_CONTENT` to its world, main scenes and entry files. Select each file in
+`opening-inputs` by the environment variable named in its basename.
+
+Use an external disposable `SF2_SAVE_ROOT` and a fresh `SF2_SAVE_NAMESPACE` starting with
+`issue2168-`. In that namespace's `sf2-preferences/input.json`, seed this format 1 preference:
+
+```json
+{"formatVersion":1,"bindings":{"accelerate":{"keys":["Q"],"buttons":[],"axes":["RightY-"]}}}
+```
+
+Set `SF2_HOLD_SPEED_START` to an absolute path below the worktree's ignored `local/` with the
+controlled field start:
+
+```json
+{"start":{"map":"map-3","player":"entity-0","position":{"x":32,"y":13},"facing":0,"speed":32,"flags":[0,1,2,32,33,66,80,600,602,603,604,605]}}
+```
+
+```powershell
+$probe = @('--audio-driver','Dummy','--max-fps','60','--resolution','1920x1080',
+    '--path','remake/game','--script','res://probes/engine_hold_speed_observation.gd')
+$env:SF2_HOLD_SPEED_CASE = 'field'
+& $env:GODOT_BIN --headless @probe
+$env:SF2_HOLD_SPEED_CASE = 'battle'
+$battle = (Resolve-Path -LiteralPath 'remake/content/authored/stone-court.json').Path
+& $env:GODOT_BIN @probe -- --authored-package $battle
+# For the default Shift check, set a new, empty issue2168- namespace.
+$env:SF2_HOLD_SPEED_CASE = 'default-shift'
+& $env:GODOT_BIN --headless @probe
+```
+
+The battle command cold-starts on the same preferences and switches focus to a native sibling
+window. Add `--headless` to exercise just the production focus signal handlers. Record each
+process exit and its single JSON result. Inspect the log for script or adapter errors.
+
+**Confirmed, bounded remake.** The complete Map3 field case loaded 1.5× from the missing field,
+cycled the draft through all four rates, canceled 3×, and applied 2.5× and 3× on separate visits.
+With 3× applied, releasing Q while RightY− was active retained 3×, and neutralizing the axis
+restored 1×. Menu entry suspended ordinary field ticks and required a fresh hold on return.
+Fresh preferences separately exercised default Shift at 1.5× and release at 1×.
+
+The cold authored battle loaded 3×. It serviced 15 normal steps and 36 held steps over two
+12-frame samples, with the same actor, round, queue, selection, gold and RNG after hold input
+alone. Native focus transfer disarmed the hold and paused service. On return, a fresh press
+activated 3× again. The Chinese row and Controls Help showed the installed rate. Cancel
+discarded Defaults, then Apply restored 1.5× and retained the remap. Inputs were injected
+Godot events. Physical controllers and sustained wall-time ratios remain **Unknown**.
+
+An initial field run failed at Apply selection because the observer assumed the same root
+focus after leaving Display and Gameplay aids. The corrected observer seeks the Apply row.
+The field runs reported two ObjectDB instances at shutdown. All passing runs exited normally.
+
 ## Held battle rate (#1619 B/C)
 
 The [presentation owner](../godot/presentation.md#held-battle-acceleration-1619-bc) defines the
