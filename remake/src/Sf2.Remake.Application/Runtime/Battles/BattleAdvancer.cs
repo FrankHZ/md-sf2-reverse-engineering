@@ -90,8 +90,6 @@ internal static class BattleAdvancer
                     var pending = BattleActionCommitter.Publish(skipped, battle, actor.Actor, actor.Position, [], observations, rules);
                     return new(pending, observations.AsReadOnly(), pending.StopReason);
                 }
-                if (MuddleRules.Confused(actor.Status))
-                    throw new BattleRuleException("muddle-automatic-turn", "actor.status", true);
                 bool temporary = BattleControlRules.UsesTemporaryAllyAi(actor);
                 if (actor.Control == BattleControl.Player && !temporary)
                 {
@@ -108,7 +106,10 @@ internal static class BattleAdvancer
                 var strategyRef = temporary ? SourceAllyAi.Strategy : actor.AiStrategy;
                 if (strategyRef is not { } strategy || !temporary && actor.Control != BattleControl.Automatic)
                     throw new BattleRuleException("control-ai", "placements.control/aiStrategy", true);
-                var action = BattleDecisionRules.Decide(rules.Decision(strategy), battle, actor.Actor, rules.Physical, rules.Progression, rules.Actions);
+                var decisionRule = rules.Decision(strategy);
+                if (MuddleRules.Confused(actor.Status) && decisionRule is not (SourceEnemyAi or SourceAllyAi))
+                    throw new BattleRuleException("muddle-automatic-turn", "actor.status", true);
+                var action = BattleDecisionRules.Decide(decisionRule, battle, actor.Actor, rules.Physical, rules.Progression, rules.Actions);
                 SessionResult delivery;
                 if (action.QueueOnly && (battle.Definition.LeaderCleanup is not null || BattleActionCommitter.NeedsAfterTurn(battle, actor)))
                 {

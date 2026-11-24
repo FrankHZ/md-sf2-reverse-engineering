@@ -49,6 +49,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         Restrict(mode);
         var targets = _battle.Actors.Where(unit => unit.Hp > 0 && unit.Position is not null && unit.Faction != Actor.Faction)
             .OrderBy(unit => unit.ProcessingOrder).ToArray();
+        targets = BattleOffense.PursuitTargets(_battle, Actor, targets);
         if (targets.Length == 0 || Actor.Move == 0)
         {
             _effects.Add(new("ai-command-move" + (mode + 1), actorRef, After: -1));
@@ -73,7 +74,8 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
 
     private BattleAutomaticAction? Support()
     {
-        var action = OnGrid(grid => EnemySupportDecision.Resolve(_battle, actorRef, actions ?? [physical], grid));
+        var action = MuddleRules.Confused(Actor.Status) ? null :
+            OnGrid(grid => EnemySupportDecision.Resolve(_battle, actorRef, actions ?? [physical], grid));
         _effects.Add(new("ai-command-support", actorRef, After: action is null ? -1 : 0));
         return action;
     }
@@ -167,9 +169,17 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         return WeightedMovement.Build(costs, Offset(Actor.Position!), Actor.Move * 2);
     }
     private bool Occupied(MapPosition position) => _battle.Actors.Any(unit => unit.Hp > 0 && unit.Position == position);
-    private BattleAutomaticAction? Attack() => OnGrid(grid =>
-        EnemySpellDecision.Attack(_battle, actorRef, physical, actions ?? [physical], grid));
-    private BattleAutomaticAction? Heal() => OnGrid(grid =>
+    private BattleAutomaticAction? Attack()
+    {
+        var grid = Grid();
+        var search = EnemySpellDecision.Attack(_battle, actorRef, physical, actions ?? [physical], grid);
+        if (search.Choice is { } choice) return choice with { MovementGrid = grid };
+        _battle = search.Battle;
+        _effects.AddRange(search.Effects);
+        if (search.HasReachable) _effects.Add(new("ai-attack-unselected", actorRef));
+        return null;
+    }
+    private BattleAutomaticAction? Heal() => MuddleRules.Confused(Actor.Status) ? null : OnGrid(grid =>
         EnemySpellDecision.Heal(_battle, actorRef, actions ?? [physical], grid));
     private BattleAutomaticAction? OnGrid(Func<WeightedMovementGrid, BattleAutomaticAction?> decide)
     {

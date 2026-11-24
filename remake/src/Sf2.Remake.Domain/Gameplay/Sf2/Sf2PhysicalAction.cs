@@ -22,16 +22,28 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         return new(physical.MinimumRange, physical.MaximumRange);
     }
     public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action) =>
-        Array.AsReadOnly(battle.Actors.Where(target => target.Hp > 0 && target.Position is not null &&
-            target.Faction != battle.GetActor(actor).Faction).Select(target => target.Actor).ToArray());
+        QueryTargets(battle, actor, action, OffensiveTargetSide.Opponents);
+    public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action, OffensiveTargetSide side)
+    {
+        var attacker = battle.GetActor(actor);
+        var roster = side == OffensiveTargetSide.Opponents ? battle.Actors : BattleOffense.OrderedRoster(battle, attacker, side);
+        return Array.AsReadOnly(roster.Where(target => target.Hp > 0 && target.Position is not null &&
+            BattleOffense.Matches(attacker, target, side)).Select(target => target.Actor).ToArray());
+    }
     public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef target)
-    { _ = RequireAction(battle, actor, action); return RequireTarget(battle, actor, destination, target); }
+        => RequireTarget(battle, actor, destination, action, target, OffensiveTargetSide.Opponents);
+    public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
+        BattleActionRef action, ActorRef target, OffensiveTargetSide side)
+    { _ = RequireAction(battle, actor, action); return RequireTarget(battle, actor, destination, target, side); }
     public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
-        BattleActionRef action, ActorRef? target, IBattleProgressionRule progression)
+        BattleActionRef action, ActorRef? target, IBattleProgressionRule progression) =>
+        Prepare(battle, actor, destination, action, target, progression, OffensiveTargetSide.Opponents);
+    public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
+        BattleActionRef action, ActorRef? target, IBattleProgressionRule progression, OffensiveTargetSide side)
     {
         _ = RequireAction(battle, actor, action);
-        return Prepare(battle, actor, destination, target ?? throw new BattleRuleException("physical-target", "target"), progression);
+        return Prepare(battle, actor, destination, target ?? throw new BattleRuleException("physical-target", "target"), progression, side);
     }
     public int EstimateDamage(EngineBattleState battle, ActorRef actor, ActorRef target)
     {
@@ -66,19 +78,23 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
     }
 
     internal static BattleActorState RequireTarget(EngineBattleState battle, ActorRef actorRef,
-        MapPosition destination, ActorRef targetRef)
+        MapPosition destination, ActorRef targetRef, OffensiveTargetSide side = OffensiveTargetSide.Opponents)
     {
-        _ = RequireActor(battle, actorRef);
+        var range = RequireActor(battle, actorRef);
+        var actor = battle.GetActor(actorRef);
         var target = battle.Actors.SingleOrDefault(a => a.Actor == targetRef);
-        if (target is null || target.Hp == 0 || target.IsAlly == battle.GetActor(actorRef).IsAlly)
+        if (target is null || target.Hp == 0 || target.Position is null || !BattleOffense.Matches(actor, target, side))
             throw new BattleRuleException("physical-target", "target");
         if (target.Definition.Physical is null)
             throw new BattleRuleException("physical-definition", "target.physical", true);
-        var range = BattleEquipment.Physical(battle.GetActor(actorRef))!;
-        if (!BattleRange.Contains(destination, target.Position!, range.MinimumRange, range.MaximumRange))
+        if (!InRange(actor, target, destination, range))
             throw new BattleRuleException("target-range", "target");
         return target;
     }
+
+    internal static bool InRange(BattleActorState actor, BattleActorState target, MapPosition destination, PhysicalActorDefinition range) =>
+        actor.Actor == target.Actor && destination == target.Position && BattleOffense.SelfPhysicalUsesOrigin(actor) ||
+        BattleRange.Contains(destination, target.Position!, range.MinimumRange, range.MaximumRange);
 
     internal static BattleEffect? MonsterBreathRoll(EngineBattleState battle, ActorRef actor, ActorRef target)
     {
@@ -91,12 +107,15 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         new("kiwi", level >= 50 ? (byte)4 : level >= 40 ? (byte)3 : level >= 32 ? (byte)2 : (byte)1);
 
     internal static BattleActionResolution Prepare(
-        EngineBattleState current, ActorRef actorRef, MapPosition destination, ActorRef targetRef, IBattleProgressionRule progression)
+        EngineBattleState current, ActorRef actorRef, MapPosition destination, ActorRef targetRef,
+        IBattleProgressionRule progression, OffensiveTargetSide side = OffensiveTargetSide.Opponents)
     {
         BattleMovement.RequireStop(current, actorRef, destination);
         _ = RequireActor(current, actorRef);
         var actor = current.GetActor(actorRef);
-        var target = RequireTarget(current, actorRef, destination, targetRef);
+        var target = RequireTarget(current, actorRef, destination, targetRef, side);
+        bool self = actorRef == targetRef;
+        bool opposing = side == OffensiveTargetSide.Opponents;
         if (!SilenceRules.SupportedInBattle(actor.Status, current.Definition.Poison) ||
             !SilenceRules.SupportedInBattle(target.Status, current.Definition.Poison))
             throw new BattleRuleException("physical-status", "actors.status", true);
@@ -114,7 +133,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
                 var spell = current.Definition.AttackSpells.GetValueOrDefault(MonsterBreathSpell(actor.Level))
                     ?? throw new BattleRuleException("monster-breath-content", "spells.kiwi", true);
                 var breath = Sf2AttackSpellAction.PrepareAttack(current.With(mainSeed: seed),
-                    actorRef, destination, spell, targetRef, progression, itemSlot: null);
+                    actorRef, destination, spell, targetRef, progression, itemSlot: null, side: side);
                 return breath with { ConstructionEffects = Array.AsReadOnly<BattleEffect>([conversion, .. breath.ConstructionEffects]) };
             }
         }
@@ -134,7 +153,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         bool ineffective = current.Definition.TarosEffectiveness?.PrepareInitial(actor, target) ?? false;
         var first = Hit("physical-first", counter: false);
         bool counterRequested = first.CounterRolled;
-        if (actorHp > 0 && targetHp > 0 && first.DoubleRolled)
+        if (opposing && actorHp > 0 && targetHp > 0 && first.DoubleRolled)
         {
             var second = Hit("physical-second", counter: false);
             // Source DetermineDoubleAndCounter only sets successful toggles. A failed second
@@ -142,39 +161,33 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             counterRequested |= second.CounterRolled;
         }
         var counterRange = BattleEquipment.Physical(target)!;
-        bool counterPerformed = actorHp > 0 && targetHp > 0 && counterRequested && !counterRange.CannotCounter && (target.Status & 0xC1) == 0 &&
+        bool counterPerformed = opposing && actorHp > 0 && targetHp > 0 && counterRequested && !counterRange.CannotCounter && (target.Status & 0xC1) == 0 &&
             !(current.Definition.TarosEffectiveness?.IsTaros(actor) ?? false) &&
             BattleRange.Contains(target.Position!, destination, counterRange.MinimumRange, counterRange.MaximumRange);
         if (counterPerformed) _ = Hit("physical-counter", counter: true);
         // No third/double-counter dispatch exists. A surviving counter still consumes its own
         // double/counter draws, whose toggles cannot schedule another strike.
 
-        bool targetDead = targetHp == 0, actorDead = actorHp == 0;
         BattleOutcomeSelection.RequireContinuing(current, reactions);
-        var ally = actor.IsAlly ? actor : target;
-        var enemy = actor.IsAlly ? target : actor;
-        bool allyDead = actor.IsAlly ? actorDead : targetDead;
-        bool enemyDead = actor.IsAlly ? targetDead : actorDead;
+        foreach (var reaction in reactions) BattleOffense.RequireDeathAccounting(current, reaction);
+        var recipient = actor.IsAlly ? actor : target.IsAlly && counterPerformed ? target : null;
         BattleActionReward? reward = null;
-        if (!allyDead && (actor.IsAlly || counterPerformed))
+        if (recipient is not null && BattleOffense.Survives(recipient, reactions))
         {
-            // Only a surviving ally who actually attacked earns an award (including a counter).
-            if (ally.Exp is null) throw new BattleRuleException("unspecified-exp", "actor.exp", true);
             var award = BattleProgressionRules.Award(progression, inventory.With(mainSeed: seed),
-                inventory.GetActor(ally.Actor), BattleActionKind.Physical, reactions.AsReadOnly());
+                inventory.GetActor(recipient.Actor), BattleActionKind.Physical, reactions.AsReadOnly());
             seed = award.Seed;
             effects.AddRange(award.Effects);
-            reward = new(ally.Actor, award.Amount);
+            reward = new(recipient.Actor, award.Amount);
         }
-        uint? gold = enemyDead ? BattleProgressionRules.Invoke(progression.Identity, "gold", () => progression.Gold(
-            current.Gold ?? throw new BattleRuleException("unspecified-gold", "battle.gold", true), enemy.Definition.Physical!.Gold)) : current.Gold;
-        if (enemyDead)
+        uint? gold = current.Gold;
+        foreach (var reaction in reactions.Where(r => BattleOffense.PaysGold(current, r)))
         {
-            effects.Add(new("gold", ally.Actor, current.Gold, gold));
-            if (ally.Kills is null) throw new BattleRuleException("unspecified-kills", "actor.kills", true);
+            var casualty = current.GetActor(reaction.Target);
+            gold = BattleProgressionRules.Invoke(progression.Identity, "gold", () => progression.Gold(
+                current.Gold ?? throw new BattleRuleException("unspecified-gold", "battle.gold", true), casualty.Definition.Physical!.Gold));
+            effects.Add(new("gold", reaction.Actor, current.Gold, gold));
         }
-        if (allyDead && ally.Defeats is null)
-            throw new BattleRuleException("unspecified-defeats", "actor.defeats", true);
         return new(PreparedState(gold), actorRef, destination, reactions.AsReadOnly(), reward,
             effects.AsReadOnly(), []);
 
@@ -186,7 +199,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         {
             var attacker = counter ? target : actor;
             var defender = counter ? actor : target;
-            var targetPosition = counter ? destination : target.Position!;
+            var targetPosition = counter || self ? destination : target.Position!;
             ushort hp = counter ? actorHp : targetHp;
             var profile = attacker.Definition.Physical!;
             ushort status = defender.Status;
@@ -215,7 +228,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             seed = strike.Seed;
             effects.Add(new(kind, attacker.Actor, Target: defender.Actor));
             AddRolls(strike.Rolls, attacker.Actor, defender.Actor);
-            ushort attackerHp = counter ? targetHp : actorHp;
+            ushort attackerHp = self ? strike.Hp : counter ? targetHp : actorHp;
             BattleReaction? recoil = null;
             if (CurseRules.CanRecoil(attacker, strike.Dodged, strike.Hp) &&
                 Roll("curse-recoil", CurseRules.RecoilRange, attacker.Actor, defender.Actor) != 0)
@@ -239,7 +252,8 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             }
             if (recoil is not null)
                 effects.Add(new(recoil.Action, recoil.Actor, recoil.HpBefore, recoil.HpAfter, Target: recoil.Target));
-            (actorHp, targetHp) = counter ? (strike.Hp, attackerHp) : (attackerHp, strike.Hp);
+            (actorHp, targetHp) = self ? (attackerHp, attackerHp) :
+                counter ? (strike.Hp, attackerHp) : (attackerHp, strike.Hp);
             // WriteBattlesceneScript calls DropEnemyItem after each effect, before
             // second/counter dispatch and GiveExpAndGold. HP/status playback is later.
             var dropped = EnemyItemDropRules.Prepare(inventory.With(mainSeed: seed), attacker.Actor,

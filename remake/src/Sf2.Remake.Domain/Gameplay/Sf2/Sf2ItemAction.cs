@@ -59,22 +59,29 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         return new(item.MinimumRange, item.MaximumRange, Item: item);
     }
     public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action) =>
+        QueryTargets(battle, actor, action, OffensiveTargetSide.Opponents);
+    public IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action, OffensiveTargetSide side) =>
         RequireAction(battle, actor, action) switch
         {
-            { AttackItem: not null } => Sf2AttackSpellAction.TargetChoices(battle, actor),
+            { AttackItem: not null } => Sf2AttackSpellAction.TargetChoices(battle, actor, side),
+            _ when side == OffensiveTargetSide.OwnSide => throw new BattleRuleException("offensive-target-side", "item.slot"),
             { SupportItem: { } support } => Sf2SupportSpellAction.TargetChoices(battle, actor, support.Effect),
             { RetreatItem: not null } or { Item.Effect: HealingItemEffect.FullPartyHp } => [actor],
             _ => HealingTargetRules.QueryTargets(battle, actor),
         };
     public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
-        BattleActionRef action, ActorRef target)
+        BattleActionRef action, ActorRef target) =>
+        RequireTarget(battle, actor, destination, action, target, OffensiveTargetSide.Opponents);
+    public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
+        BattleActionRef action, ActorRef target, OffensiveTargetSide side)
     {
         var admission = RequireAction(battle, actor, action);
         if (admission.AttackItem is { } attack)
         {
-            _ = Sf2AttackSpellAction.ResolveTargets(battle, actor, destination, attack.Effect, target);
+            _ = Sf2AttackSpellAction.ResolveTargets(battle, actor, destination, attack.Effect, target, side);
             return battle.GetActor(target);
         }
+        if (side == OffensiveTargetSide.OwnSide) throw new BattleRuleException("offensive-target-side", "item.slot");
         if (admission.SupportItem is { } support)
         {
             _ = Sf2SupportSpellAction.Targets(battle, actor, destination, support.Effect, target);
@@ -90,12 +97,16 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         return battle.GetActor(actor);
     }
     public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
-        BattleActionRef action, ActorRef? target, IBattleProgressionRule progression)
+        BattleActionRef action, ActorRef? target, IBattleProgressionRule progression) =>
+        Prepare(battle, actor, destination, action, target, progression, OffensiveTargetSide.Opponents);
+    public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
+        BattleActionRef action, ActorRef? target, IBattleProgressionRule progression, OffensiveTargetSide side)
     {
         var admission = RequireAction(battle, actor, action);
         if (admission.AttackItem is { } attack)
             return Sf2AttackSpellAction.PrepareAttack(battle, actor, destination, attack.Effect,
-                target, progression, action.ItemSlot, attack);
+                target, progression, action.ItemSlot, attack, side);
+        if (side == OffensiveTargetSide.OwnSide) throw new BattleRuleException("offensive-target-side", "item.slot");
         if (admission.SupportItem is { } support)
             return Sf2SupportSpellAction.PrepareEffect(battle, actor, destination, support.Effect, target,
                 progression, support, action.ItemSlot);

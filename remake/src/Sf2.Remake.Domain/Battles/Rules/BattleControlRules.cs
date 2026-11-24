@@ -9,7 +9,7 @@ internal static class BattleControlRules
 {
     internal static bool UsesTemporaryAllyAi(BattleActorState actor) =>
         actor.IsAlly && actor.Control == BattleControl.Player &&
-        MuddleRules.Present(actor.Status) && !MuddleRules.Confused(actor.Status);
+        MuddleRules.Present(actor.Status);
 
     internal static BattleControlAdmission Classify(bool ally, ushort hp, int x, int y,
         ushort status, ushort? activationWord, bool allyAutoBattle, bool opponentControl)

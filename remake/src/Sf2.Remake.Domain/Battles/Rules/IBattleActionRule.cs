@@ -21,6 +21,17 @@ internal interface IBattleActionRule
         BattleActionRef action, ActorRef target);
     BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef? target, IBattleProgressionRule progression);
+
+    IReadOnlyList<ActorRef> QueryTargets(EngineBattleState battle, ActorRef actor, BattleActionRef action, OffensiveTargetSide side) =>
+        side == OffensiveTargetSide.Opponents ? QueryTargets(battle, actor, action) : throw UnsupportedSide();
+    BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
+        BattleActionRef action, ActorRef target, OffensiveTargetSide side) =>
+        side == OffensiveTargetSide.Opponents ? RequireTarget(battle, actor, destination, action, target) : throw UnsupportedSide();
+    BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,
+        BattleActionRef action, ActorRef? target, IBattleProgressionRule progression, OffensiveTargetSide side) =>
+        side == OffensiveTargetSide.Opponents ? Prepare(battle, actor, destination, action, target, progression) : throw UnsupportedSide();
+
+    private static BattleRuleException UnsupportedSide() => new("offensive-target-side", "rules.action", true);
 }
 
 internal interface IPhysicalActionRule : IBattleActionRule
@@ -44,9 +55,20 @@ internal static class BattleActionRules
     }
 
     internal static BattleActionResolution Prepare(IBattleActionRule rule, EngineBattleState battle,
-        ActorRef actor, MapPosition destination, BattleActionRef action, ActorRef? target, IBattleProgressionRule progression) =>
+        ActorRef actor, MapPosition destination, BattleActionRef action, ActorRef? target,
+        IBattleProgressionRule progression, OffensiveTargetSide side = OffensiveTargetSide.Opponents, bool guarded = false) =>
         Invoke(rule, "prepare", () =>
         {
+            if (side == OffensiveTargetSide.OwnSide &&
+                (BattleOffense.AutomaticSide(battle.GetActor(actor)) != side || target is not { } ownTarget ||
+                 !BattleOffense.OwnTarget(battle, battle.GetActor(actor), ownTarget) || action.Kind is not (BattleActionKind.Physical or BattleActionKind.AttackSpell or BattleActionKind.Item)))
+                throw new BattleRuleException("offensive-target-side", "action");
+            if (guarded)
+            {
+                if (side != OffensiveTargetSide.OwnSide || destination != battle.GetActor(actor).Position)
+                    throw new BattleRuleException("muddle-inaction", "action");
+                return BattleOffense.PrepareGuarded(battle, actor, progression);
+            }
             var admission = rule.RequireAction(battle, actor, action);
             // These spells require a selected center even when silence suppresses their effects.
             if (target is null)
@@ -60,10 +82,10 @@ internal static class BattleActionRules
                 };
                 if (missingTarget is not null) throw new BattleRuleException(missingTarget, "target");
             }
-            if (target is { } victim) _ = rule.RequireTarget(battle, actor, destination, action, victim);
-            var prepared = Sf2.Remake.Domain.Gameplay.Sf2.SilenceRules.Suppress(battle, actor, destination, action, admission)
-                ?? rule.Prepare(battle, actor, destination, action, target, progression);
-            prepared.Validate(battle, actor, destination, action, target, admission);
+            if (target is { } victim) _ = rule.RequireTarget(battle, actor, destination, action, victim, side);
+            var prepared = (SilenceRules.Suppress(battle, actor, destination, action, admission)
+                ?? rule.Prepare(battle, actor, destination, action, target, progression, side)) with { Side = side };
+            prepared.Validate(battle, actor, destination, action, target, admission, side);
             if (prepared.Reward is { } reward)
                 BattleProgressionRules.Preflight(progression, prepared.Prepared.GetActor(reward.Actor), reward.Amount,
                     prepared.Prepared.MainSeed, battle.Definition.Poison);

@@ -199,12 +199,12 @@ public sealed class MuddleTurnTests
     }
 
     [Theory]
-    [InlineData(true, 0x38)]
-    [InlineData(false, 0x38)]
-    public void UnimplementedMuddledAutomaticEntriesRefuseWithoutPublishingTurnWork(bool player, int status)
+    [InlineData(0x18)]
+    [InlineData(0x38)]
+    public void ConfusionWithAnUnsupportedStrategyRefusesBeforePublishingTurnWork(int status)
     {
-        var actor = player ? Mage : Smoke;
-        var battle = Status(Battle(), actor, (ushort)status).With(queue: [new(actor, 30), new(Priest, 20), new(null, 255)], cursor: 0);
+        var battle = Status(Battle(d => d["encounters"]![0]!["placements"]![2]!["aiStrategy"] = "stay"), Smoke, (ushort)status)
+            .With(queue: [new(Smoke, 30), new(Priest, 20), new(null, 255)], cursor: 0);
         var result = Advance(battle);
         Assert.Equal("muddle-automatic-turn", result.Failure!.Code);
         Assert.Equal(SessionStopReason.Unsupported, result.StopReason);

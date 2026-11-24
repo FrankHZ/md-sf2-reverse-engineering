@@ -249,7 +249,9 @@ public sealed class BattleSceneState
     public bool IsInstantDeath => HasReaction && Reaction.Kind == BattleReactionKind.InstantDeath;
     public bool IsCurseRecoil => HasReaction && Reaction.Kind == BattleReactionKind.CurseRecoil;
     public bool CurseStoppedAttack => _action?.Inaction?.DueToCurse == true;
+    public int? MuddleActionMessage => _action?.MuddleMessage;
     public string ActionKind => IsFieldDeath ? "field-death" : StunTurn is not null ? "stun-turn" : IsPoisonTurn ? "poison-turn" : Phase == BattleScenePhase.SlowExpiredMessage ? "slow-turn" : Phase == BattleScenePhase.AttackExpiredMessage ? "attack-turn" : Phase == BattleScenePhase.BoostExpiredMessage ? "boost-turn" : Phase == BattleScenePhase.MuddleTurnMessage ? "muddle-turn" : IsSilenceTurn ? "silence-turn" : IsSleepTurn ? "sleep-turn" : IsSilencedCast ? "silenced-cast" :
+        MuddleActionMessage is not null ? "muddle-inaction" :
         _action?.Inaction is { } stopped ? (stopped.DueToCurse ? "curse-inaction" : "stun-inaction") :
         Laser is not null ? "prism-laser" : Reaction.Action;
     public string ReactionKind => IsFieldDeath ? "Removal" : IsAfterTurnNotice ? "Status" : !HasReaction ? "None" : Reaction.Kind.ToString();
@@ -295,13 +297,20 @@ public sealed class BattleSceneState
         ? Action.Reactions[ReactionIndex - 1].Target
         : Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.CureStunMessage or BattleScenePhase.CureCurseMessage or BattleScenePhase.SupportDefenseMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop or BattleScenePhase.ActorExit
             ? Target!.Value : Actor;
-    public ActorRef? DisplayedAlly => IsAfterTurnNotice || IsFieldDeath ? null : Laser is not null
+    private bool OwnSideAttack => _action?.Side == OffensiveTargetSide.OwnSide;
+    private ActorRef OffensiveDisplayed => HasReaction && Phase is BattleScenePhase.TargetEnter or
+        BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.DeathMessage or
+        BattleScenePhase.SleepMessage or BattleScenePhase.StunMessage or BattleScenePhase.PoisonMessage or
+        BattleScenePhase.SilenceMessage ? Reaction.Target : Action.Actor;
+    public ActorRef? DisplayedAlly => IsAfterTurnNotice || IsFieldDeath ? null : OwnSideAttack
+        ? Action.Prepared.GetActor(OffensiveDisplayed).IsAlly ? OffensiveDisplayed : null : Laser is not null
         ? HasReaction && LaserTargetsVisible && Action.Prepared.GetActor(Reaction.Target).IsAlly ? Reaction.Target : null : Item is not null || Spell is not null || FriendlySupport
         ? Action.Prepared.GetActor(RecoveryDisplayed).IsAlly ? RecoveryDisplayed : null
         : Action.Prepared.GetActor(Actor).IsAlly ? Actor : Target;
     private bool LaserTargetsVisible => Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or
         BattleScenePhase.ResultMessage or BattleScenePhase.DeathMessage;
-    public ActorRef? DisplayedEnemy => IsAfterTurnNotice || IsFieldDeath ? null : Item is not null || Spell is not null || FriendlySupport
+    public ActorRef? DisplayedEnemy => IsAfterTurnNotice || IsFieldDeath ? null : OwnSideAttack
+        ? !Action.Prepared.GetActor(OffensiveDisplayed).IsAlly ? OffensiveDisplayed : null : Item is not null || Spell is not null || FriendlySupport
         ? !Action.Prepared.GetActor(RecoveryDisplayed).IsAlly ? RecoveryDisplayed : null
         : Laser is not null ? HasReaction && LaserTargetsVisible && !Action.Prepared.GetActor(Reaction.Target).IsAlly ? Reaction.Target : Action.Actor
         : IsCurseRecoil ? Action.Reactions[ReactionIndex - 1].Target
@@ -436,10 +445,13 @@ internal static class BattleSceneContinuation
         switch (scene.Phase)
         {
             case BattleScenePhase.Initialize:
-                next = scene.Action.Inaction is null ? BattleScenePhase.ActionMessage : BattleScenePhase.PhysicalInactionMessage;
+                next = scene.Action.Inaction is null && scene.MuddleActionMessage is null
+                    ? BattleScenePhase.ActionMessage : BattleScenePhase.PhysicalInactionMessage;
                 break;
             case BattleScenePhase.PhysicalInactionMessage:
-                observations.Add(new(++sequence, revision, scene.ActionKind, scene.Actor, Target: scene.Target));
+                observations.Add(new(++sequence, revision, scene.ActionKind, scene.Actor, Target: scene.Target,
+                    Detail: scene.MuddleActionMessage?.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                if (scene.MuddleActionMessage is not null) goto case BattleScenePhase.EquipmentWearMessage;
                 next = BattleScenePhase.End;
                 break;
             case BattleScenePhase.ActionMessage:

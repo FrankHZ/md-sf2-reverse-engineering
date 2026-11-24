@@ -37,7 +37,8 @@ internal static class BattleDecisionRules
                     var action = decision.ChosenAction ?? new(BattleActionKind.Physical);
                     var selected = action.Kind == BattleActionKind.Physical ? physical :
                         actions?.Single(r => r.Kind == action.Kind) ?? throw new InvalidOperationException("Missing decision action rule.");
-                    _ = BattleActionRules.Prepare(selected, decision.Battle, actor, decision.Destination, action, target, progression);
+                    _ = BattleActionRules.Prepare(selected, decision.Battle, actor, decision.Destination, action, target, progression,
+                        decision.Side, decision.Guarded);
                 }
                 catch (BattleRuleException error) when (!error.Unsupported)
                 { throw new BattleDecisionRuleFault(rule.Identity, "decision-admission"); }

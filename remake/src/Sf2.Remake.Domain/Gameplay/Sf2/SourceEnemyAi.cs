@@ -39,7 +39,7 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         actions ??= [physical];
         var actor = current.GetActor(actorRef);
         if (actor.IsAlly || actor.Position is null || actor.Hp == 0 ||
-            !(MuddleRules.SupportedRankOne(actor.Status, current.Definition.Poison) && (actor.Status & 0xC0) == 0) ||
+            !(SilenceRules.SupportedInBattle(actor.Status, current.Definition.Poison) && (actor.Status & 0xC0) == 0) ||
             actor.Deployment.Initialization is not { } source || current.Regions is null)
             throw new BattleRuleException("source-ai-state", "actor.ai", true);
         if (actor.ActivationWord is not { } word)
@@ -119,12 +119,18 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         var legal = BattleMovement.Grid(prepared, actorRef);
         bool Occupied(MapPosition position) => current.Actors.Any(unit => unit.Hp > 0 && unit.Position == position);
         if (commandset == 0 && (Healing() ?? Support()) is { } treatment) return treatment;
-        if (EnemySpellDecision.Attack(prepared, actorRef, physical, actions) is { } attack)
+        var search = EnemySpellDecision.Attack(prepared, actorRef, physical, actions);
+        if (search.Choice is { } attack)
             return attack with { Effects = Array.AsReadOnly<BattleEffect>([
                 .. effects, new("ai-command-attack1", actorRef, After: 0), .. attack.Effects]) };
+        prepared = search.Battle;
+        effects.AddRange(search.Effects);
         effects.Add(new("ai-command-attack1", actorRef, After: -1));
         if (commandset != 0 && (Healing() ?? Support()) is { } fallback) return fallback;
-        if (commandset == 8 || targets.Length == 0)
+        if (commandset == 8)
+            return new(prepared, Array.AsReadOnly<BattleEffect>([.. effects, new("ai-stay", actorRef)]), actor.Position!, [actor.Position!]);
+        targets = BattleOffense.PursuitTargets(prepared, actor, targets);
+        if (targets.Length == 0)
             return new(prepared, Array.AsReadOnly<BattleEffect>([.. effects, new("ai-stay", actorRef)]), actor.Position!, [actor.Position!]);
         var costs = Costs();
         var scores = WeightedMovement.Build(costs, actor.Position.Y * 48 + actor.Position.X, 128);
@@ -137,8 +143,8 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         BattleMovement.RequireStop(prepared, actorRef, pursuit.Destination, legal);
         return new(prepared, effects.AsReadOnly(), pursuit.Destination, BattleMovement.Route(actor.Position, pursuit.MoveString));
 
-        BattleAutomaticAction? Healing() => Attempt("ai-command-heal1", EnemySpellDecision.Heal(prepared, actorRef, actions));
-        BattleAutomaticAction? Support() => Attempt("ai-command-support", EnemySupportDecision.Resolve(prepared, actorRef, actions));
+        BattleAutomaticAction? Healing() => Attempt("ai-command-heal1", MuddleRules.Confused(actor.Status) ? null : EnemySpellDecision.Heal(prepared, actorRef, actions));
+        BattleAutomaticAction? Support() => Attempt("ai-command-support", MuddleRules.Confused(actor.Status) ? null : EnemySupportDecision.Resolve(prepared, actorRef, actions));
         BattleAutomaticAction? Attempt(string kind, BattleAutomaticAction? action)
         {
             effects.Add(new(kind, actorRef, After: action is null ? -1 : 0));
