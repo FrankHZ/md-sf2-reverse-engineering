@@ -457,9 +457,9 @@ Cancel or a complete right-click returns to the caller. Cursor and detail pages 
 [Reader, return and card observation](battle-ui-composition.md#shared-description-reading-and-inspection-return)
 
 The selected spell reader describes the chosen level on Battle Magic and field Prepare Magic.
-Movement, Main, Magic, Item and Target show the current action and upcoming eligible entries from
-the generated queue. [Spell reader](battle-ui-composition.md#selected-spell-descriptions) ·
-[Current-round order](battle-ui-composition.md#current-round-order-2065)
+The shared battle view leaves the action strip unmounted and gives its space back to the
+battlefield. [Spell reader](battle-ui-composition.md#selected-spell-descriptions) ·
+[Current-round display status](battle-ui-composition.md#current-round-order-2065)
 
 ### From entry to committed action
 
@@ -601,7 +601,6 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   and reading comfort in the ordinary game remain **Unknown**. The most useful checks are whether
   focus returns to the intended row and whether a player can read the next action after a long
   choice or battle result. Text guidance and contextual hints retain their own design owners.
-  Review the current-round order in the ordinary battle decision layout. [Actual queue](battle-ui-composition.md#current-round-order-2065) ·
   [Human review](../verification/host.md#later-physical-focus-human-checklist-1456) ·
   [Optional guidance](modernization-design.md#optional-objective-and-destination-guidance-1578) ·
   [Context hints](presentation.md#minimal-contextual-hints-1544)

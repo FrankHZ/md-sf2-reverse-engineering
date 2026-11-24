@@ -60,9 +60,10 @@ In scope: existing entry, field, party/preparation, service, host and battle pre
 their supported languages, windows, reading and return states. Keep the [implemented battle inspection and return paths](battle-interaction-baseline.md).
 
 The existing font, scale, input mappings, pause ownership and save eligibility bound these layouts.
-Remote services and an additional host Overview remain outside this design. The read-only
-current-round order sits below the round and terrain panels, with fixed-size text and an
-overflow count when fewer slots fit. [Current-round readout](battle-ui-composition.md#current-round-order-2065)
+Remote services and an additional host Overview remain outside this design. The shared battle
+view leaves the space below the round and terrain panels available to the battlefield. The
+current-round action strip is withdrawn in gameplay and DesignPreview, with redesign deferred.
+[Current-round display status](battle-ui-composition.md#current-round-order-2065)
 The battle Target phase uses one candidate change per fresh input, and choosing ordinary Stay
 commits in one gesture. The [battle input owner](battle-ui-composition.md#fresh-target-input-and-direct-stay)
 records the delivered behavior. The inspection Cursor page uses the shared board overlay to show

@@ -61,11 +61,7 @@ public sealed partial class BattleSessionView
     }
 
     private void RefreshDecisionMenu(BattleDecision decision, BattleActingStatus? acting)
-    {
-        var order = decision.Visible && (decision.Moving || decision.Page != Page.Commit)
-            ? _session!.QueryBattleRoundOrder() : null;
-        _menu.Present(decision, _result?.Failure, _input, acting, order);
-    }
+        => _menu.Present(decision, _result?.Failure, _input, acting);
 
     private bool HandleDecision(GameAction action)
     {

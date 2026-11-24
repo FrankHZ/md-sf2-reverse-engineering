@@ -1,102 +1,76 @@
 extends "res://probes/engine_battle_cursor_observation.gd"
 
-# A short authored battle through ordinary host input, reading the production panel.
-func rect(r: Dictionary) -> Rect2:
-    return Rect2(r.x, r.y, r.width, r.height)
-
-func order_geometry(label: String, expected: Dictionary) -> bool:
-    await frames(5)
+# Ordinary Main with the public attack-spell yard, or the production Battle tab in DesignPreview.
+func phase_geometry(label: String, cursor: String, decision: bool) -> bool:
+    await frames(4)
     var s := state()
     var layout: Dictionary = s.menu.layout
-    var order: Dictionary = layout.roundOrder
-    var area := rect(order.rect)
-    samples.append({"label":label, "client":[root.size.x, root.size.y], "order":order})
-    if not expect(order.visible and within(order.rect,s.viewport) and s.failure == null and s.scene.error == null,
-            label+": live readout fits without adapter errors"): return false
-    for panel in [layout.actorCard, layout.targetCard, layout.commandList, layout.terrainPanel, board().cellCursor]:
-        var bounds: Dictionary = panel.rect if panel.has("rect") else panel.drawn
-        if panel.visible and not expect(not area.intersects(rect(bounds)),label+": clears "+str(bounds)): return false
-    if not expect(not area.intersects(rect(layout.description)) and
-            (not layout.listVisible or not area.intersects(rect(layout.list))) and
-            (not layout.contextVisible or not area.intersects(rect(layout.context))),label+": clears decision panels"): return false
-    var entry := host.find_child("SystemMenuEntry",true,false) as Control
-    if not expect(not area.intersects(entry.get_global_rect()),label+": clears host entry"): return false
-    var panel := view.find_child("RoundOrder",true,false) as Control
-    if not expect(panel.mouse_filter == Control.MOUSE_FILTER_IGNORE and panel.focus_mode == Control.FOCUS_NONE,
-            label+": passive panel"): return false
-    for child in panel.get_children():
-        var reading := child as Label
-        if reading.is_visible_in_tree() and not expect(area.encloses(reading.get_global_rect()) and
-                reading.mouse_filter == Control.MOUSE_FILTER_IGNORE and reading.get_theme_font_size("font_size") >= 24 and
-                reading.get_line_count() == reading.get_visible_line_count() and reading.get_line_count() <= 2,
-                label+": full label fits and ignores pointer: "+str(reading.name)): return false
-    return expect(order.current == expected.current and order.next == expected.next and
-        order.prompt == expected.prompt and order.end == expected.end,label+": live order agrees across pages")
+    var b := board()
+    var mounted := view.find_child("RoundOrder",true,false) != null
+    samples.append({"label":label,"client":[root.size.x,root.size.y],"board":b.board,"cursor":b.cursorRole,
+        "orderMounted":mounted,"viewport":s.viewport,"menu":s.menu,"failure":s.failure,"error":s.scene.error})
+    if not expect(not mounted and not layout.has("roundOrder"),label+": no order node or layout entry"): return false
+    if not expect(s.failure == null and s.scene.error == null and b.cursorRole == cursor and s.menu.visible == decision,
+            label+": expected focus and decision visibility without errors"): return false
+    if not decision: return true
+    for panel in [layout.actorCard, layout.targetCard, layout.terrainPanel, layout.commandList]:
+        if panel.visible and not expect(within(panel.rect,s.viewport),label+": remaining panel fits"): return false
+    return expect(layout.descriptionVisible and within(layout.description,s.viewport),
+        label+": normal decision footer fits")
+
+func click_at(point: Vector2) -> void:
+    await move_mouse(point)
+    await mouse(point,true)
+    await mouse(point,false)
 
 func run() -> void:
     root.size = Vector2i(1920,1080)
-    host = load("res://Main.tscn").instantiate()
+    var preview := "--battle" in OS.get_cmdline_user_args()
+    var scene := "res://probes/previews/DesignPreview.tscn" if preview else "res://Main.tscn"
+    host = load(scene).instantiate()
     root.add_child(host)
     root.grab_focus()
     await frames(5)
     if host.find_child("BattleSessionView",true,false) == null:
         samples.append({"label":"startup-refusal","text":host.find_children("*","Label",true,false).map(func(n): return n.text)})
-        fail("Controlled authored battle did not start")
+        fail("Public authored battle did not start")
         return
     bind_events()
     if not await enter_battle(): return
     if not await wait_for(func(_s): return board().settled,"initial camera"): return
-    var start := state()
-    var order: Dictionary = start.menu.layout.roundOrder
-    samples.append({"label":"admitted-queue","order":order,"queue":start.turnOrder,"cursor":start.queueCursor})
-    var chinese := TranslationServer.get_locale().begins_with("zh")
-    var duplicate := "Long Controlled Combatant Name"
-    if not expect(order.current.begins_with("当前" if chinese else "Now") and order.next.size() >= 2 and
-            order.next.size() + order.overflow == 4 and
-            order.end == (("本回合另有 %d 次行动" if chinese else "+%d this round") % order.overflow),
-            "Localized current, bounded later slots and overflow"): return
-    if not expect(order.next[0].begins_with("1. 我方" if chinese else "1. Ally") and "(1,4)" in order.next[0].replace("（","(").replace("）",")") and
-            order.next[1].begins_with("2. 敌方" if chinese else "2. Enemy") and "(4,3)" in order.next[1].replace("（","(").replace("）",")") and
-            duplicate in order.next[0] and duplicate in order.next[1],"Same long name with distinct side, cell and slot"): return
-    if not await order_geometry("Movement",order): return
+    if not await phase_geometry("Movement","Movement",true): return
+    if not expect(state().menu.layout.actorCard.visible,"Movement retains the acting unit card"): return
+    if preview:
+        finish(true)
+        return
+
+    var initial := state()
     await act("cancel")
-    if not expect(state().inspection.active and not state().menu.layout.roundOrder.visible,"Inspection supersedes the decision HUD"): return
+    if not await inspect_page("Cursor") or not await phase_geometry("Free inspection","Inspection",false): return
+    await move_mouse(cell_point(initial.previewX+1,initial.previewY-1))
+    var inspected: Dictionary = state().inspection.cursor
+    if not expect(inspected.X == initial.previewX+1 and inspected.Y == initial.previewY-1,
+            "Mouse reaches the inspection cell"): return
     await act("cancel")
-    if not await order_geometry("Movement after inspection",order): return
-    if not expect(state().round == start.round and signature(state()) == signature(start),
-            "Inspection and refresh preserve gameplay state"): return
-    await act("confirm")
-    if not await order_geometry("Main",order): return
-    var before := signature(state())
-    await act("menu")
-    if not expect(host.find_child("SystemMenuView",true,false) != null and not state().menu.layout.roundOrder.visible,
-            "Host Menu hides order"): return
+    if not expect(signature(state()) == signature(initial),"Inspection leaves authoritative battle state intact"): return
+
+    await act("right")
+    if not await settled(): return
+    if not expect(state().previewX == initial.previewX+1,"Mapped movement reaches the adjacent legal cell"): return
     root.size = Vector2i(1600,900)
     await frames(5)
-    await act("cancel")
-    if not await order_geometry("Main after cover at 1600x900",order): return
-    if not expect(signature(state()) == before,"Host cover and resize preserve queue, RNG and resources"): return
-    var area := rect(state().menu.layout.roundOrder.rect)
-    await move_mouse(area.get_center())
-    await mouse(area.get_center(),true)
-    await mouse(area.get_center(),false)
-    if not expect(signature(state()) == before and state().menu.page == "Main","Readout does not capture a Main action"): return
-    for command in [1,2]:
-        for i in range(posmod(command-state().menu.command,4)): await act("down")
-        await act("confirm")
-        var page := "Magic" if command == 1 else "Items"
-        if not expect(state().menu.page == page,"Opened "+page): return
-        if not await order_geometry(page,order): return
-        await act("cancel")
-    await act("attack")
-    if not expect(state().menu.page == "Target" and state().candidate != null,"Real legal Target"): return
+    await act("confirm")
+    if not await phase_geometry("Main commands","None",true): return
+    var main := state()
+    var attack: Dictionary = main.menu.layout.commands[0]
+    if not expect(main.menu.page == "Main" and attack.visible and attack.enabled,"Main has a live Attack row"): return
+    await click_at(Vector2(attack.rect.x+attack.rect.width/2,attack.rect.y+attack.rect.height/2))
     if not await wait_for(func(_s): return board().settled,"target camera"): return
-    if not await order_geometry("Target",order): return
-    var target: Dictionary = state().actors.filter(func(a): return a.id == state().candidate)[0]
-    var at := cell_point(target.x,target.y)
-    await move_mouse(at)
-    await mouse(at,true)
-    await mouse(at,false)
-    var committed := state()
-    finish(expect(committed.scene.phase != null and not committed.menu.layout.roundOrder.visible and committed.failure == null,
-        "Legal complete click reaches delivery and hides the readout"))
+    if not await phase_geometry("Attack target","Target",true): return
+    var targeting := state()
+    if not expect(targeting.menu.page == "Target" and targeting.candidate != null and targeting.menu.layout.targetCard.visible,
+            "Main row click enters Target with the recipient card"): return
+    var target: Dictionary = targeting.actors.filter(func(a): return a.id == targeting.candidate)[0]
+    await click_at(cell_point(target.x,target.y))
+    if not await wait_for(func(s): return s.scene.phase != null,"target click reaches real delivery"): return
+    finish(await phase_geometry("Battle delivery","None",false))

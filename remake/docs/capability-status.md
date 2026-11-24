@@ -132,6 +132,13 @@ the loaded setup, cast, working layout and roof backing, bound ambient work, and
 consumed by the next field input. Settled walking with a parked raft berth is supported.
 Legacy slots keep their existing readers and anchors. [Snapshot cutover](application/opening-session-lifecycle.md#implemented-field-snapshot-cutover) · [Mechanism observations](application/pre-voyage-optional-locations.md#remaining-save-coverage)
 
+## Battle action preview
+
+**Withdrawn, redesign deferred.** Ordinary battles and DesignPreview leave the current-round
+strip unmounted, including its layout and pointer area. The acting card and board focus still
+identify the unit on turn. The dispatch queue and cursor remain part of battle continuation.
+[Battle composition and observation](godot/battle-ui-composition.md#current-round-order-2065)
+
 ## Battle continuation state
 
 **Implemented Domain/Application boundary, High:** a connected unfinished battle at settled player
