@@ -16,7 +16,8 @@ production input is the [complete #2156 selection](asset-inventory.md#complete-p
 Reuse the admitted original for the selected palette and frame. Where a caller needs an unmounted
 original, join its prepared index to that caller and verify Original first. Use only authorized
 materials for derivation and keep the existing private publication and public-asset boundaries.
-The [Map3 companion candidate](asset-inventory.md#map3-terrain-companion-2174) implements the first transport slice. Map4 production is next.
+The [static terrain selection](asset-inventory.md#pre-voyage-static-terrain-2175) carries the Map3
+companion and the other nineteen banks. Use this closed package as the input for later families.
 
 ## Coverage from the selected package
 
@@ -29,7 +30,7 @@ and scene/encounter consumers. The resulting 20 map banks contain 5,568 block bi
 
 | Order | Map visuals | Necessary selections and witnesses |
 | --- | --- | --- |
-| First | 3, 4 | Carry forward the accepted Map3 bank. Critical recovery is Map19 south exit → F640 Map4 → Map44 west return → rebuilt Map4. Prepare the first quake's six ordered script copies and F624's two load-time copies, including affected neighbors on both planes. Current Map4 terrain falls back to Original in HD. Preserve quake displacement, actor transformations, foreground, collision and F217. [Accepted #2167 route](../application/pre-voyage-campaign.md#castle-to-quake-handoff-from-a-player-save-2167) |
+| First | 3, 4 | Carry forward the accepted Map3 bank. Critical recovery is Map19 south exit → F640 Map4 → Map44 west return → rebuilt Map4. Prepare the first quake's six ordered script copies and F624's two load-time copies, including affected neighbors on both planes. Preserve quake displacement, actor transformations, foreground, collision and F217. [Accepted #2167 route](../application/pre-voyage-campaign.md#castle-to-quake-handoff-from-a-player-save-2167) |
 | Grans episode | 19, 20, 21, 40, 57, 60, 58 | Castle optional rooms and stair returns, tower exterior, F506 stair opening, early ascent and Battle07 aftermath. Battle01 and Battle07 draw from Maps57 and 58. Include open chests and battle return layouts as applicable. |
 | Overworld, villages and shrine | 66, 5, 43, 41, 42 | Map66 hosts Battles02/03/04/06, the departure ship-and-shore scene, and the southern shrine approach. Include Yeel's aboveground rooms, F650 cast, Hawel's house and repeat, the southern Map41 exterior and both reachable Map42 rooms. Select reachable area variants under the campaign agreement. |
 | Galam and departure | 16, 17, 18, 44, 73, 14 | Galam palace, prison and optional rooms, Battle05 on Map16 and the drawbridge in both gate states. Map44 includes the optional hold and changed queue, then the captain's departure. Observe the scripted Map66 layers, Map73 arrival and first Map14 control. |
@@ -42,7 +43,7 @@ replacement, additional Map60 ascent, and later Map14 movement.
 
 | Visual family | Prepared and installed | HD generation and actual consumer gap |
 | --- | --- | --- |
-| Field and tactical terrain | Retail `maps/index.json` joins atlases, tiles, palettes, blocks, layouts and animation operands. The selected world admits original atlases and block words. Only Map3 has HD terrain with context. | Publish L1 center/context banks for the listed maps. A scene can use separate clip and source origins. `BattlefieldTerrain` currently requests original blocks and uses fixed native source rectangles. It needs the same live variant resolution with its own projected layout and per-plane bounds. |
+| Field and tactical terrain | Retail `maps/index.json` joins atlases, tiles, palettes, blocks, layouts and animation operands. The selected world admits original atlases and block words. All twenty selected maps mount L1 banks. | Field drawing, pickup occlusion and tactical terrain resolve the current block and neighborhood. Each tactical plane retains its encounter origin, priority and logical tile footprint. [Static terrain evidence](asset-inventory.md#pre-voyage-static-terrain-2175) |
 | Water and other animated tiles | The prepared map index and original [map animation contract](../../../docs/research/world/map-content.md) identify source tables. Map66's DMA witness is in [map-animation-vdp-v1](../../../tests/fixtures/h3/map-animation-vdp-v1.json). Current world maps carry working layout events and the presenter supports plane scroll and palette effects. | **Confirmed** the world visual has a static atlas and no tile-animation field or phase selector. Treat source tile substitution as a separate consumer slice. Static water, scrolling and palette changes each have their own observations. Eight selected maps have referenced animation targets. **Unknown** which phases are drawn during the accepted visits. |
 | Field and tactical sprites | Retail `walking/index.json` includes ordinary directions, class appearances and special streams. The current world has 163 sprite IDs, including 252/254/255, and three alternate graphics names on 252. | 85 IDs have installed `hdDirections`. Field selection is gated by HD terrain and excludes shadow-removed and alternate graphics. Tactical sprites currently select Original, including scene-owned death frames. Cover both consumers and their actual special dispatches. |
 | Portraits | Retail `portraits/index.json` supplies atlases and replacements. The world mounts 46 portraits, 38 with `hdRaster`. | Bound complete eye/mouth replacement, mirror and member/class identity together. Field story and both Member surfaces presently tie portrait HD to terrain coverage. Resolve the saved mode and the selected portrait's own variant, including special-pose dialogue. |
@@ -104,8 +105,8 @@ A package binding records admission. Native projection records use.
   the active entry, field or battle owners as each slice lands. Prepare textures before exposing
   handles, keep borrowed textures valid, and key caches by the actual variant and content lifetime.
   Scope residency to the active visit/scene and measure a second visit and a toggle round trip.
-  The current first HD Apply decodes all admitted field HD rasters once, and field texture caches
-  can retain draws across map changes. Treat both as measured rollout costs.
+  Static terrain validates the active bank on HD preparation and retires field textures and
+  alpha masks on map changes. The Content reader retains the admitted encoded rasters.
 
 **Payload placement.** Choose a narrow, optional per-map HD terrain bank file beside the ordinary
 world inputs for the bulk rollout. Inline shapes remain readable for Map3 and existing packages.
@@ -306,29 +307,14 @@ selections independently of art coverage.
 
 ## Implementation order and acceptance
 
-The following stages remain for downstream tickets. Main-gate assigns one writer per shared path and
+Use the following implementation order. Main-gate assigns one writer per shared path and
 selects the accepted package at dispatch. Each ticket owns the listed paths and its matching
 probe or design paragraph. Expand an ownership list only after checking the actual caller chain.
 The `asset-inventory.md` trace receives consumer status after observed admission and use.
 
-1. **Map4 pilot.** [Map3 transport](asset-inventory.md#map3-terrain-companion-2174) is implemented.
-   The next pilot owns `src/sf2tool/remake_map3_ramp.py`, `remake/game/src/Exploration/ExplorationPresentation.cs`
-   if the live lookup needs a correction, and `remake/game/probes/engine_map_art_observation.gd`.
-   Compare Map3's accepted pixels and map-specific Map4 initial, each scripted copy and F624
-   reconstruction to independently filtered planes. Drive the [#2167 route](../application/pre-voyage-campaign.md#castle-to-quake-handoff-from-a-player-save-2167)
-   through first and repeat Map4 with a disposable namespace. Observe actual context selection,
-   24→96→24 texture density at fixed draw rectangles, occlusion, collision, F217, native errors
-   and slot identity. Calibrate Map66 with one bounded high-context plane/copy before the
-   remaining field batches. Record both pilots' timings, peak and projected package growth.
-2. **Field maps, then tactical terrain, then animated tiles.** Apply the accepted map batches in
-   the coverage table using the same producer and `engine_map_art_observation.gd`. Include one
-   optional interior, Map66 battle and shrine transitions, open chest/door/roof, departure
-   independent planes and Map14 handoff. Tactical selection owns
-   `remake/game/src/Battles/BattlefieldTerrain.cs`, `BattleMapViewport.cs` in the same directory
-   and `remake/game/src/Maps/MapBlockTextures.cs`. Compare actual battle block/priority/source
-   rectangles, Map16 and Map66, and the selected scene crop. Use `ReadTerrainJson` and
-   `remake/game/probes/engine_battle_entry_coordinates_observation.gd` as starting points.
-   Animated tiles follow in their own mechanism ticket, owning the map presentation fields in
+1. **Static field and tactical terrain.** The [complete selection, calibration and replay](asset-inventory.md#pre-voyage-static-terrain-2175)
+   cover the twenty named maps, selected working layouts, detached planes and tactical source rectangles.
+2. **Tile animation.** [#2180](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2180) owns the map presentation fields in
    `ExplorationDefinition.cs` and `ExplorationAssetReader.cs` and the field/tactical map texture
    owners. Derive only visible, selected tile slots and the admitted cadence. Compare one
    representative full water cycle, a changed-neighbor seam and suspension/scene resume against

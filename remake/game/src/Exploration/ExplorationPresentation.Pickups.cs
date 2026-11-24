@@ -78,7 +78,7 @@ internal sealed partial class ExplorationPresentation
                     {
                         var span = PickupStarSpan(star.GetCenter().X, star.Position.Y + row * pixel, PickupStarRows[row].Outline);
                         if (!span.Intersects(tileRect)) continue;
-                        ink ??= _mapTextures.BlockInk(visual, block, BlockVariant(visual, block, world.Layout, sourceX, sourceY, area, out _));
+                        ink ??= _mapTextures.BlockInk(visual, block, BlockVariant(visual, world.Layout, sourceX, sourceY, area, out _));
                         var hit = span.Intersection(tileRect);
                         float texelsPerPixel = ink.GetSize().X / (float)(cell * pixel);
                         var first = ((hit.Position - blockTop) * texelsPerPixel).Floor();

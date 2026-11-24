@@ -15,12 +15,13 @@ internal sealed partial class ExplorationPresentation : IDisposable
     private readonly ExplorationPaletteView _palette;
     private IReadOnlyDictionary<int, string> _spriteGraphics = new Dictionary<int, string>();
     private bool _paintPrepared;
-    internal void PreparePaintedRasters()
+    private MapId? _terrainMap;
+    internal void PreparePaintedRasters(MapId map)
     {
-        if (_paintPrepared || _visuals is null) return;
-        foreach (var raster in _visuals.Maps.Values.SelectMany(map => map.HdBlocks ?? [])
-            .Concat(_visuals.Maps.Values.SelectMany(map => map.HdBlockContexts?.Values.Distinct() ?? []))
-            .Concat(_visuals.Sprites.Values.SelectMany(sprite => sprite.HdDirections ?? []))
+        if (_visuals is null) return;
+        if (_visuals.Maps.TryGetValue(map, out var visual)) _mapTextures.PrepareHd(visual);
+        if (_paintPrepared) return;
+        foreach (var raster in _visuals.Sprites.Values.SelectMany(sprite => sprite.HdDirections ?? [])
             .Concat(_visuals.Portraits.Values.Select(portrait => portrait.HdRaster).OfType<ExplorationRaster>()))
         {
             using var decoded = ExplorationRasterImages.Open(raster);
@@ -420,6 +421,13 @@ internal sealed partial class ExplorationPresentation : IDisposable
         try
         {
             if (!_visuals.Maps.TryGetValue(world.Map, out var visual)) throw new InvalidOperationException("map-visual-binding");
+            if (_terrainMap != world.Map)
+            {
+                foreach (var texture in _mapTextures.Textures) _resourceSelectors.Remove(texture);
+                _mapTextures.Dispose();
+                _terrainMap = world.Map;
+            }
+            if (Painted(world.Map)) _mapTextures.PrepareHd(visual);
             var viewport = _owner.GetViewportRect().Size;
             _scale = WorldViewportLayout.PixelScale;
             _camera = _viewport.Origin;
@@ -803,7 +811,9 @@ internal sealed partial class ExplorationPresentation : IDisposable
                         draws++;
                         if (used?.Add((block, tile, word)) == true)
                             resources!.Add(new(_resourceSelectors[texture], texture.GetInstanceId().ToString(), block, tile, word));
-                        if (_observeCamera) first ??= new { sourceX, sourceY, block, tile, word, x = covered.Position.X, y = covered.Position.Y,
+                        if (_observeCamera) first ??= new { sourceX, sourceY, block, tile, word,
+                            texture = texture.GetInstanceId().ToString(), selector = _resourceSelectors[texture],
+                            x = covered.Position.X, y = covered.Position.Y,
                             width = covered.Size.X, height = covered.Size.Y };
                         if (actor is { } painted)
                             overlaps?.Add(new { entity = painted.Entity.Value, sourceX, sourceY, block, tile, word,
@@ -826,7 +836,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
 
     private ImageTexture Block(ExplorationMapVisual visual, int block, WorkingMapLayout layout, int x, int y, Rect2I bounds)
     {
-        var variant = BlockVariant(visual, block, layout, x, y, bounds, out bool contextual);
+        var variant = BlockVariant(visual, layout, x, y, bounds, out bool contextual);
         var texture = _mapTextures.Block(visual, block, variant);
         _resourceSelectors.TryAdd(texture, new { kind = "map-block", map = visual.Map.Value, block, contextual, pixels = texture.GetWidth() });
         return texture;
@@ -839,22 +849,9 @@ internal sealed partial class ExplorationPresentation : IDisposable
         return block == 0 && (overlay || layout.BlankBlockZero) ? null : block;
     }
 
-    private ExplorationRaster? BlockVariant(ExplorationMapVisual visual, int block, WorkingMapLayout layout,
-        int x, int y, Rect2I bounds, out bool contextual)
-    {
-        ExplorationRaster? variant = null;
-        contextual = false;
-        if (Painted(visual.Map))
-        {
-            int At(int dx, int dy) => bounds.HasPoint(new(x + dx, y + dy)) &&
-                x + dx is >= 0 and < 64 && y + dy is >= 0 and < 64 ? layout[x + dx, y + dy] & 1023 : -1;
-            if (visual.HdBlockContexts is { } variants)
-                contextual = variants.TryGetValue(new(At(-1,-1), At(0,-1), At(1,-1), At(-1,0), block,
-                    At(1,0), At(-1,1), At(0,1), At(1,1)), out variant);
-            variant ??= visual.HdBlocks![block];
-        }
-        return variant;
-    }
+    private ExplorationRaster? BlockVariant(ExplorationMapVisual visual, WorkingMapLayout layout,
+        int x, int y, Rect2I bounds, out bool contextual) =>
+        MapBlockTextures.Variant(visual, Painted(visual.Map), layout, x, y, bounds, out contextual);
 
     private static int AnimationHalf(ExplorationEntity entity) =>
         (sbyte)entity.Motion.AnimationCounter >= (entity.Sprite is 252 or 254 or 255 ? 16 : 15) ? 1 : 0;
