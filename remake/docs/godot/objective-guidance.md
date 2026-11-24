@@ -9,7 +9,7 @@ removes the destination circles, labels and coordinate bindings. The pilot and s
 retain their original acceptance records in Git. Human acceptance stays in #1578/#1456.
 
 **Standard rigor:** finite content disclosure across existing Application, preferences and field UI.
-Deliver a useful current objective and known destination/action during every supported main-story
+Deliver a useful current objective and next step during every supported main-story
 free-control segment. Choose text precision from the disclosed story. Include ordinary detours,
 defeats, EGRESS, revisits, eligible Continue and the dock decision. Do not make optional recruitment mandatory.
 Current coverage ends when boarding clears the aid. Future chapters can extend authored text
@@ -77,7 +77,7 @@ reached story supports. `Fnnn` identifies internal story flags.
 | F609, before F610 | Speak with the royal party in the hall. | Hawel withheld until the commission returns. |
 | F610, before F502 | Find Hawel near Yeel; leave town west, then travel toward Yeel. | The commission already disclosed Hawel; Jaha’s on-route scene stays ordinary. No Battle02 spoiler. |
 | F502/F610, before F72/F612 | Find Hawel near Yeel; enter the village and ask villagers. | Withhold Kazin's offer until its caller returns. |
-| F72, before F4/F612 | Visit Hawel with Kazin. In Yeel, use the north exit. On the overworld before F503, show the known house and “Route not available”. | Withhold the encounter and the approach through it. |
+| F72, before F4/F612 | Visit Hawel with Kazin. In Yeel, use the north exit. On the overworld before F503, show “Route not available” as the next step. | Withhold the encounter and the approach through it. |
 | F72/F503, before F4/F612 | Same goal. Head for Hawel's house entrance. | The admitted house route owns the actual warp. |
 | F4/F612, before F504 | Go to the Ancient Shrine; leave Hawel’s house / continue south outside. | Source last line834 names **Ancient Shrine**, not Galam. No capture/ambush spoiler; coarse onward leg. |
 | F504, settled prison before F661 | Find a way out of the cells; approach other prisoners. | Do not disclose the hidden tunnel or future Slade recruitment. Victory and special defeat converge only after real wake-up. |
@@ -93,7 +93,7 @@ reached story supports. `Fnnn` identifies internal story flags.
 | Quake town after F624 | Reach Granseal docks through the safer east exit. | Source717–720 disclose the ship and east route. |
 | Docks F507/F74/F640/F624 | Depart by ship; speak with the man beside the ship. | Actual actor138/old-man handler. |
 | Docks No/cancel/revisit | Same disclosed goal; usable field requery. | No departure consumed, no new choice ledger or auto-acceptance. |
-| Boarding / F74 clear / successor Map14 | No objective or destination. | Hide through the scene and remain clear after usable successor input. No Battle08 goal. |
+| Boarding / F74 clear / successor Map14 | No guidance text. | Hide through the scene and remain clear after usable successor input. No Battle08 goal. |
 
 On other admitted pre-voyage travel maps the already disclosed goal remains, with the appropriate
 return-to-castle/countryside/exit action. Partial/unrelated profiles, unadmitted setups, genuine
@@ -113,11 +113,12 @@ overrides control the panel and pickup glints. Explicit Off survives New Game, C
 contain no guidance. #1703 GraphicsMode and all existing settings/input behavior are unchanged.
 
 Ordinary exploration and the root Member/Magic/Item/Search menu share the same passive objective
-panel, containing the current goal, known destination and next action. Opening/closing/reopening the
-root menu keeps the panel instance and current text; command help contains only its command, reasons
-and input hints. The objective takes no keyboard, controller or pointer focus. Names, initial command
-focus, Search reasons and Back remain. Party/Prepare hides the root and objective; Back restores the
-same command and requeries the objective. There is no separate objective-reading focus or Back step.
+panel. It displays the current goal and next step as two paragraphs. Destination names can appear
+within either paragraph. The root menu keeps the panel instance and current text across repeated
+opens and closes. Command help contains its command, reasons and input hints. The objective takes
+no keyboard, controller or pointer focus. Names, initial command focus, Search reasons and Back
+remain. Party/Prepare hides the root and objective. Back restores the same command and requeries
+the objective.
 
 At supported1920×1080 and larger windows, the panel measures its longest unwrapped localized line,
 uses at most448px of reading width plus32px horizontal padding, and grows vertically for natural
@@ -128,7 +129,7 @@ inside safe edges, with no camera/world zoom change. Host, dialogue, Search resu
 battle and window recovery hide the panel. Off hides the panel in both root-menu states.
 The world remains at96px cells; no objective click moves an actor or camera.
 
-The English and Simplified Chinese catalogs own the authored objective, destination and next action.
+The English and Simplified Chinese catalogs supply the objective and next-step text.
 The [localization agreement](../application/localization-design.md#fixed-names-in-modern-guidance)
 owns the spelling source. When a rule supplies a companion, `DisplayNames.Member` resolves its
 display name and honors player-entered names. Copy without a companion has zero name operands.
@@ -282,7 +283,7 @@ it uses the same existing `issue1705-*` isolation guard and no source/catalog mu
 Reuse the Debug launcher and `derived/issue2035/galam-town-v1` inputs from
 [Pickup observation](#pickup-observation). Select `derived/issue2001/catalogs-v1/world.zh-CN.json`
 with `SF2_DISPLAY_CATALOG`. Run the objective guidance observer serially, with a fresh output
-for each case and separate `issue1705-*` save namespaces except for the Save/Continue pair.
+for each case and separate `issue1705-*` or `issue2151-*` save namespaces except for the Save/Continue pair.
 For controlled starts, copy [the post-Battle02 checkpoint](../../reference/inputs/yeel-to-battle03-start.json)
 to ignored scratch and apply the changes below.
 
@@ -290,8 +291,20 @@ to ignored scratch and apply the changes below.
 | --- | --- |
 | `town` | Use the default Yeel guide approach at (7,7), Up, with F610/F502 set and F399 clear. Supply a custom seven-character `ally-4` name and English/HD preferences. Talk and finish the actual F72 caller. Toggle guidance, apply Chinese, then walk out the real north exit. The field projection contains only the text panel. It shows the localized north exit instruction and then replaces it with the Map66 route-unavailable text. The custom name survives the locale switch. |
 | `house` | Use the same four-member checkpoint family at Map66 (6,6), Up, with F72/F503 set and F399/F403 clear. The approach shows the named house in text. The actual warp and house scene replace it with the Ancient Shrine and the instruction to leave the house. |
-| `save`, `continue` | Use the pre-invitation Yeel setup for Save. Compare the recorded `saved-guidance` and `continued-on` samples. A fresh title Continue restores the same three text lines and initially honors the saved Off preference. Applying On shows the objective bound to the restored field. |
+| `save`, `continue` | Use the pre-invitation Yeel setup for Save. Compare the recorded `saved-guidance` and `continued-on` samples. A fresh title Continue restores the same objective and next-step text and initially honors the saved Off preference. Applying On shows the objective bound to the restored field. |
 | Pickup `shrine`, `continue` | Copy the retained #2024 full/unclaimed shrine slot into a fresh `issue2024-*` namespace and use the pickup observer. The shared preference still hides the glint, Reduced flash holds it steady, and Search updates the mark through Full, grant, repeat and fresh Continue. |
+
+For the two-paragraph projection, run the same headless Debug command as for Pickup observation
+with `res://probes/engine_objective_guidance_observation.gd`. Use the complete
+[pre-voyage battle artwork package](../content/asset-inventory.md#battle-raster-variant-binding-2177)
+with [matching world, entry, scene and opening inputs](battle-scenes.md#fixed-backdrops-for-the-private-campaign).
+Run `town` with the checkpoint above, then repeat with initial `zh-CN` and F610 clear to check
+uncovered field and menu states. Both runs check two nonempty paragraphs after the real invitation,
+including the custom companion name after the live locale switch. The ordinary north exit replaces
+the localized route with the unavailable step. For read-only Off, use `override` with a separate
+formatVersion 1 `--input-settings` file with `modernGuidance: false`. The invitation still runs and both
+field and menu keep the panel hidden. Use a fresh `issue2151-*` namespace for each run.
+**Confirmed** in headless Godot with ordinary input, live panel state and clean process logs.
 
 **Confirmed in the remake** at these controlled boundaries with native input, live projection and
 process error checks. An initial house attempt carried F403 and failed to reach the intended
@@ -299,18 +312,17 @@ field. The corrected post-victory input clears F403.
 
 **Confirmed:** bounded #1710 headless native English/zh-CN runs retain one panel/text
 through repeated root open/close/reopen and Party return, preserve command input and paused gameplay
-state, hide for host/Off/recovery, and restore on return. Short opening copy measures345px in English
-and242px in Chinese; longer English and Chinese copy (including the seven-character custom guide
-name) wraps to four lines at480×209px. The reached right-edge town checkpoint also moves commands
+state, hide for host/Off/recovery, and restore on return. In those runs, short opening copy measured
+345px in English and 242px in Chinese. Longer English and Chinese copy with the custom guide name
+wrapped to four lines at 480×209px. The reached right-edge town checkpoint also moves commands
 left and the objective right without covering the player. The affected invitation, house-scene and
 F612 revisit observers pass. These are actual input/state/geometry observations, not foreground,
 physical-device or human visual acceptance. Retained early runs include a cross-pause RNG comparison
 failure: free-field ambient steps resume after root Back. The corrected observer compares the full
 save payload and seeds while the menu is still paused; it does not discard RNG fields.
 
-Run affected `town`, `house` and `revisit` cases through fresh disposable `issue1705-*` namespaces
-and fresh explicit output; the namespace is only this observer's existing isolation guard. Do not
-replay the three campaign cases merely because this complementary observer changes. Older pilot
+Run affected `town`, `house` and `revisit` cases with fresh disposable namespaces and fresh explicit
+output. Changes to this observer can be verified at the affected local checkpoints. Older pilot
 reports retain their original narrower expectations and do not establish current whole-campaign
 acceptance. Their menu-hides-world/goal-in-command-help observations are superseded by #1710's
 explicit human feedback; they are not current acceptance assertions. The local handoff routes both
