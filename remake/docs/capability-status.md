@@ -140,6 +140,14 @@ strip unmounted, including its layout and pointer area. The acting card and boar
 identify the unit on turn. The dispatch queue and cursor remain part of battle continuation.
 [Battle composition and observation](godot/battle-ui-composition.md#current-round-order-2065)
 
+## Battle status card readability
+
+**Implemented.** Movement, decisions, target selection, free inspection and playback share the
+30px unit card. Names can wrap above the class and level shown for allies. HP/MP labels and values
+use the same body size, including the shared gauge in full details. English and Chinese native
+Battle01 observations cover disclosure, supported window geometry and pointer ownership.
+[Card layout and reproduction](godot/battle-ui-composition.md#readable-battle-status-cards)
+
 ## Battle continuation state
 
 **Implemented Domain/Application boundary, High:** a connected unfinished battle at settled player
@@ -1088,6 +1096,9 @@ visibly and retain the pending BattleLoad. The
 [current scene handoff](application/pre-voyage-campaign.md#scene-handoff-across-battle) and
 [castle projection controls](verification/battles.md#castle-battle-projection) cover the separate
 before-scene and board coordinate spaces and the supported packed plane and parallax cases.
+[Shared-plane crop verification](verification/battles.md#shared-plane-encounter-crop) confirms that
+both priority passes use the encounter origin on ordinary Battle06 entry and Battle02/21 controls.
+Battle05/22 cover foreground roof clearing and rear-plane parallax.
 
 Acceptance covers the Battle01 pilot, different source origins, movement/cancel, target rejection
 and cancellation, real action/death/next-player presentation, desktop/small-window clipping,

@@ -746,10 +746,6 @@ Use UTF-8 input settings with `formatVersion` 1, `confirmCancel` standard, `text
 | Private Battle01 | Select the registered `derived/issue2035/galam-town-v1` world, entry, main-scenes and six opening files as described in the [publication owner](../content/presentation-assets.md#final-publication-and-ordinary-selection). Set `SF2_DEMO_BATTLE_CASE=private`, `SF2_CURSOR_ORIGINAL=1` and `SF2_CURSOR_SHA256` to the decoded identity in [cursor publication](battle-scenes.md#source-and-publication). Set `language` to en and `reducedFlash` to false. Set `SF2_COMPACT_START` to the controlled start below. Use 1920×1080. |
 | Public long text and wide vitals | Set `SF2_DEMO_BATTLE_CASE=public`, `SF2_CURSOR_ORIGINAL=0` and clear `SF2_COMPACT_START`. Set `language` to zh-CN and `reducedFlash` to true. Copy `remake/content/authored/attack-spells.json` to run scratch. Change the mage maximum HP to 30,000 and initial HP to 29,999. Rename its actor ID, start actor reference and encounter placement reference to `very-long-controlled-mage-name-for-wrap-and-five-digit-vitals`. Keep its physical movement type. Widen the terrain to the left by eight cells, extending the barrier on the top and bottom rows and inserting eight open cells after the left barrier of each interior row. Shift every placement eight cells right to exercise right-edge target clearance. Pass that copy as the authored package. The observer extends one localized help string before mounting the host. Use 1600×900. |
 
-For the [mini-status geometry observer](../../game/probes/engine_battle_vitals_observation.gd),
-set `SF2_VITALS_CASE=wide` and give the authored center enemy the same wide HP values and a
-similarly long ID (change the definition, placement and start actor references). This covers wide
-values in both the acting and target cards, including the enemy header's disclosure boundary.
 | Public area completion | Set `SF2_DEMO_BATTLE_CASE=area`, `SF2_CURSOR_ORIGINAL=0` and clear `SF2_COMPACT_START`. Use English and Reduced Flash and select the unchanged `attack-spells.json` at 1920×1080. |
 
 The private controlled start declares the active lineup. Save it under the checkout's ignored
@@ -791,3 +787,32 @@ navigation, Reduced Flash, and ordered BLAZE2 recipients with one MP payment.
 
 Human readability, device feel and visual approval stay with #1456. Original pulse parity and
 natural source reach beyond the linked evidence remain **Unknown**.
+
+## Readable battle status cards
+
+[#2145](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2145) applies the two-size
+[gameplay typography](ui-design-language.md#gameplay-typography) agreement to the shared card.
+Movement, Main, list and target decisions, free inspection and close-ups show names and vitals
+at 30px. Ally cards show class and level on their own 30px line when available. Enemy cards omit
+that line. The panel measures the wrapped name and allocates the required height. It widens up
+to 800 design units for names. Exceptionally long metadata can use a two-line ellipsis at the
+same font size. HP and MP share aligned labels, gauges and value columns. A zero maximum still
+shows a dash and an empty gauge. Full details inherit the shared gauge typography in their
+existing layout.
+
+Use the locked Debug build and fresh native observation directories from
+[Reproduce slice 1](#reproduce-slice-1). Run the same command with
+`res://probes/engine_battle_vitals_observation.gd` at 1920×1080, using ordinary `Main.tscn`.
+The observer needs no persisted settings or saves. Supply `--input-settings` for each locale.
+
+| `SF2_VITALS_CASE` | Prelaunch input and route |
+| --- | --- |
+| `private` | Use the controlled private Battle01 start above with English settings. Inspect ally and enemy, open the real Main and Magic list, then select and click the admitted Attack target. Advance only to the first defeated enemy's card. |
+| `zh-long` | Use the same Battle01 start with zh-CN settings. Select a small UTF-8 `SF2_DISPLAY_CATALOG` with the world package and repository/commit/ROM identity, locale `zh-CN`, empty `texts`, and two `names` rows. Use `name.ally` index 1 with `北境守望祭司与远行队医伊莉莎白西风谷巡旅护卫队首席治疗师` and `name.class` index 4 with `祭司`. Select a friendly HEAL target and observe single-card playback. |
+| `wide` | Use the public authored wide-vitals recipe above in English. Also rename the center enemy to `very-long-controlled-enemy-name-for-wrap-and-five-digit-vitals` in its definition, placement and start row, and set its current/max HP to 29,999/30,000. Observe long-name wrapping and the live opposing BLAZE cards. |
+
+Read the mounted text sizes, visible lines, role disclosure, gauge values and rectangles. The
+target card is measured at 1600×900, 1920×1080 and 2560×1440. At 1280×720 the host's window
+recovery covers battle, then 1920×1080 restores the pending target without acting. Clicks on the
+inspection card stay out of the board, invalid target gestures leave resources alone, and a
+complete legal target click enters playback. These checks cover the shared card and gauge.
