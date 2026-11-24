@@ -207,7 +207,7 @@ internal sealed partial class BattleSceneView : Control
                 if (_hasWeapon && weapon != _allyVisual!.Item) throw new InvalidOperationException("battle-scene-weapon-unavailable");
                 if (ally is not null) SetFrame(true, 0); if (enemy is not null) SetFrame(false, 0);
                 Weapon(_allyVisual?.Sequences["idle"].IdleWeapon, Vector2.Zero);
-                _ground.Visible = ally is not null && ally.Definition.Mover is not (BattleMover.Hovering);
+                _ground.Visible = ally is not null && ally.Definition.Mover is not (BattleMover.Flying or BattleMover.Hovering);
                 if (state.Phase == BattleScenePhase.ActionAnimation)
                 {
                     var sequences = (actor.IsAlly ? _allyVisual! : _enemyVisual!).Sequences;

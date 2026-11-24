@@ -16,7 +16,7 @@ from tempfile import TemporaryDirectory
 
 from sf2tool.paths import repo_path
 from sf2tool.private_inputs import SHARED_INPUT_ROOT_ENV
-from sf2tool.remake_asset_build import ACCEPTED_UPSTREAM_COMMIT
+from sf2tool.remake_asset_build import ACCEPTED_UPSTREAM_COMMIT, _scale_rgba_nearest
 from sf2tool.remake_attack_spell_mount import mount_attack_spells
 from sf2tool.remake_battle_scene_content import compose, sprite_layout
 from sf2tool.remake_command_menu import world_dependencies
@@ -327,36 +327,38 @@ def mount_prepared_audio(directory, command, dest, presentation):
         raise ValueError(f"conflicting audio binding {command}")
 
 
-def mount_indra_staff(library: Path, scratch: Path, scene: dict) -> None:
-    directory = library / "weapons"
-    index = read_json(directory / "index.json")["records"]
-    sprite, palette = index["items"]["92"]
-    if (sprite, palette) != (16, 31):
-        raise ValueError("Indra Staff requires the pinned Guardian Staff graphics selector")
+def shared_color_weapon_frames(directory, index, scratch, scene, item, *, scale):
+    sprite, palette = index["items"][str(item)]
     data = (directory / f"weapon-{sprite}.4bpp").read_bytes()
     if len(data) != 8192 or any(
         (byte >> 4 not in (0, 1, 2, 14, 15) or byte & 15 not in (0, 1, 2, 14, 15)) for byte in data
     ):
-        raise ValueError("Indra Staff requires the shared body colors and two weapon colors")
+        raise ValueError(f"weapon {item} requires colors outside the shared body and weapon slots")
     colors = [md_palette_color(0)] * 16
     colors[1] = md_palette_color(0x0EEE)
     colors[14:16] = [md_palette_color(color) for color in index["palettes"][palette]]
     frames = []
     layout = sprite_layout(8, 8)
     for frame in range(4):
-        key = f"weapon92/frame{frame}"
-        leaf = f"indra-staff-{frame}.png"
-        write_png_rgba(
-            scratch / leaf,
-            64,
-            64,
-            compose(data[frame * 2048 : (frame + 1) * 2048], colors, 64, 64, layout),
-        )
+        key = f"weapon{item}/frame{frame}"
+        leaf = f"weapon-{item}-{frame}.png"
+        pixels = compose(data[frame * 2048 : (frame + 1) * 2048], colors, 64, 64, layout)
+        if scale != 1:
+            pixels = _scale_rgba_nearest(tuple(pixels), 64, 64, scale)
+        write_png_rgba(scratch / leaf, 64 * scale, 64 * scale, pixels)
         raster = installed_png(scratch, leaf)
         if scene["rasters"].setdefault(key, raster) != raster:
-            raise ValueError(f"conflicting Indra Staff raster {key}")
+            raise ValueError(f"conflicting weapon raster {key}")
         frames.append(key)
+    return frames
 
+
+def mount_indra_staff(library: Path, scratch: Path, scene: dict) -> None:
+    directory = library / "weapons"
+    index = read_json(directory / "index.json")["records"]
+    if index["items"]["92"] != [16, 31]:
+        raise ValueError("Indra Staff requires the pinned Guardian Staff graphics selector")
+    frames = shared_color_weapon_frames(directory, index, scratch, scene, 92, scale=1)
     animations = read_json(library / "bodies/ally-animations.json")
     for member, body, palette in ((1, 25, 1), (4, 21, 2), (15, 25, 2), (17, 21, 1)):
         (donor,) = (
@@ -399,13 +401,38 @@ def ninja_weapon_layers(scene: dict) -> list[dict]:
     return layers
 
 
+def pgnt_weapon_layers(library, scratch, scene, member):
+    directory = library / "weapons"
+    index = read_json(directory / "index.json")["records"]
+    selectors = index["items"]
+    # Eric's mounted knight palettes share the two body colors used by these weapon banks.
+    layers = {
+        tuple(selectors[str(row["item"])]): row["weaponFrames"]
+        for row in scene["actors"]
+        if row["side"] == "ally"
+        and row["sprite"] in (2, 13)
+        and member in row.get("members", [])
+        and row["item"] is not None
+    }
+    rows = [{"item": None, "weaponFrames": []}]
+    for item in (56, *range(72, 80)):
+        selector = tuple(selectors[str(item)])
+        if selector not in layers:
+            layers[selector] = shared_color_weapon_frames(
+                directory, index, scratch, scene, item, scale=2
+            )
+        attack = 82 if selector[0] in (12, 13) else 17
+        rows.append({"item": item, "weaponFrames": layers[selector], "attackIndex": attack})
+    return rows
+
+
 def mount_promotion_appearances(
-    library: Path, world: dict, scene: dict, promotions: dict[int, str]
+    library: Path, scratch: Path, world: dict, scene: dict, promotions: dict[int, str]
 ) -> None:
     # The selected independent weapon layers use body colors 1 and 2 ($0EEE
     # and $0000) shared by both class palettes. None selects an unarmed body.
     rules = {
-        "PGNT": (14, {72, 73, 74, 75, 77, 78}),
+        "PGNT": (14, set()),
         "WIZ": (17, {85, 86, 87, 89}),
         "VICR": (19, {85, 86, 87, 89}),
         "GLDT": (15, {33, 34, 35, 36}),
@@ -474,7 +501,9 @@ def mount_promotion_appearances(
             frames.append(key)
 
         class_code = promotions[member]
-        if class_code == "NINJ":
+        if class_code == "PGNT":
+            mounted_weapons = pgnt_weapon_layers(library, scratch, scene, member)
+        elif class_code == "NINJ":
             mounted_weapons = ninja_weapon_layers(scene)
         else:
             base_items = rules[class_code][1]
@@ -482,7 +511,7 @@ def mount_promotion_appearances(
                 row
                 for row in scene["actors"]
                 if row["side"] == "ally"
-                and row["sprite"] == (13 if class_code == "PGNT" else base_sprites[member])
+                and row["sprite"] == base_sprites[member]
                 and member in row.get("members", [])
                 and (row["item"] is None) == (None in base_items)
             ]
@@ -508,9 +537,10 @@ def mount_promotion_appearances(
             attack = prepared_ally_sequence(sprite, animations[sprite], draw_weapon)
             dodge = prepared_ally_sequence(sprite + 40, animations[sprite + 40], draw_weapon)
             sequences = dict(idle=attack, attack=attack, dodge=dodge, item=attack)
-            if class_code == "PGNT" and row["sequences"]["attack"]["index"] == 81:
-                # The same spear/javelin selects throw 81 for PLDN and 82 for PGNT.
-                sequences["attack"] = prepared_ally_sequence(82, animations[82], draw_weapon)
+            if (attack_index := row.get("attackIndex", sprite)) != sprite:
+                sequences["attack"] = prepared_ally_sequence(
+                    attack_index, animations[attack_index], draw_weapon
+                )
             if class_code in {"WIZ", "VICR", "NINJ"}:
                 sequences["cast"] = attack
             if class_code == "MNST":
@@ -793,7 +823,9 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
                 if actor not in scene["actors"]:
                     scene["actors"].append(actor)
         if retained_promotions:
-            mount_promotion_appearances(root, world["world"], scene, retained_promotions)
+            mount_promotion_appearances(
+                root, Path(temp), world["world"], scene, retained_promotions
+            )
             promotions.update(retained_promotions)
         if "indra" in selected:
             mount_indra_staff(root, Path(temp), scene)

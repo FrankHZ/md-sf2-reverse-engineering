@@ -226,9 +226,18 @@ is 11, 23, 3 and 30 in the Regular, Flying, Archer and Mage tables respectively,
 from zero. [Source class ordering](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/aipriority.asm)
 
 **Confirmed in the remake.** Eric uses the Pegasus Knight class definition (14), its own
-growth, Flying MOV 7, walking sprite 35 and battle body 17/palette 2. The six retained
-lance and spear bindings use the actual equipped weapon. The ordinary body animation
-is 17, spear/javelin attack is 82 and dodge is 57. The starting, ordinary and special
+growth, Flying MOV 7, walking sprite 35 and battle body 17/palette 2. Battle26 binds the
+unarmed body and all nine weapons admitted by the current PGNT mask and weapon rules
+(56 and 72–79). Chester starts with Wooden Stick (56), and the mounted Map9 shop
+lists Power Spear (76). Ordinary acquisition of Chrome Lance (79) by this frontier is
+**Unknown**. The appearance follows the equipped item after Give and Equip as well as
+at promotion. HEAL target admission uses the same actor/class/item lookup and idle ticks.
+The ordinary attack is 17, weapon graphics 12–13 select throw 82, and dodge is 57.
+GetBattlesceneGround skips the ally ground for both Flying and Hovering movement.
+[Attack selection](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/getallyanimation.asm#L12-L35) ·
+[Ground selection](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/battlesceneengine_2.asm#L11-L25)
+
+The starting, ordinary and special
 walking choices for Eric are 33, 34 and 35 in the same package. Chester and Rick retain
 their ordinary paths. Their PGNT variants have no content binding in this pilot.
 [Eric's source growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats14.asm) ·
@@ -238,9 +247,12 @@ their ordinary paths. Their PGNT variants have no content binding in this pilot.
 
 The opt-in `pgnt` mount starts from the registered `derived/issue2106/pre-voyage-spells-v2`
 and `derived/issue2001/retail-v1`. The world grows by 7,900 bytes and the Battle26 scene
-by 20,969. The closed package totals 314,302,949 bytes across 147 files. The 28,869-byte
+by 28,658. The closed package totals 314,310,638 bytes across 147 files. The 36,558-byte
 increment falls within the 100 KiB estimate. Both rewritten files reproduced byte for byte
-against the registered `derived/issue1957/pgnt-v1`. The producer reuses the other immutable
+against the registered `derived/issue1957/pgnt-v3`. Shared graphics/palette selectors reuse
+mounted knight weapon layers. Chrome Lance uses prepared graphic 11 and palette 23 at the
+scene's 2× texture size. All 36 mounted frames match the visible colors and alpha of the
+prepared operands. The producer reuses the other immutable
 dependencies. The companion catalog adds exactly `name.class/14` from the configured
 `names.zh-CN.jsonl` to the `names` list of the #2001 catalog. Select its
 `namespace`, `index` and `translation` (as `text`), keeping the source identity and 2,221
@@ -261,7 +273,7 @@ sets the locale and stages its input scripts under the supplied checkout's `loca
 Each command launches a separate headless process. Use fresh sample names for a retry.
 
 ```powershell
-$run = Join-Path $derived 'issue1957/review/Boot.ps1'
+$run = Join-Path $derived 'issue1957/review-v3/Boot.ps1'
 $seed = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue1927/pacalon/slots/castle-en.json'
 $sample = @{Repo = (Get-Location).Path; SaveRoot = $disposableSaveRoot; Journey = 'pgnt-en'}
 & $run @sample -Mode eric -Sample rite -Seed $seed
@@ -277,6 +289,7 @@ $sample = @{Repo = (Get-Location).Path; SaveRoot = $disposableSaveRoot; Journey 
 | Church and custody | From the real English castle history, fallen Eric changed from KNTE 27/83 to PGNT 1/0. Kazin's pack changed from `[213,5,118,123]` to `[213,5,123,127]`. F175, 5,527 gold, Eric's 36/32/31 base ATT/DEF/AGI, equipped Steel Lance word 203 and empty book survived. Separate English and Chinese runs of the same history named Kazin, the Wing, Eric and the destination in the offer and confirmed his actual new class. |
 | Field Continue and Raise | A v3 legacy visit initially refused Save with `field-visit-actor-origin` before promotion. Ordinary exit and re-entry supplied the fresh castle visit. V6 Save sequence 5 and independent cold re-save 6 had equal complete decoded `data`. The runner held simulation time below one field tick for this comparison, then resumed normal time. Declining Raise retained the fallen member. Paying 210 restored 58 HP and left 5,317 gold. Eric was already deployed in this history. |
 | Flight and combat | Ordinary travel to Ketto entered the Battle26 repeat. The actor had Flying MOV 7, visible walking sprite 35, body `ally17-palette2/frame0` and his equipped weapon. The first Steel Lance attack missed and earned 1 EXP. The enemy continued, including the Dark Sniper's 14 damage to Bowie. Eric's second attack dealt 15 to that sniper and earned 19 EXP, returning to Movement at 20 EXP. V4 battle Save sequence 8 and fresh-process re-save 9 had equal complete decoded `data`. |
+| Wooden Stick and ground | On a separate copy of the raised English field save, use `stick-road` after `raise`, then `stick` in a fresh process. Ordinary Caravan Give and Equip moved Chester's Wooden Stick to Eric. Battle26 saved Eric with attack 39 and pack `[75,184,127,127]`; the complete decoded battle data matched after cold Continue and re-save (8→9). The production scene displayed `ally17-palette2/frame0` and `weapon56/frame0`, with weapon visible, ground hidden and no scene error. Eric dealt 1 damage to the Dark Sniper, received 1 EXP and returned to Movement. The earlier Steel Lance receipt shows the old visible ground. The old missing-stick failure was identified by static lookup. A HEAL specifically targeting stick-equipped Eric was not played in this observation. |
 | Limits | Same-holder compaction, stale high-byte refusal, independent ordinary consent, destination growth and target priorities have engine coverage. Natural Chinese Eric recruitment, further special families and original rite timing remain **Unknown**. Some successful headless exits reported ObjectDB leaks under #1716. |
 
 An early driver moved down from the revised system menu’s default selection and missed Save. The initial
