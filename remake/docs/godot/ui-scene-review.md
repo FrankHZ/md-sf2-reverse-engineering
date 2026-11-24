@@ -25,7 +25,7 @@ for world/UI layering and the [shared visual language](ui-design-language.md) fo
 | Scene or main layer | Design | Current production review entry | Visual acceptance focus |
 | --- | --- | --- | --- |
 | Title → Witch greeting → choices | [Title and Witch](#1-title-and-the-witch) | Start the preview on F1 with the registered opening inputs. Start, read the greeting, then focus New Game or Continue. Open Settings from the Witch's own action. | Keep Witch art clear of the reading column; separate the paged greeting, focused action and hint. |
-| New Game → slot → name → final Start; Continue → slot | [Entry and naming](#2-new-game-name-and-slot-choice) | F1 → Start → New Game; select the one disposable slot, edit the name on a keyboard and back out or confirm Start. Return to F1 → Start → Continue after writing the preview slot. For history pages, protected writes and backup recovery, use the [disposable ordinary-host observations](host-ui.md#slot-recovery-and-overwrite-at-1080p). | Slot and destination remain explicit; name errors stay by the editor. Keep Cancel, overwrite consequences and failure details readable. |
+| New Game → slot → name → final Start; Continue → slot | [Entry and naming](#2-new-game-name-and-slot-choice) | F1 → Start → New Game; select the one disposable slot, edit the name on a keyboard and back out or confirm Start. Return to F1 → Start → Continue after writing the preview slot. For history pages, protected writes and backup recovery, use the [dedicated Main sample](#numbered-saves-and-native-window-recovery). | Slot and destination remain explicit; name errors stay by the editor. Keep Cancel, overwrite consequences and failure details readable. |
 | Field speech → Yes/No → play | [Exploration and dialogue](#3-exploration-world-speech-choices-and-search) | F2 → Show Yes / No (`--dialogue-choice`). Confirm through the practice invitation, then choose Yes or use Back for No. Walk after the question closes. F2 Reading (`--dialogue`) ends after the reading waits. Use the [Map3 question](presentation.md#production-entry-and-field-dialogue-1606) for a portrait. | Reserve portrait, reading, choice and footer space. Restore walking after acknowledgement. |
 | Field HUD → Adventure → Search reader | [Exploration and Search](#3-exploration-world-speech-choices-and-search) | F7 (`--field`) opens Adventure facing the sign. Select Search, read, dismiss and return to walking. | Keep the context cue and Adventure target inside the footer. Long Search text must leave a usable reading/return cue. |
 | Field Member → stats, spells and numbered Items; Prepare or direct Magic/Item | [Party and inventory](#4-party-inventory-and-preparation) · [Field composition](field-and-shop.md#current-composition) | F5 → Show Preparation (`--prepare`). Confirm Prepare… on Medic A, then Give / exchange → Practice Leaf → recipient. Back out to the same member. F5 Supplies (`--members`) shares F6 purchases and shows the unavailable Prepare outcome. Use [connected Map 16](field-and-shop.md#prepare-command-icons) for command art, populated Magic and direct Adventure entries. | Compare selection, grouped stats, four slot identities, costs, the recipient/exchange and read-before-commit states. Check the fixed footer after Back. |
@@ -70,16 +70,20 @@ The final native runs reported no engine or adapter errors. F2 uses a portraitle
 speaker and F5 uses text-only commands. See the connected routes for portraits, command
 art and field recovery. Ordinary desktop and physical-device comfort remain **Unknown**.
 
+### Numbered saves and native window recovery
+
+Use the [dedicated Main sample](host-ui.md#dedicated-numbered-save-and-native-recovery-demo)
+to open Witch Continue or field Save with disposable numbered history. The review opens page 2
+at damaged slot 7, then exercises the backup offer or protected-write reason. For resize, keep
+field Save on page 2 and shrink the native client. Quit Cancel and Restore Window return to the
+covered selection. Scaling the F1–F10 preview leaves its internal client fixed.
+
 ### Preview gaps and targeted follow-ups
 
 The connected routes above already exercise production behavior. Actual appearance in a dedicated
 preview is **Unknown** for the uncovered branches below. Add an entry only for a subsequent review
 that needs it. Each proposal retains the real presenter, application admission and Back chain.
 
-- **Host persistence and recovery.** The [planned dedicated Main launch](host-ui.md#dedicated-numbered-save-and-native-recovery-demo)
-  uses a disposable numbered history with real Witch Continue and field Save paths in the native
-  client. Scaling F1–F10 changes the displayed picture while its inner gameplay client stays fixed.
-  Use the existing ordinary-host cases for current behavior evidence.
 - **Campaign service variants and battle content.** Use the connected Promotion, Repair, Deals and
   playback routes for their supported content. If a visual change needs one of those subpages in
   the dedicated preview, stage only its existing admitted approach or package. F8's package
