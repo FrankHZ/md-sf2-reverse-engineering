@@ -1456,12 +1456,13 @@ actual CI outcome and that configuration boundary explicitly.
 [ADR 0012](../../docs/decisions/0012-dependency-aware-partitioned-verification.md) continues to own
 affected research evidence selection. Shared research changes keep their separate owning requirements.
 
-Godot acceptance observes the actual running instance: Application snapshots, commands, presenter
-projections, node geometry/visibility/focus where relevant, and process errors. Screenshots, image
-comparison and frame-inspection recipes are prohibited. Existing completed images remain historical
-artifacts. A probe that still emits images needs that side effect disabled in an owned change before
-a future required run. A remote debug server is not an established dependency; first use an existing
-native probe or suitable debug/state interface that answers the concrete question.
+Godot functional acceptance observes the actual running instance: Application snapshots, commands,
+presenter projections, node geometry/visibility/focus where relevant, and process errors.
+Screenshots, image comparison and frame inspection are prohibited for ordinary game functional
+verification and original-game research. Existing completed images remain historical artifacts.
+Disable image output from any functional probe in an owned change before a future required run.
+The [dedicated preview exception](#dedicated-ui-preview-visual-review) covers visual design review.
+Use an existing native probe or a debug/state interface that answers the concrete question.
 For a currently running session without a loaded observation channel, follow
 [live managed inspection](../../docs/operations/godot-live-inspection.md) before considering a restart.
 It preserves unsaved progress and defines the bounded Windows snapshot, module identity and private
@@ -1471,6 +1472,19 @@ Reuse the same verified Godot installation, owning project and running debug ins
 failure, necessary code/import restart, observed contamination, or test of startup/export/cleanup can
 justify a bounded restart or isolated instance; record the reason. A new slice or comparison does not
 justify copying the project, extracting another editor, or building a debug framework.
+
+### Dedicated UI preview visual review
+
+For a changed player-facing layer, open the [dedicated production UI preview](../game/probes/previews/README.md)
+and compare actual appearance with the linked [scene and subpage design](godot/ui-scene-review.md#scenes-in-the-playable-demo).
+Select the affected page, supported size, language and relevant states. Review legibility, hierarchy,
+focus, clipping, contrast and modal coverage. A necessary screenshot is permitted only in this
+dedicated preview. Keep it in ignored local scratch and keep images with private assets out of Git
+and public attachments. Record the route and visual finding in the owning document or review.
+If the affected state has no dedicated preview path, record that visual coverage gap.
+
+Visual review accompanies the appropriate functional evidence. Use individual stills for the
+affected states. The [bulk frame workflow](#retired-bulk-frame-workflow) remains retired.
 
 ## Observation and Comparison Planning
 
@@ -1839,7 +1853,7 @@ exports and receipts out of Git; inspect staged paths and any actually produced 
 | Change | Required kind of evidence |
 | --- | --- |
 | New-engine rule/state/content behavior | Small meaningful engine unit tests; affected product build; direct reference comparison only for its affected claim |
-| Godot input/presentation | Affected adapter build and needed actual-instance observation; no new probe/helper tests or screenshots |
+| Godot input/presentation | Affected adapter build and needed actual-instance observation. Review a changed visual layer in the [dedicated UI preview](#dedicated-ui-preview-visual-review). |
 | Verification/probe/planner/report code | Execute and inspect the needed verification directly; add no tests of verification infrastructure |
 | Documentation/instructions | Direct document and scope checks, committed planner inspection, honest existing CI outcome |
 | Original research or genuinely shared evidence input | Owning research requirements and affected dependencies; keep original evidence/provenance intact |
