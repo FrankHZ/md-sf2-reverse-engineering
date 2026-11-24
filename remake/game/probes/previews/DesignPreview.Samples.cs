@@ -19,6 +19,7 @@ public partial class DesignPreview
         Tab.Inspect => InspectionSource(),
         Tab.Battle => Authored("practice-yard"),
         Tab.Members when sample == Sample.Preparation => new SampleSource("localization-pilot", StartAtPreparation),
+        Tab.Field when sample == Sample.Caravan => null,
         Tab.Members or Tab.Shop or Tab.Field or Tab.System => new SampleSource("shop-supplies", AddFieldSign),
         Tab.Results when outcome == Outcome.Defeat => Authored("progression-outcome-defeat"),
         Tab.Results when outcome == Outcome.Retreat => new SampleSource("progression-outcome-victory", TeachEgress),

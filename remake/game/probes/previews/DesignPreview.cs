@@ -8,7 +8,7 @@ namespace Sf2.Remake.GodotAdapter.Previews;
 public partial class DesignPreview : Control
 {
     private enum Tab { Witch, Dialogue, Church, Battle, Members, Shop, Field, Inspect, Results, System }
-    private enum Sample { Default, DialogueChoice, Preparation }
+    private enum Sample { Default, DialogueChoice, Preparation, Caravan }
     private enum Outcome { Victory, Defeat, Retreat }
     private const float ToolbarHeight = 72, DisplayScale = (1080 - ToolbarHeight) / 1080;
     private static readonly Rect2 PictureBounds = new(64, ToolbarHeight, 1792, 1008);
@@ -37,7 +37,7 @@ public partial class DesignPreview : Control
     {
         GetWindow().Title = "SF2 · Production UI preview";
         GameText.Initialize(_settings.Language);
-        _save = ProjectSettings.GlobalizePath($"user://design-preview/{Guid.NewGuid():N}/slot.json");
+        _save = NewSavePath();
         AddChild(_game);
         Place(this, new TextureRect { Name = "ProductionPicture", Texture = _game.GetTexture(),
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, MouseFilter = MouseFilterEnum.Ignore }, PictureBounds);
@@ -47,7 +47,8 @@ public partial class DesignPreview : Control
         _outcome = args.Contains("--retreat") ? Outcome.Retreat :
             args.Contains("--defeat") ? Outcome.Defeat : Outcome.Victory;
         var tab = args.Contains("--battle") ? Tab.Battle : args.Contains("--inspect") ? Tab.Inspect :
-            args.Contains("--field") ? Tab.Field : args.Any(arg => arg is "--members" or "--prepare") ? Tab.Members :
+            args.Any(arg => arg is "--field" or "--caravan") ? Tab.Field :
+            args.Any(arg => arg is "--members" or "--prepare") ? Tab.Members :
             args.Contains("--shop") ? Tab.Shop : args.Contains("--church") ? Tab.Church :
             args.Any(arg => arg is "--dialogue" or "--dialogue-choice") ? Tab.Dialogue : args.Contains("--system") ? Tab.System :
             args.Any(arg => arg is "--results" or "--defeat" or "--retreat") ? Tab.Results : Tab.Witch;
@@ -55,6 +56,7 @@ public partial class DesignPreview : Control
         {
             Tab.Dialogue when args.Contains("--dialogue-choice") => Sample.DialogueChoice,
             Tab.Members when args.Contains("--prepare") => Sample.Preparation,
+            Tab.Field when args.Contains("--caravan") => Sample.Caravan,
             _ => Sample.Default,
         };
         SelectTab(tab, sample);
@@ -99,6 +101,7 @@ public partial class DesignPreview : Control
         {
             (Tab.Dialogue, Sample.Default) => Sample.DialogueChoice,
             (Tab.Members, Sample.Default) => Sample.Preparation,
+            (Tab.Field, Sample.Default) => Sample.Caravan,
             _ => Sample.Default,
         };
         SelectTab(_tab, sample);
@@ -123,13 +126,15 @@ public partial class DesignPreview : Control
         _outcomes.AddItem(T("撤退", "Retreat"));
         _outcomes.Select((int)_outcome);
         _outcomes.Visible = _tab == Tab.Results && !_menuOpen;
-        _sampleSwitch.Visible = _tab is (Tab.Dialogue or Tab.Members) && !_menuOpen;
+        _sampleSwitch.Visible = _tab is (Tab.Dialogue or Tab.Members or Tab.Field) && !_menuOpen;
         _sampleSwitch.Text = (_tab, _sample) switch
         {
             (Tab.Dialogue, Sample.DialogueChoice) => T("切换至阅读", "Show Reading"),
             (Tab.Dialogue, _) => T("切换至是／否", "Show Yes / No"),
             (Tab.Members, Sample.Preparation) => T("切换至补给", "Show Supplies"),
             (Tab.Members, _) => T("切换至整备", "Show Preparation"),
+            (Tab.Field, Sample.Caravan) => T("切换至探索", "Show Field"),
+            (Tab.Field, _) => T("切换至马车", "Show Caravan"),
             _ => "",
         };
         _motion.Text = _settings.ReducedFlash ? T("动效：减弱", "Motion: low") : T("动效：开", "Motion: on");
@@ -145,6 +150,9 @@ public partial class DesignPreview : Control
     }
 
     private static bool FieldTab(Tab tab) => tab is Tab.Members or Tab.Shop or Tab.Field;
+
+    private static string NewSavePath() =>
+        ProjectSettings.GlobalizePath($"user://design-preview/{Guid.NewGuid():N}/slot.json");
 
     private void SelectTab(Tab tab, Sample? sample = null)
     {
@@ -168,14 +176,17 @@ public partial class DesignPreview : Control
                 _host.QueueFree();
             }
             var host = Main.Instantiate<GameRoot>();
-            host.ConfigurePreview(Source(tab, _sample, _outcome), _settings, _save,
+            host.ConfigurePreview(Source(tab, _sample, _outcome), _settings,
+                _sample == Sample.Caravan ? NewSavePath() : _save,
                 () => Callable.From(() => SelectTab(Tab.Witch)).CallDeferred());
             _host = host;
             _game.AddChild(host);
+            if (_sample == Sample.Caravan) host.LoadCaravanPreview();
         }
         _entry = tab switch
         {
-            Tab.Members => PreviewEntry.Party, Tab.Shop => PreviewEntry.Shop, Tab.Field => PreviewEntry.FieldMenu,
+            Tab.Members => PreviewEntry.Party, Tab.Shop => PreviewEntry.Shop,
+            Tab.Field when _sample == Sample.Default => PreviewEntry.FieldMenu,
             Tab.Inspect => PreviewEntry.Inspection, Tab.Results => PreviewEntry.Outcome, Tab.System => PreviewEntry.System,
             _ => null,
         };

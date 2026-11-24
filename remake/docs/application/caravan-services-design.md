@@ -51,6 +51,12 @@ Purge can select another non-leader. Save is available after Leave and the text1
 `floor-*` and `desktop-*` seeds retain the independent original twelve-member histories unchanged.
 No existing player namespace is overwritten; each review needs a fresh Sample.
 
+The dedicated [F7 Caravan preview](../../game/probes/previews/README.md#caravan-sample) reads that
+Map26 service seed through the ordinary Continue reader and starts at the same Talk approach.
+Use the matched #2177 world and opening inputs with the #1870 catalog. The historical #1870 world
+is rejected by the current adapter with `identity-icon-binding`. Re-selecting F7 reloads the registered
+seed and assigns a fresh preview save destination.
+
 From that registered bundle in PowerShell7:
 
 ```powershell

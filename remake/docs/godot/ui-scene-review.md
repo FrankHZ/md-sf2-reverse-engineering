@@ -31,7 +31,7 @@ for world/UI layering and the [shared visual language](ui-design-language.md) fo
 | Field Member → stats, spells and numbered Items; Prepare or direct Magic/Item | [Party and inventory](#4-party-inventory-and-preparation) · [Field composition](field-and-shop.md#current-composition) | F5 → Show Preparation (`--prepare`). Confirm Prepare… on Medic A, then Give / exchange → Practice Leaf → recipient. Back out to the same member. F5 Supplies (`--members`) shares F6 purchases and shows the unavailable Prepare outcome. Use [connected Map 16](field-and-shop.md#prepare-command-icons) for command art, populated Magic and direct Adventure entries. | Compare selection, grouped stats, four slot identities, costs, the recipient/exchange and read-before-commit states. Check the fixed footer after Back. |
 | Church → service → quote/refusal/result; Record → Save | [Church](#5-church-services) | F3 (`--church`) opens the practice Church. Choose Raise for a quote, decline or pay and read the result; Promotion can show refusal. Use the [ordinary Church/Record route](#direct-reproduction) for Save and the [admitted promotion route](../application/church-promotion-design.md#playable-hero-and-reproduction) for an actual rite. | Keep priest and gold visible, then check member/condition/price and distinct choices. Record must hand off to one host page and return to the field. |
 | Shop → Buy, Sell, Repair or Deals → selection, quote and result | [Shop](#6-shop-stock-recipient-and-price-before-commitment) | F6 (`--shop`) talks to the faced merchant. Buy and switch directly to F5 to inspect the added item. Return to F6 and sell from its actual slot. For admitted [Repair](../domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction) and [Deals repurchase](field-and-shop.md#hassan-deals-and-cold-continue), use the connected inputs. | Keep the merchant and recipient pack readable. Compare exact price, gold, full-pack/funds refusals and the return from a canceled quote. |
-| Caravan → Join/Purge, Depot or Item | [Caravan pages](#caravan-service-pages) | The ordinary [Map22/26 service](../application/caravan-services-design.md#current-formation-implementation) and its [Depot](../application/caravan-services-design.md#current-depot-implementation) and [Item](../application/caravan-services-design.md#current-item-implementation) recipes reach these production pages. The preview has no service entry. | Distinguish active/reserve lists, numbered packs, ordered Depot rows and confirmation. Return from a subpage to its caller and from Leave to the field. |
+| Caravan → Join/Purge, Depot or Item | [Caravan pages](#caravan-service-pages) | F7 → Show Caravan (`--caravan`) restores the [registered Map26 approach](../../game/probes/previews/README.md#caravan-sample). Confirm to Talk. Join opens Peter's reserve entry, Depot → Deposit opens a numbered donor pack and Item → Give opens the recipient picker. | Distinguish active/reserve lists, numbered packs, ordered Depot rows and confirmation. Return from a subpage to its caller and from the root through the service dialogue to the field. |
 | Battle move → Main → Magic/Item → Target or confirmation | [Battle decision and target](#from-entry-to-committed-action) · [Target layout](#showing-range-and-choosing-a-target) | F4 (`--battle`): move Down, wait for delivery, Confirm Main, then H → MEND → GUARD A. Back from Target returns to the spell; execute for a production recovery scene. Main also exposes Attack, Item and Stay; connected action families have their own [decision evidence](battle-interaction-baseline.md#production-f4f8f9-contract). | Check cyan move vs warm target marks, acting vs recipient card, unavailable reasons, selected row and fixed footer. On Back, preserve the preview stop and the relevant row. |
 | Inspection cursor → unit details or empty ground → Options → Member, Map, Speed or Quit | [Viewing the battlefield](#viewing-the-battlefield) | F8 (`--inspect`) starts on the acting unit; Confirm an occupied cell for details or an empty cell for Options. For Member, switch panes and inspect a slot, then Back twice to the cursor. The [large package](battle-ui-composition.md#reproduce-the-native-member-layout) adds long names and roster pressure. Options Save eligibility remains [host-owned](host-ui.md#access-through-the-finite-demo). | Compare world and detail cards, movement field, Map legend, member conditions, all four slot rows and retained cursor after cover or Back. |
 | Playback → result or outcome → next input | [Presentation and outcome](#presentation-outcome-and-usable-return) | F4 MEND covers recovery playback. F9 outcome picker or `--results` / `--defeat` / `--retreat`: advance the before-battle message, confirm a stop, then Attack / Stay / Magic → EGRESS respectively. Read through actual results and resume field movement. [Connected playback and outcome evidence](battle-scenes.md#production-playback-and-result-layout) covers different content. | Keep action cards, artwork and current message distinct; read reward/defeat/retreat text before control changes. |
@@ -76,11 +76,6 @@ The connected routes above already exercise production behavior. Actual appearan
 preview is **Unknown** for the uncovered branches below. Add an entry only for a subsequent review
 that needs it. Each proposal retains the real presenter, application admission and Back chain.
 
-- **Caravan.** F1–F10 select no Caravan service. The smallest useful entry would stage one
-  disposable registered Map22 or Map26 approach and use ordinary Talk to mount the current
-  service root. Use the existing world/catalog and service-ready custody inputs to reach Join/Purge,
-  a Depot transfer or Item choice. A review can select one branch without staging all of them.
-  [Caravan sample follow-up](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2214)
 - **Host persistence and recovery.** A sample of paginated or protected slots would need a
   disposable numbered namespace, a compatible recipe and seeded history in place of the preview's
   single explicit file. Review admitted Save/Record or slot recovery one caller at a time. The
@@ -486,8 +481,36 @@ The ordinary Caravan uses the field choice and pack panels. Keep the selected me
 pack beside Join/Purge choices and show the confirmation for relief or dead members. Depot shows
 ordered stored items and the selected member's numbered pack for Deposit, Derive and exchange.
 Item routes Use/Give/Equip/Drop through the real service caller. Check the stored/donor slot,
-recipient or return slot, then the confirmation or refusal. Back unwinds that operation; Leave
-finishes the caller and restores walking. [Current Caravan composition and routes](field-and-shop.md#caravan-formation)
+recipient or return slot, then the confirmation or refusal. Back unwinds the operation. Back at
+the root opens the exit dialogue. Confirm through it to restore walking. [Current Caravan composition and routes](field-and-shop.md#caravan-formation)
+
+Select **F7 Field → Show Caravan**, then Confirm at the Map26 approach. The sample opens with
+eleven active members, Peter in reserve and an empty Depot.
+
+- **Join / Purge.** Open Join and select Peter. Read the result and return to the root with Back.
+  Open Purge to review active members and their packs. Selecting the leader shows the protection
+  result. Back returns through the selection to the root.
+- **Depot.** Choose Depot → Deposit → Bowie → Wooden Sword in slot 1. The pack loses the item and
+  the Depot gains it. Continue through the receipt and back to Depot. Retrieve opens its stored
+  row and recipient picker. Back through both pages to the root.
+- **Item.** Choose Item → Give → Bowie → an occupied slot. Return from the recipient picker with
+  Esc or right-click and back out to the root. Esc opens the exit dialogue. Confirm through it to walk.
+
+Press F7 again to restore the initial formation, packs and Depot.
+
+**Confirmed at 1600×900 in the English preview.** The root and child headings, gold focus, numbered
+packs and wrapped input footer were legible. The Give recipient list scrolled without covering the
+footer. Its heading uses the Shop prompt “Who receives the purchase?” while the real Caravan Give
+caller is active.
+
+The Map26 run observed Peter's Join, leader protection on Purge, the Wooden Sword moving to
+Depot, Give cancellation without a transfer, retained root focus and walking after exit text 10.
+A field save wrote to the preview file. F7 restored the starting pack, Depot and roster from
+the read-only seed. The Chinese seed reached the localized root through direct launch.
+
+The Map22 callback, vehicle entry, full-party relief and other service outcomes are available
+through their [connected routes](../application/caravan-services-design.md#current-formation-implementation).
+[Preview launch and isolation](../../game/probes/previews/README.md#caravan-sample)
 
 ## 7. Host Menu, Settings, Save and recovery
 
