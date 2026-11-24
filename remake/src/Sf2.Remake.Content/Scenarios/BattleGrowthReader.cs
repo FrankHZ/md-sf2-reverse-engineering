@@ -34,8 +34,8 @@ internal static class BattleGrowthReader
             Require(actor is not null, "growth-actor", "world.growth.actor");
             byte classId = (byte)Number(row, "classId", 0, 31);
             var initial = Sf2ClassRules.SourceClass(actor!.ClassRule);
-            Require(initial == classId || !authored && Sf2ClassRules.OrdinaryDestination(initial) is { } promotion &&
-                Sf2ClassRules.SourceClass(promotion) == classId, "growth-class", "world.growth.classId", true);
+            Require(initial == classId || !authored && Sf2ClassRules.PromotionDestination(initial, classId) is not null,
+                "growth-class", "world.growth.classId", true);
             Require(actor.SourceLoadout is not null, "growth-loadout", "world.growth.actor", true);
             if (authored)
             {
@@ -63,18 +63,23 @@ internal static class BattleGrowthReader
                     scenario.PrivateDefinitions!.Allies.TryGetValue((byte)member, out var ally))
                     physical = physical with { Critical = OpeningPartyInitialization.InitialCritical(value, ally.StartingLevel, physical.Critical) };
                 var bound = deployment with { Definition = baseline.WithGrowth(value, physical) };
-                if (authored || Sf2ClassRules.OrdinaryDestination(initial) is not { } promotedRule ||
-                    Sf2ClassRules.SourceClass(promotedRule) is not { } promotedId ||
-                    !growth.TryGetValue((deployment.Actor, promotedId), out var promoted)) return bound;
+                if (authored) return bound;
                 var source = scenario.PrivateDefinitions!;
-                Require(source.Classes.TryGetValue(promotedId, out var destination), "growth-class-definition", "world.growth.classId", true);
-                var prowess = PrivateBattleActionBindings.Physical(source, destination!.ProwessExpression,
-                    baseline.SourceLoadout!.Items, leader: physical!.Leader, gold: 0) with { Promoted = true };
-                return bound with { RegularPromotion = new(baseline.Actor, promotedRule, 1, baseline.MaxHp, baseline.MaxMp,
-                    baseline.Attack, baseline.Defense, baseline.Agility, baseline.ExtraRoundAction, destination.Movement, baseline.Spells,
-                    prowess, PrivateBattleScenarioReader.Mover(destination.MovementType), baseline.SourceLoadout,
-                    promoted with { RetainedSpells = value.Spells.Where(spell => spell.Level <= 40).ToArray() },
-                    resistance: PrivateAttackSpellBindings.Resistance(destination.ResistanceExpression)) };
+                var variants = new Dictionary<byte, BattleActorDefinition>();
+                foreach (var pair in growth.Where(pair => pair.Key.Actor == deployment.Actor && pair.Key.Class != initial))
+                {
+                    byte id = pair.Key.Class;
+                    var promotedRule = Sf2ClassRules.PromotionDestination(initial, id)!.Value;
+                    Require(source.Classes.TryGetValue(id, out var destination), "growth-class-definition", "world.growth.classId", true);
+                    var prowess = PrivateBattleActionBindings.Physical(source, destination!.ProwessExpression,
+                        baseline.SourceLoadout!.Items, leader: physical!.Leader, gold: 0) with { Promoted = true };
+                    variants.Add(id, new(baseline.Actor, promotedRule, 1, baseline.MaxHp, baseline.MaxMp,
+                        baseline.Attack, baseline.Defense, baseline.Agility, baseline.ExtraRoundAction, destination.Movement, baseline.Spells,
+                        prowess, PrivateBattleScenarioReader.Mover(destination.MovementType), baseline.SourceLoadout,
+                        pair.Value with { RetainedSpells = value.Spells.Where(spell => spell.Level <= 40).ToArray() },
+                        resistance: PrivateAttackSpellBindings.Resistance(destination.ResistanceExpression)));
+                }
+                return bound with { PromotionVariants = new ReadOnlyDictionary<byte, BattleActorDefinition>(variants) };
             })));
     }
 

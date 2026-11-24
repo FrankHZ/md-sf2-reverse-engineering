@@ -32,7 +32,7 @@ public sealed class OpeningSaveTests
         var encounter = basis.Encounters[data.Encounter];
         var ally = encounter.Deployments[0];
         var definition = BattleSaveProgressTests.Replace(basis, encounter.WithDeployments(encounter.Deployments.Select(d =>
-            d == ally ? d with { RegularPromotion = BattleSaveProgressTests.Hero(d.Definition) } : d)));
+            d == ally ? d with { PromotionVariants = new Dictionary<byte, BattleActorDefinition> { [12] = BattleSaveProgressTests.Hero(d.Definition) } } : d)));
         var member = data.Allies.First() with { Class = 12, Level = 1, Exp = 0, Spells = [13, 63, 63, 63] };
         SessionStartOutcome Restore(SavedAlly changed)
         {

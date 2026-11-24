@@ -7,6 +7,23 @@ from sf2tool.h2.battle_global_data import _arguments, _tokens
 from sf2tool.remake_exploration_actions import action_stream, walking_actions
 
 
+def promotion_sprite_fields(bindings: dict[int, int]) -> dict:
+    if len(bindings) == 1:
+        role, sprite = next(iter(bindings.items()))
+        return {"promotionClass": role, "promotionSprite": sprite}
+    if bindings:
+        return {"promotionSprites": [
+            {"classId": role, "sprite": sprite} for role, sprite in sorted(bindings.items())
+        ]}
+    return {}
+
+
+def promotion_sprites(appearance: dict) -> dict[int, int]:
+    if "promotionClass" in appearance:
+        return {appearance["promotionClass"]: appearance["promotionSprite"]}
+    return {row["classId"]: row["sprite"] for row in appearance.get("promotionSprites", ())}
+
+
 def ally_sprites(compiler) -> list[dict[str, Any]]:
     classes_path = "disasm/data/stats/allies/allystartdefs.asm"
     sprites_path = "disasm/data/stats/allies/allymapsprites.asm"
@@ -19,7 +36,9 @@ def ally_sprites(compiler) -> list[dict[str, Any]]:
     sprites = _arguments(
         (compiler.upstream / sprites_path).read_text(encoding="utf-8"), "mapsprite"
     )
-    promoted = {row["member"]: row["class"] for row in compiler.promotion_classes}
+    promoted: dict[int, list[str]] = {}
+    for row in compiler.promotion_classes:
+        promoted.setdefault(row["member"], []).append(row["class"])
     ordinary = {
         "SDMN": "HERO",
         "KNTE": "PLDN",
@@ -52,16 +71,16 @@ def ally_sprites(compiler) -> list[dict[str, Any]]:
         role = compiler.number("CLASS_" + classes[character])
         table_sprite = compiler.number("MAPSPRITE_" + sprites[character])
         sprite = class_sprite(table_sprite, role)
-        variant = {}
-        if character in promoted:
-            destination = promoted[character]
-            if ordinary.get(classes[character]) != destination:
+        bindings = {}
+        for destination in promoted.get(character, ()):
+            if (ordinary.get(classes[character]) != destination
+                    and (classes[character], destination) != ("KNTE", "PGNT")):
                 raise ValueError("unsupported promotion mapsprite")
-            promotion_class = compiler.number("CLASS_" + destination)
-            variant = {
-                "promotionClass": promotion_class,
-                "promotionSprite": class_sprite(table_sprite, promotion_class),
-            }
+            class_id = compiler.number("CLASS_" + destination)
+            if class_id in bindings:
+                raise ValueError("duplicate promotion class")
+            bindings[class_id] = class_sprite(table_sprite, class_id)
+        variant = promotion_sprite_fields(bindings)
         rohde = character == compiler.equates["ALLY_ROHDE"]
         result.append(
             {

@@ -185,9 +185,10 @@ internal sealed partial class BattleMapViewport : Control
                     ? field.AllySprites[actor.Initialization?.AllyPartyMember ?? actor.ProcessingOrder]
                     : field.EnemySprites[actor.Actor];
                 if (actor.Faction == BattleFaction.Ally && actor.Definition.Growth is { } growth &&
-                    content.Exploration?.Maps.Values.SelectMany(map => map.Population?.AllySprites ?? []).FirstOrDefault(s =>
-                        s.Character == actor.Initialization?.AllyPartyMember && s.PromotionClass == growth.ClassId) is { } promoted)
-                    sprite = promoted.ForClass(growth.ClassId);
+                    content.Exploration?.Maps.Values.SelectMany(map => map.Population?.AllySprites ?? [])
+                        .Where(s => s.Character == actor.Initialization?.AllyPartyMember)
+                        .Select(s => s.PromotedSprite(growth.ClassId)).FirstOrDefault(id => id is not null) is { } promoted)
+                    sprite = promoted;
                 if (sprite != KrakenHeadSprite && !_visuals.Sprites.ContainsKey(sprite)) throw new InvalidOperationException("field-actor-resource-unavailable");
                 _spriteIds.Add(actor.Actor, sprite);
                 var image = new Sprite2D { Name = "MapSprite_" + actor.Actor.Value, TextureFilter = TextureFilterEnum.Nearest,
