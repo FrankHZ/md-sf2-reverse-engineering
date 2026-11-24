@@ -847,7 +847,8 @@ Reduced Flash are shared by both modes. The complete published package selection
 
 ### Animated map tiles
 
-The current complete pre-voyage selection is `derived/issue2180/pre-voyage-tiles-v1`.
+The complete animated-terrain base is `derived/issue2180/pre-voyage-tiles-v1`; the
+[enemy healing successor](#enemy-healing-successor) retains its tile banks.
 A map visual may include `tileAnimation` with an absolute VDP tile target, a contiguous
 tile count, a cache capacity and ordered phases. Each phase records its source tile,
 enabled-tick duration, changed block pairs and HD neighborhood overrides. The renderer

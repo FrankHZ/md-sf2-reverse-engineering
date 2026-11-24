@@ -163,8 +163,8 @@ foreground visual acceptance remain **Unknown** where no named witness covers th
 ## Follow-up order
 
 - **P2 after the two child issues.** [#2104] retains first-use review of pre-voyage recovery and
-  support. Group enemy HEAL/AURA fairy art with its faction-specific placement and one actual
-  enemy recovery. Track DETOX's art separately from its cure semantics. Use DISPEL's actual
+  support. The [enemy healing family](#enemy-healing-family-2227) covers its bounded HEAL1
+  recovery; enemy AURA delivery is still Unknown. Track DETOX's art separately from its cure semantics. Use DISPEL's actual
   status/suppression consumer for the first DEBUFF decision. These are candidate presentation
   slices. [#1456] governs foreground acceptance and [#1616] the wider design review.
 - **P3 for current later content.** [#2104] groups the remaining elemental variants and shared
