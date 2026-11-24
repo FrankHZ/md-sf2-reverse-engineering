@@ -15,7 +15,8 @@ geometry and errors, followed by independent main-gate review.
   The list retains its initiating selection while a member/preparation page owns input.
 - `PartyStatusView` mounts the same [member page](battle-ui-composition.md#shared-member-page-2154) as battle Member.
   The roster and selected sheet share layout, focus, scrolling, row and item-slot input.
-  The [native member-page design](ui-architecture.md#member-page-from-either-caller) preserves these inputs across the two callers.
+  The themed container layout places the arrows below the scrollable roster and reserves the footer
+  for the reading hint and actions. [Member layout and input ownership](ui-architecture.md#member-page-from-either-caller).
   Field membership comes from the live Party query. Portrait, identity, vitals, attributes,
   learned spells and inventory remain grouped. Member kills and defeats share a record frame,
   and Party gold has its own frame. All three values use 48px rows, 24px horizontal insets,

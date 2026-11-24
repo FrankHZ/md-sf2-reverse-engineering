@@ -41,7 +41,7 @@ func readable(label: Label, area: Rect2, font: int) -> bool:
 
 func inventory(party: Dictionary) -> bool:
     var details := view.find_child("MemberDetails", true, false)
-    var scroll := details.get_node("Items") as ScrollContainer
+    var scroll := details.find_child("Items", true, false) as ScrollContainer
     var area := scroll.get_global_rect()
     var entries: Array = party.layout.items.entries
     if not check(entries.size() == 4 and scroll.clip_contents and scroll.scroll_vertical == 0,
@@ -55,10 +55,10 @@ func inventory(party: Dictionary) -> bool:
     return true
 
 func summary(party: Dictionary, values: Array) -> bool:
-    var record_frame := view.find_child("RecordFrame", true, false) as Panel
-    var gold_frame := view.find_child("GoldFrame", true, false) as Panel
-    var labels := [record_frame.get_node("Kills"), record_frame.get_node("Defeats"), gold_frame.get_node("GoldLabel")]
-    var numbers := [record_frame.get_node("KillsValue"), record_frame.get_node("DefeatsValue"), gold_frame.get_node("Gold")]
+    var record_frame := view.find_child("RecordFrame", true, false) as PanelContainer
+    var gold_frame := view.find_child("GoldFrame", true, false) as PanelContainer
+    var labels := [record_frame.find_child("Kills", true, false), record_frame.find_child("Defeats", true, false), gold_frame.find_child("GoldLabel", true, false)]
+    var numbers := [record_frame.find_child("KillsValue", true, false), record_frame.find_child("DefeatsValue", true, false), gold_frame.find_child("Gold", true, false)]
     var area := record_frame.get_global_rect()
     var gold_area := gold_frame.get_global_rect()
     var width := gold_area.size.x

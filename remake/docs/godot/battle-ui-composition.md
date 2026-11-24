@@ -334,6 +334,44 @@ fixtures above reached the intended boundaries. The first full-name detail check
 “The long name remains readable on the full sheet”. The measured header layout passed its rerun.
 Human review stays with #1456.
 
+#### Reproduce the native member layout
+
+Use the Debug build and isolated launch environment above. For visual review, launch the production
+preview from the repository root with the large battle package generated above:
+
+```powershell
+& $env:GODOT_BIN --path remake/game --resolution 1600x900 res://probes/previews/DesignPreview.tscn -- `
+    --inspect --authored-package $package
+```
+
+Confirm on empty ground, then confirm Member. Inspect the first three rows, cycle Target to Items,
+select slot four, then select the empty slot. Switch to F5 to read the field accounting and footer.
+L changes the language. **Confirmed** at 1600×900 English and 1920×1080 Chinese: the long battle
+name wraps above the class and reading lists, the defeated and absent conditions are readable,
+and the fourth slot and its effect fit together. Selecting the empty slot clears the effect.
+Both arrows appear inside their frame. F5 shows both records, gold and the separate footer actions.
+
+For ordinary input, use the `member-large` (mapped pad and pointer) and `member-field` commands
+above. Use [party-capacity](field-and-shop.md#reproduce-four-slot-capacity-and-accounting) for the
+long equipped/damaged item, missing records and four complete rows. Use
+[`member-field-portraits`](#reproduce-registered-portraits) with the Map66 local start copy,
+`SF2_INSPECTION_ROUTE=pad`, Chinese settings and the registered display catalog
+`derived/issue2001/catalogs-v1/world.zh-CN.json` selected through `SF2_DISPLAY_CATALOG`.
+Field Prepare opens actual actions and Back restores the borrowed portrait, member and scroll.
+The fourteen-member field case exercises this return with nonzero scroll. The
+[inspection corridor](#reproduce-the-inspected-movement-field) opens the adjacent direct Full
+sheet and returns to the same enemy cell. These input runs use state, projections and errors.
+
+The first layout capped the body's width at zero. The capacity probe failed whole-slot visibility,
+`member-large` failed the retained-member click, and `member-field` failed parallel reading columns.
+Removing the horizontal cap corrected all three boundaries. Capacity then caught a 44px accounting
+value in a 48px row. Filling the row vertically restored the shared accounting alignment.
+The corrected observers passed. The registered empty-roster case also returned to Options without a
+selectable slot. The Map66 and empty-roster processes each reported two ObjectDB instances at
+shutdown. Verbose output identified `AudioStreamWAV` and `AudioStreamPlaybackWAV`.
+[Audio lifetime boundary](../verification/host.md#audio-resource-lifetime-observation).
+Physical-device and human comfort remain **Unknown**.
+
 #### Reproduce registered portraits
 
 Use the same Debug adapter, disposable saves, original graphics mode, and fresh output/settings
