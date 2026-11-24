@@ -74,7 +74,7 @@ internal sealed partial class BattleSceneView
         }
         if (content.FieldDeath is { } death) Group(death.ExitFrames);
         foreach (var keys in new[] { AttackSpellView.BlazeResources, BlazeTwoEffect.Resources,
-            BlastOneEffect.Resources, BreathResources, PhoenixWaveView.Resources })
+            BlastOneEffect.Resources, BreathResources, PhoenixWaveView.Resources, DetoxEffectView.Resources })
             if (keys.All(content.Rasters.ContainsKey)) Group(keys);
         return selected;
     }
@@ -85,6 +85,7 @@ internal sealed partial class BattleSceneView
             if (sprite.Visible) Resolve(binding, _settings.GraphicsMode == "hd").Bind(sprite);
         _attackSpell.QueueRedraw();
         _phoenixWave.RefreshTextures();
+        _detox.RefreshTextures();
     }
 
     private RasterBinding Raster(string key, bool groupHasHd, float originalScale)

@@ -39,6 +39,7 @@ together. The active package is the set selected in the launch process.
 | **Pre-voyage entry layers** · `derived/issue2179/pre-voyage-entry-v1` | Complete pre-voyage selection with six switchable title/Witch layers, carrying forward the #2178 UI, battle, actor, portrait and terrain banks. [Production](#pre-voyage-entry-layers-2179) · [Actual entry consumer](hd-rollout.md#production-entry-reproduction) |
 | **Pre-voyage animated terrain** · `derived/issue2180/pre-voyage-tiles-v1` | Complete animated-terrain base. Eight map visuals extend the #2179 world with phase-specific Original and HD terrain. [Production and native replay](#pre-voyage-animated-terrain-2180) |
 | **Enemy healing successor** · `derived/issue2227/pre-voyage-healing-v1` | Complete #2180 successor with Original/HD evil-fairy artwork and shared faction selection. [Resource and native boundary](#enemy-healing-family-2227) |
+| **DETOX successor** · `derived/issue2232/pre-voyage-detox-v1` | Complete #2227 successor with 11 Original/HD DETOX frames across its declared close-ups. [Resource and closure](#detox-family-2232) |
 | **PGNT** · `derived/issue1957/pgnt-v3` | Separate registered later progression/Battle26 witness. Its older Map3 HD bank has no L1 contexts and its cue 12 is the defeat placeholder. Preserve that evidence selection. Check resource lineage when proposing a successor that combines later progression with pre-voyage corrections. [PGNT reproduction](../development-and-verification.md#high-rank-elemental-magic-observation) |
 | **Display catalogs** · `derived/issue1957/catalogs-v1`, `derived/issue2001/catalogs-v1` | Independent prepared Chinese name overlays for the owning reproductions. Match the catalog and entry locale to the named reproduction. A catalog supplies display names and does not select world, scene or media. [PGNT catalog selection](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Retail catalog selection](presentation-assets.md#sleep-display-name) |
 | **Retail base and library** · `derived/issue2001/issue1966-original`, private asset Git `runtime/retail-v1` | Base world/entry provenance and preparation outputs used to assemble packages. Some prepared candidates have no current package binding. [Retail preparation](#retail-original-preparation) |
@@ -954,3 +955,29 @@ acceptance are in [the spell owner](../godot/spell-presentation.md#enemy-healing
 The existing doubled Original format and family `derive_frame` HD recipe are reused. The
 publisher closes its temporary directory before the real native consumer cold-loads the result.
 Only private derived storage contains these rasters and their HD variants.
+
+## DETOX family #2232
+
+The complete successor is `derived/issue2232/pre-voyage-detox-v1`. It consumes the
+`derived/issue2227/pre-voyage-healing-v1` closure and the registered retail tileset 7,
+with 1,056 indexed bytes and palette replacements `08880aaa0ccc`. Zero-based mote
+tile offsets and square tile widths are (27,1), (26,1), (22,2), (18,2), (9,3), and (0,3).
+The five 1×1 trail frames start at tile 28. The producer uses the existing VDP column
+layout, alpha and opaque-black mask checks, and the pinned graphics filter at
+`172662709b31cb296b55f51894754ce810c30f6c`. Original frames are 8–24 pixels on a side.
+The HD bank is four times denser.
+
+The one-family pilot encoded 9,605 bytes for both banks. With 26 declared scenes the
+expected growth was about 250 KB and the complete package about 362 MB. Plan for one
+candidate and one publication, up to 1 GiB of disk headroom and 3 GiB of peak memory
+on the prior producer estimate. Copying and comparison are linear in package bytes.
+Only the scene receiving the group is rewritten at a time after dependency discovery.
+Peak memory was not measured.
+
+**Confirmed** by direct comparison of the actual private publication. Its 174-file
+closure includes 148 byte-identical files and 26 scene JSONs. Removing the two DETOX
+banks from each changed scene restores structural equality with the base. The final
+package is 361,493,189 bytes and the largest scene is 3,188,370 bytes of the existing
+4 MiB limit. The aggregate gain is 249,600 bytes. The [package recipe](presentation-assets.md#detox-successor)
+and [native acceptance](../godot/spell-presentation.md#prepared-detox-presentation)
+own reproduction and scope.

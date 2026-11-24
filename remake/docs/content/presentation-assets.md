@@ -860,7 +860,7 @@ and [resource trace](asset-inventory.md#pre-voyage-animated-terrain-2180).
 
 ### Enemy healing successor
 
-The complete current healing successor is `derived/issue2227/pre-voyage-healing-v1`.
+The enemy healing successor is `derived/issue2227/pre-voyage-healing-v1`.
 Publish from the complete #2180 base using the registered retail effects and pinned graphics
 checkout, with explicit absolute paths selected locally:
 
@@ -877,3 +877,22 @@ accepts legacy healing groups without `enemy`; declared enemy groups require two
 wings and five dust resources. The [resource owner](asset-inventory.md#enemy-healing-family-2227)
 records the bounded volume, provenance and native acceptance. Private enemy AURA and unbound
 higher-rank gameplay have no new delivery claim.
+
+### DETOX successor
+
+Select `derived/issue2232/pre-voyage-detox-v1` for prepared private Battle Magic 1–3.
+Publish from the complete #2227 healing successor with the registered retail effects
+and pinned graphics checkout. Select explicit absolute paths for the four arguments.
+
+```powershell
+uv run --with pillow python -m sf2tool.remake_detox_art `
+  --base $base --effects $effects --output $output --gfx-root $gfxRoot
+```
+
+The output must be fresh under worktree `local/` or the registered shared `derived/`
+directory. The named package mounts all eleven Original and HD rasters in each declared
+battle scene. Select its `world.json`, `main-scenes.json`, `entry/entry.json` and six
+`opening-inputs` selections as a unit. Earlier packages keep the pose and result path.
+The [resource trace](asset-inventory.md#detox-family-2232) records provenance and closure,
+and the [spell owner](../godot/spell-presentation.md#prepared-detox-presentation) records
+the controlled native runs.

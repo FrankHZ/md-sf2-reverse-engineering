@@ -129,6 +129,7 @@ def selected_groups(
         "blaze-1": ["frame-0", "frame-1"],
         "blaze-2": ["flame-0", "flame-1", "meteor-0", "meteor-1", "impact-0", "impact-1"],
         "blast-1": [f"frame-{index}" for index in range(15)],
+        "detox": [f"frame-{index}" for index in range(11)],
     }
     for family, names in effects.items():
         keys = [family + "/" + name for name in names]
