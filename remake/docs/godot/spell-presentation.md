@@ -670,3 +670,12 @@ collision, a producer assumption about a nonexistent `scene.json` (the actual op
 `main-scenes.json`), a missing Pillow invocation, a 64×64 observation viewport and a probe field
 lookup. Final native runs have no adapter/script errors; some retain a four-ObjectDB exit warning.
 Peak native memory and subjective appearance remain **Unknown**.
+
+Verification on the committed slice uses `uv run sf2 verify plan --base origin/main --head HEAD
+--scope engine`. The exact new producer is registered in `REMAKE_PRODUCER_PATHS`; research
+classification rules retain their existing meaning. The plan and the PR's actual scope job select
+`engine-unit`, `adapter-build`, `private-admission-build`, `live-inspection-build`,
+`h4-comparison-build` and `research-public`. All six selected local checks passed, including
+locked auxiliary builds and the direct Ruff/contract/index checks. CI conclusions are recorded
+in the PR and independent acceptance handoff. Native evidence belongs to the earlier behavior
+checks above; these build jobs do not imply new gameplay observations.
