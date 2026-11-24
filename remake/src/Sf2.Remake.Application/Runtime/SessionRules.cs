@@ -101,7 +101,8 @@ public sealed class SessionRules
             if (!battle.GetActor(actor).Spells.Contains(spellRef) ||
                 !battle.Definition.Spells.TryGetValue(spellRef, out var admitted) || spell != admitted)
                 throw new InvalidOperationException("Invalid admitted spell.");
-            if (!spell.IsAura && spellRef.Level is < 1 or > 3 && spellRef is not { Value: "heal", Level: 4 })
+            if (!spell.IsAura && spellRef.Level is < 1 or > 3 &&
+                spellRef is not { Value: "heal", Level: 4 } && !(spellRef is { Value: "detox", Level: 4 } && spell.CuresPoison))
                 throw new BattleRuleException("healing-animation", "spell.level", true);
             if (!Sf2HealingRule.CanPay(battle.GetActor(actor), spell))
                 throw new BattleRuleException("insufficient-mp", "actor.mp");

@@ -81,7 +81,7 @@ listed by rank below. [Binding contract](../content/asset-inventory.md#battle-ra
 | AURA 1 | HEALING_FAIRY v1 | **Original assets bound** for admitted private allied content through the HEAL light-fairy path. Karna's allied ordered recovery has engine evidence and ordinary native campaign casting is **Unknown**. The private Battle19 Dark Bishop shares the faction selector and evil-fairy group; actual enemy AURA delivery remains **Unknown**. Authored AURA uses its own pulse, recipient cards and one EXP delivery. | [#2104] recovery follow-up after pre-voyage priorities. Reuse the same enemy fairy decision and verify actual area recipients when needed. [Current spells](../application/church-promotion-design.md#current-battle-spells) · [Battle19 private binding](../application/battle19-repeat.md) · [Authored AURA](battle-scenes.md#authored-aura-recovery) |
 | AURA 2–4 | HEALING_FAIRY v2–v4 | **Original assets bound** for learned private allied Magic through the existing fairy path. Controlled Battle26 input covers ranks2/3 and VICR rank4, one payment and ordered return. | [Recovery and reproduction](../domain/gameplay-rules.md#private-learned-aura-ranks). Equipment consumers remain with #1818. |
 | DETOX 1–3 | DETOX v1–v3 | **Original assets bound** for admitted private Magic in the [DETOX successor](../content/presentation-assets.md#detox-successor). The same mote/trail composition plays for effective and paid no-effect casts and is suppressed by silence. Field Magic and Antidote/Fairy Powder have distinct delivery. Rune Axe Use selects DETOX2 in the original. | [#2232] delivers the [controlled native presentation](#prepared-detox-presentation). [#1965] owns rank-2/3 gameplay and equipped curse. Natural ordinary acquisition and casts remain **Unknown**. |
-| DETOX 4 | DETOX v4 | **Unavailable** in private Magic. Uses an area in the original. Its area delivery requires a separate multi-recipient check. | [#2016] rule/admission, then [#2104] playback with the actual area recipients. |
+| DETOX 4 | DETOX v4 | **Original assets bound** for private learned Magic with one cast and one end wait around the ordered area results. | [Area rules and controlled Battle26 playback](../domain/detox-ranks-design.md#detox-4-area-and-field-admission) |
 | BOOST 1 | BUFF1 v1 | **Partial**. Ordinary private Karna cast has AGI/DEF, no-effect recast, cards and return on the support scene. Protect Ring uses the same effect rules with an equipment gesture, slot wear and result notices. | [#2104] later BUFF effect work. Share the asset setup with ATTACK where source operands agree and verify Magic/Item independently. [Support evidence](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Ring witness](../domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction) |
 | BOOST 2 | BUFF1 v2 | **Partial**. Private Magic uses the shared cast scene, ordered AGI/DEF and ineffective messages, and return to battle input. Enemy SUPPORT still rejects the packed rank. | [#2104] retail BUFF1 v2 effect. [Battle26 observation](../domain/support-spell-status-design.md#boost-2-admission-and-observation) |
 | SLOW 1–2 | DEBUFF1 v1–v2 | **Partial**. Both Sarah ranks have private Battle26 witnesses with actual AGI/DEF reactions, expiry/state rules and the black support scene. The original visual effect is absent. | [#2104] later DEBUFF work with DISPEL. [Support evidence](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) |
@@ -690,7 +690,7 @@ checks above; these build jobs do not imply new gameplay observations.
 acceptance boundary is a closed private successor, legal rank-1 cure and no-effect casts, the
 rank-2 range/status and rank-3 cost differences, and cancellation, silence and graphics fallback.
 
-**Confirmed** from the pinned USA source. Learned DETOX selects 6/38/70 for ranks 1–3.
+**Confirmed** from the pinned USA source. Learned DETOX selects 6/38/70/102 for ranks 1–4.
 The dispatcher also sets bit 7 for enemy casts. The DETOX setup and update read neither the
 rank variation nor the mirror flag. Both use tileset 7, the same six mote frames and five
 trail frames, and the same two arcs. The mote's VDP centers are (304,192) and (208,192),
@@ -787,10 +787,11 @@ Magic row to HEAL. The probe now closes the reopened list before making the fres
 Receipts and logs are retained in worktree-local issue2232. Some completed processes
 reported ObjectDB exit warnings, which retain their separate [#1716] owner.
 
-**Unknown.** Natural poison/stun acquisition for these casts, live enemy DETOX, DETOX4,
+**Unknown.** Natural poison/stun acquisition for these casts, live enemy DETOX,
 hardware-exact flash/timing, subjective foreground appearance and conditions for natural
 pre-voyage learning. The controlled Battle04 no-effect cast establishes pre-voyage presentation.
-The executable rank-4 and enemy admissions retain their existing boundaries.
+The [DETOX 4 owner](../domain/detox-ranks-design.md#detox-4-area-and-field-admission) covers
+the separate controlled area cast.
 
 The engine gate passed with 3,263 tests and 50 optional private skips. The existing tests cover
 rank masks, status refresh, equipped curse and separate item/Field handling. Release and Debug

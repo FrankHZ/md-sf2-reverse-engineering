@@ -278,6 +278,7 @@ public sealed class BattleSceneState
     public IReadOnlyList<ActorRef> AttackTargets => AttackSpell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
     public HealingSceneCursor? Healing { get; }
     public bool IsAura => Spell?.IsAura == true || Item?.Effect == HealingItemEffect.FullPartyHp;
+    internal bool SequencesRecoveryTargets => IsAura || Spell is { CuresPoison: true, Radius: > 0 };
     public IReadOnlyList<ActorRef> HealingTargets => Spell is null && !IsAura
         ? [] : Action.Reactions.Select(r => r.Target).ToArray();
     public bool FriendlySupport => SupportSpell?.TargetsTeammates == true;
@@ -294,7 +295,7 @@ public sealed class BattleSceneState
     }
     public bool SwitchesAlly => (Item is not null || Spell is not null || EquipmentItem is not null && !AbsorbsMp) && Actor != Target;
     // Recovery switches caster/recipient on their actual faction's single scene side.
-    private ActorRef RecoveryDisplayed => (IsAura || EquipmentItem is not null) && Phase == BattleScenePhase.TargetExit && ReactionIndex > 0
+    private ActorRef RecoveryDisplayed => (SequencesRecoveryTargets || EquipmentItem is not null) && Phase == BattleScenePhase.TargetExit && ReactionIndex > 0
         ? Action.Reactions[ReactionIndex - 1].Target
         : Phase is BattleScenePhase.TargetEnter or BattleScenePhase.Reaction or BattleScenePhase.ResultMessage or BattleScenePhase.CureStunMessage or BattleScenePhase.CureCurseMessage or BattleScenePhase.SupportDefenseMessage or BattleScenePhase.MakeIdle or BattleScenePhase.SpellStop or BattleScenePhase.ActorExit
             ? Target!.Value : Actor;
@@ -525,7 +526,7 @@ internal static class BattleSceneContinuation
                     if (scene.TargetDefeated) { next = BattleScenePhase.DeathMessage; break; }
                     goto case BattleScenePhase.ItemReceivedMessage;
                 }
-                if (scene.IsAura && index + 1 < scene.Action.Reactions.Count)
+                if (scene.SequencesRecoveryTargets && index + 1 < scene.Action.Reactions.Count)
                 { index++; next = BattleScenePhase.TargetExit; break; }
                 if (scene.Spell is not null) { next = BattleScenePhase.MakeIdle; break; }
                 if (scene.Reaction.InflictedStun is not null) { next = BattleScenePhase.StunMessage; break; }

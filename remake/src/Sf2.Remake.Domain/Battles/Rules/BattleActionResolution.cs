@@ -581,13 +581,14 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         // The rule owns draw count, purpose and range. This boundary checks that
         // construction carries only ordered contribution facts and the actual random chain.
         int contributionIndex = 0, accumulated = 0;
+        int contributionCap = spell.CuresPoison ? 49 : 25;
         foreach (var effect in ConstructionEffects)
         {
             if (effect.Kind == "healing-exp-contribution")
             {
                 Require(contributionIndex < Reactions.Count && effect.Actor == actorRef &&
                     effect.Target == Reactions[contributionIndex].Target && effect.Before == accumulated &&
-                    effect.After >= accumulated && effect.After <= 25 && effect.RandomRange is null && effect.RandomValue is null);
+                    effect.After >= accumulated && effect.After <= contributionCap && effect.RandomRange is null && effect.RandomValue is null);
                 accumulated = checked((int)effect.After!.Value); contributionIndex++; continue;
             }
             Require(effect.Kind.StartsWith("rng-", StringComparison.Ordinal) && effect.Kind.Length > 4 &&
