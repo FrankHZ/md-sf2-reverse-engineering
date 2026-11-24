@@ -159,8 +159,8 @@ A palette or sprite match from another member is insufficient class admission.
   VICR uses the shared healer eligibility and EXP rules. HEAL 1, HEAL 3 and mounted
   AURA 1 apply 5/4 to the raw power before the missing-HP cap. HEAL 4 retains its
   full-recovery sentinel. The existing Battle26 bindings supply BLAST 1–4, SLOW 1–2,
-  admitted DETOX 1–3 and BOOST 1. Karna learns BOOST 2 and AURA 1 through growth.
-  The BOOST 2 effect, higher campaign AURA ranks and DETOX 4 remain with their effect owners. [Sarah growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats01.asm) ·
+  admitted DETOX 1–3 and BOOST 1–2. Karna learns BOOST 2 and AURA 1 through growth.
+  Higher campaign AURA ranks and DETOX 4 remain with their effect owners. [Sarah growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats01.asm) ·
   [Karna growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats15.asm) ·
   [Healing power and EXP](../../../docs/design/contracts/battle/spell-resolution.md) ·
   [DETOX #1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) ·
@@ -527,8 +527,8 @@ Karna's controlled VICR growth learns BOOST 2 at stored level 10 (effective 30) 
 AURA 1 at stored level 13 (effective 33). The controlled AURA 1 has range 0–3 and
 radius 1. It restores up to 18 HP per eligible recipient in source-slot order and
 uses the shared 25 EXP accumulator cap. Ordinary promoted acquisition and casting of
-AURA 1 remain **Unknown**. BOOST 2 learning preserves the packed rank. Its battle effect
-and campaign AURA 2–4 remain unbound.
+AURA 1 remain **Unknown**. BOOST 2 learning preserves the packed rank, which the ordinary battle action consumes.
+Campaign AURA 2–4 remain unbound. [BOOST 2 admission and observation](../domain/support-spell-status-design.md#boost-2-admission-and-observation)
 
 The first staff pilot ended in defeat before Karna could attack. The first Hassan route
 stopped at a blocked direct path. The accepted staff fork uses the retained HEAL 3 slot
@@ -761,5 +761,4 @@ actions are admitted. The linked action owners track the remaining boundaries.
   and healing ranks, including BLAZE 4, later FREEZE/BOLT ranks and higher campaign
   AURA ranks, stay with the [spell actions](church-promotion-design.md#current-battle-spells).
   MUDDLE 2 remains with [#1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967).
-  BOOST 2 and DETOX 4 remain with [support statuses](../domain/support-spell-status-design.md)
-  and [DETOX rank admission](../domain/detox-ranks-design.md), respectively.
+  DETOX 4 remains with [DETOX rank admission](../domain/detox-ranks-design.md).

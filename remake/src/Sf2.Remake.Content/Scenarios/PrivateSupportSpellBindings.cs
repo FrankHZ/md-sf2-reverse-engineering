@@ -9,7 +9,7 @@ internal static class PrivateSupportSpellBindings
 {
     internal static IEnumerable<SupportSpellDefinition> Spells(PrivateBattleDefinitions definitions)
     {
-        foreach (SpellRef key in new SpellRef[] { new("dispel", 1), new("boost", 1), new("slow", 1), new("slow", 2), new("sleep", 1), new("muddle", 1), new("muddle", 2) })
+        foreach (SpellRef key in new SpellRef[] { new("dispel", 1), new("boost", 1), new("boost", 2), new("slow", 1), new("slow", 2), new("sleep", 1), new("muddle", 1), new("muddle", 2) })
         {
             if (definitions.Spells.ContainsKey(key)) yield return Read(definitions, key);
         }

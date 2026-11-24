@@ -23,7 +23,7 @@ public sealed record SupportSpellDefinition(SpellRef Spell, byte MpCost, byte Mi
     internal void RequireSupported()
     {
         if ((Spell.Value, Spell.Level, MpCost, MinimumRange, MaximumRange, Radius) is not
-            (("dispel", 1, 5, 1, 2, 1) or ("boost", 1, 2, 0, 1, 1) or
+            (("dispel", 1, 5, 1, 2, 1) or ("boost", 1, 2, 0, 1, 1) or ("boost", 2, 5, 0, 2, 2) or
              ("attack", 1, 7, 1, 3, 0) or ("slow", 1, 3, 1, 1, 1) or ("slow", 2, 6, 1, 2, 2) or
              ("sleep", 1, 4, 1, 2, 1) or ("muddle", 1, 6, 1, 2, 1) or ("muddle", 2, 11, 1, 2, 2) or ("spoit", 1, 0, 1, 2, 0)))
             throw new BattleRuleException("support-spell-definition", "spells", true);

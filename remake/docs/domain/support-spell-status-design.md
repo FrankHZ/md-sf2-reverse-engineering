@@ -1,10 +1,10 @@
 # Sarah's SLOW and Karna's BOOST in battle
 
-**Accepted design, [#1966](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1966).** Bind Sarah's SLOW 1/2 and Karna's BOOST 1 through the ordinary Magic command. Use the existing packed status word for duration. Derive current DEF and AGI from earned bases, the counters used at the last stat refresh and equipped items. A failed recast can advance duration without refreshing either stat. This difference can survive into player input and a battle save. High rigor applies because losing it changes later damage, initiative and cold Continue. [Campaign agreement](../application/remaining-campaign-risk-baseline.md) · [Battle save agreement](../application/battle-save-and-continue.md)
+**Accepted design, [#1966](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1966).** Sarah's SLOW 1/2 and Karna's BOOST 1/2 use the ordinary Magic command. Use the existing packed status word for duration. Derive current DEF and AGI from earned bases, the counters used at the last stat refresh and equipped items. A failed recast can advance duration without refreshing either stat. This difference can survive into player input and a battle save. High rigor applies because losing it changes later damage, initiative and cold Continue. [Campaign agreement](../application/remaining-campaign-risk-baseline.md) · [Battle save agreement](../application/battle-save-and-continue.md)
 
 ## Current reach
 
-The ordinary Magic command offers Sarah’s learned SLOW ranks 1 and 2 and Karna’s learned BOOST rank 1 when the encounter supplies their source terms. Engine cases exercise movement, cancellation, per-target results, MP and EXP, then follow effective stats through combat, expiry, death, return and battle Save/Continue. [Magic and per-target behavior cases](../../tests/Sf2.Remake.Engine.Tests/SupportSpellActionTests.cs) · [Engine behavior cases](../../tests/Sf2.Remake.Engine.Tests/SupportStatusCoreTests.cs)
+The ordinary Magic command offers Sarah’s learned SLOW ranks 1 and 2 and Karna’s learned BOOST ranks 1 and 2 when the encounter supplies their source terms. Engine cases exercise movement, cancellation, per-target results, MP and EXP, then follow effective stats through combat, expiry, death, return and battle Save/Continue. [Magic and per-target behavior cases](../../tests/Sf2.Remake.Engine.Tests/SupportSpellActionTests.cs) · [Engine behavior cases](../../tests/Sf2.Remake.Engine.Tests/SupportStatusCoreTests.cs)
 
 **Confirmed** in the remake at `d45e2764`. Two existing Pacalon castle field slots (v3, Map36) have active PRST40 Sarah with packed spell byte 68 (ID 4, highest rank 2). The independent Chinese party also has active PRST28 Karna with byte 3 (ID 3, rank 1). English chose Eric. To reproduce from either private `issue1955/slots/castle-*.json`, decode the envelope's base64 `payload` as UTF-8 JSON, verify the envelope SHA-256, select `data.allies` by `actor` (`ally-1`, `ally-15`) and check `data.activeAllies`, class, level and spells. Both checksums matched. The pinned `data/stats/allies/stats/allystats01.asm` and `allystats15.asm` PRST lists teach Sarah SLOW at 19/29 and Karna BOOST at 12/30. These field slots establish the learned ranks. Each encounter binds the supported ranks independently. [Recruitment](../content/campaign-characters.md#creed-and-the-mine) · [Pacalon inputs and replay route](../application/pacalon-first-visit.md#reproduction) · [Private bindings](../../src/Sf2.Remake.Content/Scenarios/PrivateSupportSpellBindings.cs)
 
@@ -35,6 +35,68 @@ $castSlot = Join-Path $repo 'local/issue1966/receipts/zh-CN-review-a-cast/cast-s
 
 Each process writes its native exit code and log locally. Check the save receipt and process result separately. The Chinese cast wrote the complete battle slot and acknowledged product Quit, then exited with `0xC0000005` in `GodotObject.Finalize`. The cold, physical/expiry and English rank-2 processes exited 0. Cold Continue also emitted an ObjectDB leak warning. The shutdown cause remains **Unknown**. [Godot exit investigation](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
 
+### BOOST 2 admission and observation
+
+[#2150](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2150) is a Standard-rigor
+extension of the existing action. Its acceptance boundary runs from a legally learned private
+book through player input, playback and settled Continue. The pinned Karna PRST growth row in
+`data/stats/allies/stats/allystats15.asm` teaches packed `0x43` at level 30. The private reader
+expands the packed word into ranks 1 and 2 and binds each to its own source definition. The only
+runtime additions are the private selection and the Domain tuple for 5 MP, inclusive center
+distance 0–2 and radius 2. [Pinned spell definitions](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm#L123-L136) · [Private bindings](../../src/Sf2.Remake.Content/Scenarios/PrivateSupportSpellBindings.cs)
+
+The target offer and range overlay already read the same admitted rank. Target resolution and
+commit validation use the moved caster's square and source processing order. The shared action
+captures the original caster word for the single cost, writes the detached duration words, and
+refreshes each successful recipient during playback. A failed self-recast restores the old word
+at payment before normal after-turn decay. Another active recipient keeps the advanced duration
+with the previous effective stats until its next refresh. Same-side successes contribute 5 EXP
+apiece before the normal award adjustments. Failed targets contribute zero. A canceled or
+unaffordable selection spends nothing. A valid silenced cast pays once without constructing
+reactions or EXP, as specified by the shared cost-before-silence rule below. Initiative and
+physical reads use effective stats from the same actor, including after v5 restore. Protect
+Ring Use selects BOOST 1 explicitly. Enemy books can carry `0x43`. The original SUPPORT gate
+rejects it, and the remake's current enemy SUPPORT selector admits DISPEL 1 only.
+[Target and effect](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2SupportSpellAction.cs) ·
+[Resolution](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) ·
+[Original enemy admission](../../../docs/research/battle/battle-ai.md#unreachable-attack-and-boost-2-support-routes)
+
+**Confirmed** in the remake with Godot 4.7.2 .NET and a controlled Battle26 slot. The Chinese
+Magic row showed 强化 2 · 5 MP. Kazin was a legal center two cells west of Karna. The adapter
+projected the 13-cell effect diamond. Cancel preserved the queue, positions, RNG and actor
+values. Kazin and Peter each received AGI then DEF. Peter was on the radius-two edge. Gerhalt was
+outside at distance three. Rhode and Karna showed ineffective. Karna paid 17→12 MP,
+earned 48→58 EXP and settled at BOOST count 1 after her turn. The next player input was
+Rhode at round 6 cursor 19. Lesser Demon still carried the packed BOOST 2 book.
+
+Save and cold Continue restored Rhode's stored count 3, last-refresh count 1 and effective
+DEF/AGI 45/30. Re-saving advanced sequence 8→9 with equal complete decoded v5 data. Rhode's
+next ordinary Stay advanced the cursor 19→20, reduced his count 3→2 and refreshed DEF/AGI to
+50/33 before Janet's Movement. Both headless processes exited 0. The cold process emitted an
+ObjectDB shutdown leak warning. Its cause and natural play from learning the rank to this
+positioning remain **Unknown**. The shared cast and status messages are available. Retail
+`BUFF1|VARIATION2` presentation remains with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
+
+For reproduction, mount the registered `derived/issue1957/pgnt-v3` world, scenes, entry and
+opening-inputs, `derived/issue1957/catalogs-v1` Chinese names and the #1927 Chinese entry
+catalog. Use the locked Debug adapter and the #1955 Chinese input settings. Derive a disposable
+copy of the #1966 `zh-CN-learned01` Battle26 slot using the [save envelope](../../src/Sf2.Remake.Content/Persistence/OpeningSaveJson.cs).
+Preserve both live seeds and the save header time. Apply the two PRST growth steps to Karna
+using a separate zero RNG word and the mounted growth rows. At level 30 her maxima are
+51 HP and 61 MP, with base ATT/DEF/AGI 29/30/30 and equipped ATT 44. Keep current HP/MP.
+Update the packed book in the actor and progress loadouts to `[128,142,67,63]` and append
+BOOST 2 to the expanded ranks. Place Kazin at (5,24). Give Karna and Rhode stored BOOST counts
+2 and 1 respectively, with matching refresh counts. Use v5 with class terms. Swap the actor
+identities in queue slots 18 and 20, and 19 and 22, keeping the existing scores and cursor 18.
+
+Reuse the #1966 native driver's Magic selection, target confirmation and scene input helpers.
+Continue the disposable slot, confirm movement, open Magic, select BOOST 2, tab to Kazin and
+confirm the target. Read the view's action range, cancel at confirmation, reselect and cast.
+Acknowledge the results until Rhode has Movement. Save in Options and keep playing. In a fresh
+process Continue the same disposable slot, re-save before acting, compare the full decoded
+`data` and send Stay. Follow the [native save procedure](../verification/battle-save.md#method-and-reproduction)
+for isolated settings and logs.
+
 ## Original rules and evidence
 
 **Confirmed** below means static structure at SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` unless a controlled observation is named. Use the [USA retail identity](../../../manifests/roms/sf2-us.json), [fixed disassembly](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm) and [spell-resolution contract](../../../docs/design/contracts/battle/spell-resolution.md). Read the following paths under `disasm/` at that commit. For example, from the configured source checkout run `git show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/code/gameflow/battle/battleactions/castspell.asm`. The three linked battle fixtures record their ROM identity, BizHawk 2.11.1 / Genesis Plus GX observation boundary and expected results.
@@ -42,10 +104,11 @@ Each process writes its native exit code and log locally. Check the save receipt
 | Cast (packed entry) | MP | Select a center from caster destination | Affected side and inclusive Manhattan radius |
 | --- | ---: | --- | --- |
 | BOOST 1 (3) | 2 | 0–1, including self | Teammates within 1 of center |
+| BOOST 2 (67) | 5 | 0–2, including self | Teammates within 2 of center |
 | SLOW 1 (4) | 3 | Exactly 1 | Opponents within 1 |
 | SLOW 2 (68) | 6 | 1–2 | Opponents within 2 |
 
-**Confirmed.** `data/stats/spells/spelldefs.asm` gives all three POWER 15, TYPE_SUPPORT and AFFECTEDBYSILENCE. Only BOOST sets TARGET_TEAMMATES. The animation rows are BUFF1, DEBUFF1 and DEBUFF1|VARIATION2 respectively. `battlefield/buildactionrangegrids.asm:BuildSpellRangeGrid` selects the center's faction and distance. `PopulateTargetsListForSpell → BuildTargetsArrayWithTeammatesOfTarget → PopulateTargetsList` takes the center's side, skips zero HP, neutral and invalid coordinates, and expands the radius using the relative coordinate lists. `battlesceneScript_DetermineTargetsByAction → battlesceneScript_SortTargets` sorts by combatant index (special Burst Rock tail outside this party route). An ally in the diamond can be affected even when outside the caster's center-selection range. Use the caster's chosen square for both self selection and self membership. The rank is split from the base ID in `initbattlesceneproperties.asm`. Both SLOW ranks dispatch to the same function. Neither effect reads POWER for magnitude.
+**Confirmed.** `data/stats/spells/spelldefs.asm` gives all four POWER 15, TYPE_SUPPORT and AFFECTEDBYSILENCE. Only BOOST sets TARGET_TEAMMATES. BOOST uses BUFF1 and SLOW uses DEBUFF1. Both rank-2 entries set VARIATION2. `battlefield/buildactionrangegrids.asm:BuildSpellRangeGrid` selects the center's faction and distance. `PopulateTargetsListForSpell → BuildTargetsArrayWithTeammatesOfTarget → PopulateTargetsList` takes the center's side, skips zero HP, neutral and invalid coordinates, and expands the radius using the relative coordinate lists. `battlesceneScript_DetermineTargetsByAction → battlesceneScript_SortTargets` sorts by combatant index (special Burst Rock tail outside this party route). An ally in the diamond can be affected even when outside the caster's center-selection range. Use the caster's chosen square for both self selection and self membership. The rank is split from the base ID in `initbattlesceneproperties.asm`. Both SLOW ranks dispatch to the same function. Neither effect reads POWER for magnitude.
 
 | Target at construction | Main RNG and status writes in source order | Target command and EXP contribution |
 | --- | --- | --- |
@@ -77,7 +140,7 @@ AGI has a packed edge. `GetBaseAgi` reads the entire byte for the multiply. `Inc
 
 ## Implementation decisions
 
-1. **Bind the three ranks and preserve the existing action entry.** Extend `PrivateSupportSpellBindings` and `SupportSpellDefinition` with the verified finite rows and target side. `PrivateBattleContentReader.SelectOpening` already selects the party growth books. `PrivateBattleDefinitionReader.Decode` expands each packed entry into ranks 1 through the learned rank and reads each source row by family and level. The presence of a higher rank in that catalog grants no action. Look up each independently so an encounter can bind BOOST or SLOW without DISPEL. Reuse the existing encounter spell dictionary, learned book, MP checks and silence gate. Resolve the same positioned target set in query, prepare and commit. Allocate each target's draws, construction writes and reaction in deployment processing order, as for DISPEL and attack spells. The private reader assigns original combatant indices to that order. An authored initialization or AI slot mapping can differ. `EnemySupportDecision` remains the admitted DISPEL AI selector. This slice grants no automatic BOOST/SLOW casting. Use `ValidateSupport` to check one ordered target outcome per target with zero, one or two draws according to the table. Only actual reactions refresh. In `ValidateState`, validate the masked write and retained operand only for targets that passed the first gate, preserving all other actor-state comparisons. In `Sf2BattleProgressionRule.Award`, only opposing support targets qualify for halving in a marked battle. Keep construction writes on the detached prepared actors, capture the cost word before them and validate the exact permitted transitions. Canceled/stale/invalid selections spend no MP, RNG or action. [Action](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2SupportSpellAction.cs) · [Resolution and replay](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs)
+1. **Bind each supported rank through the existing action entry.** Extend `PrivateSupportSpellBindings` and `SupportSpellDefinition` with the verified finite rows and target side. `PrivateBattleContentReader.SelectOpening` already selects the party growth books. `PrivateBattleDefinitionReader.Decode` expands each packed entry into ranks 1 through the learned rank and reads each source row by family and level. The presence of a higher rank in that catalog grants no action. Look up each independently so an encounter can bind BOOST or SLOW without DISPEL. Reuse the existing encounter spell dictionary, learned book, MP checks and silence gate. Resolve the same positioned target set in query, prepare and commit. Allocate each target's draws, construction writes and reaction in deployment processing order, as for DISPEL and attack spells. The private reader assigns original combatant indices to that order. An authored initialization or AI slot mapping can differ. `EnemySupportDecision` remains the admitted DISPEL AI selector. This slice grants no automatic BOOST/SLOW casting. Use `ValidateSupport` to check one ordered target outcome per target with zero, one or two draws according to the table. Only actual reactions refresh. In `ValidateState`, validate the masked write and retained operand only for targets that passed the first gate, preserving all other actor-state comparisons. In `Sf2BattleProgressionRule.Award`, only opposing support targets qualify for halving in a marked battle. Keep construction writes on the detached prepared actors, capture the cost word before them and validate the exact permitted transitions. Canceled/stale/invalid selections spend no MP, RNG or action. [Action](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2SupportSpellAction.cs) · [Resolution and replay](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs)
 
 2. **Keep duration in `BattleActorState.Status`.** Add explicit base DEF/AGI accessors over `Progress` with definition fallback. Read effective stats through the actor, using a pure calculation alongside the existing [equipment owner](../../src/Sf2.Remake.Domain/Battles/Rules/BattleEquipment.cs). Retain one optional actor-local operand containing the BOOST/SLOW counter bits used by its last refresh **only while those differ from stored duration**. On construction-only writes keep the old effective operand (also on repeated failed recasts). On a source refresh use the written word, then discard the operand. Preserve it across unrelated immutable actor copies. Use the same distinction while after-turn writes await final refresh. Full current-stat copies would need synchronization on every level/equip/restore. Computing solely from the live word would turn the confirmed 45/27 into 55/33 too early. The optional operand carries only the irreducible timing difference, never ticks and never decides spell eligibility. [Actor state](../../src/Sf2.Remake.Domain/Battles/State/EngineBattleState.cs)
 
@@ -100,7 +163,7 @@ Implement on accepted main after design review. Coordinate shared Content, scene
 | [#1946 static rings](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1946) | Single writer for equipment/refresh. First merged slice establishes the shared operation. Rebase the second. Ring effects enter after both counters, using actual equipped words. Protect Ring's +5 DEF stays outside the fraction. Current weapon and unarmed cases can ship before rings. |
 | [#1952 ring Use](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1952) | After #1946 and the accepted BOOST effect. Protect Ring's `useSpell BOOST` calls the same per-target construction/replay and duration. Item caller owns its range/admission, payment, durability, break/removal, Repair and save. No learned spell or caster MP requirement for the item effect. Power Ring uses ATTACK, outside these ranks. |
 | [#1965 DETOX](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) | Separate cure masks and equipment/curse consequences. Preserve BOOST/SLOW through unrelated cures and apply ordinary reaction refresh when emitted. Serialize shared masks, scene, progression and indexes. DETOX 2/3 remain future work. |
-| [#1967 hostile effects](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967) | Reuse center/area and ordered reactions. MUDDLE control, SLEEP, DESOUL death and distinct resistance/recast rules stay with that issue. No general buff registry or new enemy AI family here. Karna's later learned BOOST 2 needs its own real consumer and verified rank binding. |
+| [#1967 hostile effects](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967) | Reuse center/area and ordered reactions. MUDDLE control, SLEEP, DESOUL death and distinct resistance/recast rules stay with that issue. No general buff registry or new enemy AI family here. |
 
 **Implementation acceptance**
 
