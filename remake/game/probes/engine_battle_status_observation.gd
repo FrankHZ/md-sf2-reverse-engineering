@@ -86,10 +86,12 @@ func card(c: Dictionary, s: Dictionary, drawn := false) -> bool:
     var rows: Array = s.actors.filter(func(a): return a.id == c.actor)
     if not check(rows.size() == 1, "Card retains stable diagnostic identity"): return false
     var a: Dictionary = rows[0]
-    if not check(not c.name.is_empty() and c.name != c.actor and c.nameLines <= 2 and c.nameFontSize >= 22, "Readable name in reserved lines"): return false
+    if not check(not c.name.is_empty() and c.name != c.actor and c.nameLines == c.nameVisibleLines
+            and c.nameFontSize == 30, "Complete name fits at body size"): return false
     if drawn and not check(rect(s.viewport).encloses(rect(c.rect)) and rect(c.rect).encloses(rect(c.nameRect)), "Card and name fit actual viewport/frame"): return false
     for pair in [["hp","maxHp"],["mp","maxMp"]]:
         var g: Dictionary = c[pair[0]]
+        if not check(g.labelFontSize == 30 and g.fontSize == 30, "Vital label and reading use body size"): return false
         if not check(g.current == a[pair[0]] and g.maximum == a[pair[1]], "Card follows current authoritative " + pair[0]): return false
         var fraction: float = 0.0 if g.maximum == 0 else float(g.current)/g.maximum
         if not check(is_equal_approx(g.image.fraction,fraction) and g.text == ("—" if g.maximum == 0 else str(int(g.current))+"/"+str(int(g.maximum))), "Current/max, dash and fill agree"): return false
@@ -293,7 +295,7 @@ func name_boundary() -> void:
         if not check(c.name == "Northern Watch Keeper Three" and c.nameLines <= 2, "Display-only whitespace normalization preserves the complete readable name"): return
         if not card(c,s,true): return
     else:
-        if not check(c.name.length() == 1202 and c.nameFontSize == 22 and c.rect.width == 800 and c.nameVisibleLines == 2, "Exceptional metadata retains its text with finite two-line ellipsis fallback"): return
+        if not check(c.name.length() == 1202 and c.nameFontSize == 30 and c.rect.width == 800 and c.nameVisibleLines == 2, "Exceptional metadata keeps a two-line ellipsis at body size"): return
     finish(true)
 
 func laser_cards() -> void:

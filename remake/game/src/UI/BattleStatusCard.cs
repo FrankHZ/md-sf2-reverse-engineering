@@ -9,11 +9,12 @@ namespace Sf2.Remake.GodotAdapter.UI;
 // Disposable projection of the live combatant, used for decisions and close-ups.
 internal sealed partial class BattleStatusCard : PanelContainer
 {
-    private const int BaseWidth = 500, HorizontalInsets = 36, HeaderGap = 14;
+    private const int BaseWidth = 560, MaxNameWidth = 800, HorizontalPadding = 18, NameLines = 2;
     internal bool DecisionHeader { get; init; }
-    internal Vector2 RequestedSize { get; private set; } = new(BaseWidth, 152);
-    private readonly Label _name = Text("CharacterName", 26), _role = Text("ClassLevel", 18);
-    private readonly BattleVitalGauge _hp = new("HP", miniStatus: true), _mp = new("MP", miniStatus: true);
+    internal Vector2 RequestedSize => new(_width, GetCombinedMinimumSize().Y);
+    private readonly Label _name = Text("CharacterName"), _role = Text("ClassLevel");
+    private readonly BattleVitalGauge _hp = new("HP"), _mp = new("MP");
+    private float _width = BaseWidth, _minimumWidth;
     private ActorRef? _actor;
     private int? _level;
     internal ActorRef? Actor => _actor;
@@ -23,21 +24,15 @@ internal sealed partial class BattleStatusCard : PanelContainer
         Theme = StoryTheme.Create();
         MouseFilter = MouseFilterEnum.Ignore;
         TextureFilter = TextureFilterEnum.Nearest;
-        AddThemeStyleboxOverride("panel", StoryTheme.PanelFrame(18, 14));
+        AddThemeStyleboxOverride("panel", StoryTheme.PanelFrame(HorizontalPadding, 14));
         var column = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
         column.AddThemeConstantOverride("separation", 4);
         AddChild(column);
-        var header = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-        header.AddThemeConstantOverride("separation", HeaderGap);
-        column.AddChild(header);
         _name.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _name.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        _name.CustomMinimumSize = new(0, 40);
-        _name.MaxLinesVisible = 2;
+        _name.MaxLinesVisible = NameLines;
         _name.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
-        _role.VerticalAlignment = VerticalAlignment.Top;
         _role.AddThemeColorOverride("font_color", StoryTheme.Selected);
-        header.AddChild(_name); header.AddChild(_role);
+        column.AddChild(_name); column.AddChild(_role);
         column.AddChild(_hp); column.AddChild(_mp);
         if (!DecisionHeader) MinimumSizeChanged += () => Size = RequestedSize;
         Size = RequestedSize;
@@ -72,45 +67,49 @@ internal sealed partial class BattleStatusCard : PanelContainer
         Visible = actor is not null;
         string role = ClassAndLevel(classId, level);
         _role.Visible = role.Length > 0;
-        if (_name.Text != name || _role.Text != role)
-        {
-            _name.Text = name;
-            _role.Text = role;
-            MeasureName();
-        }
         _role.Modulate = hp > 0 && maxHp > 0 && hp * 4 <= maxHp ? StoryTheme.Selected : Colors.White;
         _hp.Present(hp, maxHp); _mp.Present(mp, maxMp);
         _hp.AlignValueColumn(_mp);
+        bool headerChanged = _name.Text != name || _role.Text != role;
+        if (headerChanged)
+        {
+            _name.Text = name;
+            _role.Text = role;
+        }
+        float vitalsWidth = Mathf.Max(_hp.GetCombinedMinimumSize().X, _mp.GetCombinedMinimumSize().X);
+        float roleWidth = _role.Visible ? _role.GetMinimumSize().X : 0;
+        float minimumWidth = Mathf.Max(BaseWidth, Mathf.Ceil(Mathf.Max(roleWidth, vitalsWidth)) + 2 * HorizontalPadding);
+        if (headerChanged || _minimumWidth != minimumWidth)
+        {
+            _minimumWidth = minimumWidth;
+            MeasureName();
+        }
         Size = RequestedSize;
     }
 
     private void MeasureName()
     {
-        float badge = _role.Visible ? _role.GetMinimumSize().X + HeaderGap : 0;
         var font = _name.GetThemeFont("font");
         using var shaped = new TextParagraph
         {
-            Width = BaseWidth - HorizontalInsets - badge,
+            Width = _minimumWidth - 2 * HorizontalPadding,
             BreakFlags = TextServer.LineBreakFlag.Mandatory | TextServer.LineBreakFlag.WordBound | TextServer.LineBreakFlag.Adaptive,
         };
-        int fontSize = 26;
-        for (; fontSize >= 22; fontSize--)
-        {
-            shaped.Clear(); shaped.AddString(_name.Text, font, fontSize);
-            if (shaped.GetLineCount() <= 2 || fontSize == 22) break;
-        }
-        float maxWidth = 800 - HorizontalInsets - badge;
-        while (shaped.GetLineCount() > 2 && shaped.Width < maxWidth)
+        shaped.AddString(_name.Text, font, StoryTheme.BodySize);
+        float maxWidth = MaxNameWidth - 2 * HorizontalPadding;
+        while (shaped.GetLineCount() > NameLines && shaped.Width < maxWidth)
             shaped.Width = Mathf.Min(shaped.Width + 16, maxWidth);
-        _name.AddThemeFontSizeOverride("font_size", fontSize);
-        _name.CustomMinimumSize = new(0, Mathf.Max(40, Mathf.Ceil(shaped.GetSize().Y)));
-        RequestedSize = new(shaped.Width + badge + HorizontalInsets, _name.CustomMinimumSize.Y + 112);
+        // Reserve only the visible lines, even for exceptionally long imported metadata.
+        shaped.MaxLinesVisible = NameLines;
+        _name.CustomMinimumSize = new(0, Mathf.Ceil(shaped.GetSize().Y));
+        _width = shaped.Width + 2 * HorizontalPadding;
     }
 
     internal object Observe() => new
     {
         actor = _actor?.Value, visible = IsVisibleInTree(), name = _name.Text, role = _role.Text,
         level = _level, roleVisible = _role.IsVisibleInTree(), roleRect = BattleMapViewport.Rectangle(_role.GetGlobalRect()),
+        roleFontSize = _role.GetThemeFontSize("font_size"),
         rect = BattleMapViewport.Rectangle(GetGlobalRect()),
         frame = GetThemeStylebox("panel") is StyleBoxTexture,
         nameRect = BattleMapViewport.Rectangle(_name.GetGlobalRect()),
@@ -119,12 +118,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
         hp = _hp.Observe(), mp = _mp.Observe(),
     };
 
-    private static Label Text(string name, int size)
-    {
-        var label = new Label { Name = name, MouseFilter = MouseFilterEnum.Ignore };
-        label.AddThemeFontSizeOverride("font_size", size);
-        return label;
-    }
+    private static Label Text(string name) => new() { Name = name, MouseFilter = MouseFilterEnum.Ignore };
 }
 
 internal sealed partial class BattleVitalGauge : HBoxContainer
@@ -132,15 +126,14 @@ internal sealed partial class BattleVitalGauge : HBoxContainer
     private readonly Label _label, _value;
     private readonly BattleGaugeImage _image;
     private int? _current, _maximum;
-    internal BattleVitalGauge(string label, bool miniStatus = false)
+    internal BattleVitalGauge(string label)
     {
         Name = label; MouseFilter = MouseFilterEnum.Ignore;
         AddThemeConstantOverride("separation", 10);
-        _label = new Label { Name = "Label", Text = label, CustomMinimumSize = new(42, miniStatus ? 36 : 30) };
+        _label = new Label { Name = "Label", Text = label, CustomMinimumSize = new(44, 30) };
         _value = new Label { Name = "Value", CustomMinimumSize = new(132, 30), HorizontalAlignment = HorizontalAlignment.Right };
         _image = new BattleGaugeImage(label) { Name = "Image", SizeFlagsHorizontal = SizeFlags.ExpandFill,
             SizeFlagsVertical = SizeFlags.ShrinkCenter, CustomMinimumSize = new(220, 28) };
-        foreach (var text in new[] { _label, _value }) text.AddThemeFontSizeOverride("font_size", miniStatus ? 25 : 22);
     }
     public override void _Ready() { AddChild(_label); AddChild(_image); AddChild(_value); }
     internal void Present(int? current, int? maximum)
@@ -161,6 +154,7 @@ internal sealed partial class BattleVitalGauge : HBoxContainer
     internal object ObserveImage() => _image.Observe();
     internal object Observe() => new { label = _label.Text, current = _current, maximum = _maximum,
         text = _value.Text, fontSize = _value.GetThemeFontSize("font_size"),
+        labelFontSize = _label.GetThemeFontSize("font_size"), labelRect = BattleMapViewport.Rectangle(_label.GetGlobalRect()),
         valueMinimumWidth = _value.GetMinimumSize().X, valueRect = BattleMapViewport.Rectangle(_value.GetGlobalRect()),
         image = ObserveImage() };
 }

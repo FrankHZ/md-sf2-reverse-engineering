@@ -97,9 +97,12 @@ and use the existing focus marker, border and explicit status text for selection
 refusal. Keep the title screen's artwork. For a long localized or custom name, try wrapping
 and widening its column before considering a measured fit exception.
 
-The round and land-effect panels already use the body size with equal margins and row dimensions.
-Other screens still have local sizes, including compact command captions and the unit card's
-measured name fitting. Update those with their owning screen and verify fit in English and Chinese.
+The round and land-effect panels use the body size with equal margins and row dimensions. The
+[shared battle status card](battle-ui-composition.md#readable-battle-status-cards) uses 30px for
+names, class and level, and HP/MP labels and values. The name can wrap above the class and level.
+The two gauges share aligned label and value columns. Other screens still have local sizes,
+including compact command captions. Update those with their owning screen and verify fit in
+English and Chinese.
 
 ### Panels and states
 
