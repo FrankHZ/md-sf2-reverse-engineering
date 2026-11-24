@@ -444,7 +444,12 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
 
     private static void ValidateStart(BattleDefinition encounter, BattleStartInput start, bool connected)
     {
-        if (!connected) { BattleTurnFlow.ValidateStart(encounter, start); return; }
+        if (!connected)
+        {
+            if (start.Actors.Any(actor => MuddleRules.Present(actor.Status))) BattleTurnFlow.Start(encounter, start);
+            else BattleTurnFlow.ValidateStart(encounter, start);
+            return;
+        }
         // Carried Church status is field state, not permission for new battle effects.
         Require(start.Actors.All(actor => actor.Status == 0 || encounter.Deployments.Any(row =>
             row.Actor == actor.Actor && row.Faction == BattleFaction.Ally)), "actor-status", "start.actors.status", true);
@@ -470,12 +475,15 @@ public sealed class AuthoredScenarioPackageReader : IScenarioSource
         {
             ushort bits = part switch
             {
-                "poison" when poison => 2, "sleep1" => 0x40, "sleep2" => 0x80, "sleep3" => 0xC0,
+                "poison" when poison => 2,
+                "muddle1" => 0x10, "muddle2" => 0x20, "muddle3" => 0x30,
+                "confusion1" => 0x18, "confusion2" => 0x28, "confusion3" => 0x38,
+                "sleep1" => 0x40, "sleep2" => 0x80, "sleep3" => 0xC0,
                 "silence1" => 0x100, "silence2" => 0x200, "silence3" => 0x300,
                 _ => throw new BattleRuleException("actor-status", "start.actors.status", true),
             };
-            Require((packed & (bits == 2 ? 2 : bits <= 0xC0 ? 0xC0 : 0x300)) == 0,
-                "actor-status", "start.actors.status", true);
+            ushort family = bits switch { 2 => 2, < 0x40 => MuddleRules.Mask, < 0x100 => 0xC0, _ => 0x300 };
+            Require((packed & family) == 0, "actor-status", "start.actors.status", true);
             packed |= bits;
         }
         return packed;

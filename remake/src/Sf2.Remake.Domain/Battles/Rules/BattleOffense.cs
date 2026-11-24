@@ -36,12 +36,18 @@ internal static class BattleOffense
         BattleActorState[] ordinary)
     {
         if (AutomaticSide(actor) == OffensiveTargetSide.Opponents) return ordinary;
-        int slot = FixedSlot(actor);
-        if (battle.Definition.Initialization?.SourceCombatants.TryGetValue(slot, out var target) != true ||
-            battle.GetActor(target) is not { Position: not null } fixedTarget ||
-            !Matches(actor, fixedTarget, OffensiveTargetSide.OwnSide))
-            throw new BattleRuleException("muddle-pursuit-slot", "placements.sourceSlot", true);
-        return [fixedTarget];
+        var fixedTarget = FixedPursuitTarget(battle, actor)
+            ?? throw new BattleRuleException("muddle-pursuit-slot", "placements.sourceSlot", true);
+        return fixedTarget.Position is null ? [] : [fixedTarget];
+    }
+
+    internal static BattleActorState? FixedPursuitTarget(EngineBattleState battle, BattleActorState actor)
+    {
+        if (battle.Definition.Initialization?.SourceCombatants.TryGetValue(FixedSlot(actor), out var target) != true)
+            return null;
+        var unit = battle.GetActor(target);
+        bool available = unit.Hp > 0 ? unit.Position is not null : unit is { Position: null, Status: 0 };
+        return unit.Initialized && available && Matches(actor, unit, OffensiveTargetSide.OwnSide) ? unit : null;
     }
 
     internal static BattleAutomaticAction Choose(EngineBattleState before, ActorRef actorRef, BattleAutomaticAction decision)

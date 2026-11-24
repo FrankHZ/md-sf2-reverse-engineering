@@ -6,7 +6,10 @@ namespace Sf2.Remake.Domain.Gameplay.Sf2;
 
 internal sealed class SourceEnemyAi : IBattleDecisionRule
 {
+    internal static readonly BattleStrategyRef Strategy = new("source-orders");
     public string Identity => "sf2-source-orders";
+    internal static bool SupportsCommandset(int commandset) =>
+        commandset is 0 or 2 or 3 or 6 or 7 or 8 or 9 or 14 or 15;
     public void RequireDeployment(BattleDeploymentDefinition deployment)
     {
         if (deployment.Initialization is null)
@@ -84,7 +87,7 @@ internal sealed class SourceEnemyAi : IBattleDecisionRule
         // GetAiCommandset reads the dedicated combatant byte; the activation filler nibble
         // happens to match it in Battle01 but is zero in Battle02.
         int commandset = source.AiCommandset;
-        if (commandset is not (0 or 2 or 3 or 6 or 7 or 8 or 9 or 14 or 15)) throw new BattleRuleException("source-commandset", "actor.activationWord", true);
+        if (!SupportsCommandset(commandset)) throw new BattleRuleException("source-commandset", "actor.activationWord", true);
         // Ordinary unequipped Herb0 cannot be selected: attack-item checks equipped/AI bits,
         // healing-item skips it with AI bit13 clear (Healing Rain has a separate source branch).
         // Neither path draws RNG. Admitted ATT-only weapons have no AI use action;

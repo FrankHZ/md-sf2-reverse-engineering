@@ -73,12 +73,12 @@ internal static class BattleUnitProjection
         if ((word & 2) != 0) result.Add("poison");
         if ((word & 1) != 0) result.Add("stun");
         if ((word & 0xC0) != 0) result.Add("sleep");
-        if (MuddleRules.Present(word) && !MuddleRules.Confused(word)) result.Add("muddle");
+        if (MuddleRules.Present(word)) result.Add("muddle");
         if ((word & 0x300) != 0) result.Add("silence");
         if ((word & BattleStatCounters.Slow) != 0) result.Add("slow");
         if ((word & BattleStatCounters.Boost) != 0) result.Add("boost");
         if ((word & BattleStatCounters.Attack) != 0) result.Add("attack");
-        if (MuddleRules.Confused(word) || (word & ~(0x3C7 | MuddleRules.CounterMask | BattleStatCounters.Mask)) != 0) result.Add("Other status effect (details unavailable)");
+        if (!MuddleRules.Valid(word) || (word & ~(0x3C7 | MuddleRules.Mask | BattleStatCounters.Mask)) != 0) result.Add("Other status effect (details unavailable)");
         return result.AsReadOnly();
     }
 }

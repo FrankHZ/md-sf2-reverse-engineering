@@ -239,9 +239,9 @@ public sealed class PartyRecoveryContextTests
             BattleOutcomeKind kind, BattleStartInput party) => _source.Start(definition, battle, story, kind, party);
         public OutcomeFinish Finish(ScenarioDefinition definition, StoryState story, BattleStartInput party) =>
             _source.Finish(definition, story, party);
-        public BattleStartInput Heal(ScenarioDefinition definition, BattleStartInput party, bool all, bool returningFromBattle)
+        public BattleStartInput Heal(ScenarioDefinition definition, BattleStartInput party, bool all, bool sourceEntry)
         {
-            var healed = _source.Heal(definition, party, all, returningFromBattle);
+            var healed = _source.Heal(definition, party, all, sourceEntry);
             var actors = healed.Actors.Select((a, index) => index != 0 ? a : field switch
             {
                 "accounting" => a with { Kills = 999 },

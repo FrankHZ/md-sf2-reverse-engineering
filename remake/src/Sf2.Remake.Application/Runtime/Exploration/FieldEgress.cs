@@ -29,7 +29,7 @@ internal static class FieldEgress
             anchor.Map, anchor.Position, anchor.Facing);
         // Compute entry recovery and validate the selected destination before publishing payment.
         // The program applies that recovery only after actual flash completion.
-        var recovered = OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, paid, all: false);
+        var recovered = OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, paid, all: false, sourceEntry: true);
         MapTransfer.Validate(definition, current, world.WithParty(recovered), warp, rules);
         if (!definition.Exploration!.Programs.ContainsKey(capability.Program.Program))
             throw new BattleRuleException("field-egress-program", "field.egress", true);

@@ -26,7 +26,7 @@ public static class RuleCompositions
             new(SourceAllyAi.Strategy, new SourceAllyAi()),
             new(new("prism-laser"), new PrismLaserDecision()),
             new(new("attack-then-approach"), new AttackThenApproachAi()),
-            new(new("source-orders"), new SourceEnemyAi())]);
+            new(SourceEnemyAi.Strategy, new SourceEnemyAi())]);
     public static SessionRules AuthoredProgressionOutcome() => new("authored-progression-outcome", new Sf2HealingRule(),
         SourcePhysical(), SourceItem(), SourceStay(), progression: new AuthoredBattleProgressionRule(),
         outcomeReturn: new Authored.AuthoredOutcomeReturnPolicy(), sourceStory: new Authored.AuthoredStoryPolicy());

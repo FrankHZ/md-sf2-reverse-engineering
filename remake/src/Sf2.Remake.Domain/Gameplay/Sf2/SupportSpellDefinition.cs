@@ -25,9 +25,13 @@ public sealed record SupportSpellDefinition(SpellRef Spell, byte MpCost, byte Mi
         if ((Spell.Value, Spell.Level, MpCost, MinimumRange, MaximumRange, Radius) is not
             (("dispel", 1, 5, 1, 2, 1) or ("boost", 1, 2, 0, 1, 1) or
              ("attack", 1, 7, 1, 3, 0) or ("slow", 1, 3, 1, 1, 1) or ("slow", 2, 6, 1, 2, 2) or
-             ("sleep", 1, 4, 1, 2, 1) or ("muddle", 1, 6, 1, 2, 1) or ("spoit", 1, 0, 1, 2, 0)))
+             ("sleep", 1, 4, 1, 2, 1) or ("muddle", 1, 6, 1, 2, 1) or ("muddle", 2, 11, 1, 2, 2) or ("spoit", 1, 0, 1, 2, 0)))
             throw new BattleRuleException("support-spell-definition", "spells", true);
     }
+
+    internal (int Threshold, ushort Word) MuddleEffect(BattleActorState target) => Spell.Level == 2
+        ? (5 + (target.Definition.Resistance >> 14), (ushort)(target.Status | MuddleRules.Mask))
+        : (MuddleRules.Confused(target.Status) ? 8 : 5, (ushort)(target.Status | MuddleRules.CounterMask));
 
     internal static BattleReaction[] MpTransfer(BattleActorState caster, BattleActorState target, int roll)
     {
@@ -49,8 +53,10 @@ public sealed record SupportSpellDefinition(SpellRef Spell, byte MpCost, byte Mi
         if (Effect == SupportSpellEffect.Sleep)
             return (roll("rng-sleep") >= 5 + resistance ? (ushort)(target.Status | 0xC0) : null, null);
         if (Effect == SupportSpellEffect.Muddle)
-            return (roll("rng-muddle") >= ((target.Status & MuddleRules.ConfusionFlag) != 0 ? 8 : 5)
-                ? (ushort)(target.Status | MuddleRules.CounterMask) : null, null);
+        {
+            var (threshold, muddled) = MuddleEffect(target);
+            return (roll("rng-muddle") >= threshold ? muddled : null, null);
+        }
         if (!ChangesStats)
             return (roll("rng-dispel") >= (SilenceRules.HasSpells(target) ? 5 + resistance : 8)
                 ? (ushort)(target.Status | SilenceRules.Mask) : null, null);

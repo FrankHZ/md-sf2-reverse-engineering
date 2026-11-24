@@ -384,7 +384,9 @@ internal static class MapTransfer
                 if (write.Value) enteredFlags.Add(write.Flag); else enteredFlags.Remove(write.Flag);
             flags = enteredFlags.Order().ToArray();
             // Source chooses/populates the setup before clearing its temporary flags, then loads layout/init.
-            var party = riding ? OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, world.Party, all: false) : world.Party;
+            var party = riding
+                ? OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, world.Party, all: false, sourceEntry: true)
+                : world.Party;
             next = Build(target, world.Player, position, facing, world.PlayerEntity.Motion.XSpeed, party, current.Story.Flags, flags,
                 sourcePlacement || riding);
             if (riding)

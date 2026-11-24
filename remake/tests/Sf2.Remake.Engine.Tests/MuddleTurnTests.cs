@@ -181,10 +181,30 @@ public sealed class MuddleTurnTests
     }
 
     [Theory]
-    [InlineData(0x08)]
-    [InlineData(0x38)]
-    public void ConfusionWordsRemainOutsidePublicSaveAndRestore(int status)
+    [InlineData("enemy-spells", 1, 3)]
+    [InlineData("silence-watch", 0, 1)]
+    public void StartRefusesConfusionWhenAnOwnSideSourceTargetHasNoPhysicalOperand(
+        string scenario, int confusedIndex, int targetIndex)
     {
+        var document = EngineTestContent.Document(scenario);
+        document["actors"]![targetIndex]!.AsObject().Remove("physical");
+        var admitted = Assert.IsType<ScenarioReadAccepted>(EngineTestContent.Reader(document).Read());
+        var ordinary = Assert.IsType<SessionStarted>(GameSession.Start(admitted.Definition, admitted.Start));
+        Assert.NotNull(ordinary.Session.Current.Selection);
+
+        var confused = admitted.Start.Actors[confusedIndex].Actor;
+        var typed = admitted.Start.WithResources(admitted.Start.Actors.Select(row => row.Actor == confused
+            ? row with { Status = 0x38 } : row), admitted.Start.Gold);
+        Assert.Equal("actor-status", Assert.IsType<SessionStartFailed>(GameSession.Start(admitted.Definition, typed)).Failure.Code);
+
+        document["start"]!["actors"]![confusedIndex]!["status"] = "confusion3";
+        Assert.Equal("actor-status", Assert.IsType<ScenarioReadRejected>(EngineTestContent.Reader(document).Read()).Failure.Code);
+    }
+
+    [Fact]
+    public void ConfusionFlagWithoutACounterRemainsOutsidePublicSaveAndRestore()
+    {
+        const ushort status = 0x08;
         var (definition, current) = BattleSaveFixture.Create();
         var staged = BattleSaveFixture.At(Status(current.Battle, new("enemy"), (ushort)status), current.Story);
         var rules = RuleCompositions.Sf2();
@@ -251,12 +271,14 @@ public sealed class MuddleTurnTests
         Assert.Equal(14, suppressed.ApplySpellCost(suppressed.Prepared).GetActor(Mage).Mp);
     }
 
-    [Fact]
-    public void SettledSaveRestoresAnActiveEnemyCounterAndItsRealSourceTurn()
+    [Theory]
+    [InlineData(0x10)]
+    [InlineData(0x18)]
+    public void SettledSaveRestoresAnActiveEnemyCounterAndItsRealSourceTurn(int status)
     {
         var (definition, current) = BattleSaveFixture.Create();
         var enemy = new ActorRef("enemy");
-        var staged = BattleSaveFixture.At(Status(current.Battle, enemy, 0x10), current.Story);
+        var staged = BattleSaveFixture.At(Status(current.Battle, enemy, (ushort)status), current.Story);
         var data = BattleSaveFixture.Capture(definition, staged);
         var wire = OpeningSaveJson.ReadRecord(OpeningSaveJson.WriteRecord(new BattleSaveRecord(1, 1, DateTimeOffset.UnixEpoch, data)), 1);
         var rules = RuleCompositions.Sf2();
@@ -272,6 +294,91 @@ public sealed class MuddleTurnTests
             row.Actor == queued ? row with { Status = 0x10 } : row).ToArray() } };
         Assert.Equal("save-battle-actor-unavailable",
             Assert.IsType<SessionStartFailed>(GameSession.RestoreBattle(definition, invalid, rules)).Failure.Code);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void OrdinaryMuddleTwoAdmitsMixedAreaAndRefusesAnUnsupportedAutomaticTurnBeforePayment(bool targetCanAct)
+    {
+        var document = EngineTestContent.Document("enemy-spells");
+        var actors = document["actors"]!;
+        actors[0]!["maxMp"] = 20;
+        actors[0]!["spells"] = new JsonArray(new JsonObject { ["id"] = "muddle", ["level"] = 2 });
+        var start = document["start"]!;
+        start["actors"]![0]!["mp"] = 20;
+        start["actors"]![1]!["status"] = "muddle1";
+        start["mainSeed"] = 4010u << 16;
+        actors[3]!["resistance"] = 3 << 14;
+        if (!targetCanAct) actors[3]!.AsObject().Remove("physical");
+        var placements = document["encounters"]![0]!["placements"]!;
+        placements[1]!["x"] = 4;
+        placements[3]!["x"] = 4;
+        placements[3]!["y"] = 4;
+        document["spells"]!.AsArray().Add(new JsonObject { ["id"] = "muddle", ["level"] = 2,
+            ["mpCost"] = 11, ["minimumRange"] = 1, ["maximumRange"] = 2,
+            ["effect"] = new JsonObject { ["kind"] = "muddle", ["radius"] = 2 } });
+        var package = Assert.IsType<ScenarioReadAccepted>(EngineTestContent.Reader(document).Read());
+        var battle = BattleTurnFlow.Start(package.Definition.Encounters.Values.Single(), package.Start);
+        var scout = new ActorRef("scout");
+        var mage = new ActorRef("mage");
+        var wounded = new ActorRef("wounded");
+        battle = battle.With(mainSeed: 4010u << 16, queue: [new(scout, 30), new(scout, 20), new(null, 255)], cursor: 0);
+        var current = BattleSaveFixture.At(battle, new StoryState());
+        var rules = RuleCompositions.Sf2();
+        List<SessionObservation> events = [];
+        foreach (SessionCommand command in new SessionCommand[] { new Confirm(), new SelectSpell(new("muddle", 2)) })
+        {
+            var result = BattleCommandDispatcher.Submit(current, command, rules);
+            Assert.True(result.Failure is null, result.Failure?.ToString());
+            events.AddRange(result.Observations);
+            current = result.Snapshot;
+        }
+
+        if (!targetCanAct)
+        {
+            var refused = BattleCommandDispatcher.Submit(current, new SelectTarget(mage), rules);
+            Assert.Equal("muddle-target-turn", refused.Failure?.Code);
+            Assert.Same(current.Battle, refused.Snapshot.Battle);
+            Assert.Empty(refused.Observations);
+            Assert.Equal(20, current.Battle.GetActor(scout).Mp);
+            return;
+        }
+
+        foreach (SessionCommand command in new SessionCommand[] { new SelectTarget(mage), new Confirm() })
+        {
+            var result = BattleCommandDispatcher.Submit(current, command, rules);
+            Assert.True(result.Failure is null, result.Failure?.ToString());
+            events.AddRange(result.Observations);
+            current = result.Snapshot;
+        }
+        while (current.BattleScene is not null)
+        {
+            var result = BattleSceneContinuation.Submit(current, AttackSpellSessionTests.Next(current), rules);
+            Assert.Null(result.Failure);
+            events.AddRange(result.Observations);
+            current = result.Snapshot;
+        }
+        Assert.Equal(scout, current.Selection!.Actor);
+        Assert.Equal(9, current.Battle.GetActor(scout).Mp);
+        Assert.Equal(0x38, current.Battle.GetActor(mage).Status);
+        Assert.Equal(0, current.Battle.GetActor(wounded).Status);
+        var rolls = events.Where(e => e.Kind == "rng-muddle").ToArray();
+        Assert.Equal(new[] { mage, wounded }, rolls.Select(e => e.Target!.Value));
+        Assert.Equal(rolls[0].After, rolls[1].Before);
+        Assert.Single(events, e => e.Kind == "exp" && e.Actor == scout);
+
+        var typed = package.Start.WithResources(package.Start.Actors.Select(a => a.Actor == mage
+            ? a with { Status = 0x38 } : a), package.Start.Gold);
+        var started = Assert.IsType<SessionStarted>(GameSession.Start(package.Definition, typed));
+        Assert.Null(started.Result.Failure);
+        Assert.Equal(0x38, started.Session.Current.Battle.GetActor(mage).Status);
+
+        start["actors"]![1]!["status"] = "confusion3";
+        var authored = Assert.IsType<ScenarioReadAccepted>(EngineTestContent.Reader(document).Read());
+        Assert.Equal(0x38, BattleTurnFlow.Start(authored.Definition.Encounters.Values.Single(), authored.Start).GetActor(mage).Status);
+        placements[1]!["aiStrategy"] = "stay";
+        Assert.Equal("actor-status", Assert.IsType<ScenarioReadRejected>(EngineTestContent.Reader(document).Read()).Failure.Code);
     }
 
     private static SessionResult Advance(EngineBattleState battle) =>

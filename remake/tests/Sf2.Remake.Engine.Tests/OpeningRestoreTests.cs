@@ -4,6 +4,7 @@ using Sf2.Remake.Application.Gameplay.Sf2;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Runtime.Persistence;
+using Sf2.Remake.Content.Persistence;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
@@ -335,6 +336,24 @@ public sealed class OpeningRestoreTests
             Assert.Null(EngineTestContent.Send(session, new WaitAtInput()).Failure);
         Assert.Equal(first.Current.Exploration.Party.MainSeed, second.Current.Exploration.Party.MainSeed);
         Assert.Equal(first.Current.Exploration.AllEntities.Select(e => e.Motion), second.Current.Exploration.AllEntities.Select(e => e.Motion));
+    }
+
+    [Fact]
+    public void FieldSaveAndContinueKeepTheWordOfAnAlreadyFallenAlly()
+    {
+        var (definition, data) = Fixture(true);
+        data = data with { Allies = data.Allies.Select(a => a.Actor == "ally-1"
+            ? a with { Hp = 0, Status = 0x38 } : a).ToArray() };
+        var rules = RuleCompositions.Sf2();
+        var session = Assert.IsType<SessionStarted>(GameSession.Restore(definition, data, rules)).Session;
+        var capture = session.CaptureSave(session.Current.SessionId, session.Current.Revision);
+        Assert.Null(capture.Error);
+        var record = new OpeningSaveRecord(1, 1, 1, DateTimeOffset.UnixEpoch, capture.Data!);
+        var wire = OpeningSaveJson.ReadRecord(OpeningSaveJson.WriteRecord(record), 1);
+        var restored = Assert.IsType<SessionStarted>(SaveRecordRestore.Restore(definition, wire, rules));
+        var ally = restored.Session.Current.Exploration!.Party.Actors.Single(a => a.Actor.Value == "ally-1");
+        Assert.Equal(0, ally.Hp);
+        Assert.Equal(0x38, ally.Status);
     }
 
     [Theory]

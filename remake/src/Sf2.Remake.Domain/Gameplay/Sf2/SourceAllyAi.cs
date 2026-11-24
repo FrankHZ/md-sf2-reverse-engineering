@@ -71,9 +71,12 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
         }
         effects.Add(new("ai-command-heal1", actorRef, After: -1));
         effects.Add(new("ai-command-support", actorRef, After: -1)); // source rejects ally casters
+        targets = BattleOffense.PursuitTargets(battle, actor, opponents);
+        if (targets.Length == 0)
+            return new(battle, Array.AsReadOnly<BattleEffect>([.. effects, new("ai-stay", actorRef)]),
+                actor.Position, [actor.Position]);
         var costsMap = battle.Definition.Terrain.Select(tile => BattleTerrainRules.MovementCost(tile, actor.Definition.Mover)).ToArray();
         var scores = WeightedMovement.Build(costsMap, actor.Position.Y * 48 + actor.Position.X, 128);
-        targets = BattleOffense.PursuitTargets(battle, actor, opponents);
         var pursuit = AiMovementRules.PursueOrdered(costsMap, scores, grid, actor.Position, targets,
             PhysicalTargetRules.Table(actor.Definition.Mover), Occupied, battle.Definition.Width, battle.Definition.Height);
         effects.Add(new("ai-move-target", actorRef, pursuit.TargetCosts[pursuit.TargetIndex], pursuit.Cost,
@@ -93,7 +96,7 @@ internal sealed class SourceAllyAi : IBattleDecisionRule
         !IsPlacedOpponent(actor) || actor.ActivationWord is { } word && (word & 8) == 0;
 
     // Activation-driven ally control retains its existing physical capability.
-    private static bool PhysicalOnly(BattleActorState actor, BattleSourceLoadout loadout) =>
+    internal static bool PhysicalOnly(BattleActorState actor, BattleSourceLoadout loadout) =>
         loadout.Spells.All(spell => spell == 63) && actor.Spells.Count == 0 &&
         actor.Definition.Physical is { MinimumRange: 1, MaximumRange: 1 } &&
         loadout.Items.All(word => word is 127 or 19 or 0 ||

@@ -18,7 +18,8 @@ internal interface IOutcomeReturnPolicy
     OutcomeFinish Finish(ScenarioDefinition definition, StoryState story, BattleStartInput party);
     // Eligibility for the existing recovery operation; common validation still owns mutation limits.
     bool CanRecover(BattleDeploymentDefinition deployment, BattleActorStartInput actor, bool all);
-    BattleStartInput Heal(ScenarioDefinition definition, BattleStartInput party, bool all, bool returningFromBattle);
+    // Source battle recovery and ExplorationLoop entry use the same temporary-word rules.
+    BattleStartInput Heal(ScenarioDefinition definition, BattleStartInput party, bool all, bool sourceEntry);
 }
 
 internal static class OutcomeReturnRules
@@ -29,7 +30,7 @@ internal static class OutcomeReturnRules
         {
             var result = rule.Start(definition, battle, story, kind, party);
             bool victory = kind == BattleOutcomeKind.Victory;
-            Party(rule, definition, party, result.Party, gold: false, healing: victory, returningFromBattle: victory);
+            Party(rule, definition, party, result.Party, gold: false, healing: victory, sourceEntry: victory);
             if (kind == BattleOutcomeKind.Retreat)
                 Require(result.Program is not null && result.Party.Actors.SequenceEqual(party.Actors));
             Program(definition, result.Program);
@@ -51,7 +52,7 @@ internal static class OutcomeReturnRules
     {
         var result = rule.Finish(definition, story, party);
         Party(rule, definition, party, result.Recovered, gold: true);
-        Party(rule, definition, result.Recovered, result.Returned, gold: false, healing: true, returningFromBattle: true);
+        Party(rule, definition, result.Recovered, result.Returned, gold: false, healing: true, sourceEntry: true);
         Program(definition, result.Program);
         Require(result.JoinMember is null || definition.Exploration!.PartyFlags is { } layout &&
             result.JoinMember >= 0 && result.JoinMember < layout.MemberCount);
@@ -59,10 +60,10 @@ internal static class OutcomeReturnRules
     });
 
     internal static BattleStartInput Heal(IOutcomeReturnPolicy rule, ScenarioDefinition definition,
-        BattleStartInput party, bool all, bool returningFromBattle = false) => BattleProgressionRules.Invoke(rule.Identity, "party-recovery", () =>
+        BattleStartInput party, bool all, bool sourceEntry = false) => BattleProgressionRules.Invoke(rule.Identity, "party-recovery", () =>
     {
-        var result = rule.Heal(definition, party, all, returningFromBattle);
-        Party(rule, definition, party, result, gold: false, healing: true, all: all, returningFromBattle: returningFromBattle);
+        var result = rule.Heal(definition, party, all, sourceEntry);
+        Party(rule, definition, party, result, gold: false, healing: true, all: all, sourceEntry: sourceEntry);
         return result;
     });
 
@@ -83,7 +84,7 @@ internal static class OutcomeReturnRules
         definition.Exploration!.Maps.TryGetValue(map, out var target) && target.Traversal.IsWithinActiveArea(position) &&
         (combatPlacement || !OriginalMapTraversal.IsBlocked(target.Layout, position)));
     private static void Party(IOutcomeReturnPolicy rule, ScenarioDefinition definition, BattleStartInput before, BattleStartInput after, bool gold,
-        bool healing = false, bool all = false, bool returningFromBattle = false)
+        bool healing = false, bool all = false, bool sourceEntry = false)
     {
         Require(after.Encounter == before.Encounter && after.MainSeed == before.MainSeed && after.ThinkingSeed == before.ThinkingSeed &&
             ReferenceEquals(after.ItemCustody, before.ItemCustody) &&
@@ -101,7 +102,7 @@ internal static class OutcomeReturnRules
             bool canRecover = healing && deployment.Faction == BattleFaction.Ally && rule.CanRecover(deployment, a, all);
             Require(!healing || canRecover || b == a);
             ushort cleared = 0xC0 | SilenceRules.Mask | BattleStatCounters.Mask;
-            if (returningFromBattle && !MuddleRules.Confused(a.Status)) cleared |= MuddleRules.CounterMask;
+            if (sourceEntry) cleared |= MuddleRules.Mask;
             Require(b.Status == a.Status || (canRecover && b.Status == (a.Status & ~cleared)));
             Require(b with { Hp = a.Hp, Mp = a.Mp, Status = a.Status } == a);
             Require(deployment.Faction == BattleFaction.Ally || b == a);

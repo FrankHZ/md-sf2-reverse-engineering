@@ -1,6 +1,9 @@
 using Sf2.Remake.Application.Content.Scenarios;
+using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
+using Sf2.Remake.Content.Persistence;
+using Sf2.Remake.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
@@ -87,6 +90,103 @@ public sealed class FieldEgressTests
         before = field.Current;
         Assert.Equal("field-egress-target", Send(field, new FieldCast(Caster, Egress, Caster)).Failure!.Code);
         Assert.Same(before, field.Current);
+    }
+
+    [Theory]
+    [InlineData(0x10, true)]
+    [InlineData(0x38, true)]
+    [InlineData(0x08, false)]
+    [InlineData(0x4008, false)]
+    public void RestoredFallenCasterKeepsTheWordThroughRaiseAndEgressChecksItBeforePayment(ushort status, bool supported)
+    {
+        var refuge = new FieldReturnAnchor(new("map-3"), new(32, 13), 1);
+        var (basis, data) = OpeningRestoreTests.Fixture(joined: true, church: refuge);
+        var source = basis.Exploration!;
+        var ridge = source.Maps[new("map-67")];
+        var priest = new EntityRef("entity-128");
+        var map = new ExplorationMapDefinition(ridge.Map, ridge.Layout, ridge.Traversal,
+            [new(priest, new(8, 7), 3, 32, Sprite: 135)],
+            [new(ExplorationEventKind.Interact, null, null, priest, new("raise", 0))],
+            population: ridge.Population, basePalette: ridge.BasePalette, viewAreas: ridge.ViewAreas);
+        var audio = source.Visuals!.Audio.ToDictionary();
+        audio.Add("cast", new(77, 0, 44100, 1, [], "", null, null));
+        var world = new ExplorationDefinition(source.Maps.Values.Select(row => row.Map == map.Map ? map : row),
+            source.Programs.Values.Append(new("raise", [new OpenChurch(new(10, 200, 200, 10, 20)), new EndProgram()])),
+            provenance: source.Provenance, partyFlags: source.PartyFlags, visuals: source.Visuals with { Audio = audio });
+        var (bound, egress) = PrivateFieldEgress.Bind(world);
+        var battle = basis.Encounters.Values.Single();
+        var caster = new ActorRef("ally-1");
+        var member = battle.Deployments.Single(row => row.Actor == caster);
+        var growth = member.Definition.Growth! with
+        {
+            Spells = [new(1, 10)], SpellDefinitions = new Dictionary<byte, SpellRef> { [10] = Egress },
+        };
+        var encounter = battle.WithDeployments(battle.Deployments.Select(row => row.Actor == caster
+            ? row with { Definition = member.Definition.WithGrowth(growth,
+                new(PhysicalCriticalRule.OneIn32WithHalfBonus, false, false, 0)) } : row));
+        var definition = new ScenarioDefinition(basis.Package, [encounter], exploration: bound)
+        {
+            Persistence = basis.Persistence,
+            FieldPreparation = new([], spells: [new(Egress, "Egress", 8, FieldRecoveryEffect.Egress)], egress: egress),
+        };
+        var rules = RuleCompositions.Sf2();
+        data = data with
+        {
+            Recipe = "devils-tail", Map = map.Map.Value, X = 8, Y = 8, Facing = 1,
+            Flags = data.Flags.Concat([399, 521]).Order().ToArray(),
+            Allies = data.Allies.Select(row => row.Actor == caster.Value
+                ? row with { Hp = 0, Mp = 8, Status = status, Spells = [10, 63, 63, 63] } : row).ToArray(),
+        };
+        var opened = GameSession.Restore(definition, data, rules);
+        Assert.True(opened is SessionStarted, (opened as SessionStartFailed)?.Failure.ToString());
+        var original = ((SessionStarted)opened).Session;
+        var captured = original.CaptureSave(original.Current.SessionId, original.Current.Revision);
+        Assert.Null(captured.Error);
+        var record = OpeningSaveJson.ReadRecord(
+            OpeningSaveJson.WriteRecord(new OpeningSaveRecord(1, 1, 1, DateTimeOffset.UnixEpoch, captured.Data!)), 1);
+        var session = Assert.IsType<SessionStarted>(SaveRecordRestore.Restore(definition, record, rules)).Session;
+        BattleActorStartInput Raised() => session.Current.Exploration!.Party.Actors.Single(row => row.Actor == caster);
+        Assert.Equal((ushort)0, Raised().Hp);
+        Assert.Equal(status, Raised().Status);
+
+        Accept(session, new Interact(priest));
+        var choice = Assert.IsType<ChurchWait>(session.Current.Story.Wait);
+        Accept(session, new ChooseChurch(choice.Token, ChurchAction.Raise));
+        var offer = Assert.IsType<ChurchWait>(session.Current.Story.Wait);
+        Assert.NotNull(offer.Offer);
+        Assert.Equal(caster, offer.Offer.Member);
+        Accept(session, new AnswerChurch(offer.Token, offer.Offer, true));
+        var result = Assert.IsType<ChurchWait>(session.Current.Story.Wait);
+        Accept(session, new ContinueChurch(result.Token));
+        Accept(session, new LeaveChurch(Assert.IsType<ChurchWait>(session.Current.Story.Wait).Token));
+        Assert.True(Raised().Hp > 0);
+        Assert.Equal(status, Raised().Status);
+
+        if (!supported)
+        {
+            var before = session.Current;
+            var refused = Send(session, new FieldCast(caster, Egress));
+            Assert.Equal("return-status-refresh", refused.Failure?.Code);
+            Assert.Same(before, session.Current);
+            Assert.Empty(refused.Observations);
+            Assert.Equal(8, Raised().Mp);
+            return;
+        }
+
+        var paid = Accept(session, new FieldCast(caster, Egress));
+        Assert.Single(paid.Observations, row => row.Kind == "field-egress-paid");
+        Assert.Equal(0, Raised().Mp);
+        var sound = Assert.IsType<PresentationWait>(session.Current.Story.Wait);
+        Accept(session, new CompletePresentation(sound.Token, sound.Cue.Kind));
+        var flash = Assert.IsType<PresentationWait>(session.Current.Story.Wait);
+        Assert.Equal(PresentationCueKind.FlashWhite, flash.Cue.Kind);
+        Assert.Equal(status, Raised().Status);
+        Assert.Equal(0, Raised().Mp);
+        Accept(session, new CompletePresentation(flash.Token, flash.Cue.Kind));
+        Assert.Equal(0, Raised().Status);
+        Assert.Equal(8, Raised().Mp);
+        Settle(session);
+        Assert.Equal(refuge.Map, session.Current.Exploration!.Map);
     }
 
     private static BattleActorStartInput Member(GameSession session) => session.Current.Exploration!.Party.Actors.Single(a => a.Actor == Caster);

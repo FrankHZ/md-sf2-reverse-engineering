@@ -22,7 +22,7 @@ internal static class PrivateFieldEgress
         var sequence = new StoryProgram(program, [
             new PresentCue(PresentationCueKind.Sound, sound![0].Key),
             new PresentCue(PresentationCueKind.FlashWhite, "white-four-pulses", DurationTicks: 32),
-            new ResetPartyBattleStats(LivingOnly: true), new EndProgram()]);
+            new ResetPartyBattleStats(LivingOnly: true) { SourceEntry = true }, new EndProgram()]);
         var bound = new ExplorationDefinition(world.Maps.Values, world.Programs.Values.Append(sequence),
             world.Texts, world.Provenance, world.PartyFlags, world.Visuals, world.MemberNames,
             world.TextTokens, world.TextFont) { GameplayRevision = world.GameplayRevision, Guidance = world.Guidance };
