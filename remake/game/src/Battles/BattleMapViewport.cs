@@ -217,11 +217,11 @@ internal sealed partial class BattleMapViewport : Control
             (view.Layer == 0 || followsTarget) && (view.ParallaxBX != 256 || view.ParallaxBY != 256) || view.AutoscrollAX != 0 ||
             view.AutoscrollAY != 0 || !followsTarget && (view.AutoscrollBX != 0 || view.AutoscrollBY != 0)))
             throw new InvalidOperationException("battlefield-map-plane-motion-unsupported");
-        // The main plane views the encounter crop at battle cell zero. The other
-        // plane keeps its independent packed-layout start at that same cell.
+        // A shared plane uses the encounter crop for both priority passes.
+        // Only separate planes use the layer type to assign the main and packed starts.
         var main = new Vector2I(region.Origin.X, region.Origin.Y);
-        bool mainOnForeground = view is { Layer: not 0 };
         bool separatePlanes = offset.X != 0 || offset.Y != 0;
+        bool mainOnForeground = separatePlanes && view is { Layer: not 0 };
         var background = mainOnForeground ? new Vector2I(view!.BackgroundX, view.BackgroundY) : main;
         var foreground = mainOnForeground ? main : view is null
             ? main + new Vector2I(offset.X, offset.Y)
@@ -243,9 +243,14 @@ internal sealed partial class BattleMapViewport : Control
         void Add(Vector2I sourceOrigin, WorkingMapLayout layout, bool overlay, bool high)
         {
             var layer = new BattlefieldTerrain();
-            try { layer.Configure(map, visual, region, layout, _mapTextures, definition.Width, definition.Height, CellSize, sourceOrigin, overlay, high, followsTarget && !overlay); }
+            bool rearPlane = separatePlanes && !overlay;
+            try
+            {
+                layer.Configure(map, visual, region, layout, _mapTextures, definition.Width, definition.Height,
+                    CellSize, sourceOrigin, overlay, high, rearPlane && followsTarget);
+            }
             catch { layer.Free(); throw; }
-            if (!overlay && view is not null)
+            if (rearPlane && view is not null)
                 layer.CameraShift = new(1f - view.ParallaxBX / 256f, 1f - view.ParallaxBY / 256f);
             _board.AddChild(layer); _terrain.Add(layer);
         }

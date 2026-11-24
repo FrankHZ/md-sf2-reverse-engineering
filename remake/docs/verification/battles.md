@@ -86,6 +86,66 @@ the active battle retains its region; it does not supersede the twelve preserved
 authorize rerunning their aggregate. The native observations establish current renderer behavior;
 original pixels/timing, general plane-motion support and human aesthetic approval remain **Unknown**.
 
+### Shared-plane encounter crop
+
+[Issue #2143](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2143) covers the
+terrain seen after the Galam south-gate transition. At SF2DISASM `c834c652`,
+`battlemapcoords.asm` row 6 declares Map66 (21,2), 20×32. `map66/2-areas.asm` declares
+coincident plane starts and layer type 254. `LoadMapBlocksAndLayout` in `mapload.asm`
+copies the encounter region to working cell (0,0).
+
+**Confirmed in the Godot host.** With the registered `derived/issue2106/pre-voyage-spells-v2`
+bundle, ordinary Continue from a byte-identical copy of the backed-up slot 1 restored Map16.
+The route through Map18's south gate selected Battle06 and reached Chester's Movement turn.
+On the baseline the battle definition already selected Map66 (21,2), 20×32. Both mounted
+priority passes sampled (0,0) and the first low tile drawn came from (0,0). With the correction,
+both sampled (21,2) and the first low tile drawn came from (21,2) at board cell (0,0). The
+5,760 low and zero high draws fill the opaque 20×32 board. Chester's sprite was centered
+on its tactical cell at z1 between the low and high passes at z0 and z2. Confirm and Back
+returned to Movement. Both runs preserved the isolated slot and read-only seed bytes.
+
+For the same gate route, reuse the authorized format-6 slot 1 from the
+[south-gate recipe](../application/pre-voyage-campaign.md#reproduce-the-south-gate-entry).
+Use the older recipe's ordinary input sequence with v2 world, entry, main scenes and
+six matching opening inputs. The existing coordinates probe records the actual
+`ReadTerrainJson` in `first-battle-control`. For each mounted layer, add `offsetX`
+and `offsetY` to its declared `origin` to obtain the source start used by the draw pass.
+Check `first.sourceX` and `first.sourceY` on nonempty passes, draw counts, z-order,
+the active sprite and actual input. The layer starts matter even when a high pass
+has zero draws.
+
+| Native control | Observed terrain at player control |
+| --- | --- |
+| Battle02, controlled battle start with allies 0–2 | Both passes use Map66 (16,19), 22×18. The first low tile comes from (16,19). |
+| Battle21, controlled Map67 approach from the south-gate recipe | Both passes use Map67 (21,0), 32×42. The first low tile comes from (21,0). |
+| Battle22, cold Continue of the registered `handoffs/issue1861/slots/battle-en.json` copy | Rear Map22 (0,30) and main foreground (9,0), 30×30. Both planes draw low tiles. The foreground draws high tiles above the actors and stays fixed to the battle board. The rear shifts by the battle-local camera using the 192/128 parallax coefficients. |
+| Battle05, ordinary Continue from the backed-up castle slot 2, rally and guard zone | Main Map16 (0,14) and separate foreground (0,32), 24×14. The main low and high passes draw 2,715 and 309 tiles. Both foreground passes are mounted and draw zero tiles after the load-time roof clear. |
+
+The corrected Battle06 and the controls above exited 0 with empty native stderr.
+The first baseline probe failed to load because its GDScript could not infer a vector
+type. After that probe correction, baseline exit 1 reported the two wrong layer starts
+and the first low tile mismatch. The initial Battle22 controlled battle start exited 1
+at `poison-death-context` before projection. The registered battle slot supplied the
+ordinary restore context and remained byte-identical. The first castle observer waited for
+field control after the guard route and reached its deadline. Two follow-up runs mounted
+the expected planes and logged a script error while trying to snapshot the retired field.
+The final observer follows the guard-to-battle handoff before reading terrain. These bounded
+remake observations leave original hardware timing and player visual approval **Unknown**.
+
+The isolated review handoff retains a narrow extension of that observer under
+`local/issue2143`. Build the locked Debug adapter and run the cases serially with
+fresh labels. The runner selects the registered package and uses a disposable external
+save namespace with checkout-local logs. It never saves during the observation.
+
+~~~powershell
+./local/issue2143/Run.ps1 -Case battle06 -Label review
+./local/issue2143/Run.ps1 -Case battle02 -Label review
+./local/issue2143/Run.ps1 -Case battle21 -Label review
+./local/issue2143/Run.ps1 -Case battle22 -Label review
+./local/issue2143/Run.ps1 -Case castle -Label review
+uv run sf2 verify adapter
+~~~
+
 ### Castle battle projection
 
 [Issue #2074](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2074) covers the genuine
@@ -134,7 +194,7 @@ uv run sf2 verify engine
 uv run sf2 verify adapter
 ```
 
-Use `-Case baseline` on the baseline build. For the shared-plane control, the retained
+Use `-Case baseline` on the baseline build. For the separate-plane control, the retained
 [Battle22](../application/desktop-battle22.md#persistence-delivery-and-remaining-boundaries)
 slot cold-continues to Movement. Its main foreground samples the crop at (9,0), the rear
 plane samples its own start at (0,30), and the rear transform follows the battle-local camera

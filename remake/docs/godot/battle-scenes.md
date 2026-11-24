@@ -564,6 +564,12 @@ changes that outline; cancellation removes it. The connected regions have no sep
 foreground offset and no high-priority tiles; the affected exploration paths retain their existing
 foreground behavior. Fixed plane offsets are supported; unconsumed plane motion fails explicitly.
 
+When the selected area has a zero overlay offset, both priority passes use the encounter origin
+as the source of battle cell (0,0), including areas whose layer type marks the main plane as
+foreground. Only that shared layout is mounted. The two tile passes remain below and above the
+actor sprites respectively. This maps the visible terrain and tactical positions to the same
+board cells. See [shared-plane crop verification](../verification/battles.md#shared-plane-encounter-crop).
+
 For separate packed planes, the main plane samples the encounter crop and the other plane samples
 its own area start at battle cell zero. Rear-plane parallax uses the camera relative to that cell.
 At board construction, a separate foreground can use the load-time roof rule already shared with
