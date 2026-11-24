@@ -276,8 +276,10 @@ Each PR replaces one production path with its consumers and can be reverted with
 | 2. Edit a preference or binding and return to the same caller. Switch Settings, nested choices and Help to native focus and GUI picking together. Use the existing entry, draft, capture and store owners. This establishes the mapped-event handoff in the host. | In F10 open Display and read a long detail. Switch keyboard → pad → mouse, edit, Back and Cancel. Follow Controls into capture/review, Apply with the old Confirm held, and try both the old and new bindings after release. Check a refused Apply and a read-only page. Cover a field caller and a retained battle target. Resize or lose focus mid-press, then resume with the same phase and candidate and no extra command. Check direct Battle Speed return. | 3–5 days |
 | 3. Browse members and slots by any mapped device, then resume play. Consume slice 1's layout and slice 2's root handoff in the two member callers. Remove their old hit/selection routing at cutover. | Use the long and empty roster cases. Switch member from Items, wheel a different pane and cancel a drag over another row. Check Prepare Back, read-only Member → Options → Cursor and a held release over the board. After detaching/re-entering the same view, one window-exit gesture cancels once and one fresh click acts once. Check live focus/texture, session revision and errors. | 2–4 days |
 
-Budget **7–12 engineer-days** across the three slices. The uncertain part is the interaction between
-GUI focus on mouse-down, release cancellation and host remapping. Witness that boundary in slice 2
+The three slices have a preliminary effort estimate of **7–12 engineer-days**. It comes from static
+inspection without an implementation pilot. Agent elapsed time remains unscheduled. Re-estimate the
+remaining work after slice 1 using its actual implementation and review effort. The main uncertainty is how GUI focus
+on mouse-down interacts with release cancellation and host remapping. Witness that boundary in slice 2
 before sharing its handoff. Reassess if a slice needs global focus state, a second input map or a
 consumer outside these two entries. The design itself required only static inspection.
 
