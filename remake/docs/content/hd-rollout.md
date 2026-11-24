@@ -652,7 +652,8 @@ motion and the existing Witch clock remain the governing behavior.
 
 Owned paths are EntryPresentationReader, EntryPresentationAssets, EntryBackdrop,
 SessionEntryView, remake_private_package, remake_hd_entry, the entry observation and
-these content owners. All textures are prepared at mount before Settings can publish a
+these content owners. The coordinating gate also transferred the single producer-path
+registration in verification_engine_paths after confirming exclusive ownership. All textures are prepared at mount before Settings can publish a
 mode. A complete six-layer alternate group uses HD. A partial group uses Original for
 all six layers, and every declared resource still undergoes admission and decoding.
 
@@ -714,3 +715,11 @@ text now distinguish arrival, base, blink and mouth. These were completed failin
 Native exit logs retain the existing two-ObjectDB shutdown warning. There were no final adapter
 errors in positive cases. Peak process/GPU memory and subjective visual acceptance remain
 **Unknown**; the 512 MiB process budget is an estimate, not a measured result.
+
+
+The first committed engine-scope plan rejected the unregistered new producer path. The
+coordinating gate transferred its single REMAKE_PRODUCER_PATHS registration after checking
+concurrent ownership. The producer consumes already prepared images and changes only private
+remake presentation. Research selection rules retain their existing boundary. Local engine
+verification passed 3,258 tests with 50 existing skips. Release adapter and the selected
+PrivateAdmission/LiveInspection builds passed. Actual CI results are retained on the Draft PR.
