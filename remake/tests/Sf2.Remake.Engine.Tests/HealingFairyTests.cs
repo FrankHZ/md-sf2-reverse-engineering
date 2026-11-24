@@ -9,6 +9,41 @@ public sealed class HealingFairyTests
 {
     private static readonly ActorRef Actor = new("healer");
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    public void EnemyFairiesEnterFromTheLeftWithTheSameDrawSchedule(int level)
+    {
+        var light = HealingFairy.Begin(level, 0x1234ABCD, Actor);
+        var enemy = HealingFairy.Begin(level, 0x1234ABCD, Actor, enemy: true);
+        Assert.Equal(light.Seed, enemy.Seed);
+        Assert.Equal(light.Effects, enemy.Effects);
+        Assert.All(enemy.State.Fairies, fairy => {
+            Assert.Equal((ushort)96, fairy.X);
+            Assert.Equal((ushort)3, fairy.Phase);
+            Assert.True(fairy.Mirrored);
+        });
+        var state = enemy.State;
+        uint seed = enemy.Seed;
+        for (int tick = 0; tick < 40; tick++)
+        {
+            var update = HealingFairy.Advance(state, seed, Actor);
+            state = update.State; seed = update.Seed;
+        }
+        Assert.Contains(state.Fairies, fairy => fairy.X > 96);
+        Assert.Contains(state.Dust, particle => particle.Age > 0);
+        state = HealingFairy.RequestStop(state);
+        for (int tick = 0; tick < 500 && state.ActiveCount != 0; tick++)
+        {
+            var update = HealingFairy.Advance(state, seed, Actor);
+            state = update.State; seed = update.Seed;
+        }
+        Assert.Equal(0, state.ActiveCount);
+        Assert.True(state.CleanupPending);
+    }
+
     [Fact]
     public void TimedInputTestsAcknowledgementBeforeItsNextFairyOpportunity()
     {

@@ -174,7 +174,7 @@ internal static class BattleSceneContentReader
         HealingSceneVisual? healing = null;
         if (root.TryGetProperty("healing", out var heal))
         {
-            Object(heal, "sceneHealing", "bodies", "wings", "dust");
+            ObjectOptional(heal, "sceneHealing", ["bodies", "wings", "dust"], "enemy");
             var bodies = Strings(heal, "bodies"); var wings = Strings(heal, "wings"); var dust = Strings(heal, "dust");
             Require(bodies.Length == 2 && wings.Length == 2 && dust.Length == 5 &&
                 bodies.Concat(wings).Concat(dust).All(rasters.ContainsKey), "scene-healing-resources", "battleScenes.healing");
@@ -184,6 +184,18 @@ internal static class BattleSceneContentReader
                 (cast.Trigger == 0 || cast.Trigger >= 2 && cast.Trigger <= cast.Frames.Count),
                 "scene-healing-cast", "battleScenes.healing");
             healing = new(System.Array.AsReadOnly(bodies), System.Array.AsReadOnly(wings), System.Array.AsReadOnly(dust));
+            if (heal.TryGetProperty("enemy", out var enemyHeal))
+            {
+                Object(enemyHeal, "sceneHealingEnemy", "bodies", "wings", "dust");
+                var fairyBodies = Strings(enemyHeal, "bodies");
+                var enemyWings = Strings(enemyHeal, "wings");
+                var enemyDust = Strings(enemyHeal, "dust");
+                Require(fairyBodies.Length == 2 && enemyWings.Length == 2 && enemyDust.Length == 5 &&
+                    fairyBodies.Concat(enemyWings).Concat(enemyDust).All(rasters.ContainsKey),
+                    "scene-healing-resources", "battleScenes.healing.enemy");
+                healing = healing with { Enemy = new(System.Array.AsReadOnly(fairyBodies),
+                    System.Array.AsReadOnly(enemyWings), System.Array.AsReadOnly(enemyDust)) };
+            }
         }
         FieldDeathVisual? fieldDeath = null;
         if (root.TryGetProperty("fieldDeath", out var field))

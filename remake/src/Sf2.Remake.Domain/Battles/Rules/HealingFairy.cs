@@ -26,7 +26,7 @@ internal static class HealingFairy
         197,201,205,209,212,216,219,222,225,228,231,234,236,238,241,243,244,246,248,249,
         251,252,253,254,254,255,255,255,256];
 
-    internal static HealingFairyUpdate Begin(int level, uint seed, ActorRef actor)
+    internal static HealingFairyUpdate Begin(int level, uint seed, ActorRef actor, bool enemy = false)
     {
         if (level is < 1 or > 4) throw new BattleRuleException("healing-animation", "spell.level", true);
         List<BattleEffect> effects = [];
@@ -36,7 +36,8 @@ internal static class HealingFairy
             ushort y = (ushort)(128 + Draw(32, "setup-y", actor, ref seed, effects));
             short delay = (short)(1 + Draw(30, "setup-delay", actor, ref seed, effects));
             ushort dust = (ushort)(1 + Draw(12, "setup-dust", actor, ref seed, effects));
-            fairies[i] = new(1, 7, 0, 0, delay, 0, 0, 0, dust, 384, y);
+            fairies[i] = new(1, (ushort)(enemy ? 3 : 7), 0, 0, delay, 0, 0, 0, dust,
+                (ushort)(enemy ? 96 : 384), y, Mirrored: enemy);
         }
         return new(new(ushort.MaxValue, 1, Array.AsReadOnly(fairies), Array.AsReadOnly(
             Enumerable.Repeat(new HealingDust(0, 0, 0, 0, 0), 25 - 2 * fairies.Length).ToArray())), seed, effects.AsReadOnly());

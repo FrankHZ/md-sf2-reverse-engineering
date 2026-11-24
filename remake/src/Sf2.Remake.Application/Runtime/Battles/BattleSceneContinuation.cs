@@ -20,6 +20,7 @@ public sealed record HealingDisplay(ActorRef Caster, ActorRef Target, SpellRef S
 
 public sealed record HealingSceneCursor
 {
+    internal bool EnemyFairy { get; init; }
     internal BattleSceneDefinition? AllyAuraContent { get; init; }
     internal BattleSceneAnimation Cast { get; init; } = null!;
     internal int CasterIdleTicks { get; init; }
@@ -79,7 +80,7 @@ public sealed record HealingSceneCursor
             casterIdle = visual.IdleTicks; targetIdle = targetVisual.IdleTicks;
             actionText = content.Texts[274]; recoveryText = content.Texts[298];
         }
-        return new() { AllyAuraContent = action.Spell!.IsAura && actor.IsAlly ? content : null,
+        return new() { EnemyFairy = !actor.IsAlly, AllyAuraContent = action.Spell!.IsAura && actor.IsAlly ? content : null,
             Cast = cast, CasterIdleTicks = casterIdle, TargetIdleTicks = targetIdle,
             Display = new(action.Actor, target.Actor, action.Spell!.Spell, action.Reactions[index].Amount,
                 story is null ? CharacterNames.ReadableIdentity(actor.Actor) : CharacterNames.Battle(story, actor, content),
@@ -194,7 +195,7 @@ public sealed record HealingSceneCursor
             if (work.Caller == "cast-flash-on") next = next with { CastRequested = true };
             if (work.Kind == HealingWorkKind.Enable)
             {
-                var setup = HealingFairy.Begin(level, seed, actor); seed = setup.Seed; effects.AddRange(setup.Effects);
+                var setup = HealingFairy.Begin(level, seed, actor, next.EnemyFairy); seed = setup.Seed; effects.AddRange(setup.Effects);
                 next = next with { Fairy = setup.State };
             }
             else if (work.Kind == HealingWorkKind.Stop) next = next with { Fairy = HealingFairy.RequestStop(next.Fairy!) };

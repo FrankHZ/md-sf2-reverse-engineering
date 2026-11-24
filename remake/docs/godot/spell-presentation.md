@@ -77,8 +77,8 @@ listed by rank below. [Binding contract](../content/asset-inventory.md#battle-ra
 
 | Retail rows | Original selector | Gameplay, package and scene | Remaining owner |
 | --- | --- | --- | --- |
-| HEAL 1–4 | HEALING_FAIRY v1–v4 | **Original assets bound** for private allied self/teammate casts. The private cast/idle, light fairy, live target and 77/113 cues are described in [HEAL spell scenes](#heal-spell-scenes). Native private HEAL1–3 settings cases and Sarah's Battle26 HEAL4 cover allied delivery. Enemy HEAL1 is observed with authored Mage/Cleric content, and a controlled private Battle19 Master Monk uses HEAL3 on itself. **Partial** for private enemies: the projector mirrors the published light-fairy rasters. The original mirrored branch selects evil-fairy art and offsets. | [#2104] pre-voyage recovery follow-up. Check a legal Dark Cleric heal on an actual wounded enemy and review the evil-fairy gap once for both HEAL and AURA. Private enemy HEAL1 close-up, other higher-rank enemy playback and exact timing remain **Unknown** beyond named cases. [Enemy witness](../development-and-verification.md#enemy-spell-observation) · [Battle19 comparison](../application/battle19-repeat.md#controlled-comparisons) |
-| AURA 1 | HEALING_FAIRY v1 | **Original assets bound** for admitted private allied content through the HEAL light-fairy path. Karna's allied ordered recovery has engine evidence and ordinary native campaign casting is **Unknown**. **Partial** for the private Battle19 Dark Bishop with body and mirrored fairy path. Authored AURA uses its own pulse, recipient cards and one EXP delivery. | [#2104] recovery follow-up after pre-voyage priorities. Reuse the same enemy fairy decision and verify actual area recipients when needed. [Current spells](../application/church-promotion-design.md#current-battle-spells) · [Battle19 private binding](../application/battle19-repeat.md) · [Authored AURA](battle-scenes.md#authored-aura-recovery) |
+| HEAL 1–4 | HEALING_FAIRY v1–v4 | **Original assets bound** for private allied self/teammate casts. The private cast/idle, light fairy, live target and 77/113 cues are described in [HEAL spell scenes](#heal-spell-scenes). Native private HEAL1–3 settings cases and Sarah's Battle26 HEAL4 cover allied delivery. Enemy HEAL1 is observed with authored Mage/Cleric content, and a controlled private Battle19 Master Monk uses HEAL3 on itself. **Original assets bound** for the controlled pre-voyage enemy HEAL1 through the shared faction selector and evil-fairy group. | [Enemy healing acceptance](#enemy-healing-family-2227) covers a legal Dark Cleric recovery. Other higher-rank enemy playback and exact timing remain **Unknown** beyond named cases. [Enemy witness](../development-and-verification.md#enemy-spell-observation) · [Battle19 comparison](../application/battle19-repeat.md#controlled-comparisons) |
+| AURA 1 | HEALING_FAIRY v1 | **Original assets bound** for admitted private allied content through the HEAL light-fairy path. Karna's allied ordered recovery has engine evidence and ordinary native campaign casting is **Unknown**. The private Battle19 Dark Bishop shares the faction selector and evil-fairy group; actual enemy AURA delivery remains **Unknown**. Authored AURA uses its own pulse, recipient cards and one EXP delivery. | [#2104] recovery follow-up after pre-voyage priorities. Reuse the same enemy fairy decision and verify actual area recipients when needed. [Current spells](../application/church-promotion-design.md#current-battle-spells) · [Battle19 private binding](../application/battle19-repeat.md) · [Authored AURA](battle-scenes.md#authored-aura-recovery) |
 | AURA 2–4 | HEALING_FAIRY v2–v4 | **Unavailable** for private Magic. Authored AURA1–4 resolves ordered recovery with a **modern pulse**, with a native AURA4 witness. Healing Rain is already a private ordinary item with whole-side recovery and item presentation. White Ring/Goddess Staff AURA2 equipment Use would select v2 in the original. | [#2016] private Magic ranks, then [#2104] cast playback with actual scope, including AURA4's whole-side scan. [#1818] later equipment consumers. Keep Healing Rain on its item route. [Recovery items](../domain/recovery-items-design.md#ordinary-input-observations) |
 | DETOX 1–3 | DETOX v1–v3 | **Partial** private Magic. The caster pose, timed reaction, recipient, cure/no-effect text and eventual turn release are present. DETOX tileset 7 is unmounted in this route. Pre-voyage rank 1 and later ranks 2/3 have action witnesses, including ordinary paid Battle26 no-effect at 2/3 and effective controlled engine cures. Field Magic and Antidote/Fairy Powder have distinct delivery. Rune Axe Use selects DETOX2 in the original. | [#2104] pre-voyage recovery follow-up after BLAZE2/BLAST1. Reuse the cast and result seam and verify a legal cure plus no effect. [#1965] owns the accepted rank-2/3 rules and equipped-curse limit. Effective ordinary battle stun cure remains **Unknown**. [Rank evidence](../domain/detox-ranks-design.md#ordinary-input-and-cold-continue) |
 | DETOX 4 | DETOX v4 | **Unavailable** in private Magic. Uses an area in the original. Its area delivery requires a separate multi-recipient check. | [#2016] rule/admission, then [#2104] playback with the actual area recipients. |
@@ -92,13 +92,10 @@ listed by rank below. [Binding contract](../content/asset-inventory.md#battle-ra
 | SLEEP 1 | DEBUFF1 v1 | **Partial**. A controlled Tyrin 25 Battle26 slot exercises private Magic, both original icons, localized result/no-effect feedback and cold Continue with an active sleep count. The support scene uses its existing message presentation. Natural Tyrin progression to a cast remains **Unknown**. | [#2104] DEBUFF playback. [SLEEP boundary](../domain/hostile-spells-design.md#sleep-1-implementation-and-evidence) |
 | EGRESS 1 | NONE | **Modern presentation**. Eligible retreat uses the same text, pulse, tone and fade for spell and Angel Wing, with different payment. Battle02 native witnesses cover cancellation, return and walking retry. Later encounters supply their own retreat destinations. | Preserve the accepted [retreat delivery](battle-scenes.md#authored-egress-delivery). Encounter admission belongs to [#1818]. Original visual/audio parity is **Unknown**. |
 
-**Confirmed in the producer and adapter.** The private fairy extractor publishes the LightFairy
-offsets from tileset 6. Original
-`spellanimationSetup_HealingFairy` selects `table_EvilFairy_offsets` and a different palette
-operand for the mirrored branch. A private enemy scene with a valid caster body and a mirrored
-light fairy therefore has partial original-asset coverage. Original opportunity timing remains **Unknown**. [Original setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/healingfairy.asm) ·
-[Private extractor](../../../src/sf2tool/remake_battle_scene_content.py) ·
-[Fairy projection](../../game/src/Battles/BattleSceneView.cs)
+**Confirmed in the pinned setup/update source.** Both sides load healing tileset 6 and its
+palette replacements. The enemy branch selects different tile offsets and initial phase 3,
+compared with allied phase 7. The phase operand is not a palette selector. The shared source
+update controls subsequent movement, mirroring and dust. [Enemy family evidence](#enemy-healing-family-2227)
 
 ### Attack Magic
 
@@ -166,8 +163,8 @@ foreground visual acceptance remain **Unknown** where no named witness covers th
 ## Follow-up order
 
 - **P2 after the two child issues.** [#2104] retains first-use review of pre-voyage recovery and
-  support. Group enemy HEAL/AURA fairy art with its faction-specific placement and one actual
-  enemy recovery. Track DETOX's art separately from its cure semantics. Use DISPEL's actual
+  support. The [enemy healing family](#enemy-healing-family-2227) covers its bounded HEAL1
+  recovery; enemy AURA delivery is still Unknown. Track DETOX's art separately from its cure semantics. Use DISPEL's actual
   status/suppression consumer for the first DEBUFF decision. These are candidate presentation
   slices. [#1456] governs foreground acceptance and [#1616] the wider design review.
 - **P3 for current later content.** [#2104] groups the remaining elemental variants and shared
@@ -622,3 +619,63 @@ Some runs report 8–10 ObjectDB instances at exit, covered by paused #1716.
 **Unknown.** Natural pre-voyage learning/casting, live enemy BLAST1, exact hardware timing and
 human foreground visual acceptance. Mirrored placement has static source comparison only.
 Higher ranks remain with their existing owners.
+
+## Enemy healing family #2227
+
+Standard rigor applies to this bounded content/presentation correction. Acceptance covers the
+shared HEAL/AURA faction selector, existing Original/HD contract, controlled pre-voyage enemy
+HEAL1, an allied counterexample and a closed successor package. Natural enemy reach, actual
+enemy AURA, private unbound ranks and hardware-exact timing remain **Unknown**.
+
+**Confirmed** from pinned SF2DISASM c834c652b6862bc5679fd7f69a38a7093206efc6,
+`animation/healingfairy.asm` and `animation/update/healingfairy.asm`. Light body offsets are
+0/16, wings 32/40 and dust 52 down through 48. Evil body offsets are 53/69, wings 85/93
+and dust 105 down through 101. Both use tileset 6, palette 3 and the same three palette
+replacements. Light starts at source sprite X384/phase7 without mirror; evil starts at
+X96/phase3 mirrored. Y is 128 plus the existing range32 draw. Ranks 1/2/3/4 allocate
+1/1/2/3 fairies with these same banks. Dust spawns at the current fairy position plus (12,12).
+[Setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/healingfairy.asm)
+· [Update](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/healingfairy.asm)
+
+The existing HealingSceneCursor selects the initial side from the caster for every healing
+caller. Domain retains the existing update, lifetime and draw schedule. BattleSceneView uses
+source coordinates minus the VDP origin and selects `healing.enemy` for enemy casts. Older
+packages without that optional group retain their light artwork. Each selected body/wing/dust
+group requires complete HD coverage; one missing alternate falls back to its whole Original
+group. Graphics preparation includes both groups before publishing the preference.
+
+**Confirmed** by the native `engine_enemy_healing_art_observation.gd` controlled Battle06
+start. Dark Cleric enemy-0 chooses HEAL1 on Galam Soldier enemy-8 through the production AI.
+One payment changes MP7→4 and recovery caps HP1→11. All nine evil body/wing/dust resources
+are actual Sprite2D textures, with source-coordinate placement and stable logical footprints.
+Separate HD, Original and missing-HD-dust4 runs return to ordinary player control with no enemy
+EXP. The existing `engine_hd_heal_observation.gd` Battle04 self-HEAL counterexample covers
+all nine light resources, one MP payment, HP recovery and ordinary Settings HD/Original changes.
+No screenshots or campaign replay are part of these observations.
+
+Reproduce with the complete package below and the existing locked Debug/Godot launch setup.
+Set `SF2_HEAL_START` to a worktree-local JSON with `start.battle="battle-6"`,
+`activeAllies=["ally-0","ally-1"]`, enemy-1 through enemy-7 HP0, enemy-8 HP1,
+ally-0 position (7,25) and ally-1 position (6,25). Each override is an object in `start.actors`
+with `actor`, optional `hp` and optional `position:{x,y}`. Retain the source cleric position,
+loadouts and spellbook. Run the observer with a fresh disposable namespace and
+`SF2_OBSERVATION_OUTPUT`; use `SF2_HEAL_EXPECT_HD=1` with HD settings, or `0` for Original
+and a disposable package missing just `healing-enemy/dust4` from the Battle06 HD bank.
+The allied recipe is in [HD rollout](../content/hd-rollout.md#private-battle-artwork-acceptance).
+
+The behavior tests cover both source entry sides, rank reuse, motion, dust, retirement and
+unchanged random draw setup. The engine suite completed with 3263 passes and 50 skips.
+Adapter Release and Debug builds passed. Retained failures include an initial C# local-name
+collision, a producer assumption about a nonexistent `scene.json` (the actual opening owner is
+`main-scenes.json`), a missing Pillow invocation, a 64×64 observation viewport and a probe field
+lookup. Final native runs have no adapter/script errors; some retain a four-ObjectDB exit warning.
+Peak native memory and subjective appearance remain **Unknown**.
+
+Verification on the committed slice uses `uv run sf2 verify plan --base origin/main --head HEAD
+--scope engine`. The exact new producer is registered in `REMAKE_PRODUCER_PATHS`; research
+classification rules retain their existing meaning. The plan and the PR's actual scope job select
+`engine-unit`, `adapter-build`, `private-admission-build`, `live-inspection-build`,
+`h4-comparison-build` and `research-public`. All six selected local checks passed, including
+locked auxiliary builds and the direct Ruff/contract/index checks. CI conclusions are recorded
+in the PR and independent acceptance handoff. Native evidence belongs to the earlier behavior
+checks above; these build jobs do not imply new gameplay observations.

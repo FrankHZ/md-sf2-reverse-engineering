@@ -37,7 +37,8 @@ together. The active package is the set selected in the launch process.
 | **Pre-voyage battle artwork** · `derived/issue2177/pre-voyage-battle-v1` | Complete actor/terrain selection with eight close-up banks and shared allied body/weapon donors. Source package for the UI variants. [Production](#derive-selected-battle-rasters) · [Actual consumers](hd-rollout.md#private-battle-artwork-acceptance) |
 | **Pre-voyage UI rasters** · `derived/issue2178/pre-voyage-ui-v1` | Complete battle artwork selection plus world and eight scene UI banks. Source package for the current entry selection. [Production](#pre-voyage-ui-rasters-2178) · [Actual consumers](hd-rollout.md#ui-raster-consumers-2178) |
 | **Pre-voyage entry layers** · `derived/issue2179/pre-voyage-entry-v1` | Complete pre-voyage selection with six switchable title/Witch layers, carrying forward the #2178 UI, battle, actor, portrait and terrain banks. [Production](#pre-voyage-entry-layers-2179) · [Actual entry consumer](hd-rollout.md#production-entry-reproduction) |
-| **Pre-voyage animated terrain** · `derived/issue2180/pre-voyage-tiles-v1` | Current complete pre-voyage selection. Eight map visuals extend the #2179 world with phase-specific Original and HD terrain. [Production and native replay](#pre-voyage-animated-terrain-2180) |
+| **Pre-voyage animated terrain** · `derived/issue2180/pre-voyage-tiles-v1` | Complete animated-terrain base. Eight map visuals extend the #2179 world with phase-specific Original and HD terrain. [Production and native replay](#pre-voyage-animated-terrain-2180) |
+| **Enemy healing successor** · `derived/issue2227/pre-voyage-healing-v1` | Complete #2180 successor with Original/HD evil-fairy artwork and shared faction selection. [Resource and native boundary](#enemy-healing-family-2227) |
 | **PGNT** · `derived/issue1957/pgnt-v3` | Separate registered later progression/Battle26 witness. Its older Map3 HD bank has no L1 contexts and its cue 12 is the defeat placeholder. Preserve that evidence selection. Check resource lineage when proposing a successor that combines later progression with pre-voyage corrections. [PGNT reproduction](../development-and-verification.md#high-rank-elemental-magic-observation) |
 | **Display catalogs** · `derived/issue1957/catalogs-v1`, `derived/issue2001/catalogs-v1` | Independent prepared Chinese name overlays for the owning reproductions. Match the catalog and entry locale to the named reproduction. A catalog supplies display names and does not select world, scene or media. [PGNT catalog selection](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Retail catalog selection](presentation-assets.md#sleep-display-name) |
 | **Retail base and library** · `derived/issue2001/issue1966-original`, private asset Git `runtime/retail-v1` | Base world/entry provenance and preparation outputs used to assemble packages. Some prepared candidates have no current package binding. [Retail preparation](#retail-original-preparation) |
@@ -935,3 +936,21 @@ using numeric JSON coordinates as array indices without integer conversion. The 
 runs used the existing post-Battle06 party flags. Final positive observations reported
 no adapter errors. The final field and tactical processes emitted ObjectDB shutdown warnings (two and ten objects).
 Natural visit-by-visit visibility, GPU memory and hardware scanline phase remain **Unknown**.
+
+## Enemy healing family #2227
+
+The complete private successor is `derived/issue2227/pre-voyage-healing-v1`, based on
+`derived/issue2180/pre-voyage-tiles-v1`. Its 26 declared healing scenes add the same nine
+Original and nine HD rasters. Existing entry, animated terrain, actor, UI, audio and gameplay
+data compare unchanged. Scene JSON is compacted during publication. The package is 361,243,589
+bytes, compared with the 361,375,698-byte base. The unique new encoded raster banks total about
+12.5 KB. Publication is O(package bytes), with one scene decoded at a time. The pre-run budget
+was 3 GiB peak memory and 1 GiB scratch; peak memory was not measured. A complete nine-frame
+pilot passed the existing alpha/opaque-black mask checks before publication.
+
+Prepared retail effects tileset 6 supplies 3,392 tile bytes with the registered ROM/upstream
+identity and palette replacements `08880aaa0ace`. Source tile offsets, rank reuse and native
+acceptance are in [the spell owner](../godot/spell-presentation.md#enemy-healing-family-2227).
+The existing doubled Original format and family `derive_frame` HD recipe are reused. The
+publisher closes its temporary directory before the real native consumer cold-loads the result.
+Only private derived storage contains these rasters and their HD variants.
