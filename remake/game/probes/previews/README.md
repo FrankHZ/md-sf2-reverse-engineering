@@ -13,10 +13,10 @@ the subpage paths, visual checks and connected-game fallbacks.
 | Tab | Production entry and sample |
 | --- | --- |
 | F1 Witch | `SessionEntryView` at the actual title. Start opens the Witch greeting and menu. New Game, name, final Start and Continue use the actual entry host and one isolated preview file. Settings opens from the Witch's own action. Select the registered entry and opening package for the full route. |
-| F2 Dialogue | The hosted `ExplorationDialogueView` reads the invitation in `localization-pilot`. Confirm through the authored reading waits. For a portrait Yes/No choice, use the connected Map3 route in the scene review. |
+| F2 Dialogue | **Reading** runs the original practice invitation. Click **Show Yes / No** to keep its two reading waits and open the production choice before closing the question. Confirm through the waits, then use Left/Right and Confirm or press Esc for No. The choice closes and walking resumes. The authored speaker is portraitless. |
 | F3 Church | `ChurchServiceView` enters the existing practice Church program from the same authored package. Choose Raise to read or decline the treatment quote, or see Promotion refusal on the practice party. Connected Record and admitted Promotion have separate routes in the scene review. |
 | F4 Battle | `BattleSessionView` opens Practice Yard. Move Down, let the step settle and confirm. Each deep-blue Main row contains its icon and label. Main Back reselects a legal preview immediately with the original movement budget. H opens Magic from Main. Select MEND and GUARD A for the real friendly target and production recovery scene. |
-| F5 Members | Field Party opens the shared roster and detail page with records, gold and Prepare. The public shop sample reaches the unavailable Prepare outcome. The [connected field observation](../../../docs/godot/battle-ui-composition.md#reproduce-registered-portraits) exercises actual Prepare and Back. |
+| F5 Members | **Supplies** opens Member in the shared shop session and shows the unavailable Prepare outcome. Click **Show Preparation** for the `localization-pilot` party. On Medic A, Confirm **Prepare…** → **Give / exchange** → **Practice Leaf** to see the item and recipient pages. Esc returns through the item, command list and retained Member. Magic opens its empty choice page in this package. |
 | F6 Shop | `ShopServiceView` opens through ordinary interaction with the `shop-supplies` merchant. Buy or sell through the actual stock, slot, quote and receipt. |
 | F7 Field | The production field command list opens in the same shop/supplies area, with an authored description on the cell facing the merchant. Choose Search to read it through the existing field reader. |
 | F8 Inspect | `BattleInspectionView` opens at the acting unit in Practice Yard. Inspect the enemy at (8, 5) for its red movement field. Confirm an empty cell → Member. Switch rows to read live details, focus Items and select a slot. Back returns to Options, then Cursor. The field and battle pages share layout and browsing. Battle offers Back only. |
@@ -25,15 +25,17 @@ the subpage paths, visual checks and connected-game fallbacks.
 
 For a larger F8 roster, append `-- --inspect --authored-package <absolute member-large.json>`
 using the [14-member recipe](../../../docs/godot/battle-ui-composition.md#reproduce-the-shared-roster).
-F5 keeps its ordinary field source. Review the two production pages at 1600×900 and 1920×1080.
+Review the production Member pages at 1600×900 and 1920×1080.
 Use the [dedicated preview visual review rules](../../../docs/development-and-verification.md#dedicated-ui-preview-visual-review) for necessary local stills.
 
-Switch directly among F5–F7 to keep the same live party and inventories. F6 opens the
-shop automatically while the party faces the merchant. If the party has walked elsewhere,
-use ordinary movement to face the merchant again or press F6 again for a fresh sample.
-Re-selecting another sample's tab resets its session. F10 toggles the eligible live host menu.
+Switch directly among F5 Supplies, F6 and F7 to keep the same live party and inventories.
+Selecting Preparation starts a fresh sample. F6 or F7 from Preparation starts a fresh
+Supplies session, and F5 then opens Member in that session. F6 opens the shop automatically
+while the party faces the merchant. If the party has walked elsewhere, face the merchant again
+or press F6 again for a fresh sample. Re-select the current tab to restart its sample. F10 toggles
+the eligible live host menu.
 Close an input-owning field page before opening it. The [preview gaps](../../../docs/godot/ui-scene-review.md#preview-gaps-and-targeted-follow-ups)
-cover dialogue choices, Prepare, Caravan, numbered saves and actual window recovery.
+cover Caravan, numbered saves, actual window recovery and connected campaign variants.
 
 The production viewport keeps the 1920×1080 canvas and fits below the toolbar. The preview
 translates pointer input into that viewport. Main panels, menus, dialogue, tooltips and status
@@ -55,7 +57,11 @@ $project = (Resolve-Path -LiteralPath 'remake/game').Path
 ```
 
 Pass `-- --dialogue`, `-- --church`, `-- --battle`, `-- --members`, `-- --shop`,
-`-- --field`, `-- --inspect` or `-- --system` for direct entry. F9 starts on Victory with `-- --results`. Select
+`-- --field`, `-- --inspect` or `-- --system` for direct entry. `-- --dialogue-choice` and
+`-- --prepare` select the alternate samples directly. For localized F2 script text, set
+`SF2_DISPLAY_CATALOG` to the absolute path of
+[`localization-pilot.zh-CN.json`](../../../content/authored/localization-pilot.zh-CN.json) in the
+launching process. L switches the UI language. F9 starts on Victory with `-- --results`. Select
 Defeat or Retreat directly with `-- --defeat` or `-- --retreat`. The preview uses one explicit save
 file in its own fresh `user://design-preview` directory. Its preferences live in memory.
 The public export excludes `probes/`.

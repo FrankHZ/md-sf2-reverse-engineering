@@ -323,8 +323,11 @@ their established disclosure.
 All F1–F10 tabs instantiate or reuse the production `Main.tscn`. The preview owns the
 toolbar, controlled startup choice, reset, fixed review viewport and pointer translation.
 F1 uses ordinary entry and one explicit isolated save. F2/F3 use the admitted authored
-dialogue and Church programs. F5–F7 share one live field session, so Party and Shop read
-the same inventory. F4/F8 use the same Practice Yard production battle, and F9 uses
+dialogue and Church programs. The toolbar's native sample button offers F2 Yes / No and F5
+Preparation alongside their defaults. Both stage variations of `localization-pilot` before
+ordinary content admission. F5 Supplies, F6 and F7 share one live field session, so Party and
+Shop read the same inventory. F5 Preparation owns a fresh caller and opens the same Member
+page. F4/F8 use the same Practice Yard production battle, and F9 uses
 ordinary authored outcome continuations. F10 opens the actual System Menu over its
 eligible caller. Preferences live in memory. Game entry, admission, presentation and
 return keep their production owners.
