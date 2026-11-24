@@ -140,10 +140,13 @@ The bound profile's responsibility order is:
 | Pose and image | Direction/animation half, `FlagsB & 3` orientation, render size, gesture/head shift, mirror and effect change the ink or destination. Ordering cannot correct the wrong sprite or anchor. |
 
 Field pickup glints sit immediately after the main plane's low tiles. The active view selects B
-for layer zero and A for nonzero. The remaining plane and high-priority tiles and actors can
-cover the mark through their existing passes and texture alpha. The unbound fallback draws the
-mark between the full background and the actor/foreground passes. Require the whole mark to
-fit the legal screen clip. [Pickup eligibility and preferences](objective-guidance.md#field-pickup-glints)
+for layer zero and A for nonzero. Require the whole mark to fit the legal screen clip. Before
+drawing it, test its actual star strokes against nontransparent pixels in the later map passes.
+Test high B and all A tiles for a B-plane mark, and high B and high A for an A-plane mark. An
+intersecting pixel suppresses the whole mark. Use the projected origin, working layout and selected Original
+or HD block for each tested plane. The unbound fallback tests its full foreground and leaves the
+mark between the full background and the actors. Actors retain their existing draw order.
+[Pickup eligibility and preferences](objective-guidance.md#field-pickup-glints)
 own the separate Search and control checks. The mark has no canvas, node or input target of its
 own.
 

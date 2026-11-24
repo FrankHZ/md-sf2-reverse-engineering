@@ -192,17 +192,43 @@ func hold_foreground() -> void:
     var request: int = field.call("ObserveLayoutRegion", 58, 22, 1, 1)
     await frames(4)
     var s := witness("docks-hold")
-    var mark := mark_at(s, 58, 9)
+    var origin: Dictionary = s.cameraProjection.background
     var layout: Dictionary = field.call("ReadLayoutRegion", 58, 22, 1, 1)
     var draws: Array = layout.draw.uses
     # The upper stroke crosses opaque atlas ink at source pixel (12,12).
-    var tip := Vector2(mark.get("screenX", -1), mark.get("screenY", -1)) + Vector2(1, -8.5)
-    check(not mark.is_empty() and int(layout.draw.request) == request and draws.any(func(d):
+    var tip := (Vector2(58 * 24 + 12.5, 9 * 24 + 15.5) - Vector2(origin.x, origin.y)) * 4 + Vector2(1, -8.5)
+    check(int(layout.draw.request) == request and draws.any(func(d):
         return (d.layer == "foreground" and d.highPriority == true and int(d.block) == 201 and
             Rect2(d.x, d.y, d.width, d.height).has_point(tip))),
-        "live high-priority foreground covers the upper glint stroke")
+        "live high-priority A-plane draw crosses the B-plane glint's upper stroke")
+    check(140 not in s.flags and mark_at(s, 58, 9).is_empty(), "foreground suppresses the entire unclaimed hold glint")
     samples.append({"label":"hold-foreground", "word":layout.words[0], "draws":draws})
     field.call("StopLayoutObservation")
+
+func tower() -> void:
+    if not await controlled_start(): return
+    var field := find("ExplorationSessionView")
+    var request: int = field.call("ObserveLayoutRegion", 15, 6, 1, 1)
+    await frames(4)
+    var s := witness("unclaimed-tower-mithril")
+    var layout: Dictionary = field.call("ReadLayoutRegion", 15, 6, 1, 1)
+    var draws: Array = layout.draw.uses.filter(func(d): return d.layer == "foreground")
+    var origin: Dictionary = s.cameraProjection.foreground
+    var star := Rect2((Vector2(15 * 24 + 8, 6 * 24 + 11) - Vector2(origin.x, origin.y)) * 4, Vector2(36, 36))
+    var clip: Dictionary = s.cameraProjection.legalScreen
+    check(s.map == "map-40" and 132 not in s.flags and int(layout.words[0]) == 0xDC42 and
+        Rect2(clip.x, clip.y, clip.width, clip.height).encloses(star), "unclaimed Mithril and full star footprint in the active clip")
+    check(int(layout.draw.request) == request and draws.any(func(d):
+        return (d.highPriority == true and int(d.tile) == 7 and int(d.words[0]) == 0x8140 and
+            Rect2(d.x, d.y, d.width, d.height).has_point(star.position + Vector2(18, 22)))),
+        "the later A-plane high-priority tile crosses a lower star stroke")
+    check(mark_at(s, 15, 6).is_empty(), "terrain suppresses the entire Mithril glint")
+    samples.append({"label":"tower-foreground", "starBounds":star, "word":layout.words[0], "draws":draws})
+    field.call("StopLayoutObservation")
+    var result := await check_search(2, 132, true)
+    check(int(result.get("search", {}).get("ItemWord", -1)) == 123, "ordinary Search still grants Mithril")
+    await dismiss_search()
+    check(mark_at(witness("tower-mithril-collected"), 15, 6).is_empty(), "claimed Mithril stays clear")
 
 func wall() -> void:
     if not await controlled_start(): return
@@ -222,8 +248,9 @@ func docks() -> void:
     check(int(result.search.ItemWord) == 11, "docks barrel grants Quick Chicken")
 
 func run() -> void:
-    if output.is_empty() or not OS.get_environment("SF2_SAVE_NAMESPACE").begins_with("issue2024-"):
-        push_error("Use an explicit report and a disposable issue2024-* namespace"); quit(2); return
+    var save_namespace := OS.get_environment("SF2_SAVE_NAMESPACE")
+    if output.is_empty() or (save_namespace != "issue2166" and not save_namespace.begins_with("issue2024-")):
+        push_error("Use an explicit report and a disposable issue2024-* or issue2166 namespace"); quit(2); return
     slot_path = OS.get_environment("SF2_SAVE_ROOT").path_join(OS.get_environment("SF2_SAVE_NAMESPACE")).path_join("sf2-opening/slot1.json")
     node_added.connect(observe_node)
     root.size = Vector2i(1920, 1080)
@@ -233,6 +260,7 @@ func run() -> void:
         "continue": await cleared_shrine()
         "foreground": await foreground()
         "hold-foreground": await hold_foreground()
+        "tower": await tower()
         "wall": await wall()
         "docks": await docks()
         _: check(false, "unknown case")

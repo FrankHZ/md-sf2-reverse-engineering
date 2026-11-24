@@ -10,6 +10,7 @@ internal sealed class MapBlockTextures : IDisposable
     private readonly Dictionary<MapId, Image> _atlases = [];
     private readonly Dictionary<(MapId Map, int Block), ImageTexture> _blocks = [];
     private readonly Dictionary<ExplorationRaster, ImageTexture> _hd = [];
+    private readonly Dictionary<(MapId Map, int Block, ExplorationRaster? Variant), Bitmap> _blockInk = [];
 
     internal int Count => _blocks.Count + _hd.Count;
 
@@ -25,6 +26,25 @@ internal sealed class MapBlockTextures : IDisposable
             return prepared;
         }
         if (_blocks.TryGetValue(key, out var texture)) return texture;
+        using var image = OpenOriginalBlock(visual, block);
+        _blocks.Add(key, texture = ImageTexture.CreateFromImage(image));
+        return texture;
+    }
+
+    internal Bitmap BlockInk(ExplorationMapVisual visual, int block, ExplorationRaster? variant)
+    {
+        var key = (visual.Map, block, variant);
+        if (_blockInk.TryGetValue(key, out var ink)) return ink;
+        // Read the same source pixels as the texture upload, including in headless mode.
+        using var image = variant is null ? OpenOriginalBlock(visual, block) : Exploration.ExplorationRasterImages.Open(variant);
+        ink = new Bitmap();
+        ink.CreateFromImageAlpha(image, 0);
+        _blockInk.Add(key, ink);
+        return ink;
+    }
+
+    private Image OpenOriginalBlock(ExplorationMapVisual visual, int block)
+    {
         if (!_atlases.TryGetValue(visual.Map, out var atlas))
         {
             atlas = visual.Atlas.Format == "rgba8"
@@ -35,7 +55,7 @@ internal sealed class MapBlockTextures : IDisposable
             { atlas.Dispose(); throw new InvalidOperationException("raster-decode"); }
             _atlases.Add(visual.Map, atlas);
         }
-        using var image = Image.CreateEmpty(24, 24, false, Image.Format.Rgba8);
+        var image = Image.CreateEmpty(24, 24, false, Image.Format.Rgba8);
         for (int tile = 0; tile < 9; tile++)
         {
             int word = visual.Blocks[block][tile], index = (word & 0x3FF) - 0x100;
@@ -49,8 +69,7 @@ internal sealed class MapBlockTextures : IDisposable
                         atlas.GetPixel((index % 16 * 8 + sx) * visual.Scale, (index / 16 * 8 + sy) * visual.Scale));
                 }
         }
-        _blocks.Add(key, texture = ImageTexture.CreateFromImage(image));
-        return texture;
+        return image;
     }
 
     public void Dispose()
@@ -58,6 +77,7 @@ internal sealed class MapBlockTextures : IDisposable
         foreach (var texture in _blocks.Values) texture.Dispose();
         foreach (var atlas in _atlases.Values) atlas.Dispose();
         foreach (var texture in _hd.Values) texture.Dispose();
-        _hd.Clear(); _blocks.Clear(); _atlases.Clear();
+        foreach (var ink in _blockInk.Values) ink.Dispose();
+        _hd.Clear(); _blocks.Clear(); _atlases.Clear(); _blockInk.Clear();
     }
 }

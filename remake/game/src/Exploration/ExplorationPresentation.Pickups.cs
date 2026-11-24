@@ -1,4 +1,6 @@
 using Godot;
+using Sf2.Remake.Application.Content.Scenarios;
+using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.GodotAdapter.Maps;
 
@@ -13,7 +15,8 @@ internal sealed partial class ExplorationPresentation
 
     internal object? PickupGlintProjection { get; private set; }
 
-    internal void DrawPickupGlints(IReadOnlyList<MapPosition> pickups, Vector2 origin, Rect2 clip)
+    internal void DrawPickupGlints(IReadOnlyList<MapPosition> pickups, Vector2 origin, Rect2 clip,
+        Func<Rect2, bool>? coveredByTerrain = null)
     {
         const int cellSize = WorldViewportLayout.SourceCell;
         const int pixelSize = WorldViewportLayout.PixelScale;
@@ -29,7 +32,7 @@ internal sealed partial class ExplorationPresentation
         {
             var topLeft = (new Vector2(cell.X, cell.Y) * cellSize + inset - origin) * pixelSize;
             var bounds = new Rect2(topLeft, Vector2.One * (size * pixelSize));
-            if (!clip.Encloses(bounds)) continue;
+            if (!clip.Encloses(bounds) || coveredByTerrain?.Invoke(bounds) == true) continue;
 
             Vector2 center = bounds.GetCenter();
             for (int row = 0; row < size; row++)
@@ -47,6 +50,46 @@ internal sealed partial class ExplorationPresentation
             });
         }
         PickupGlintProjection = marks;
+    }
+
+    private bool LayerCoversPickup(Rect2 star, ExplorationState world, ExplorationMapVisual visual,
+        Rect2I area, Vector2 origin, MapOverlayOffset offset, bool overlay, bool highOnly)
+    {
+        const int cell = WorldViewportLayout.SourceCell;
+        const int pixel = WorldViewportLayout.PixelScale;
+        const int tileSize = cell / 3;
+        // Inspect only blocks underneath this star in the later plane's coordinates.
+        var start = ((star.Position / pixel + origin) / cell).Floor();
+        var end = ((star.End / pixel + origin) / cell).Ceil();
+        for (int y = (int)start.Y; y < end.Y; y++)
+            for (int x = (int)start.X; x < end.X; x++)
+            {
+                int sourceX = x + offset.X, sourceY = y + offset.Y;
+                if (LayerBlock(world.Layout, sourceX, sourceY, overlay) is not { } block) continue;
+                var blockTop = (new Vector2(x, y) * cell - origin) * pixel;
+                Bitmap? ink = null;
+                for (int tile = 0; tile < 9; tile++)
+                {
+                    if (highOnly && (visual.Blocks[block][tile] & 0x8000) == 0) continue;
+                    var tileTop = blockTop + new Vector2(tile % 3, tile / 3) * (tileSize * pixel);
+                    var tileRect = new Rect2(tileTop, Vector2.One * (tileSize * pixel));
+                    if (!star.Intersects(tileRect)) continue;
+                    for (int row = 0; row < PickupStarRows.Length; row++)
+                    {
+                        var span = PickupStarSpan(star.GetCenter().X, star.Position.Y + row * pixel, PickupStarRows[row].Outline);
+                        if (!span.Intersects(tileRect)) continue;
+                        ink ??= _mapTextures.BlockInk(visual, block, BlockVariant(visual, block, world.Layout, sourceX, sourceY, area, out _));
+                        var hit = span.Intersection(tileRect);
+                        float texelsPerPixel = ink.GetSize().X / (float)(cell * pixel);
+                        var first = ((hit.Position - blockTop) * texelsPerPixel).Floor();
+                        var after = ((hit.End - blockTop) * texelsPerPixel).Ceil();
+                        for (int ty = (int)first.Y; ty < after.Y; ty++)
+                            for (int tx = (int)first.X; tx < after.X; tx++)
+                                if (ink.GetBit(tx, ty)) return true;
+                    }
+                }
+            }
+        return false;
     }
 
     private static Rect2 PickupStarSpan(float centerX, float y, int sourcePixels)
