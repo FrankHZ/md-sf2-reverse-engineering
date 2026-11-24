@@ -383,9 +383,8 @@ query boundaries.
 - **Current-round queue.** `BattleRoundOrderQuery` reads the stored queue/cursor through the
   sentinel or end. It shares current-state eligibility with `BattleAdvancer` and board disclosure
   with inspection. The dispatcher owns skip effects, AI and round generation. Repeated slots
-  remain distinct, and the caption qualifies eligibility on current state. The passive
-  `BattleRoundOrderPanel` follows the decision HUD's visibility, and Continue rebuilds its display
-  from restored state.
+  remain distinct. The production decision HUD leaves the action strip unmounted, including
+  in the shared DesignPreview entry.
   [Queue contract](battle-ui-composition.md#current-round-order-2065) ·
   [Query](../../src/Sf2.Remake.Application/Runtime/Battles/BattleRoundOrderQuery.cs) ·
   [Advance and skip](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs) ·
@@ -438,8 +437,7 @@ the restored vertical Main and its acceptance. Slice 2 can use free reading dire
 vertical page where the existing controls permit them. #2083 consumes the shared reader and
 coherent Back from those slices. Serialize target geometry changes that touch
 `BattleChoices` or `BattleMenuLayout`.
-The current-round order uses the phase boundary from slice 1. The queue acceptance compares
-the readout with real dispatch and verifies cold Continue. The [Prepare command rows](#prepare-command-rows)
+The [Prepare command rows](#prepare-command-rows)
 use the current reader and catalog. #2085 retains ownership of card level and
 inspection wording/hits. Handle the Target input/feedback findings attached to it in slice 1 and
 the reading/inspection findings in slice 2. This is one disposition for each reported behavior.
