@@ -98,9 +98,10 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         // The source reader already selects ranks from current books, admitted growth and encounter resources.
         var healing = definitions.Spells.Values
             .Where(spell => spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE" &&
-                spell is { Code: "HEAL", Radius: 0 } or { Code: "AURA", Level: 1 })
+                spell is { Code: "HEAL", Radius: 0 } or { Code: "AURA", Level: >= 1 and <= 4 })
             .Select(spell => new HealingSpellDefinition(spell.Spell, spell.MpCost, spell.Power, spell.MinimumRange,
-                spell.MaximumRange, spell.Code == "AURA" ? HealingTargets.AuraRadius : HealingTargets.Single, spell.Radius))
+                spell.MaximumRange, spell.Code != "AURA" ? HealingTargets.Single :
+                    spell.Level == 4 ? HealingTargets.AuraAllAllies : HealingTargets.AuraRadius, spell.Radius))
             .Concat(PrivateBattleActionBindings.PoisonCure(definitions));
         string encounterId = "battle-" + encounter.Battle.Id.ToString(CultureInfo.InvariantCulture);
         EnemyDropRow[] drops = encounter.Battle.Id switch

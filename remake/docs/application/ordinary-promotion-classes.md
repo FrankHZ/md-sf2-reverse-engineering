@@ -160,7 +160,7 @@ A palette or sprite match from another member is insufficient class admission.
   AURA 1 apply 5/4 to the raw power before the missing-HP cap. HEAL 4 retains its
   full-recovery sentinel. The existing Battle26 bindings supply BLAST 1–4, SLOW 1–2,
   admitted DETOX 1–3 and BOOST 1–2. Karna learns BOOST 2 and AURA 1 through growth.
-  Higher campaign AURA ranks and DETOX 4 remain with their effect owners. [Sarah growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats01.asm) ·
+  Higher AURA ranks use the [recovery owner](../domain/gameplay-rules.md#private-learned-aura-ranks); DETOX4 remains unbound. [Sarah growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats01.asm) ·
   [Karna growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats15.asm) ·
   [Healing power and EXP](../../../docs/design/contracts/battle/spell-resolution.md) ·
   [DETOX #1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) ·
@@ -528,7 +528,7 @@ AURA 1 at stored level 13 (effective 33). The controlled AURA 1 has range 0–3 
 radius 1. It restores up to 18 HP per eligible recipient in source-slot order and
 uses the shared 25 EXP accumulator cap. Ordinary promoted acquisition and casting of
 AURA 1 remain **Unknown**. BOOST 2 learning preserves the packed rank, which the ordinary battle action consumes.
-Campaign AURA 2–4 remain unbound. [BOOST 2 admission and observation](../domain/support-spell-status-design.md#boost-2-admission-and-observation)
+Campaign AURA2–4 have [controlled ordinary casting and cold Continue](../domain/gameplay-rules.md#private-learned-aura-ranks). [BOOST 2 admission and observation](../domain/support-spell-status-design.md#boost-2-admission-and-observation)
 
 The first staff pilot ended in defeat before Karna could attack. The first Hassan route
 stopped at a blocked direct path. The accepted staff fork uses the retained HEAL 3 slot
@@ -759,7 +759,7 @@ actions are admitted. The linked action owners track the remaining boundaries.
   [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926).
 - Packed spell learning and retention have their own coverage. The
   [spell actions](church-promotion-design.md#current-battle-spells) track admitted learned
-  ranks and the remaining higher AURA and DETOX ranks.
+  ranks, including AURA2–4, and the remaining DETOX4 boundary.
   MUDDLE 2 is admitted in private Magic and battle Continue. A rank-2 cast through
   unchanged campaign history and natural ally confusion remain **Unknown**.
   [Controlled Battle25 observation](../domain/hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25)

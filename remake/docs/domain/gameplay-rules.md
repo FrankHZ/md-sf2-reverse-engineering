@@ -716,6 +716,43 @@ The accepted [AURA contract](../../../docs/design/contracts/battle/spell-resolut
 retains bounded H3 geometry/accumulation evidence. These joins establish structure, not natural
 original casting or presentation timing; engine tests are not original-game evidence.
 
+### Private learned AURA ranks
+
+Standard rigor applies to #2233's bounded AURA2–4 connection. Content binds all four pinned
+source definitions to the existing recovery, progression and scene continuation. Karna learns
+the ranks at effective levels 33, 41, 55 and 60 for PRST/VICR. VICR applies integer 5/4 power
+before the missing-HP cap for ranks1–3; rank4 retains its full-recovery sentinel. Real faction,
+control, neutral bits, provisional geometry, source-slot ordering and dead/unplaced exclusions
+retain their existing rules. Enemy ranks above 1 remain unsupported.
+
+**Confirmed in the remake.** The private packed-book test admits all four source ranks.
+Vicar behavior cases cover rank2/3 scaling and rank4 recovery above 255 HP. Existing radius,
+cancellation, insufficient-MP and session tests cover the unchanged rules. The ordinary-input
+engine_private_aura_observation.gd observes controlled PRST60 Karna casting rank2 for 11 MP
+(50→39) and rank3 for 15 MP (50→35), healing Bowie and herself with one 25 EXP award each.
+A disposable copy of the accepted Vicar Battle26 ready save, with a legal VICR40 book
+(effective60), casts rank4 for 20 MP (57→37), presents nine living placed allies in source-slot
+order and grants 24 EXP. All return to a usable action menu. Independent title Continue and
+resave preserve complete decoded post-cast data. The scene reads existing bound fairy resources.
+
+Reuse registered derived/issue2232/pre-voyage-detox-v1 as a complete unit with world, main
+scenes, entry and six opening inputs. Its existing 174-file closure is 361,493,189 bytes.
+This code binding consumes the existing resources and requires no content successor.
+
+Private derived/issue2233/review holds controlled inputs, launch script, reports, saved
+comparison and reproduction instructions. The probe uses SF2_AURA_RANK=2/3/4, worktree-local
+SF2_AURA_START and fresh SF2_OBSERVATION_OUTPUT. SF2_AURA_CONTINUE=1 selects the disposable
+Vicar save; SF2_AURA_COLD_ONLY=1 continues and resaves without casting. Use the locked Debug
+build and installed Godot with --headless --audio-driver Dummy --fixed-fps 60 --resolution 1920x1080.
+
+**Completed failures.** Initial SDK execution lacked the target pack; locked restore resolved it.
+The cold observer raced loading, held a freed save panel and used an obsolete menu index.
+It now waits for panel state and selects the named Save entry. Failed reports remain in the
+private review. Successful runs retain 2–6 ObjectDB exit warnings under paused #1716.
+
+**Unknown.** Natural high-level acquisition, enemy higher ranks, exact hardware timing and human
+visual acceptance. DETOX4 remains unbound. Controlled inputs retain the Battle26/Pacalon boundary.
+
 ## Jaro conversion and source ally commandset6
 
 The [scope agreement](../capability-status.md#authored-jaro-conversion-agreement) admits one authored

@@ -352,7 +352,7 @@ The [spell coverage inventory](godot/spell-presentation.md#coverage-by-family-an
 admitted, authored-only and unavailable ranks, with separate asset and observation boundaries.
 Battle26 exercises learned player BOLT 1 and HEAL 4. Controlled WIZ Tyrin casts BLAZE 4,
 FREEZE 3–4 and BOLT 3–4 through ordinary Magic with the shared elemental placeholders.
-AURA 2–4 and DETOX 4 remain pending.
+AURA2–4 have [controlled ordinary casting and cold Continue](domain/gameplay-rules.md#private-learned-aura-ranks). DETOX4 remains pending.
 [Current battle spells](application/church-promotion-design.md#current-battle-spells) ·
 [High-rank observation](development-and-verification.md#high-rank-elemental-magic-observation)
 Battles04–07 can mount the prepared BLAZE1 flame with the actual caster, target and scene art.
