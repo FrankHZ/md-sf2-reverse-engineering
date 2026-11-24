@@ -12,6 +12,7 @@ REMAKE_PRODUCER_PATHS = frozenset(
         "src/sf2tool/remake_private_package.py",
         "src/sf2tool/remake_private_inventory.py",
         "src/sf2tool/remake_attack_spell_mount.py",
+        "src/sf2tool/remake_enemy_healing.py",
         "tools/Prepare-PrivateAssets.ps1",
         "tools/bizhawk/retail_audio.lua",
         "src/sf2tool/remake_command_menu.py",
