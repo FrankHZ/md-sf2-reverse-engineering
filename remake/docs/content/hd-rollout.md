@@ -452,7 +452,8 @@ These are single-run measurements on the review machine, not cross-hardware guar
 
 The battle raster binding and packager form the first #2177 slice. They use the existing
 scene resource keys, the 4 MiB scene document bound and the Settings prepare/write/publish
-transaction. Packager input is independently prepared art at 2× or 4× raster dimensions.
+transaction. Packager input can be independently prepared art at 2× or 4× raster dimensions,
+or the existing scene rasters through the [derive entry](asset-inventory.md#derive-selected-battle-rasters).
 Installed scene banks and the working package retain their existing selection.
 [Producer and package scope](asset-inventory.md#battle-raster-variant-binding-2177)
 
@@ -479,6 +480,15 @@ tactical exit strip crop with transparent and opaque-black pixels. BLAZE2 and BL
 the prepared presenter projections with synthetic textures. The deliberate truncated PNG
 should report native decode errors and preserve the current binding. A successful observation
 prints `BATTLE-RASTER-OBSERVATION PASS` and exits 0.
+
+Preparation also runs when movement has no mounted close-up sprites. It enumerates the admitted
+actor/weapon groups, scenery, healing, field exit and existing effect groups, then decodes the
+target mode's selected rasters. HD declarations are checked even for incomplete groups, followed
+by the selected Original fallback. UI rasters are outside this consumer check. A fully covered
+HD group can prepare with an unusable Original payload; applying Original rejects that payload.
+The synthetic observation checks those empty-binding cases and retains the mode, scene state
+and empty display on rejection. Decode residency is temporary and repeated bindings share one
+decode per preparation call.
 
 **Unknown** for the installed pre-voyage raster census and production package headroom,
 the ordinary Settings screen with a closed HD battle package, and a representative full

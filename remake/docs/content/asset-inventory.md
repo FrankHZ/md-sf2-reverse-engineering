@@ -616,8 +616,8 @@ uv run --locked --with pillow==11.3.0 python -B -m sf2tool.remake_hd_battle_rast
 ```
 
 Use an absolute fresh candidate destination under the worktree's `local/`. Repeat `--scene`
-for an admitted encounter sibling or for `opening-inputs/SF2_PRIVATE_BATTLE01_SCENE.json` when
-that independent opening selection also needs variants. The command prints per-scene variant
+for an admitted encounter sibling. The opening-input scene definition supplies battle setup;
+the raster owner is `main-scenes.json`. The command prints per-scene variant
 counts, input and output sizes, and the total closed-package size. An invalid declaration aborts
 staging before publication. Use the existing package copier to publish a verified candidate.
 [Closed package publication](#pre-voyage-actors-and-portraits-2176)
@@ -628,3 +628,55 @@ input scratch. Wrong density and changed masks aborted staging. The [native obse
 checks the runtime bindings independently. **Unknown** for pre-voyage source-art variants,
 scene-size headroom across the live retail selection and their native playback. The registered
 selection remains the [actor and portrait package](#pre-voyage-actors-and-portraits-2176).
+
+### Derive selected battle rasters
+
+The same producer accepts `--derive --gfx-root` with one scene path per `--scene`. It reads
+the mounted Original rasters, generates temporary PNGs and passes them through the existing
+variant binder and closed-package staging. The pinned graphics checkout supplies the exact-RGBA
+edge-aware filter used by the actor producer.
+
+```powershell
+. ./local/private-inputs.ps1
+uv run --locked --with pillow==11.3.0 python -B -m sf2tool.remake_hd_battle_rasters `
+    --base $base --out $candidate --derive --gfx-root $gfxRoot `
+    --scene main-scenes.json --scene inputs/battle04/battle-scenes.json --pilot
+```
+
+Use only encounter paths declared by the selected world's `encounters[].battleScenes`.
+Omit `--pilot` for full conversion of the selected scenes. Pilot selects the first complete
+body group, weapon group, background, ground, healing group, field-death group and each
+installed BLAZE1/BLAZE2/BLAST1 group. Overlapping groups close together. Full selection includes
+all actor frames and weapon frames, default and terrain-selected scenery, healing body/wing/dust,
+field exits and those three installed formal spell families. UI keys remain outside this closure.
+
+Target dimensions follow the existing displayed footprint at four pixels per logical pixel.
+Native 96×96 ally frames, native spell effects and field-exit strips receive source×4. Other
+body frames, weapons, scenery and the installed doubled fairy art receive source×2. For a
+doubled source, every pixel must match a nearest-downsample/upsample round trip before logical
+pixels are recovered. Each reported key names its chosen method as `native-exact-rgba`,
+`recovered-nearest-2x` or `conservative-source-grid-2x`. The conservative method filters at
+the supplied pixel grid and takes the 2× result, preserving detail that prevents exact recovery.
+All methods verify alpha and opaque-black masks against the original. Field-exit halves filter
+independently.
+
+Scenery currently uses the accepted conservative exact-RGBA treatment. Its selection preserves
+palette colors and masks, with horizontal repeats providing the background filter's sampling
+neighbors before the center is cropped. Applying the terrain palette ramp to these independent
+scenery sets still requires the installed palette and seam pilot. This producer records the
+conservative treatment through its per-key method receipts.
+
+Processing is sequential per scene and per raster. Its work is linear in selected source and
+output pixels plus copied package bytes. Memory includes one parsed scene, its encoded variants
+and the current filtering grids and images. Each scene retains the 4 MiB JSON admission limit
+and each raster the 2048-pixel edge bound. Input/output size receipts support the caller's
+storage and admission planning. Real selected counts, peak memory and scene headroom must be
+measured in the private pilot before scaling.
+
+**Confirmed** with generated color patterns and the pinned filter. A native ally, exact doubled
+frame, non-reversible doubled frame, doubled fairy/scenery/weapon, two-half death strip and all
+three formal spell-key groups exercise the full selector. Pilot generated 34 variants in a
+33,419-byte nine-file package; full generated 35 in 33,980 bytes. The sample completed in
+approximately two seconds, including two CLI subprocesses. Every output mask matched, the
+Original raster objects remained equal, and the UI key received no variant. These small
+measurements provide algorithm evidence; private production capacity remains **Unknown**.

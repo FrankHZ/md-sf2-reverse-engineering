@@ -11,13 +11,13 @@ from tempfile import TemporaryDirectory
 from PIL import Image, ImageChops
 
 from sf2tool.remake_command_menu import write_json
-from sf2tool.remake_hd_actors import encode
+from sf2tool.remake_hd_actors import encode, frame
 from sf2tool.remake_map3_hd import decode
+from sf2tool.remake_map3_ramp import load_filter
 from sf2tool.remake_private_package import package_files, private_output, read_json
 
 _SCENE_LIMIT = 4 * 1024 * 1024
 _RASTER_EDGE_LIMIT = 2048
-_OPENING_SCENE = Path("opening-inputs/SF2_PRIVATE_BATTLE01_SCENE.json")
 
 
 def _files(root: Path) -> dict[Path, Path]:
@@ -80,10 +80,170 @@ def bind_variants(source: Path, png_root: Path, target: Path) -> dict[str, int]:
     return {"variants": len(variants), "originalBytes": source.stat().st_size, "sceneBytes": size}
 
 
-def prepare(base: Path, destination: Path, scenes: list[tuple[str, Path]]) -> dict:
+def selected_groups(scene: dict) -> list[tuple[str, list[str], int]]:
+    """Return existing consumer groups with their Original raster density."""
+    groups = []
+    rasters = scene["rasters"]
+    for actor in scene["actors"]:
+        # Native 96-square allies are the existing consumer's one-scale exception.
+        for key in actor["frames"]:
+            row = rasters[key]
+            density = (
+                1 if actor["side"] == "ally" and (row["width"], row["height"]) == (96, 96) else 2
+            )
+            groups.append(("body", [key], density))
+        # Keep the complete actor frame set together in pilot selection.
+        groups.append(("body-group", actor["frames"], 0))
+        if actor["weaponFrames"]:
+            groups.append(("weapon", actor["weaponFrames"], 2))
+    scenery = [scene, *scene.get("terrainScenes", [])]
+    for row in scenery:
+        groups.append(("background", [row["background"]], 2))
+        groups.append(("ground", [row["ground"]], 2))
+    if scene.get("healing"):
+        heal = scene["healing"]
+        groups.append(("healing", heal["bodies"] + heal["wings"] + heal["dust"], 2))
+    if scene.get("fieldDeath"):
+        groups.append(("field-death", scene["fieldDeath"]["exitFrames"], 1))
+    effects = {
+        "blaze-1": ["frame-0", "frame-1"],
+        "blaze-2": ["flame-0", "flame-1", "meteor-0", "meteor-1", "impact-0", "impact-1"],
+        "blast-1": [f"frame-{index}" for index in range(15)],
+    }
+    for family, names in effects.items():
+        keys = [family + "/" + name for name in names]
+        if any(key in rasters for key in keys):
+            groups.append((family, keys, 1))
+    return groups
+
+
+def derive_variants(source: Path, png_root: Path, scale, pilot: bool) -> list[dict]:
+    if source.stat().st_size > _SCENE_LIMIT:
+        raise ValueError("input scene exceeds the 4 MiB reader limit")
+    scene = read_json(source)
+    groups = selected_groups(scene)
+    selected = {}
+    for family, keys, density in groups:
+        if density:
+            for key in keys:
+                previous = selected.setdefault(key, (family, density))
+                if previous[1] != density:
+                    raise ValueError(f"conflicting consumer density: {key}")
+    if pilot:
+        included, families = set(), set()
+        for family, keys, _ in groups:
+            if family == "body":
+                continue
+            if family not in families:
+                included.update(keys)
+                families.add(family)
+        # Close overlapping frame groups so a pilot never mounts half an actor.
+        changed = True
+        while changed:
+            changed = False
+            for _, keys, _ in groups:
+                if included.intersection(keys) and not set(keys) <= included:
+                    included.update(keys)
+                    changed = True
+        selected = {key: value for key, value in selected.items() if key in included}
+    receipts = []
+    for key, (family, density) in selected.items():
+        parts = key.split("/")
+        if any(part in ("", ".", "..") or "\\" in part or ":" in part for part in parts):
+            raise ValueError("raster key cannot be represented as a relative PNG")
+        path = png_root.joinpath(*parts[:-1], parts[-1] + ".png")
+        if key not in scene["rasters"]:
+            raise ValueError(f"missing selected original raster: {key}")
+        with decode(scene["rasters"][key]) as original:
+            factor = 4 // density
+            size = (original.width * factor, original.height * factor)
+            if max(size) > _RASTER_EDGE_LIMIT:
+                raise ValueError(f"derived raster exceeds the existing edge limit: {key}")
+            halves = 2 if family == "field-death" else 1
+            if original.width % halves:
+                raise ValueError("field-death strip needs two equal frames")
+            output = Image.new("RGBA", size)
+            methods = []
+            width = original.width // halves
+            for half in range(halves):
+                with original.crop((half * width, 0, (half + 1) * width, original.height)) as part:
+                    if family == "background":
+                        # The consumer wraps horizontally. Give the same filter the
+                        # neighboring repeat on both sides before cropping the center.
+                        repeated = Image.new("RGBA", (part.width * 3, part.height))
+                        for repeat in range(3):
+                            repeated.paste(part, (repeat * part.width, 0))
+                        expanded, method = derive_frame(repeated, density, scale)
+                        transformed = expanded.crop(
+                            (
+                                part.width * factor,
+                                0,
+                                part.width * factor * 2,
+                                part.height * factor,
+                            )
+                        )
+                        repeated.close()
+                        expanded.close()
+                    else:
+                        transformed, method = derive_frame(part, density, scale)
+                    output.paste(transformed, (half * width * factor, 0))
+                    transformed.close()
+                    methods.append(method)
+            _check_masks(original, output, key)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            output.save(path, format="PNG")
+            output.close()
+            receipts.append(
+                {
+                    "key": key,
+                    "family": family,
+                    "source": list(original.size),
+                    "output": list(size),
+                    "sourceDensity": density,
+                    "methods": methods,
+                }
+            )
+    return receipts
+
+
+def derive_frame(image: Image.Image, density: int, scale) -> tuple[Image.Image, str]:
+    """Check every 2x2 source cell before recovering a doubled logical frame."""
+    logical = image
+    method = "native-exact-rgba"
+    if density == 2:
+        if image.width % 2 == 0 and image.height % 2 == 0:
+            reduced = image.resize((image.width // 2, image.height // 2), Image.Resampling.NEAREST)
+            restored = reduced.resize(image.size, Image.Resampling.NEAREST)
+            reversible = restored.tobytes() == image.tobytes()
+            restored.close()
+            if reversible:
+                logical = reduced
+                method = "recovered-nearest-2x"
+            else:
+                reduced.close()
+        if logical is image:
+            method = "conservative-source-grid-2x"
+    filtered = frame(logical, scale)
+    if logical is not image:
+        logical.close()
+    if method == "conservative-source-grid-2x":
+        result = filtered.resize((image.width * 2, image.height * 2), Image.Resampling.NEAREST)
+        filtered.close()
+        return result, method
+    return filtered, method
+
+
+def prepare(
+    base: Path,
+    destination: Path,
+    scenes: list[tuple[str, Path | None]],
+    *,
+    scale=None,
+    pilot: bool = False,
+) -> dict:
     base, destination = base.resolve(strict=True), private_output(destination)
     files = _files(base)
-    allowed = {Path("main-scenes.json"), _OPENING_SCENE} | {
+    allowed = {Path("main-scenes.json")} | {
         Path(row["battleScenes"])
         for row in read_json(files[Path("world.json")]).get("encounters", [])
         if row.get("battleScenes")
@@ -93,9 +253,9 @@ def prepare(base: Path, destination: Path, scenes: list[tuple[str, Path]]) -> di
         path = Path(name)
         if path not in allowed or path in bindings:
             raise ValueError("select each declared battle scene at most once")
-        bindings[path] = png_root.resolve(strict=True)
+        bindings[path] = png_root.resolve(strict=True) if png_root is not None else None
     if destination.exists() or any(
-        destination.is_relative_to(root) for root in (base, *bindings.values())
+        destination.is_relative_to(root) for root in (base, *bindings.values()) if root is not None
     ):
         raise ValueError("select a fresh output outside input roots")
 
@@ -107,7 +267,14 @@ def prepare(base: Path, destination: Path, scenes: list[tuple[str, Path]]) -> di
             target = stage / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             if relative in bindings:
-                report[relative.as_posix()] = bind_variants(source, bindings[relative], target)
+                png_root = bindings[relative]
+                receipts = None
+                if png_root is None:
+                    png_root = Path(temp) / "pngs" / relative
+                    receipts = derive_variants(source, png_root, scale, pilot)
+                report[relative.as_posix()] = bind_variants(source, png_root, target)
+                if receipts is not None:
+                    report[relative.as_posix()]["derived"] = receipts
             else:
                 shutil.copyfile(source, target)
         closed = _files(stage)
@@ -123,10 +290,20 @@ def main():
     parser.add_argument("--base", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument(
-        "--scene", action="append", nargs=2, metavar=("SCENE", "PNG_ROOT"), required=True
+        "--scene", action="append", nargs="+", metavar="SCENE_OR_PNG_ROOT", required=True
     )
+    parser.add_argument("--derive", action="store_true", help="derive selected consumer groups")
+    parser.add_argument("--gfx-root", type=Path, help="pinned graphics implementation for --derive")
+    parser.add_argument("--pilot", action="store_true", help="derive one complete group per family")
     args = parser.parse_args()
-    print(json.dumps(prepare(args.base, args.out, [(key, Path(root)) for key, root in args.scene])))
+    expected = 1 if args.derive else 2
+    if any(len(row) != expected for row in args.scene):
+        parser.error("--scene takes SCENE with --derive, otherwise SCENE PNG_ROOT")
+    if args.derive != (args.gfx_root is not None) or args.pilot and not args.derive:
+        parser.error("--derive requires --gfx-root; --pilot requires --derive")
+    scale = load_filter(args.gfx_root)[1] if args.derive else None
+    scenes = [(row[0], None if args.derive else Path(row[1])) for row in args.scene]
+    print(json.dumps(prepare(args.base, args.out, scenes, scale=scale, pilot=args.pilot)))
 
 
 if __name__ == "__main__":

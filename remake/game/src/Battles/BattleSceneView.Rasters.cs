@@ -31,14 +31,48 @@ internal sealed partial class BattleSceneView
     internal void PrepareGraphics(string mode, BattleSceneDefinition? content)
     {
         bool hd = mode == "hd";
-        if (hd && content?.HdRasters is { } bank)
-            foreach (var raster in bank.Values.Where(raster => !_textures.ContainsKey(raster)))
+        if (content is not null)
+            foreach (var raster in SelectedRasters(content, hd).Distinct().Where(raster => !_textures.ContainsKey(raster)))
             {
-                // Decode each declaration, even in an incomplete group.
                 using var image = ExplorationRasterImages.Open(raster);
             }
         foreach (var binding in _spriteBindings.Values.Concat(_effectBindings.SelectMany(group => group)))
             Resolve(binding, hd);
+    }
+
+    private static IEnumerable<ExplorationRaster> SelectedRasters(BattleSceneDefinition content, bool hd)
+    {
+        // Validate declarations even if their group is incomplete. Also prepare the
+        // actual Original fallback before an empty movement view can publish HD.
+        var selected = new List<ExplorationRaster>();
+        if (hd && content.HdRasters is { } variants) selected.AddRange(variants.Values);
+        void Group(IEnumerable<string> resources)
+        {
+            var keys = resources.ToArray();
+            bool useHd = hd && BattleSceneRaster.HasHdGroup(content, keys);
+            foreach (string key in keys)
+                selected.Add((useHd ? content.HdRasters! : content.Rasters)[key]);
+        }
+        var actors = content.Allies.Values.Concat(content.Enemies.Values)
+            .Concat(content.Equipment?.Values ?? [])
+            .Concat(content.AllyAppearances?.Values ?? [])
+            .Concat(content.Species?.Values.Select(value => value.Body) ?? []);
+        foreach (var actor in actors.Distinct())
+        {
+            Group(actor.Frames);
+            Group(actor.WeaponFrames);
+        }
+        Group([content.Background]); Group([content.Ground]);
+        foreach (var terrain in (content.TerrainScenes ?? []).Distinct())
+        {
+            Group([terrain.Background]); Group([terrain.Ground]);
+        }
+        if (content.Healing is { } heal) Group(heal.Bodies.Concat(heal.Wings).Concat(heal.Dust));
+        if (content.FieldDeath is { } death) Group(death.ExitFrames);
+        foreach (var keys in new[] { AttackSpellView.BlazeResources, BlazeTwoEffect.Resources,
+            BlastOneEffect.Resources, BreathResources, PhoenixWaveView.Resources })
+            if (keys.All(content.Rasters.ContainsKey)) Group(keys);
+        return selected;
     }
 
     internal void PublishGraphics()

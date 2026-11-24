@@ -79,6 +79,7 @@ public partial class BattleRasterObservation : Node
         owner.AddChild(view);
         view.Configure(session, input, null);
         view.Present();
+        ObserveEmptyPreparation(view, content, originals, settings, session);
 
         Submit(session, new Confirm());
         Submit(session, new ChooseAction(SessionAction.PhysicalAttack));
@@ -207,6 +208,43 @@ public partial class BattleRasterObservation : Node
         var before = session.Current;
         var result = session.Submit(new(before.SessionId, before.Revision, before.Selection?.Actor, command));
         Check(result.Failure is null, result.Failure?.Code ?? "");
+    }
+
+    private static void ObserveEmptyPreparation(BattleSceneView view, BattleSceneDefinition content,
+        Dictionary<string, ExplorationRaster> originals, InputSettings settings, GameSession session)
+    {
+        using var image = Image.CreateEmpty(192, 192, false, Image.Format.Rgba8);
+        var broken = Encoded(192, 192, "png", image.SavePngToBuffer()[..33]);
+        var before = session.Current;
+        var sprite = view.GetNode<Sprite2D>("SceneCanvas/Ally");
+        Check(sprite.Texture is null, "movement preparation has no close-up bindings");
+        void Reject(string mode)
+        {
+            string previous = settings.GraphicsMode;
+            try
+            {
+                view.PrepareGraphics(mode, content);
+                throw new Exception("empty-view preparation accepted broken selected Original");
+            }
+            catch (InvalidOperationException error) when (error.Message == "raster-decode")
+            {
+                Check(settings.GraphicsMode == previous && sprite.Texture is null &&
+                    ReferenceEquals(session.Current, before), "rejected prepare retains mode, display and state");
+            }
+        }
+        var strike = originals["body/strike"];
+        originals["body/strike"] = broken;
+        settings.GraphicsMode = "hd";
+        view.PrepareGraphics("hd", content);
+        Reject("original");
+        originals["body/strike"] = strike;
+        var foe = originals["foe/strike"];
+        originals["foe/strike"] = broken;
+        settings.GraphicsMode = "original";
+        Reject("hd");
+        Reject("original");
+        originals["foe/strike"] = foe;
+        view.PrepareGraphics("original", content);
     }
 
     private static void Expect(Sprite2D node, int width, int height, int density, string label)
