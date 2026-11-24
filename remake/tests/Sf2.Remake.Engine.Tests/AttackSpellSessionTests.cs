@@ -128,6 +128,66 @@ public sealed class AttackSpellSessionTests
         Assert.True(session.Current.HasBattleControl);
     }
 
+    [Theory]
+    [InlineData("blaze", 4, 10, 40, 2, 0, AttackSpellElement.Fire)]
+    [InlineData("freeze", 3, 12, 18, 3, 1, AttackSpellElement.Ice)]
+    [InlineData("freeze", 4, 12, 50, 3, 0, AttackSpellElement.Ice)]
+    [InlineData("bolt", 3, 20, 25, 3, 2, AttackSpellElement.Lightning)]
+    [InlineData("bolt", 4, 20, 60, 3, 0, AttackSpellElement.Lightning)]
+    public void LearnedElementalRankUsesItsRangeAreaAndSinglePayment(string family, byte rank, byte cost,
+        ushort power, byte range, byte radius, AttackSpellElement element)
+    {
+        var admitted = Admitted("attack-spells");
+        var original = admitted.Definition.Encounters.Values.Single();
+        SpellRef spell = new(family, rank);
+        ActorRef outside = new("reserve");
+        var deployments = original.Deployments.Select(unit => unit.Actor.Value switch
+        {
+            "mage" => unit with { Definition = new(Caster, BattleClassRule.Ordinary, 40, 30, 20, 10, 5, 80, false, 5,
+                [spell], unit.Definition.Physical, BattleMover.Mage) },
+            "center" => unit with { Position = new(2 + range, 2) },
+            "wing" => unit with { Position = new(2 + range + 1, radius == 2 ? 3 : 2) },
+            "reserve" => unit with { Position = new(2 + range, 5) },
+            _ => unit,
+        });
+        var encounter = new BattleDefinition(original.Encounter, original.Map, original.Width, original.Height,
+            original.Terrain, deployments, [], original.Rewards, attackSpells: [new(spell, cost, power, 1, range, radius, element)]);
+        var session = Assert.IsType<SessionStarted>(GameSession.Start(new ScenarioDefinition("elemental-rank", [encounter]),
+            admitted.Start)).Session;
+
+        var initial = session.Current.Battle;
+        Accept(session, new Confirm());
+        var offered = Assert.Single(session.QueryBattleChoices().Spells);
+        Assert.True(offered.Enabled);
+        Assert.Equal(range, offered.MaximumRange);
+        Assert.Equal(radius, offered.Description!.Radius);
+        Assert.False(offered.Targets.Single(target => target.Actor == Wing).Enabled);
+        Assert.False(offered.Targets.Single(target => target.Actor == outside).Enabled);
+        Accept(session, new SelectSpell(spell));
+        Assert.Equal("target-range", Send(session, new SelectTarget(Wing)).Failure!.Code);
+        Accept(session, new SelectTarget(Center));
+        Accept(session, new Cancel());
+        Assert.Same(initial, session.Current.Battle);
+
+        Accept(session, new Confirm());
+        Accept(session, new SelectSpell(spell));
+        Accept(session, new SelectTarget(Center));
+        var result = Accept(session, new Confirm());
+        ActorRef[] expected = radius == 0 ? [Center] : [Wing, Center];
+        Assert.Equal(expected, session.Current.BattleScene!.AttackTargets);
+        var rolls = result.Observations.Where(effect => effect.Kind == "rng-spell-critical").ToArray();
+        Assert.Equal(expected.Select(actor => (ActorRef?)actor), rolls.Select(roll => roll.Target));
+        Assert.All(rolls, roll => Assert.Equal((ushort?)(element == AttackSpellElement.Lightning ? 8 : 32), roll.RandomRange));
+        var settled = FinishBattleScenes(session, result);
+        Assert.Single(settled.Observations, effect => effect.Kind == "mp");
+        Assert.Equal(expected, settled.Observations.Where(effect => effect.Kind == "hp").Select(effect => effect.Actor!.Value));
+        Assert.Equal(20 - cost, session.Current.Battle.GetActor(Caster).Mp);
+        Assert.Equal(0, session.Current.Battle.GetActor(Center).Hp);
+        Assert.Equal(initial.GetActor(outside).Hp, session.Current.Battle.GetActor(outside).Hp);
+        Assert.Equal(radius > 0, session.Current.Battle.GetActor(Wing).Hp < initial.GetActor(Wing).Hp);
+        Assert.True(session.Current.HasBattleControl);
+    }
+
     [Fact]
     public void PaidPrefixSurvivesWrongCompletionAndLaterCreditFailureWithoutRecast()
     {

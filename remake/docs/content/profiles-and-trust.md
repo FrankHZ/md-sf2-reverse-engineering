@@ -207,9 +207,11 @@ unsigned16-bit word; omission means authored neutral0. Source profiles never inf
 unresolved expression: `PrivateAttackSpellBindings` decodes named resistance settings or explicit
 zero and rejects unknown/ambiguous tokens. Actor growth/equipment copies retain this operand.
 
-The private binder checks exact pinned base IDs11/14, costs2/6/2, powers6/10/6, ranges1-2/1-2/1,
-radii0/1/0 and `TYPE_ATTACK|AFFECTEDBYSILENCE` for BLAZE1/BLAZE2/BLAST1. Element lookup is the
-named pinned static FIRE/WIND mapping in the [rule owner](../domain/gameplay-rules.md#finite-player-attack-spells).
+The private binder checks the base ID, MP, power, range, radius and attack properties of each
+admitted source row. BLAZE, FREEZE and BOLT each admit player ranks 1–4. Fire, ice and lightning
+come from the pinned element mapping. The Domain validator keeps enemy admission separately
+bounded. The spellbook and live admission govern player availability.
+[High-rank terms and provenance](../domain/gameplay-rules.md#high-rank-elemental-magic)
 The DESOUL binding checks ID8, the two exact MP/radius pairs above, power 0, the same range and
 type, and the rank-specific source animation expression. STATUS supplies the packed resistance
 field. [DESOUL rules and private use](../domain/hostile-spells-design.md#desoul-12-implementation-and-evidence)

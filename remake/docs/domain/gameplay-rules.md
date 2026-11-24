@@ -251,8 +251,48 @@ multi-target death/growth and a supported connected outcome/growth/drop/return/r
 Content replacements; actor growth/equipment replacements preserve resistance. The
 [verification recipe](../development-and-verification.md#player-attack-spell-observation) owns actual
 native inputs and resource limits. The [early enemy decision slice](#finite-early-enemy-spell-decisions)
-adds BLAZE1/HEAL1; other damage families/ranks, silence,
-Kazin recruitment and full Battle03-07 story are outside this outcome.
+adds BLAZE1/HEAL1 and records its own enemy selection boundary.
+
+### High-rank elemental Magic
+
+[Issue #2162](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2162) uses Standard rigor
+for the private learned player boundary across Content, Domain, the ordinary Magic loop and cold
+Continue. BLAZE 4, FREEZE 3–4 and BOLT 3–4 use the established attack action from the live learned
+book. Existing lower ranks, ninja spells and item-origin casts use their existing operands.
+Enemy high-rank tactics and retail effect playback are separate capabilities.
+[Presentation coverage](../godot/spell-presentation.md#attack-magic)
+
+| Spell rank | MP | Center distance | Manhattan radius | Base power | Element |
+| --- | ---: | --- | ---: | ---: | --- |
+| BLAZE 4 | 10 | 1–2 | 0 | 40 | Fire |
+| FREEZE 3 | 12 | 1–3 | 1 | 18 | Ice |
+| FREEZE 4 | 12 | 1–3 | 0 | 50 | Ice |
+| BOLT 3 | 20 | 1–3 | 2 | 25 | Lightning |
+| BOLT 4 | 20 | 1–3 | 0 | 60 | Lightning |
+
+**Confirmed static.** The pinned source spell table and element table supply exact private tuples
+and silence properties for all four ranks of these families. The existing resistance and promoted
+power terms apply before variance. BOLT 3 and 4 share the lightning 1/8 critical roll with BOLT 1
+and 2. The newer ranks add no effect state.
+[Spell records](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm) ·
+[Element mapping](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spellelements.asm) ·
+[Resolution](../../../docs/design/contracts/battle/spell-resolution.md)
+
+The audit found two independent admission constraints. The private binder checks the pinned
+source tuple and publishes an immutable attack definition. The Domain validator expresses
+the supported shape by family, rank and element, including the existing enemy gate.
+The actor's learned book owns availability. Menu and range drawing read the encounter's
+definition while the action rechecks its target and resolves actual recipients. The shared
+continuation applies payment, damage, death and rewards in order. Save rebuilds the encounter
+definition and restores the packed book, expanded ranks and live vitals. Keeping these
+responsibilities avoids a separate spell registry, effect executor or save field.
+[Private binder](../../src/Sf2.Remake.Content/Scenarios/PrivateAttackSpellBindings.cs) ·
+[Domain validator](../../src/Sf2.Remake.Domain/Gameplay/Sf2/AttackSpellDefinition.cs) ·
+[Continuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs) ·
+[Restore](../../src/Sf2.Remake.Application/Runtime/Persistence/BattleRestore.cs)
+
+[High-rank Battle26 observation and reproduction](../development-and-verification.md#high-rank-elemental-magic-observation)
+owns the actual controlled casts and their limits.
 
 ## Offensive battle consumables
 

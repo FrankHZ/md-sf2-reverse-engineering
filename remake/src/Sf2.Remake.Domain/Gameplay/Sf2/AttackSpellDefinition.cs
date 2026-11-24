@@ -33,18 +33,29 @@ public sealed record AttackSpellDefinition(SpellRef Spell, byte MpCost, ushort P
                 throw new BattleRuleException("attack-spell-definition", "spells", true);
             return;
         }
-        bool aqua = Spell is { Value: "aqua", Level: 1 or 2 } && Element == AttackSpellElement.Ice && MpCost == 0 && Radius == 0;
-        bool bolt = Spell is { Value: "bolt", Level: 1 or 2 } && Element == AttackSpellElement.Lightning;
-        bool katon = Spell is { Value: "katon", Level: 1 or 2 or 3 } && Element == AttackSpellElement.Neutral;
-        bool raijin = Spell is { Value: "raijin", Level: 1 or 2 or 3 } && Element == AttackSpellElement.Neutral;
-        bool wide = bolt && Spell.Level == 2 || raijin && Spell.Level < 3;
-        bool selected = bolt || aqua || katon || raijin || Spell is { Value: "blaze", Level: 1 or 2 or 3 } && Element == AttackSpellElement.Fire ||
-            Spell is { Value: "freeze", Level: 1 or 2 } && Element == AttackSpellElement.Ice ||
-            Spell is { Value: "blast", Level: 1 or 2 or 3 or 4 } && Element == AttackSpellElement.Wind;
-        if (!selected || Power is 0 or > 255 || MinimumRange < 1 || MaximumRange < MinimumRange ||
-            MaximumRange > (aqua || wide || raijin ? 3 : 2) || Radius > (wide ? 2 : 1))
+        (int Range, int Radius) limits = (Spell.Value, Spell.Level, Element) switch
+        {
+            ("aqua", 1 or 2, AttackSpellElement.Ice) when MpCost == 0 => (3, 0),
+            ("blaze", >= 1 and <= 3, AttackSpellElement.Fire) => (2, 1),
+            ("blaze", 4, AttackSpellElement.Fire) when !enemy => (2, 0),
+            ("freeze", 1 or 2, AttackSpellElement.Ice) => (2, 1),
+            ("freeze", 3, AttackSpellElement.Ice) when !enemy => (3, 1),
+            ("freeze", 4, AttackSpellElement.Ice) when !enemy => (3, 0),
+            ("bolt", 1, AttackSpellElement.Lightning) => (2, 1),
+            ("bolt", 2, AttackSpellElement.Lightning) => (3, 2),
+            ("bolt", 3, AttackSpellElement.Lightning) when !enemy => (3, 2),
+            ("bolt", 4, AttackSpellElement.Lightning) when !enemy => (3, 0),
+            ("blast", >= 1 and <= 4, AttackSpellElement.Wind) => (2, 1),
+            ("katon", >= 1 and <= 3, AttackSpellElement.Neutral) => (2, 1),
+            ("raijin", 1 or 2, AttackSpellElement.Neutral) => (3, 2),
+            ("raijin", 3, AttackSpellElement.Neutral) => (3, 1),
+            _ => (0, 0),
+        };
+        if (Power is 0 or > 255 || MinimumRange < 1 || MaximumRange < MinimumRange ||
+            MaximumRange > limits.Range || Radius > limits.Radius)
             throw new BattleRuleException("attack-spell-definition", "spells", true);
-        if (enemy && !bolt && Radius != 0 && Spell is not ({ Value: "blaze" or "blast", Level: 2 or 3 } or { Value: "freeze", Level: 2 }))
+        if (enemy && Spell.Value != "bolt" && Radius != 0 &&
+            Spell is not ({ Value: "blaze" or "blast", Level: 2 or 3 } or { Value: "freeze", Level: 2 }))
             throw new BattleRuleException("enemy-spell-radius", "spells.radius", true);
     }
 }

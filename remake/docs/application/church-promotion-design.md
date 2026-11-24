@@ -70,7 +70,14 @@ foreach ($language in 'en', 'zh-CN') {
 }
 ```
 
-BOLT presentation uses the existing modern elemental projection. Ordinary higher-rank player AURA remains beyond this private binding. Sarah used SLOW 1/2 and Karna used BOOST 1 and 2 through the ordinary Battle26 Magic command. The BOOST 2 observation starts from controlled legal PRST 30 growth. [SLOW and BOOST design](../domain/support-spell-status-design.md) · [DETOX 2/3](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) · [MUDDLE, DESOUL and SLEEP](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967)
+BLAZE 4, FREEZE 3–4 and BOLT 3–4 are available through learned private Magic.
+BOLT 2 was already bound. BLAZE, FREEZE and BOLT high ranks use the existing elemental placeholders.
+The remaining [#2016](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2016) actions are
+AURA 2–4 and DETOX 4. Retail elemental animation variants remain with
+[#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
+[High-rank Magic](../domain/gameplay-rules.md#high-rank-elemental-magic)
+
+Sarah used SLOW 1/2 and Karna used BOOST 1 and 2 through the ordinary Battle26 Magic command. The BOOST 2 observation starts from controlled legal PRST 30 growth. [SLOW and BOOST design](../domain/support-spell-status-design.md) · [DETOX 2/3](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) · [MUDDLE, DESOUL and SLEEP](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967)
 
 All four candidate processes exited 0. The Simplified Chinese cast process and both cold processes reported ObjectDB leak warnings after the driver completed Save. A connection to the native shutdown fault under [#1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716) remains **Unknown**.
 
