@@ -2977,7 +2977,7 @@ $package = (Resolve-Path 'remake/content/authored/stone-court.json').Path
 
 - `transaction` visits the second target, opens shared Settings and Help, cancels a draft and applies
   language, text, flash, graphics, guidance, diagnostics and Confirm changes. Read the real target
-  heading, hint and preferences. Compare selection, actor, turn, HP, MP, both seeds and action cue
+  heading and hint after Resume, and the preferences on disk. Compare selection, actor, turn, HP, MP, both seeds and action cue
   while covered. The observer injects held controls and Godot focus notifications. Fresh mapped
   Confirm enters an action message and a second Apply relocalizes it under the same wait token.
   Within the Display page, the English and Chinese description toggles retain row and footer
@@ -2987,13 +2987,60 @@ $package = (Resolve-Path 'remake/content/authored/stone-court.json').Path
 - `auto-win` uses a separate fresh namespace. Apply at Movement preserves the paused state. Resume
   admits the existing debug victory and leaves RNG unchanged.
 - `layout-error` uses a separate fresh namespace and changes its preference file after opening the
-  draft. Real Apply refusal stays readable in the reserved details pane while Apply, Back and row
+  draft. Real Apply refusal stays readable in the reserved details pane while Apply, focus and row
   geometry stay fixed. The [binding reader case](../godot/input-remapping.md#reproduce-the-installed-controls)
   exercises independent scrolling of a long draft review at 720p.
 
 The observer reads state, input, projection and errors. It establishes the authored host behavior.
 Private campaign presentation, device drivers and native window focus transfer remain unobserved
 by these cases.
+
+### Native Settings focus and GUI picking
+
+Use the Stone Court command above with `native-root`, `transaction` then `restart` on one fresh
+ordinary namespace for the latter pair. Use a separate namespace for `layout-error`.
+For `native-root`, exercise a non-default pad binding by seeding these ordinary preferences:
+
+```json
+{"formatVersion":1,"bindings":{"down":{"keys":["Down"],"buttons":["DpadUp"],"axes":[]},"up":{"keys":["Up"],"buttons":["DpadDown"],"axes":[]}}}
+```
+
+**Confirmed.** From the second target, keyboard Down then the installed pad Down move actual
+viewport focus. Tab reads details without escaping the modal. A GUI release opens Display.
+A drag out and back, resize through the recovery cover, or window focus loss during a press
+leaves the draft intact. A fresh click edits the mounted row once. Cancel restores the
+same target. The transaction cases cover aborting capture during recovery, the physical Enter
+release across Apply, retired Enter and fresh F5 inside Settings and at the returned target,
+and direct Speed return. A concurrent preference edit refuses Apply and retains the draft.
+
+For the field use the same Godot arguments with `settings_remap_observation.gd`,
+`SF2_HOST_UI_CASE=native-field`, a fresh `issue1774-*` namespace and
+`--authored-package <shop-supplies.json>`. F10 opens Display's wrapped graphics explanation.
+Click a value, open Help, click Next, go back a page with the pad and right-click over Next.
+The Controls row regains focus. Mouse Apply restores Menu with no key release pending.
+Compare the field revision while still covered. After Resume the ordinary field clock runs;
+compare session, map, movement and progress at that boundary.
+
+For the title use the [registered entry package and binding observer](../godot/input-remapping.md#reproduce-the-installed-controls)
+with `edges`, `reader` and `override`. The latter selects a version-1 read-only settings file.
+Disabled Display values retain focus and details; value input leaves the draft intact.
+Returning from the device picker to the last action initially restored focus with scroll 0
+instead of 603. Recompute the scroll container's minimum size and layout when replacing its
+rows. The observer now checks the retained offset and focused ID directly.
+At 720p, inject wheel position through the viewport's final transform. The long review
+scrolls independently and retains the Accept row. Old observations that looked for a
+constant Back row or sampled the hidden target title before Resume used superseded projections.
+The interrupted-press observations use Godot window events and injected devices. **Unknown:**
+physical controller and desktop focus-transfer behavior on other drivers. Title runs can report
+AudioStreamPlaybackWAV and AudioStreamWAV references at process exit.
+
+For visual review open the production DesignPreview at 1600×900 and choose F10 → Settings.
+Use L before opening Settings to switch languages. Inspect Display → Graphics, scroll to
+Accelerate in Change controls, replace its key to see Capture and Review, then remove the
+Confirm pad alternative in the draft. Return to the root and open Help. **Confirmed** in
+English and Chinese: the focused row carries the gold outline and marker, long text wraps
+inside the details area, and a missing binding mutes Apply with a readable reason. Help
+keeps its page text, installed alternatives and Previous/Next controls inside its frame.
 
 ## Church and shared Save calibration
 

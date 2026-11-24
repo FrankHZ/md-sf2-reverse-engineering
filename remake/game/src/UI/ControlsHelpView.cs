@@ -8,6 +8,7 @@ namespace Sf2.Remake.GodotAdapter.UI;
 internal sealed partial class ControlsHelpView : Control
 {
     internal required GameInput Input { get; init; }
+    internal required MenuPointer Gesture { get; init; }
     internal required Action Back { get; init; }
     private sealed record Row(GameAction Action, string Meaning);
     private sealed record Page(string Group, string Note, Row[] Rows);
@@ -43,13 +44,14 @@ internal sealed partial class ControlsHelpView : Control
     private PanelContainer _panel = null!;
     private ScrollContainer _scroll = null!;
     private Label _title = null!, _body = null!, _hint = null!;
-    private readonly List<Button> _buttons = [];
-    private readonly MenuPointer _pointer = new();
+    private readonly List<SettingsChoice> _buttons = [];
 
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry(journey: true);
-        _panel = new PanelContainer { Name = "HelpWindow" }; AddChild(_panel);
+        var center = new CenterContainer { MouseFilter = MouseFilterEnum.Ignore };
+        AddChild(center); center.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        _panel = new PanelContainer { Name = "HelpWindow" }; center.AddChild(_panel);
         var column = new VBoxContainer(); column.AddThemeConstantOverride("separation", 12); _panel.AddChild(column);
         _title = new Label { Name = "HelpTitle", AutowrapMode = TextServer.AutowrapMode.WordSmart }; column.AddChild(_title);
         _scroll = new ScrollContainer { Name = "HelpScroll", SizeFlagsVertical = SizeFlags.ExpandFill,
@@ -61,19 +63,17 @@ internal sealed partial class ControlsHelpView : Control
         var actions = new HBoxContainer(); column.AddChild(actions);
         foreach (string text in new[] { "Previous", "Next" })
         {
-            var button = new Button { Name = "Help" + text, Text = text, SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                CustomMinimumSize = new(0, 64), FocusMode = FocusModeEnum.None, MouseFilter = MouseFilterEnum.Ignore };
-            StoryTheme.EntryChoice(button); button.AddThemeFontSizeOverride("font_size", 24); actions.AddChild(button); _buttons.Add(button);
+            var button = new SettingsChoice { Id = text, Gesture = Gesture, Activate = _ => Turn(text == "Previous" ? -1 : 1),
+                Name = "Help" + text, SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new(0, 64) };
+            button.AddThemeFontSizeOverride("font_size", 24); actions.AddChild(button); _buttons.Add(button);
         }
         Resized += Arrange; Arrange(); Refresh();
-        GetWindow().SizeChanged += SuspendPointer;
+        _buttons[1].GrabFocus();
     }
-    public override void _ExitTree() => GetWindow().SizeChanged -= SuspendPointer;
     private void Arrange()
     {
-        _pointer.Suspend();
-        _panel.Size = new(Math.Min(1040, Math.Max(1, Size.X - 64)), Math.Min(900, Math.Max(1, Size.Y - 64)));
-        _panel.Position = (Size - _panel.Size) / 2;
+        Gesture.Suspend();
+        _panel.CustomMinimumSize = new(Math.Min(1040, Math.Max(1, Size.X - 64)), Math.Min(900, Math.Max(1, Size.Y - 64)));
     }
     internal void RefreshInputHints()
     {
@@ -94,37 +94,20 @@ internal sealed partial class ControlsHelpView : Control
         _scroll.ScrollVertical = 0;
     }
     private static string Text(string value) => (value.StartsWith("controls.", StringComparison.Ordinal) || value.StartsWith("host.", StringComparison.Ordinal)) ? GameText.Get(value) : value;
-    internal void SuspendPointer() => _pointer.Suspend();
-    public override void _Process(double delta)
-    {
-        if (!GetWindow().HasFocus() || !IsVisibleInTree()) { _pointer.Suspend(); return; }
-        _pointer.ReleaseIfNeutral();
-    }
     internal void Handle(GameAction action)
     {
-        _pointer.Suspend();
         if (action == GameAction.Cancel) Back();
         else if (action is GameAction.Left or GameAction.Right or GameAction.Confirm) Turn(action == GameAction.Left ? -1 : 1);
         else if (action is GameAction.Up or GameAction.Down) _scroll.ScrollVertical += action == GameAction.Up ? -112 : 112;
     }
-    private void Turn(int step) { _pointer.Suspend(); _page = (_page + step + Pages.Length) % Pages.Length; Refresh(); }
-    internal void HandlePointer(InputEvent input)
+    private void Turn(int step)
     {
-        if (!GetWindow().HasFocus()) { _pointer.Suspend(); return; }
-        if (input is InputEventMouseMotion motion) { _pointer.Moved(motion); return; }
-        var mouse = (InputEventMouseButton)input;
-        if (mouse.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown)
-        {
-            if (mouse.Pressed) _scroll.ScrollVertical += mouse.ButtonIndex == MouseButton.WheelUp ? -112 : 112;
-            _pointer.Cancel(); return;
-        }
-        int hit = _buttons.FindIndex(button => button.GetGlobalRect().HasPoint(mouse.Position));
-        string? id = mouse.ButtonIndex == MouseButton.Right ? "back" : hit < 0 ? null : hit.ToString();
-        var bounds = mouse.ButtonIndex == MouseButton.Right ? GetGlobalRect() : hit < 0 ? new Rect2() : _buttons[hit].GetGlobalRect();
-        string? clicked = _pointer.Read(mouse, id, bounds, _page);
-        if (clicked == "back") Back();
-        else if (clicked is "0" or "1") Turn(clicked == "0" ? -1 : 1);
+        Gesture.Suspend();
+        _buttons[step < 0 ? 0 : 1].GrabFocus();
+        _page = (_page + step + Pages.Length) % Pages.Length;
+        Refresh();
     }
+
     public string ReadControlsHelpObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
     { page = _page, count = Pages.Length, group = Pages[_page].Group, title = _title.Text, body = _body.Text,
         hint = _hint.Text, scroll = _scroll.ScrollVertical,

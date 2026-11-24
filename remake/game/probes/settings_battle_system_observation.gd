@@ -39,7 +39,7 @@ func settings_layout(ids: Array) -> Array:
 
 func check_display_layout(locale: String) -> void:
     await go_setting("display")
-    var ids := ["language", "graphics", "text", "speed", "back"]
+    var ids := ["language", "graphics", "text", "speed"]
     var shown := settings_layout(ids)
     var message := find("SettingsMessage") as Label
     check(settings().locale == locale and settings().focus == "language" and message.visible
@@ -50,6 +50,59 @@ func check_display_layout(locale: String) -> void:
     await Nav.tap(self, "up")
     check(settings().focus == "text" and message.visible and settings_layout(ids) == shown,
         locale + " switching back to a row with a description preserves positions and row scroll")
+
+func native_root() -> void:
+    if not await target_choice() or not await open_general(): return
+    var covered := battle_state()
+    check(root.gui_get_focus_owner() == find("Setting_display"), "Display owns actual focus on entry")
+    await Nav.tap(self, "down")
+    check(root.gui_get_focus_owner() == find("Setting_assist"), "mapped keyboard follows the root neighbour")
+    var down: InputEventJoypadButton = InputMap.action_get_events("sf2_down").filter(func(e): return e is InputEventJoypadButton)[0]
+    await pad(down.button_index)
+    check(root.gui_get_focus_owner() == find("Setting_input"), "mapped controller follows the same neighbour")
+    await key(KEY_TAB)
+    check(root.gui_get_focus_owner() == find("Setting_input"), "mapped Read details cannot also use built-in Tab navigation")
+    var display := find("Setting_display") as Button
+    var hover := InputEventMouseMotion.new()
+    hover.position = display.get_global_rect().get_center(); hover.relative = Vector2(12, 0)
+    Input.parse_input_event(hover); await frames()
+    check(root.gui_get_focus_owner() == display, "deliberate GUI motion moves reading focus")
+    await Nav.tap(self, "down")
+    check(root.gui_get_focus_owner() == find("Setting_assist"), "stationary pointer leaves keyboard focus alone")
+    await mouse(display, true)
+    check(settings().get("page") == "Root", "pointer press cannot open a page")
+    await mouse(display, false)
+    check(settings().get("page") == "Display", "GUI-picked release opens Display once")
+    var language := find("Setting_language") as Button
+    var draft: Dictionary = settings().draft
+    await mouse(language, true)
+    root.size = Vector2i(1280,720); await frames()
+    check(window().recovery != null and not find("SettingsView").is_visible_in_tree(), "undersized client covers Settings")
+    root.size = Vector2i(1920,1080); await frames()
+    await mouse(language, false)
+    check(settings().draft == draft and root.gui_get_focus_owner() == language,
+        "window recovery restores focus and vetoes the old release")
+    await mouse(language, true)
+    root.focus_exited.emit(); await frames()
+    root.focus_entered.emit(); await frames()
+    await mouse(language, false)
+    check(settings().draft == draft, "focus loss during a press vetoes activation")
+    await mouse(language, true)
+    for position in [language.get_global_rect().get_center() + Vector2(0, 95), language.get_global_rect().get_center()]:
+        var motion := InputEventMouseMotion.new()
+        motion.position = position
+        motion.relative = Vector2(0, 95)
+        motion.button_mask = MOUSE_BUTTON_MASK_LEFT
+        Input.parse_input_event(motion); await frames()
+    await mouse(language, false)
+    check(settings().draft == draft, "dragging out and returning cannot rearm a native button")
+    await mouse(language, true); await mouse(language, false)
+    check(find("Setting_language") == language and settings().draft.Language != draft.Language,
+        "fresh GUI click edits the focused row in place")
+    await back()
+    check(root.gui_get_focus_owner() == find("Setting_display"), "Back restores native focus to Display")
+    await back(); await back()
+    check(battle_state() == covered, "cancel and resume preserve the target")
 
 func transaction() -> void:
     if not await target_choice(): return
@@ -70,7 +123,7 @@ func transaction() -> void:
     if not await open_general(): return
     await go_setting("language")
     await go_setting("graphics")
-    check("exploration" in settings().message, "graphics explains field coverage")
+    check("HD artwork where installed" in settings().message, "graphics explains battle artwork coverage")
     await go_setting("text")
     check("next message" in settings().message, "text mode explains its message boundary")
     await go_setting("speed")
@@ -81,8 +134,13 @@ func transaction() -> void:
     await activate("slot-0"); await activate("replace")
     await edge(KEY_F5, true)
     check(settings().page == "Review", "replacement Confirm is captured in the draft")
+    root.size = Vector2i(1280,720); await frames()
+    check(window().recovery != null and not find("SettingsView").is_visible_in_tree(), "undersized client covers Settings")
     root.focus_exited.emit(); await frames()
+    root.size = Vector2i(1920,1080); await frames()
     root.focus_entered.emit(); await edge(KEY_F5, false)
+    check(root.gui_get_focus_owner() == find("Setting_replace"), "recovery restores the rebuilt editor row after capture abort")
+    if root.gui_get_focus_owner() != find("Setting_replace"): return
     check(settings().page == "Operation" and settings().draft.Bindings.is_empty(), "focus loss discards the capture without moving the target")
     await activate("replace"); await key(KEY_F5); await activate("accept")
     await to_root()
@@ -100,9 +158,7 @@ func transaction() -> void:
     check(mounted().remapRelease == null, "physical release retires the remap barrier")
 
     var menu_title := find("SystemMenuTitle") as Label
-    var target: Dictionary = state().menu.layout
-    check(menu_title.text == "游戏菜单" and target.heading == "选择目标" and "F5" in target.help,
-        "host and target UI refresh to Chinese and advertise the installed Confirm")
+    check(menu_title.text == "游戏菜单", "visible menu refreshes to Chinese")
     var installed: Dictionary = mounted().applied
     check(installed.Language == "zh-CN" and installed.ReducedFlash and installed.GraphicsMode == "hd"
         and installed.TextMode == "adjustable" and installed.CharactersPerSecond == 50
@@ -114,6 +170,8 @@ func transaction() -> void:
     await edge(KEY_RIGHT, true)
     await back()
     check(find("SystemMenuView") == null and state().candidate == candidate, "Resume preserves the non-default target")
+    var target: Dictionary = state().menu.layout
+    check(target.heading == "选择目标" and "F5" in target.help, "resumed target shows Chinese and installed Confirm")
     await frames(15); await edge(KEY_RIGHT, false); await key(KEY_ENTER)
     check(battle_state() == original, "held direction and retired Confirm cannot move or commit the target")
     await Nav.tap(self, "confirm")
@@ -148,6 +206,13 @@ func restart() -> void:
     await Nav.tap(self, "down"); await Nav.tap(self, "down")
     var inspection: Dictionary = state().inspection
     if not await open_general(): return
+    var display := find("Setting_display")
+    await key(KEY_ENTER)
+    check(settings().get("page") == "Root" and root.gui_get_focus_owner() == display,
+        "retired Enter cannot reach native ui_accept in Settings")
+    await Nav.tap(self, "confirm")
+    check(settings().get("page") == "Display", "installed Confirm opens the focused page")
+    await back()
     await back(); await back()
     var returned: Dictionary = state().inspection
     check(returned.page == "Options" and returned.optionIndex == 2 and returned.cursor == inspection.cursor,
@@ -183,7 +248,7 @@ func layout_error() -> void:
     if not await open_general(): return
     await go_setting("language"); await to_root()
     check(await Nav.row(find("SettingsView"), "apply"), "Apply is focused before storage conflict")
-    var ids := ["display", "assist", "input", "debug", "apply", "back"]
+    var ids := ["display", "assist", "input", "debug", "apply"]
     var shown := settings_layout(ids)
     var paused := battle_state()
     DirAccess.make_dir_recursive_absolute(prefs.get_base_dir())
@@ -213,6 +278,7 @@ func run() -> void:
     check(state().get("stage") == "Movement" and state().get("failure") == null, "authored Stone Court reaches a real player turn")
     if failures.is_empty():
         match case_name:
+            "native-root": await native_root()
             "transaction": await transaction()
             "restart": await restart()
             "auto-win": await auto_win()

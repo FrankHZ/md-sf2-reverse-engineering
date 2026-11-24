@@ -53,8 +53,18 @@ public sealed partial class GameRoot : Node
             _input?.Resolve(input); _input?.DisarmMovement(); _input?.DisarmWait();
             GetViewport().SetInputAsHandled(); return;
         }
-        if (_settings is not null && input is InputEventMouse)
-        { _settings.HandlePointer(input); GetViewport().SetInputAsHandled(); return; }
+        if (_settings is { } settings)
+        {
+            if (input is InputEventMouse)
+            {
+                if (settings.RoutePointer(input)) GetViewport().SetInputAsHandled();
+                return;
+            }
+            var mapped = _input?.Resolve(input);
+            if (mapped is { } actionId) HandleSettingsAction(actionId, input);
+            GetViewport().SetInputAsHandled();
+            return;
+        }
         if (_systemMenu?.Visible == true && input is InputEventMouse)
         { _systemMenu.HandlePointer(input); GetViewport().SetInputAsHandled(); return; }
         if (_nameEntry is { } name)
@@ -86,8 +96,7 @@ public sealed partial class GameRoot : Node
             if (action is GameAction.Cancel or GameAction.Menu) _exploration.CancelMenuEntry();
             GetViewport().SetInputAsHandled(); return;
         }
-        if (_settings is not null) HandleSettingsAction(action.Value, input);
-        else if (_slots is not null) _slots.Handle(action.Value);
+        if (_slots is not null) _slots.Handle(action.Value);
         else if (_entry is not null) _entry.Handle(action.Value);
         else if (_systemMenu is not null) _systemMenu.Handle(action.Value);
         else if (action == GameAction.Menu) ShowSystemMenu();

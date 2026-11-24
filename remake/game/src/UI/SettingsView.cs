@@ -20,15 +20,14 @@ internal sealed partial class SettingsView : Control
     private Page _page;
     private readonly Stack<(Page Page, string Focus, int Scroll)> _parents = [];
     private record Choice(string Id, string Text, bool Disabled = false, bool Footer = false);
-    private List<Choice> _rows = [];
-    private int _selected;
+    private SettingsChoice? Focused => GetViewport().GuiGetFocusOwner() as SettingsChoice;
     private string _status = "";
     private PanelContainer _panel = null!;
     private VBoxContainer _column = null!;
     private HBoxContainer _footer = null!;
     private ScrollContainer _scroll = null!, _details = null!;
     private Label _title = null!, _message = null!, _hint = null!, _diagnostics = null!, _detailsHint = null!;
-    private readonly List<Button> _buttons = [];
+    private readonly List<SettingsChoice> _buttons = [];
     private readonly MenuPointer _pointer = new();
     private static string T(string id, params object[] values) => GameText.Get(id, values);
     private static string S(string id, params object[] values) => T("settings." + id, values);
@@ -39,12 +38,15 @@ internal sealed partial class SettingsView : Control
         AutoTranslateMode = AutoTranslateModeEnum.Disabled;
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); Theme = StoryTheme.CreateEntry(journey: true);
         _draft = Input.Settings.Draft(); _page = BattleOnly ? Page.Battle : Page.Root;
-        var shade = new ColorRect { Name = "SettingsShade", Color = new("051225b8") };
+        MouseFilter = MouseFilterEnum.Stop; MouseForcePassScrollEvents = false;
+        var shade = new ColorRect { Name = "SettingsShade", MouseFilter = MouseFilterEnum.Ignore, Color = new("051225b8") };
         shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(shade);
-        _panel = new PanelContainer { Name = "SettingsWindow" }; AddChild(_panel);
+        var center = new CenterContainer { MouseFilter = MouseFilterEnum.Ignore };
+        AddChild(center); center.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        _panel = new PanelContainer { Name = "SettingsWindow" }; center.AddChild(_panel);
         var layout = new VBoxContainer(); layout.AddThemeConstantOverride("separation", 12); _panel.AddChild(layout);
         _title = new Label { HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart }; layout.AddChild(_title);
-        _scroll = new ScrollContainer { Name = "SettingsReading", SizeFlagsVertical = SizeFlags.ExpandFill,
+        _scroll = new ScrollContainer { Name = "SettingsReading", FollowFocus = true, SizeFlagsVertical = SizeFlags.ExpandFill,
             HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled }; layout.AddChild(_scroll);
         _column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill }; _scroll.AddChild(_column);
         _column.AddThemeConstantOverride("separation", 8);
@@ -66,26 +68,34 @@ internal sealed partial class SettingsView : Control
         _footer.AddThemeConstantOverride("separation", 12);
         _hint = new Label { Name = "SettingsHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
         _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); layout.AddChild(_hint);
-        SeedCaptureControls(); Resized += Arrange; Arrange(); ShowPage(); GetWindow().SizeChanged += SuspendPointer;
+        SeedCaptureControls(); Resized += Arrange; Arrange(); ShowPage();
     }
 
-    public override void _ExitTree() => GetWindow().SizeChanged -= SuspendPointer;
+    public override void _EnterTree()
+    {
+        GetWindow().SizeChanged += SuspendPointer;
+        GetWindow().MouseExited += SuspendPointer;
+    }
+
+    public override void _ExitTree()
+    {
+        GetWindow().SizeChanged -= SuspendPointer;
+        GetWindow().MouseExited -= SuspendPointer;
+    }
 
     private void Arrange()
     {
         SuspendPointer();
-        _panel.Size = new(Math.Min(960, Math.Max(1, Size.X - 64)), Math.Min(920, Math.Max(1, Size.Y - 64)));
-        _panel.Position = (Size - _panel.Size) / 2;
+        _panel.CustomMinimumSize = new(Math.Min(960, Math.Max(1, Size.X - 64)), Math.Min(920, Math.Max(1, Size.Y - 64)));
     }
 
-    internal void SuspendPointer() { _pointer.Suspend(); _help?.SuspendPointer(); }
+    internal void SuspendPointer() => _pointer.Suspend();
     public override void _Process(double delta)
     {
         if (!GetWindow().HasFocus() || !IsVisibleInTree()) { _pointer.Suspend(); return; }
         _pointer.ReleaseIfNeutral();
     }
 
-    private Choice BackRow() => new("back", T(_page == Page.Root ? ReadOnly ? "ui.settings.close" : "ui.settings.cancel" : "entry.back"), Footer: true);
     private List<Choice> Choices() => _page switch
     {
         Page.Root => [new("display", S("display")), new("assist", S("assist")), new("input", S("input")), new("debug", S("debug")),
@@ -102,14 +112,14 @@ internal sealed partial class SettingsView : Control
             new("victory", T("ui.settings.auto-victory", Toggle(_draft.DebugAutoVictory)), ReadOnly)],
         Page.Controls => [new("convention", T("ui.settings.confirm", T(_draft.ConfirmCancel == "standard" ? "ui.settings.standard" : "ui.settings.swapped")), ReadOnly),
             new("edit", S("edit"), ReadOnly), new("help", T("ui.settings.help")), new("reset", S("reset"), ReadOnly)],
-        Page.Battle => [new("battle-speed", T("battle.speed.value", _draft.BattleSpeed?.ToString() ?? T("battle.speed.custom", _draft.CharactersPerSecond))),
-            new("messages", T("battle.speed.messages", Toggle(!_draft.SuppressBattleHitCoinMessages)))],
+        Page.Battle => [new("battle-speed", T("battle.speed.value", _draft.BattleSpeed?.ToString() ?? T("battle.speed.custom", _draft.CharactersPerSecond)), ReadOnly),
+            new("messages", T("battle.speed.messages", Toggle(!_draft.SuppressBattleHitCoinMessages)), ReadOnly)],
         _ => EditorRows()
     };
 
     private void Enter(Page page)
     {
-        _parents.Push((_page, _rows[_selected].Id, _scroll.ScrollVertical)); _page = page;
+        _parents.Push((_page, Focused!.Id, _scroll.ScrollVertical)); _page = page;
         _status = ""; ShowPage();
     }
 
@@ -123,37 +133,56 @@ internal sealed partial class SettingsView : Control
     {
         _pointer.Suspend();
         foreach (var button in _buttons) { button.GetParent().RemoveChild(button); button.QueueFree(); }
-        _buttons.Clear(); _rows = Choices();
-        _selected = _rows.FindIndex(row => row.Id == focus && !row.Disabled);
-        if (_selected < 0) _selected = Math.Max(0, _rows.FindIndex(row => !row.Disabled));
-        foreach (var row in _rows)
+        _buttons.Clear();
+        var rows = Choices();
+        bool readingOnly = rows.All(row => row.Disabled);
+        foreach (var row in rows)
         {
-            var button = new Button { Name = "Setting_" + row.Id, Text = row.Text, Disabled = row.Disabled,
-                CustomMinimumSize = new(0, 64), SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                FocusMode = FocusModeEnum.None, MouseFilter = MouseFilterEnum.Ignore, AutowrapMode = TextServer.AutowrapMode.WordSmart };
-            StoryTheme.EntryChoice(button); (row.Footer ? (Container)_footer : _column).AddChild(button); _buttons.Add(button);
+            var button = new SettingsChoice { Id = row.Id, Gesture = _pointer, Clip = row.Footer ? null : _scroll,
+                Activate = input => Activate(row.Id, 1, input), Name = "Setting_" + row.Id,
+                Text = row.Text, Disabled = row.Disabled, CustomMinimumSize = new(0, 64),
+                SizeFlagsHorizontal = SizeFlags.ExpandFill, AutowrapMode = TextServer.AutowrapMode.WordSmart,
+                FocusMode = row.Disabled && !readingOnly ? FocusModeEnum.None : FocusModeEnum.All };
+            button.FocusEntered += Paint;
+            (row.Footer ? (Container)_footer : _column).AddChild(button);
+            _buttons.Add(button);
         }
-        _footer.Visible = _rows.Any(r => r.Footer); _scroll.ScrollVertical = scroll;
-        Paint();
-        // Scroll ranges settle after the new rows have been measured.
-        if (scroll > 0) _scroll.SetDeferred(ScrollContainer.PropertyName.ScrollVertical, scroll);
+        _footer.Visible = rows.Any(row => row.Footer);
+        var stops = _buttons.Where(b => b.FocusMode == FocusModeEnum.All).ToArray();
+        for (int i = 0; i < stops.Length; i++)
+        {
+            stops[i].FocusNeighborTop = stops[i].GetPathTo(stops[(i + stops.Length - 1) % stops.Length]);
+            stops[i].FocusNeighborBottom = stops[i].GetPathTo(stops[(i + 1) % stops.Length]);
+        }
+        var initial = stops.FirstOrDefault(button => button.Id == focus) ?? stops[0];
+        initial.GrabFocus();
+        // Replacing rows can leave the viewport at the same size with a different content range.
+        _scroll.UpdateMinimumSize();
+        _scroll.QueueSort();
+        _scroll.ScrollVertical = scroll;
+        if (scroll > 0)
+            Callable.From(() =>
+            {
+                if (GodotObject.IsInstanceValid(initial) && initial.IsInsideTree() && initial.HasFocus())
+                    _scroll.ScrollVertical = scroll;
+            }).CallDeferred();
     }
 
     private void Paint()
     {
-        for (int i = 0; i < _rows.Count; i++) StoryTheme.Select(_buttons[i], i == _selected);
+        var id = Focused?.Id;
         _title.Text = _page switch { Page.Root => T("ui.settings.title"), Page.Display => S("display"),
             Page.Assist => S("assist"), Page.Controls => S("input"), Page.Debug => S("debug"), Page.Battle => T("battle.speed.title"),
             Page.Actions => S("edit"), _ => S(_action) };
         string message = _status != "" ? _status : _page switch {
             Page.Root => Notice ?? (IncompleteAction(_draft) is { } name ? S("required", S(name)) : ""),
-            Page.Display when _rows[_selected].Id == "graphics" =>
+            Page.Display when id == "graphics" =>
                 T(BattleContext ? "ui.settings.battle-graphics" : "ui.settings.graphics-coverage"),
-            Page.Display when BattleContext && _rows[_selected].Id == "language" => T("ui.settings.battle-language"),
-            Page.Display when BattleContext && _rows[_selected].Id == "text" => T("ui.settings.battle-text"),
-            Page.Assist when _rows[_selected].Id == "guidance" => T("host.setting-description-10"),
-            Page.Assist when _rows[_selected].Id == "acceleration" => T("ui.settings.acceleration-detail", Input.CompactHint(GameAction.Accelerate)),
-            Page.Debug when BattleContext && _rows[_selected].Id == "victory" => T("ui.settings.battle-auto-victory"),
+            Page.Display when BattleContext && id == "language" => T("ui.settings.battle-language"),
+            Page.Display when BattleContext && id == "text" => T("ui.settings.battle-text"),
+            Page.Assist when id == "guidance" => T("host.setting-description-10"),
+            Page.Assist when id == "acceleration" => T("ui.settings.acceleration-detail", Input.CompactHint(GameAction.Accelerate)),
+            Page.Debug when BattleContext && id == "victory" => T("ui.settings.battle-auto-victory"),
             Page.Battle => Notice ?? T("battle.speed.mapping"), _ => EditorMessage() };
         bool diagnostics = _page == Page.Debug && Input.Settings.ShowDebugDiagnostics;
         if (_message.Text != message || _diagnostics.Visible != diagnostics) _details.ScrollVertical = 0;
@@ -171,12 +200,14 @@ internal sealed partial class SettingsView : Control
 
     internal void RefreshInputHints()
     {
-        if (_page == Page.Alternatives)
-        {
-            _rows = Choices();
-            for (int i = 0; i < _rows.Count; i++) _buttons[i].Text = _rows[i].Text;
-        }
+        if (_page == Page.Alternatives) RefreshCaptions();
         Paint(); _help?.RefreshInputHints();
+    }
+
+    private void RefreshCaptions()
+    {
+        foreach (var (button, row) in _buttons.Zip(Choices()))
+            button.Text = row.Text;
     }
 
     internal void Handle(GameAction action, InputEvent input)
@@ -190,18 +221,17 @@ internal sealed partial class SettingsView : Control
                 ? 0 : _details.ScrollVertical + (int)_details.Size.Y - StoryTheme.BodySize;
             return;
         }
+        if (Focused is not { } focused) return;
         if (action is GameAction.Up or GameAction.Down)
         {
-            int step = action == GameAction.Up ? -1 : 1;
-            bool readOnlyPage = _rows.All(row => row.Disabled);
-            do { _selected = (_selected + step + _rows.Count) % _rows.Count; } while (!readOnlyPage && _rows[_selected].Disabled);
-            Paint(); if (!_rows[_selected].Footer) _scroll.EnsureControlVisible(_buttons[_selected]); return;
+            focused.FindValidFocusNeighbor(action == GameAction.Up ? Side.Top : Side.Bottom)?.GrabFocus();
+            return;
         }
         if (BattleOnly && action is GameAction.Confirm or GameAction.Attack) { Save(); return; }
-        if (action == GameAction.Confirm) Activate(1, input);
+        if (action == GameAction.Confirm) Activate(focused.Id, 1, input);
         else if (action is GameAction.Left or GameAction.Right)
         {
-            if (IsValue(_rows[_selected].Id)) Activate(action == GameAction.Left ? -1 : 1, input);
+            if (IsValue(focused.Id)) Activate(focused.Id, action == GameAction.Left ? -1 : 1, input);
             else _scroll.ScrollVertical += action == GameAction.Left ? -112 : 112;
         }
     }
@@ -209,35 +239,31 @@ internal sealed partial class SettingsView : Control
     private static bool IsValue(string id) => id is "language" or "graphics" or "text" or "speed" or "convention" or
         "flash" or "guidance" or "acceleration" or "diagnostics" or "victory" or "battle-speed" or "messages";
 
-    internal void HandlePointer(InputEvent input)
+    internal bool RoutePointer(InputEvent input)
     {
-        if (_help is not null) { _help.HandlePointer(input); return; }
-        if (!GetWindow().HasFocus()) { _pointer.Suspend(); return; }
-        var pos = ((InputEventMouse)input).Position;
-        Rect2 Bounds(int i) => _rows[i].Footer ? _buttons[i].GetGlobalRect() : _scroll.GetGlobalRect().Intersection(_buttons[i].GetGlobalRect());
-        int hit = -1;
-        for (int i = 0; i < _buttons.Count; i++)
-            if (!_buttons[i].Disabled && Bounds(i).HasPoint(pos)) { hit = i; break; }
-        if (input is InputEventMouseMotion motion && _pointer.Moved(motion) && hit >= 0)
-        { _selected = hit; Paint(); }
-        if (input is not InputEventMouseButton button) return;
-        if (button.ButtonIndex is MouseButton.WheelDown or MouseButton.WheelUp)
+        if (input is InputEventMouseMotion motion) _pointer.Moved(motion); // Veto a drag even if it returns to its button.
+        if (input is not InputEventMouseButton button) return false;
+        if (button.Pressed && button.ButtonMask.HasFlag(MouseButtonMask.Left | MouseButtonMask.Right))
+            _pointer.Suspend();
+        if (button.ButtonIndex == MouseButton.Right)
         {
-            var scroll = _details.GetGlobalRect().HasPoint(pos) ? _details : _scroll;
-            if (button.Pressed) scroll.ScrollVertical += button.ButtonIndex == MouseButton.WheelDown ? 80 : -80;
-            _pointer.Cancel(); return;
+            var bounds = GetGlobalRect();
+            string? id = bounds.HasPoint(button.Position) ? "back" : null;
+            if (_pointer.Read(button, id, bounds, (object?)_help ?? _page) != null)
+            {
+                if (_help is null) Back(); else CloseHelp();
+            }
+            return true;
         }
-        bool back = button.ButtonIndex == MouseButton.Right;
-        string? id = back ? "right-click" : hit < 0 ? null : _rows[hit].Id;
-        if (_pointer.Read(button, id, back ? GetGlobalRect() : hit < 0 ? new() : Bounds(hit), _page) == null) return;
-        if (back) Back(); else { _selected = hit; Activate(1, input); }
+        if (button.ButtonIndex != MouseButton.Left) _pointer.Cancel();
+        return false;
     }
 
-    private void Activate(int direction, InputEvent input)
+    private void Activate(string id, int direction, InputEvent input)
     {
-        var row = _rows[_selected]; if (row.Disabled) return;
+        if (Focused is not { Disabled: false } focused || focused.Id != id) return;
         _status = "";
-        switch (row.Id)
+        switch (id)
         {
             case "back": Back(); return;
             case "display": Enter(Page.Display); return;
@@ -246,7 +272,7 @@ internal sealed partial class SettingsView : Control
             case "debug": Enter(Page.Debug); return;
             case "edit": Enter(Page.Actions); return;
             case "help":
-                _pointer.Suspend(); _panel.Hide(); _help = new ControlsHelpView { Name = "ControlsHelpView", Input = Input, Back = CloseHelp };
+                _pointer.Suspend(); _panel.Hide(); _help = new ControlsHelpView { Name = "ControlsHelpView", Input = Input, Gesture = _pointer, Back = CloseHelp };
                 AddChild(_help); return;
             case "apply": Save(); return;
             case "defaults": _draft = _draft.Draft(defaults: true); _reset = true; _status = T("ui.settings.staged"); break;
@@ -261,11 +287,11 @@ internal sealed partial class SettingsView : Control
             case "acceleration": _draft.ChangeAccelerationMultiplier(direction); break;
             case "diagnostics": _draft.ShowDebugDiagnostics = !_draft.ShowDebugDiagnostics; break;
             case "victory": _draft.DebugAutoVictory = !_draft.DebugAutoVictory; break;
-            case "battle-speed": if (!ReadOnly) _draft.ChangeBattleSpeed(direction); break;
-            case "messages": if (!ReadOnly) _draft.SuppressBattleHitCoinMessages = !_draft.SuppressBattleHitCoinMessages; break;
-            default: EditorActivate(row.Id, input); return;
+            case "battle-speed": _draft.ChangeBattleSpeed(direction); break;
+            case "messages": _draft.SuppressBattleHitCoinMessages = !_draft.SuppressBattleHitCoinMessages; break;
+            default: EditorActivate(id, input); return;
         }
-        ShowPage(row.Id, _scroll.ScrollVertical);
+        RefreshCaptions(); Paint();
     }
 
     private void Save()
@@ -277,11 +303,15 @@ internal sealed partial class SettingsView : Control
     private void CloseHelp()
     {
         if (_help is not { } help) return;
-        _help = null; RemoveChild(help); help.QueueFree(); _pointer.Suspend(); _panel.Show(); Paint();
+        _help = null; RemoveChild(help); help.QueueFree();
+        _pointer.Suspend(); _panel.Show();
+        _buttons.Single(b => b.Id == "help").GrabFocus();
     }
 
+    private string? FocusId => _help is null ? Focused?.Id : "help";
+
     public string ReadSettingsObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
-    { draft = _draft, applied = Input.Settings, selected = _selected, focus = _rows[_selected].Id, page = _page.ToString(), rows = _rows.Select(r => r.Id),
+    { draft = _draft, applied = Input.Settings, selected = _buttons.FindIndex(b => b.Id == FocusId), focus = FocusId, page = _page.ToString(), rows = _buttons.Select(b => b.Id),
         readOnly = ReadOnly, battleOnly = BattleOnly, reset = _reset, message = _message.Text,
         locale = GameText.Language, coverage = GameText.Coverage, diagnostics = GameText.Diagnostics,
         debugVisible = _diagnostics.IsVisibleInTree(), debugText = _diagnostics.Text,

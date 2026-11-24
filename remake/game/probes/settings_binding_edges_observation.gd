@@ -12,7 +12,7 @@ func basic_edges() -> void:
     await pad(JOY_BUTTON_DPAD_DOWN); await pad(JOY_BUTTON_DPAD_DOWN); await pad(JOY_BUTTON_A)
     check(settings().page == "Controls", "installed pad navigates categories")
     await go_setting("edit")
-    check(settings().rows.size() == 18,"17 actions plus Back")
+    check(settings().rows.size() == 17,"all 17 actions are reachable")
     await activate("action-accelerate"); await activate("keyboard")
     await activate("slot-0"); await activate("replace")
     await key(KEY_Z)
@@ -152,7 +152,14 @@ func refuse() -> void:
 func reader() -> void:
     root.size = Vector2i(1280,720); await frames(6)
     geometry("SettingsWindow")
-    await go_setting("edit"); await activate("action-accelerate"); await activate("keyboard"); await activate("slot-0"); await activate("replace")
+    await go_setting("edit")
+    await Nav.row(find("SettingsView"), "action-accelerate")
+    var retained: int = settings().scroll
+    await Nav.tap(self, "confirm"); await back()
+    samples.append({"actionScrollBefore": retained, "actionScrollAfter": settings().scroll})
+    check(retained > 0 and settings().scroll == retained and root.gui_get_focus_owner() == find("Setting_action-accelerate"),
+        "Back restores the last action's native focus and scrolled position")
+    await activate("action-accelerate"); await activate("keyboard"); await activate("slot-0"); await activate("replace")
     await key(KEY_Q)
     geometry("SettingsWindow")
     var msg := find("SettingsMessage") as Label
@@ -160,15 +167,20 @@ func reader() -> void:
     check(scroll.get_global_rect().size.x >= msg.get_global_rect().size.x and msg.get_line_count() >= 3 and
         (find("SettingsHint") as Label).get_theme_font_size("font_size") == 24, "720p wraps the binding review with fixed hint size")
     var accept_rect := (find("Setting_accept") as Button).get_global_rect()
-    var back_rect := (find("Setting_back") as Button).get_global_rect()
     var row_scroll: Variant = settings().scroll
     await Nav.tap(self, "target")
     check(scroll.scroll_vertical > 0 and not (find("SettingsDetailsHint") as Label).text.is_empty(),
         "mapped read control reaches overflowing binding details")
     check(settings().focus == "accept" and settings().scroll == row_scroll
-        and (find("Setting_accept") as Button).get_global_rect() == accept_rect
-        and (find("Setting_back") as Button).get_global_rect() == back_rect,
-        "reading details preserves rows, focus and Back")
+        and (find("Setting_accept") as Button).get_global_rect() == accept_rect,
+        "reading details preserves the review row and focus")
+    var before_wheel := scroll.scroll_vertical
+    var wheel := InputEventMouseButton.new()
+    wheel.position = root.get_final_transform() * scroll.get_global_rect().get_center()
+    wheel.button_index = MOUSE_BUTTON_WHEEL_UP; wheel.pressed = true
+    Input.parse_input_event(wheel); await frames()
+    check(scroll.scroll_vertical < before_wheel and settings().focus == "accept" and settings().scroll == row_scroll,
+        "GUI-picked wheel scrolls only the details region")
     await confirm_review(); await to_root(); await go_setting("help")
     geometry("HelpWindow")
     check((find("HelpHint") as Label).get_theme_font_size("font_size") == 24,"720p reader keeps native help hint size")
@@ -195,6 +207,9 @@ func run() -> void:
         await key(KEY_B); check(settings().get("page") == "Root","persisted Confirm opens Settings"); await key(KEY_ENTER)
         check(settings().is_empty(),"persisted Cancel closes Settings")
         finish(); return
+    if case_name == "edges":
+        var entry := observation(find("SessionEntryView"), "ReadEntryObservationJson")
+        check(entry.get("title", false) and entry.get("assetError") == null, "cold title has its selected presentation")
     await open_witch_settings()
     match case_name:
         "reader": await reader()
@@ -208,8 +223,18 @@ func run() -> void:
         "override":
             var before := bytes(prefs); var override_path: String = OS.get_cmdline_user_args()[-1]; var ov := bytes(override_path)
             check(settings().readOnly and (find("Setting_apply") as Button).disabled,"override cannot apply")
+            await activate("display")
+            check(root.gui_get_focus_owner() == find("Setting_language"), "read-only value takes reading focus")
+            await pad(JOY_BUTTON_DPAD_DOWN)
+            check(root.gui_get_focus_owner() == find("Setting_graphics") and not settings().message.is_empty(),
+                "read-only navigation focuses and explains graphics")
+            var draft: Dictionary = settings().draft
+            await Nav.tap(self, "confirm"); await Nav.tap(self, "right")
+            check(settings().draft == draft, "read-only values reject activation")
+            await back()
             await activate("input"); check((find("Setting_edit") as Button).disabled and (find("Setting_reset") as Button).disabled,"override cannot edit or reset bindings")
             await activate("help"); check(settings().help,"read-only Help remains available")
             await back(); await back(); await back()
             check(settings().is_empty() and bytes(prefs) == before and bytes(override_path) == ov,"override and ordinary file remain untouched")
+    root.remove_child(host); host.queue_free(); await frames(5)
     finish()

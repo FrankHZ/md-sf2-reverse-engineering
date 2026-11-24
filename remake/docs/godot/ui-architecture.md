@@ -3,8 +3,8 @@
 The current decision in [#2191](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2191)
 is how to migrate two production surfaces: the complete field/battle member page and Settings
 with its child pages. **High rigor** applies because moving input from the root to Godot controls
-can change which player action fires when a page opens, closes or remounts. The shared member layout is implemented. The two
-remaining [input slices](#finite-implementation-slices) need separate dispatch. The
+can change which player action fires when a page opens, closes or remounts. The shared member layout and the Settings input migration are implemented.
+[Member input](#finite-implementation-slices) remains the next independent slice. The
 [campaign capability trace](../capability-status.md#campaign-feature-trace) records shipped behavior.
 
 Both callers already use the
@@ -180,38 +180,26 @@ rectangles, clipped to the visible list for rows and slots. [Roster](../../game/
 
 ### Settings and its children
 
-**Confirmed** in `SettingsView.ShowPage`: choices already are wrapped `Button` children of a
-scrollable column or footer. Every value edit rebuilds them. They ignore the mouse and have
-focus disabled. `Handle` walks `_selected`, `Paint` selects each button's style, and
-`HandlePointer` computes clipped hit bounds and a second selection. Help similarly draws native
-Previous/Next buttons and picks them by rectangle. [Settings](../../game/src/UI/SettingsView.cs) ·
-[Help](../../game/src/UI/ControlsHelpView.cs) · [Entry theme](../../game/src/UI/StoryTheme.cs)
+**Confirmed.** The root, editor pages and Battle Speed use a centered, capped panel with a
+scrollable choice column, fixed details region and separate footer. Changing page mounts a
+new set of choices. Editing a value updates the mounted captions and details in place. Up/Down
+moves the viewport's actual focus through explicit neighbours, including the footer and wrap.
+The focused button supplies the stable choice ID, marker and description. Disabled actions are
+skipped on mixed pages. On a wholly read-only page the disabled values take reading focus.
+Back restores the launching ID and list scroll. Left/Right adjusts the focused value or scrolls
+the list. Target pages overflowing details. [Settings](../../game/src/UI/SettingsView.cs)
 
-- Retain the capped panel, expanding choices, fixed details area and footer. Let the centered
-  container own positioning, with one outer size cap if needed. On the same page update changed
-  captions, availability and message in place. Build rows on page/choice-set change. Connect
-  `FocusEntered` to details and the existing marker, and activate a choice by its ID. Use the
-  inherited normal/hover/pressed/disabled/focus styles. Retire the parallel selected-index loop,
-  focus painting loop and list-wide hit scan. On intentional pointer motion, transfer focus to
-  the hovered eligible row. A stationary pointer during keyboard navigation or reflow must leave
-  the focused row alone.
-- Initially focus the saved enabled ID or first enabled choice (Display at the ordinary root).
-  Set explicit neighbours through the column and footer, including wrap. Keep unavailable values
-  and reasons visible. Skip disabled actions in mixed menus. On all-read-only value pages give
-  the rows native reading focus and muted styling, suppress activation in the existing presenter,
-  and keep mapped Cancel and right-click usable. Continue to store parent page, row ID and list
-  scroll in the local stack. After Back restore focus first, then the retained scroll after layout.
-  A deferred restore applies only while its original page still owns input.
-- Left/Right adjusts the focused value or scrolls choices. Target pages the overflowing details.
-  Wheel input goes to the region under the pointer and leaves selection alone. Help reads
-  installed bindings, with Left/Right/Confirm turning a page and Up/Down reading. Battle Speed
-  retains its two-row adjust-and-save semantics. Preserve Controls → Change controls → device /
-  alternative → capture → review and the draft across nested Back. Keep raw capture, reserved
-  cancellation, disconnect recovery and duplicate/required-family refusal in their existing owners.
-  Only host Apply prepares and publishes the mapping, graphics and language and writes preferences.
-  A refused Apply leaves the draft available and the installed map intact. [Editor](../../game/src/UI/SettingsView.Bindings.cs) ·
-  [Host](../../game/src/Entry/SettingsHost.cs) · [Store](../../game/src/Input/SettingsStore.cs) ·
-  [Remapping contract](input-remapping.md#editing-a-binding)
+The GUI picks the clipped row or scroll region. Deliberate motion focuses a readable row.
+A release-mode button activates through its native signal after the page's gesture check.
+The root handles matched right-click Back over any child. Help uses the same buttons for
+Previous and Next. Mapped Left/Right/Confirm turn its pages and Up/Down scroll the text.
+Its Back restores the Controls → Help row. [Settings button](../../game/src/UI/SettingsChoice.cs) ·
+[Help](../../game/src/UI/ControlsHelpView.cs)
+
+Raw capture, release draining, duplicate and required-family refusal, the draft and the
+preference store retain their existing owners. The host alone prepares and publishes a
+binding change. Direct Battle Speed returns to its inspection option. [Editor](../../game/src/UI/SettingsView.Bindings.cs) ·
+[Host](../../game/src/Entry/SettingsHost.cs) · [Observed returns and visual review](../verification/host.md#native-settings-focus-and-gui-picking)
 
 ### One event from device to page and back
 
@@ -252,9 +240,8 @@ On same-session return, restore focus only after it is visible and still current
 to a longer-lived window, connect on each `_EnterTree` and disconnect on its matching `_ExitTree`.
 Godot ordinarily calls `_Ready` once per instance. The #2152 command rows subscribed to
 `Window.MouseExited` in `_Ready` and unsubscribed on tree exit. The retained menu then missed
-window exit after remount. #2154 restored the pair on tree entry/exit. Settings and Help currently
-pair `_Ready` with `_ExitTree` for window size but are normally freed on close. If reused across
-detach, move that subscription with the mount. Keep row-signal lifetimes tied to their row and
+window exit after remount. #2154 restored the pair on tree entry/exit. Settings subscribes to
+window resize and mouse exit for its mounted lifetime. Help shares its parent’s gesture. Keep row-signal lifetimes tied to their row and
 reject callbacks from a retired page. Clear the sheet's borrowed portrait before disposing the row
 texture and rebind from the live actor on remount. A replacement session gets fresh UI state.
 [Observed failure and correction](battle-ui-composition.md#reproduce-registered-portraits) ·
@@ -270,17 +257,12 @@ Each PR replaces one production path with its consumers and can be reverted with
 | Player outcome, in delivery order | Main risk and acceptance before proceeding | Estimate |
 | --- | --- | --- |
 | 1. Read a complete member sheet in field and battle. | Implemented with containers and the existing input route. [Layout, visual review and ordinary returns](battle-ui-composition.md#reproduce-the-native-member-layout) | Implemented |
-| 2. Edit a preference or binding and return to the same caller. Switch Settings, nested choices and Help to native focus and GUI picking together. Use the existing entry, draft, capture and store owners. This establishes the mapped-event handoff in the host. | In F10 open Display and read a long detail. Switch keyboard → pad → mouse, edit, Back and Cancel. Follow Controls into capture/review, Apply with the old Confirm held, and try both the old and new bindings after release. Check a refused Apply and a read-only page. Cover a field caller and a retained battle target. Resize or lose focus mid-press, then resume with the same phase and candidate and no extra command. Check direct Battle Speed return. | 3–5 days |
+| 2. Edit a preference or binding and return to the same caller. | Implemented in Settings, its editor and Help. [Mapped input, release drain, refusals and caller return](../verification/host.md#native-settings-focus-and-gui-picking) | Implemented |
 | 3. Browse members and slots by any mapped device, then resume play. Consume slice 1's layout and slice 2's root handoff in the two member callers. Remove their old hit/selection routing at cutover. | Use the long and empty roster cases. Switch member from Items, wheel a different pane and cancel a drag over another row. Check Prepare Back, read-only Member → Options → Cursor and a held release over the board. After detaching/re-entering the same view, one window-exit gesture cancels once and one fresh click acts once. Check live focus/texture, session revision and errors. | 2–4 days |
 
-Budget **5–9 engineer-days for the two remaining input slices**, including debugging and independent
-review. Slice 1 reused both input owners, the existing observers and the registered package. Its
-debugging concerned the container width cap and summary label height, both caught by the existing
-probes. The visual and real-return routes are now reusable. Keep the larger allowance for Settings
-because it introduces the root mapped-event handoff. Slice 1 did not exercise native focus on
-mouse-down or binding changes across release. Witness that boundary in slice 2
-before sharing its handoff. Reassess if a slice needs global focus state, a second input map or a
-consumer outside these two entries. The design itself required only static inspection.
+Allow **2–4 engineer-days** for member input, including debugging and independent review.
+Reuse the member layout, its two caller observations and the Settings host handoff. Reassess
+if implementation requires global focus state, a second input map or another consumer.
 
 Use the [production demo routes](../../game/probes/previews/README.md#scene-ownership) for actual
 appearance and reading comfort. F5's public sample can display the unsupported Prepare outcome.
@@ -289,9 +271,7 @@ Use the [host observation](../verification/host.md#battle-system-settings-observ
 [remap observation](input-remapping.md#reproduce-the-installed-controls) for input and state.
 [#2147](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2147) owns broader scene/subpage
 coverage. Necessary pictures belong only to the dedicated UI demo and stay ignored locally.
-Gameplay acceptance reads live input, state, projection and errors. **Unknown** until implementation:
-the future focus/gesture behavior and its appearance on the Settings and member routes. Existing witnesses describe
-the shipped controls. Physical-device comfort retains its existing player-review boundary.
+Gameplay acceptance reads live input, state, projection and errors. **Unknown** until slice 3: native focus and gesture behavior on the member routes. Physical-device comfort retains its existing player-review boundary.
 
 ## Findings and limits
 
