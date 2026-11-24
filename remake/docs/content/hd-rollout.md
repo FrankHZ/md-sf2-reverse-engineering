@@ -388,7 +388,9 @@ admission or preparation. Shadow removal uses the Original frame's black-word ma
 density before orientation/head effects. Story and member portraits select their own optional
 atlas, then retain existing mouth/eye tile replacement and mirroring. Neither family requires
 HD terrain on the current map. Tactical sprites retain logical extent, animation selection and
-48px registration. The existing settings prepare → write → publish transaction owns switching.
+48px registration. The existing settings prepare → write → publish transaction owns switching. Field and battle
+share target-mode actor preparation in `ExplorationRasterImages`; the field no longer skips
+Original or fallback preparation after one successful HD Apply.
 
 Scene-owned death/exit frames belong to the effects family in #2177. Kraken uses its existing
 scene-owned Original frames and remains outside this pre-voyage bank delivery. These are explicit
@@ -400,7 +402,7 @@ The native `HdActorObservation` uses authored data in actual adapter consumers. 
 Original → HD → Original tactical geometry, special size/registration, independent portrait
 selection and the actual exploration alternate/shadow path on a map without HD terrain.
 Distinct authored portrait tiles cover all mouth/eye combinations and mirrored composition; absent
-HD variants fall back to Original. Five malformed-resource cases reject in preparation and retain
+HD variants fall back to Original. Each of the field and battle entry points rejects five malformed-resource cases in preparation and retains
 the applied mode, texture and geometry. Run after a locked Debug build:
 
 ```powershell
@@ -442,4 +444,6 @@ A cold Battle06 run from the published package, with the producer directories un
 passed the same 89 checks without warnings after the prepare correction. The authored negative
 cases deliberately report native PNG decode errors and then assert rejection; these are not
 production-package errors. The first authored probe leaked its own Sprite2D; freeing it corrected
-that probe-owned warning.
+that probe-owned warning. The final shared-prepare field observation passed 36 checks: first
+HD Apply took 201ms and Original 51ms including input release, with two existing exit warnings.
+These are single-run measurements on the review machine, not cross-hardware guarantees.
