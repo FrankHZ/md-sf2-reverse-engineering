@@ -119,6 +119,10 @@ func menu_check(expected: bool) -> void:
     var frozen := state()
     capture("gameplay-menu")
     if expected:
+        var paragraphs: PackedStringArray = aid.text.split("\n")
+        check(aid.visible and paragraphs.size() == 2 and
+            not paragraphs[0].strip_edges().is_empty() and not paragraphs[1].strip_edges().is_empty(),
+            "field and root menu show two nonempty paragraphs: objective and next step")
         var layout: Dictionary = state().fieldMenu.menu
         check(layout.rect.x >= 32 and layout.rect.y >= 32 and layout.rect.x + layout.rect.width <= root.size.x - 32 and
             layout.rect.y + layout.rect.height <= root.size.y - 32, "complete command group stays in safe bounds")
@@ -223,7 +227,10 @@ func town_flow() -> void:
     root.size = Vector2i(1920,1080); await frames(5)
     check(guidance().visible, "recovery requeries destination")
     await field_settings(); await select_setting("language"); await key(KEY_RIGHT); await select_setting("apply"); await key(KEY_ENTER); await return_field()
-    check(("村外" in guidance().text) == (applied().Language == "zh-CN"), "live locale switch refreshes destination width and copy")
+    var next_step := "下一步：北侧出口" if applied().Language == "zh-CN" else "Next: North exit"
+    check(guidance().text.ends_with("\n" + next_step), "live locale switch refreshes the next step")
+    if declared.has("ally-4"):
+        check(declared["ally-4"] in guidance().text, "localized goal retains the custom companion name")
     await menu_check(true)
     check(applied().GraphicsMode == "hd", "guidance and language preserve #1703 HD choice")
     await pad(JOY_BUTTON_B)
@@ -253,7 +260,7 @@ func compact_flow() -> void:
             natural_width = maxf(natural_width, label.get_theme_font("font").get_string_size(line,HORIZONTAL_ALIGNMENT_LEFT,-1,30).x)
         check(absf(aid.rect.width - (minf(448,natural_width) + 32)) < 2, "short copy shrinks to measured text; long copy caps at480px")
         check(aid.lines > label.text.split("\n").size() if natural_width > 449 else aid.lines == label.text.split("\n").size(),
-            "long copy wraps naturally without reducing font or dropping objective/destination/action")
+            "long copy wraps naturally without reducing font or dropping the objective or next step")
         var r: Dictionary = aid.rect
         check(Rect2(Vector2(32,32),Vector2(size_) - Vector2(64,64)).encloses(Rect2(r.x,r.y,r.width,r.height)), "full wrapped panel stays within safe edges")
         var text_rect: Dictionary = aid.textRect
@@ -286,8 +293,9 @@ func house_flow() -> void:
     capture("house-completed"); await menu_check(true)
 
 func run() -> void:
-    if output.is_empty() or not OS.get_environment("SF2_SAVE_NAMESPACE").begins_with("issue1705-"):
-        push_error("Use disposable issue1705-* preferences and explicit output"); quit(2); return
+    var save_namespace := OS.get_environment("SF2_SAVE_NAMESPACE")
+    if output.is_empty() or not (save_namespace.begins_with("issue1705-") or save_namespace.begins_with("issue2151-")):
+        push_error("Use disposable issue1705-* or issue2151-* preferences and explicit output"); quit(2); return
     var namespace_root := OS.get_environment("SF2_SAVE_ROOT").path_join(OS.get_environment("SF2_SAVE_NAMESPACE"))
     preference_path = namespace_root.path_join("sf2-preferences/input.json")
     slot_path = namespace_root.path_join("sf2-opening/slot1.json")

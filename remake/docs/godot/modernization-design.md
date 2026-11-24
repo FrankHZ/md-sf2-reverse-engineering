@@ -268,8 +268,8 @@ main story remains a scheduling decision, not authorization to start all three r
 
 ## Optional objective and destination guidance (#1578)
 
-Modern guidance uses one passive text panel for the current objective, known destination and next
-action. It remains visible during ordinary field control and while the root gameplay menu owns input.
+Modern guidance uses one passive text panel with two paragraphs for the current objective and next
+step. It remains visible during ordinary field control and while the root gameplay menu owns input.
 It uses the existing Modern guidance preference, default On including older preferences, and collapses
 when another panel owns reading or input. The same preference controls the separately projected
 [pickup glints](objective-guidance.md#field-pickup-glints).
@@ -291,8 +291,8 @@ panel empty. The query publishes a fresh result for the current session without 
 input or saves.
 
 Keep route text at the precision the story has disclosed. After Kazin's offer, the Yeel text can name
-the north exit. On Map66 before F503 it can name Hawel's house and report the unavailable route
-without exposing the encounter. After the house scene, it changes to the disclosed Ancient Shrine.
+the north exit. On Map66 before F503 it reports the unavailable route. After the house scene,
+the objective changes to the disclosed Ancient Shrine.
 Ordinary travel and entrance labels follow the map's own rules. Later chapters can add necessary text
 using the same rule table. They require no inventory of map destinations or story trigger coordinates.
 

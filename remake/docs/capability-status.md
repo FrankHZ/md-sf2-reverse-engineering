@@ -92,7 +92,7 @@ When a chapter adds a reachable map or changes its setup, follow the affected fe
 ## Modern guidance
 
 The optional [pre-voyage guidance panel](godot/objective-guidance.md#ui-language-and-persistence)
-shows the current objective, named destination and next step in text. Fixed names come from the
+shows two paragraphs for the current objective and next step. Fixed names come from the
 selected English or Simplified Chinese catalog. Custom companion names come from the session.
 The Yeel Continue slot uses the same localized place name as the field guidance.
 The shared Modern guidance preference also controls [pickup glints](#field-pickup-glints).

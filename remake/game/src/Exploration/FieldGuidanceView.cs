@@ -17,7 +17,7 @@ internal sealed partial class FieldGuidanceView : Control
         (guidance.Companion is { } companion
             ? GameText.Get(guidance.ObjectiveKey, DisplayNames.Member(session.Definition, session.Current.Story, companion))
             : GameText.Get(guidance.ObjectiveKey)) +
-        "\n" + GameText.Get(guidance.DestinationKey) + "\n" + GameText.Get(guidance.RouteKey);
+        "\n" + GameText.Get(guidance.RouteKey);
 
     public override void _Ready()
     {
