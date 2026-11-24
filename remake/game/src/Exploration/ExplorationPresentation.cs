@@ -465,10 +465,13 @@ internal sealed partial class ExplorationPresentation : IDisposable
             var foregroundBounds = new Rect2I(areaCells.Position + new Vector2I(view?.Area.ForegroundX ?? offset.X, view?.Area.ForegroundY ?? offset.Y), areaCells.Size);
             var backgroundDraw = DrawLayer(world, visual, backgroundBounds, background, new(0, 0), false, view is null ? null : false, 0, prepare: prepare);
             bool pickupsOnA = hasForeground && view is { Area.Layer: not 0 };
-            if (!prepare && !pickupsOnA && pickups is { Count: > 0 }) DrawPickupGlints(pickups, background, _screen);
+            bool PickupCovered(Rect2 star) =>
+                (view is not null && LayerCoversPickup(star, world, visual, backgroundBounds, background, new(0, 0), false, true)) ||
+                (hasForeground && LayerCoversPickup(star, world, visual, foregroundBounds, foreground, offset, true, pickupsOnA));
+            if (!prepare && !pickupsOnA && pickups is { Count: > 0 }) DrawPickupGlints(pickups, background, _screen, PickupCovered);
             LayerDraw? foregroundDraw = view is not null && hasForeground
                 ? DrawLayer(world, visual, foregroundBounds, foreground, offset, true, false, 1, prepare: prepare) : null;
-            if (!prepare && pickupsOnA && pickups is { Count: > 0 }) DrawPickupGlints(pickups, foreground, _screen);
+            if (!prepare && pickupsOnA && pickups is { Count: > 0 }) DrawPickupGlints(pickups, foreground, _screen, PickupCovered);
             if (prepare)
             {
                 foreach (var entity in world.AllEntities.Where(entity => entity.Visible)) _ = Sprite(entity, false, world.Map);
@@ -759,9 +762,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
             for (int x = left; x <= left + ViewWidth / 24 + 1; x++)
             {
                 int sourceX = x + offset.X, sourceY = y + offset.Y;
-                if (sourceX is < 0 or > 63 || sourceY is < 0 or > 63) continue;
-                int block = world.Layout[sourceX, sourceY] & 0x3FF;
-                if (block == 0 && (overlay || world.Layout.BlankBlockZero)) continue;
+                if (LayerBlock(world.Layout, sourceX, sourceY, overlay) is not { } block) continue;
                 var rectangle = new Rect2((new Vector2(x * 24, y * 24) - origin) * _scale, new Vector2(24, 24) * _scale);
                 if (!rectangle.Intersects(_screen) || actor is { } masked && !rectangle.Intersects(masked.Bounds)) continue;
                 var texture = Block(visual, block, world.Layout, sourceX, sourceY, bounds);
@@ -825,8 +826,24 @@ internal sealed partial class ExplorationPresentation : IDisposable
 
     private ImageTexture Block(ExplorationMapVisual visual, int block, WorkingMapLayout layout, int x, int y, Rect2I bounds)
     {
+        var variant = BlockVariant(visual, block, layout, x, y, bounds, out bool contextual);
+        var texture = _mapTextures.Block(visual, block, variant);
+        _resourceSelectors.TryAdd(texture, new { kind = "map-block", map = visual.Map.Value, block, contextual, pixels = texture.GetWidth() });
+        return texture;
+    }
+
+    private static int? LayerBlock(WorkingMapLayout layout, int x, int y, bool overlay)
+    {
+        if (x is < 0 or > 63 || y is < 0 or > 63) return null;
+        int block = layout[x, y] & 0x3FF;
+        return block == 0 && (overlay || layout.BlankBlockZero) ? null : block;
+    }
+
+    private ExplorationRaster? BlockVariant(ExplorationMapVisual visual, int block, WorkingMapLayout layout,
+        int x, int y, Rect2I bounds, out bool contextual)
+    {
         ExplorationRaster? variant = null;
-        bool contextual = false;
+        contextual = false;
         if (Painted(visual.Map))
         {
             int At(int dx, int dy) => bounds.HasPoint(new(x + dx, y + dy)) &&
@@ -836,9 +853,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     At(1,0), At(-1,1), At(0,1), At(1,1)), out variant);
             variant ??= visual.HdBlocks![block];
         }
-        var texture = _mapTextures.Block(visual, block, variant);
-        _resourceSelectors.TryAdd(texture, new { kind = "map-block", map = visual.Map.Value, block, contextual, pixels = texture.GetWidth() });
-        return texture;
+        return variant;
     }
 
     private static int AnimationHalf(ExplorationEntity entity) =>
