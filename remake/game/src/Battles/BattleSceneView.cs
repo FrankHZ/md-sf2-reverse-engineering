@@ -494,11 +494,12 @@ internal sealed partial class BattleSceneView : Control
             if (ally) { _ground.Position = new(x, 140); Weapon(_allyVisual?.Sequences["idle"].IdleWeapon, new(x - 136, 0)); }
         }
         if (Content?.Healing is not { } visual || healing.Fairy is not { Control: not 0 } fairy) return;
+        visual = !ally && visual.Enemy is { } enemyVisual ? enemyVisual : visual;
         bool groupHasHd = BattleSceneRaster.HasHdGroup(Content, visual.Bodies.Concat(visual.Wings).Concat(visual.Dust));
         void Put(Sprite2D sprite, string resource, ushort x, ushort y, bool mirror = false)
         {
             Bind(sprite, resource, groupHasHd); sprite.FlipH = mirror;
-            sprite.Position = new Vector2(ally ? x - 128 : 256 - (x - 128), y - 128) - sprite.GetRect().Position * sprite.Scale;
+            sprite.Position = new Vector2(x - 128, y - 128) - sprite.GetRect().Position * sprite.Scale;
             sprite.Show();
         }
         for (int i = 0; i < fairy.Fairies.Count; i++)

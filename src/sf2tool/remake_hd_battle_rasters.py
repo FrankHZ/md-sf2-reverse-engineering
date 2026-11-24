@@ -121,6 +121,8 @@ def selected_groups(
     if scene.get("healing"):
         heal = scene["healing"]
         groups.append(("healing", heal["bodies"] + heal["wings"] + heal["dust"], 2))
+        if enemy := heal.get("enemy"):
+            groups.append(("healing-enemy", enemy["bodies"] + enemy["wings"] + enemy["dust"], 2))
     if scene.get("fieldDeath"):
         groups.append(("field-death", scene["fieldDeath"]["exitFrames"], 1))
     effects = {

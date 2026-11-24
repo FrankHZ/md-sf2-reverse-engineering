@@ -856,3 +856,23 @@ alpha uses the same selected block as the field draw. Legacy packages omit the t
 and continue to resolve their static banks. The mechanism, production and bounded
 native readbacks are recorded in the [rollout decision](hd-rollout.md#tile-substitutions-2180)
 and [resource trace](asset-inventory.md#pre-voyage-animated-terrain-2180).
+
+### Enemy healing successor
+
+The complete current healing successor is `derived/issue2227/pre-voyage-healing-v1`.
+Publish from the complete #2180 base using the registered retail effects and pinned graphics
+checkout, with explicit absolute paths selected locally:
+
+```powershell
+uv run --with pillow python -m sf2tool.remake_enemy_healing `
+  --base $base --effects $effects --output $output --gfx-root $gfxRoot
+```
+
+The output must be fresh under worktree `local/` or registered shared `derived/`. The producer
+reuses the closed-package dependency discovery and Original/HD raster recipe, adds optional
+`healing.enemy` bodies/wings/dust and retains every existing bank. Select its `world.json`,
+`main-scenes.json`, `entry/entry.json` and all six `opening-inputs` together. New input parsing
+accepts legacy healing groups without `enemy`; declared enemy groups require two bodies, two
+wings and five dust resources. The [resource owner](asset-inventory.md#enemy-healing-family-2227)
+records the bounded volume, provenance and native acceptance. Private enemy AURA and unbound
+higher-rank gameplay have no new delivery claim.

@@ -935,3 +935,21 @@ using numeric JSON coordinates as array indices without integer conversion. The 
 runs used the existing post-Battle06 party flags. Final positive observations reported
 no adapter errors. The final field and tactical processes emitted ObjectDB shutdown warnings (two and ten objects).
 Natural visit-by-visit visibility, GPU memory and hardware scanline phase remain **Unknown**.
+
+## Enemy healing family #2227
+
+The complete private successor is `derived/issue2227/pre-voyage-healing-v1`, based on
+`derived/issue2180/pre-voyage-tiles-v1`. Its 26 declared healing scenes add the same nine
+Original and nine HD rasters. Existing entry, animated terrain, actor, UI, audio and gameplay
+data compare unchanged. Scene JSON is compacted during publication. The package is 361,243,589
+bytes, compared with the 361,375,698-byte base. The unique new encoded raster banks total about
+12.5 KB. Publication is O(package bytes), with one scene decoded at a time. The pre-run budget
+was 3 GiB peak memory and 1 GiB scratch; peak memory was not measured. A complete nine-frame
+pilot passed the existing alpha/opaque-black mask checks before publication.
+
+Prepared retail effects tileset 6 supplies 3,392 tile bytes with the registered ROM/upstream
+identity and palette replacements `08880aaa0ace`. Source tile offsets, rank reuse and native
+acceptance are in [the spell owner](../godot/spell-presentation.md#enemy-healing-family-2227).
+The existing doubled Original format and family `derive_frame` HD recipe are reused. The
+publisher closes its temporary directory before the real native consumer cold-loads the result.
+Only private derived storage contains these rasters and their HD variants.
