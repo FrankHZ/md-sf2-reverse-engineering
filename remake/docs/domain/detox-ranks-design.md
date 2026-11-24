@@ -9,7 +9,8 @@ battle and reaction owners. DETOX 4, enemy casting, new ailment producers and pr
 Battle26 are outside this agreement.
 [Magic and support](../../../docs/design/synthesis/themes/tactical-battle-loop.md#magic-healing-and-support) ·
 [Action commit and replay](../../../docs/design/synthesis/themes/tactical-battle-loop.md#action-commit-construction-and-replay) ·
-[Campaign agreement](../application/remaining-campaign-risk-baseline.md)
+[Campaign agreement](../application/remaining-campaign-risk-baseline.md) ·
+[Battle art and controlled playback](../godot/spell-presentation.md#prepared-detox-presentation)
 
 ## Original rules and evidence
 
@@ -26,7 +27,7 @@ are STUN `0x0001` (also called paralysis), POISON `0x0002` and CURSE `0x0004`.
 | DETOX 3 | `0x82` / 2 | 10 | Teammate at distance 0–2 / 0 | CURSE, STUN, POISON (`0x0007`) |
 
 The rank rows in `data/stats/spells/spelldefs.asm` use POWER 0 and
-TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE. Battle uses animation DETOX with variations 2 and 3.
+TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE. Battle uses variations 1–3 of the shared DETOX animation.
 The masks above apply to both Magic callers. Cure result flags in battle use a different encoding
 (POISON 1, STUN 2, CURSE 4). Compute the intersection with the target's live word so a partial cure
 preserves the bits outside that rank's mask and every unrelated accepted effect.

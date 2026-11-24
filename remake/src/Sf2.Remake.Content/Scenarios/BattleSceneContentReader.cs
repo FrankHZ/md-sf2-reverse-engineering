@@ -60,6 +60,12 @@ internal static class BattleSceneContentReader
             blast.Select((size, slot) => rasters.TryGetValue("blast-1/frame-" + slot, out var image) &&
                 image.Width == size.Width && image.Height == size.Height).All(valid => valid),
             "scene-blast-1", "battleScenes.rasters");
+        int[] detoxSizes = [8, 8, 16, 16, 24, 24, 8, 8, 8, 8, 8];
+        int detoxCount = rasters.Keys.Count(key => key.StartsWith("detox/", StringComparison.Ordinal));
+        Require(detoxCount == 0 || detoxCount == detoxSizes.Length &&
+            detoxSizes.Select((size, slot) => rasters.TryGetValue("detox/frame-" + slot, out var image) &&
+                image.Width == size && image.Height == size).All(valid => valid),
+            "scene-detox", "battleScenes.rasters");
         IdentityIconReader.Validate(rasters);
         IdentityIconReader.Bindings(rasters, definitions);
         string background = Text(root, "background"), ground = Text(root, "ground");

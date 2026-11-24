@@ -37,7 +37,7 @@ public sealed partial class GameRoot
             var activeAllies = start.TryGetProperty("activeAllies", out var lineup)
                 ? lineup.EnumerateArray().Select(id => new ActorRef(id.GetString()!)).ToArray() : null;
             var initialized = GameSession.Start(admitted.Definition, new BattleStartInput(seed.Encounter, inputs,
-                old.Party.MainSeed, old.Party.ThinkingSeed, 60, policy, activeAllies, itemCustody: old.Party.ItemCustody));
+                old.Party.MainSeed, old.Party.ThinkingSeed, 60, policy, activeAllies, itemCustody: old.Party.ItemCustody, deathCredit: seed.DeathCredit));
             if (initialized is SessionStartFailed failure) return failure.Failure.Code;
             var baseline = ((SessionStarted)initialized).Session.Current.Battle;
             inputs = baseline.Actors.Select(actor => new BattleActorStartInput(actor.Actor, actor.Hp, actor.Mp,
@@ -77,11 +77,12 @@ public sealed partial class GameRoot
                     int index = Array.FindIndex(inputs, actor => actor.Actor.Value == row.GetProperty("actor").GetString());
                     var actor = inputs[index];
                     inputs[index] = actor with { Hp = row.TryGetProperty("hp", out var hp) ? hp.GetUInt16() : actor.Hp,
+                        Status = row.TryGetProperty("status", out var status) ? status.GetUInt16() : actor.Status,
                         PositionOverride = row.TryGetProperty("position", out var point)
                             ? new(point.GetProperty("x").GetInt32(), point.GetProperty("y").GetInt32()) : actor.PositionOverride };
                 }
             var battle = new BattleStartInput(seed.Encounter, inputs, baseline.MainSeed, baseline.ThinkingSeed,
-                60, itemCustody: baseline.ItemCustody);
+                60, itemCustody: baseline.ItemCustody, deathCredit: baseline.DeathCredit);
             BeginSource(new LocalizationObservationSource(new ScenarioReadAccepted(admitted.Definition, battle)));
             return _session is null ? "observation-mount-failed" : "started";
         }

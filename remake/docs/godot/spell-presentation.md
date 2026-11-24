@@ -80,14 +80,14 @@ listed by rank below. [Binding contract](../content/asset-inventory.md#battle-ra
 | HEAL 1–4 | HEALING_FAIRY v1–v4 | **Original assets bound** for private allied self/teammate casts. The private cast/idle, light fairy, live target and 77/113 cues are described in [HEAL spell scenes](#heal-spell-scenes). Native private HEAL1–3 settings cases and Sarah's Battle26 HEAL4 cover allied delivery. Enemy HEAL1 is observed with authored Mage/Cleric content, and a controlled private Battle19 Master Monk uses HEAL3 on itself. **Original assets bound** for the controlled pre-voyage enemy HEAL1 through the shared faction selector and evil-fairy group. | [Enemy healing acceptance](#enemy-healing-family-2227) covers a legal Dark Cleric recovery. Other higher-rank enemy playback and exact timing remain **Unknown** beyond named cases. [Enemy witness](../development-and-verification.md#enemy-spell-observation) · [Battle19 comparison](../application/battle19-repeat.md#controlled-comparisons) |
 | AURA 1 | HEALING_FAIRY v1 | **Original assets bound** for admitted private allied content through the HEAL light-fairy path. Karna's allied ordered recovery has engine evidence and ordinary native campaign casting is **Unknown**. The private Battle19 Dark Bishop shares the faction selector and evil-fairy group; actual enemy AURA delivery remains **Unknown**. Authored AURA uses its own pulse, recipient cards and one EXP delivery. | [#2104] recovery follow-up after pre-voyage priorities. Reuse the same enemy fairy decision and verify actual area recipients when needed. [Current spells](../application/church-promotion-design.md#current-battle-spells) · [Battle19 private binding](../application/battle19-repeat.md) · [Authored AURA](battle-scenes.md#authored-aura-recovery) |
 | AURA 2–4 | HEALING_FAIRY v2–v4 | **Unavailable** for private Magic. Authored AURA1–4 resolves ordered recovery with a **modern pulse**, with a native AURA4 witness. Healing Rain is already a private ordinary item with whole-side recovery and item presentation. White Ring/Goddess Staff AURA2 equipment Use would select v2 in the original. | [#2016] private Magic ranks, then [#2104] cast playback with actual scope, including AURA4's whole-side scan. [#1818] later equipment consumers. Keep Healing Rain on its item route. [Recovery items](../domain/recovery-items-design.md#ordinary-input-observations) |
-| DETOX 1–3 | DETOX v1–v3 | **Partial** private Magic. The caster pose, timed reaction, recipient, cure/no-effect text and eventual turn release are present. DETOX tileset 7 is unmounted in this route. Pre-voyage rank 1 and later ranks 2/3 have action witnesses, including ordinary paid Battle26 no-effect at 2/3 and effective controlled engine cures. Field Magic and Antidote/Fairy Powder have distinct delivery. Rune Axe Use selects DETOX2 in the original. | [#2104] pre-voyage recovery follow-up after BLAZE2/BLAST1. Reuse the cast and result seam and verify a legal cure plus no effect. [#1965] owns the accepted rank-2/3 rules and equipped-curse limit. Effective ordinary battle stun cure remains **Unknown**. [Rank evidence](../domain/detox-ranks-design.md#ordinary-input-and-cold-continue) |
+| DETOX 1–3 | DETOX v1–v3 | **Original assets bound** for admitted private Magic in the [DETOX successor](../content/presentation-assets.md#detox-successor). The same mote/trail composition plays for effective and paid no-effect casts and is suppressed by silence. Field Magic and Antidote/Fairy Powder have distinct delivery. Rune Axe Use selects DETOX2 in the original. | [#2232] delivers the [controlled native presentation](#prepared-detox-presentation). [#1965] owns rank-2/3 gameplay and equipped curse. Natural ordinary acquisition and casts remain **Unknown**. |
 | DETOX 4 | DETOX v4 | **Unavailable** in private Magic. Uses an area in the original. Its area delivery requires a separate multi-recipient check. | [#2016] rule/admission, then [#2104] playback with the actual area recipients. |
 | BOOST 1 | BUFF1 v1 | **Partial**. Ordinary private Karna cast has AGI/DEF, no-effect recast, cards and return on the support scene. Protect Ring uses the same effect rules with an equipment gesture, slot wear and result notices. | [#2104] later BUFF effect work. Share the asset setup with ATTACK where source operands agree and verify Magic/Item independently. [Support evidence](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Ring witness](../domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction) |
 | BOOST 2 | BUFF1 v2 | **Partial**. Private Magic uses the shared cast scene, ordered AGI/DEF and ineffective messages, and return to battle input. Enemy SUPPORT still rejects the packed rank. | [#2104] retail BUFF1 v2 effect. [Battle26 observation](../domain/support-spell-status-design.md#boost-2-admission-and-observation) |
 | SLOW 1–2 | DEBUFF1 v1–v2 | **Partial**. Both Sarah ranks have private Battle26 witnesses with actual AGI/DEF reactions, expiry/state rules and the black support scene. The original visual effect is absent. | [#2104] later DEBUFF work with DISPEL. [Support evidence](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) |
 | ATTACK 1 | BUFF1 v1 | **Partial** through Power Ring Use with item gesture, target ATT, durability and subsequent control. The current private Magic binding omits ATTACK. Battle25 Dark Soldier holds the spell and its ordinary AI rejects it. | [#2104] BUFF effect after the primary spell work. [#1818] other eligible equipment or learned callers as admitted. [Item-use rules and evidence](../domain/equipment-use-repair-design.md) · [Battle25](../application/battle25-north-cave.md) |
 | DISPEL 1 | DEBUFF1 v1 | **Partial**. The authored silence witness covers ordered area results, success/no-effect, paid suppressed cast, expiry and later effective cast. Private Dark Smoke is a pre-voyage candidate and learned Kazin can use the admitted rank. Magic shows cards/messages on black without a cast gesture or DEBUFF art. Suppressed Magic correctly omits the effect. Physical silence uses its hit and notice. | [#2104] candidate pre-voyage support follow-up. Confirm ordinary legal Dark Smoke/ally use when relevant. Grand Cannon Use is later equipment work under [#1818]. [Silence observation](../development-and-verification.md#silence-observation) |
-| MUDDLE 1–2 | DEBUFF1 v1 for both | **Unavailable** for private learned Magic. Each rank needs its own status, targeting and turn behavior. Giant Knuckles Use points to rank 1 in the source. | [#1967] gameplay and private casting, then [#2104] DEBUFF playback. [Hostile spell design](../domain/hostile-spells-design.md) |
+| MUDDLE 1–2 | DEBUFF1 v1 for both | **Partial**. Private learned Kazin Magic uses both ranks and the support scene's result delivery. Controlled Battle25 rank-2 automatic actions and cold Continue have gameplay witnesses. The DEBUFF art remains pending. Giant Knuckles Use points to rank 1 in the source. | [#2104] DEBUFF playback. [Accepted MUDDLE evidence](../domain/hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25) |
 | DESOUL 1–2 | DESOUL v1–v2 | **Learned Magic bound.** Controlled Battle26 Kazin casts both ranks with spell-8 icons and localized cast, instant-death, ineffective and reward messages on black. Dark Sword Use selects rank 1 in the source and has no binding here. | [#2104] owns original effects and timing. [DESOUL reproduction](../domain/hostile-spells-design.md#controlled-kazin-input-and-cold-continue) |
 | SLEEP 1 | DEBUFF1 v1 | **Partial**. A controlled Tyrin 25 Battle26 slot exercises private Magic, both original icons, localized result/no-effect feedback and cold Continue with an active sleep count. The support scene uses its existing message presentation. Natural Tyrin progression to a cast remains **Unknown**. | [#2104] DEBUFF playback. [SLEEP boundary](../domain/hostile-spells-design.md#sleep-1-implementation-and-evidence) |
 | EGRESS 1 | NONE | **Modern presentation**. Eligible retreat uses the same text, pulse, tone and fade for spell and Angel Wing, with different payment. Battle02 native witnesses cover cancellation, return and walking retry. Later encounters supply their own retreat destinations. | Preserve the accepted [retreat delivery](battle-scenes.md#authored-egress-delivery). Encounter admission belongs to [#1818]. Original visual/audio parity is **Unknown**. |
@@ -164,8 +164,9 @@ foreground visual acceptance remain **Unknown** where no named witness covers th
 
 - **P2 after the two child issues.** [#2104] retains first-use review of pre-voyage recovery and
   support. The [enemy healing family](#enemy-healing-family-2227) covers its bounded HEAL1
-  recovery; enemy AURA delivery is still Unknown. Track DETOX's art separately from its cure semantics. Use DISPEL's actual
-  status/suppression consumer for the first DEBUFF decision. These are candidate presentation
+  recovery. Enemy AURA delivery remains **Unknown**. The [DETOX successor](#prepared-detox-presentation)
+  covers learned ranks 1–3. Use DISPEL's actual status/suppression consumer for the first
+  DEBUFF decision. These are candidate presentation
   slices. [#1456] governs foreground acceptance and [#1616] the wider design review.
 - **P3 for current later content.** [#2104] groups the remaining elemental variants and shared
   KATON/RAIJIN art, then BUFF/DEBUFF and private AURA rank coverage as actual callers need them.
@@ -176,6 +177,8 @@ foreground visual acceptance remain **Unknown** where no named witness covers th
   for future breaths, summons and special attacks. [#2104] retains effect coverage until the
   selected caller exists and the accepted original assets or modern decision can be named.
 
+[#2232]: https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2232
+[#1716]: https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716
 [#1456]: https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456
 [#1616]: https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616
 [#1369]: https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1369
@@ -679,3 +682,117 @@ classification rules retain their existing meaning. The plan and the PR's actual
 locked auxiliary builds and the direct Ruff/contract/index checks. CI conclusions are recorded
 in the PR and independent acceptance handoff. Native evidence belongs to the earlier behavior
 checks above; these build jobs do not imply new gameplay observations.
+
+## Prepared DETOX presentation
+
+[#2232] uses Standard rigor for one battle-scene effect across the admitted Magic ranks. The
+acceptance boundary is a closed private successor, legal rank-1 cure and no-effect casts, the
+rank-2 range/status and rank-3 cost differences, and cancellation, silence and graphics fallback.
+
+**Confirmed** from the pinned USA source. Learned DETOX selects 6/38/70 for ranks 1–3.
+The dispatcher also sets bit 7 for enemy casts. The DETOX setup and update read neither the
+rank variation nor the mirror flag. Both use tileset 7, the same six mote frames and five
+trail frames, and the same two arcs. The mote's VDP centers are (304,192) and (208,192),
+with X/Y amplitudes 48/16 and eight angle units per update. The trail starts at (+8,+8)
+relative to the current mote, drifts down one pixel per update and changes tile at six-update
+intervals. Sprite priority group 2 links before group 1. The mote stays in group 2 and trail
+particles take group 1 or 2 from the spawning angle. The pixel-space origin in close-up is
+the source VDP coordinate minus 128. [Setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/detox.asm) ·
+[Update](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/detox.asm) ·
+[Coordinate calculation](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/graphics/graphics_1.asm) ·
+[Sprite links](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/graphics/graphics_2.asm)
+
+The original script debits MP and starts the cast animation before switching to the recipient
+and delivering its result. An effective clear has the status reaction and healing cue 113.
+The no-effect path reports the failed cure after the same cast. Silence still pays MP and
+skips the animation. The scene ends the spell after its notices, waiting for the shrink and
+remaining trail before it returns to the caster. [Cast and silence dispatcher](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/battleactionsengine_1.asm) ·
+[Selector](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/getspellanimation.asm) ·
+[Status effect](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/castspell.asm) ·
+[Spell end](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/battlesceneengine_0.asm)
+
+The adapter gives the existing cast trigger and SpellStop wait to DetoxEffectView. It
+keeps the same live effect through caster/recipient switches and result text, then acknowledges
+SpellStop after cleanup. Original or HD supplies all eleven frames at the same logical size.
+Any missing HD frame selects all Original frames. A package with no DETOX group keeps the
+earlier cast pose and notice route. An optional Original group must declare all eleven frames
+at their source dimensions. The modern clock delivers the source cadence and orbit with a
+local trail-spacing stream and a caster tint for the cast burst. Reduced Flash omits the tint.
+The session retains its established mana, recipient, result, EXP and RNG authority. Field
+Magic, Antidote and Fairy Powder keep their own delivery. [Package selection](../content/presentation-assets.md#detox-successor) ·
+[Rank rules](../domain/detox-ranks-design.md)
+
+**Confirmed in the remake** using the real private package and ordinary Magic input in
+Godot 4.7.2 .NET. The probe reads actual Sprite2D textures, dimensions, both arcs, front/back
+trail layers over the close-up, the live recipient, result and end wait. Cancel is free and
+early Confirm retains the animation token. Each cast ends on Bowie's usable action menu in the
+same session.
+
+| Controlled entry | Mounted bank and observed result |
+| --- | --- |
+| Battle04, Sarah DETOX1 on clean Bowie | All eleven Original frames. MP 10→7, no effect and 1 EXP. Cast cue 77 once. |
+| Battle09, Sarah DETOX1 on poisoned Bowie | All eleven HD frames. Poison 2→0 with stable HP, MP 10→7 and 5 EXP. Cues 77/113 once each. |
+| Battle04, Sarah DETOX2 on Bowie at distance two | HD selected with one DETOX alternate missing. Whole Original group, Reduced Flash, STUN 1→0, MP 10→4 and 5 EXP. Cues 77/113 once each. |
+| Battle04, Sarah DETOX3 on clean Bowie | Shared composition, selector 70, MP 10→0, no effect and 1 EXP. The accepted rank-3 equipment cure has its own Battle26 witness. |
+| Battle04, silenced Sarah asks to cast DETOX1 | MP 10→7, silence notice, no DETOX effect, status write, cast/recovery cue or EXP. |
+
+### Reproduce DETOX in Godot
+
+Use a fresh worktree-local run directory, authorized disposable save root and unique
+namespace. Load the locked SDK and private-input configuration, build Debug and join
+the eleven-frame package from [the package owner](../content/presentation-assets.md#detox-successor).
+Select its world, main scene, entry and six opening inputs together through their usual
+SF2_PRIVATE_* selections. Use independent run and preference directories for each launch.
+
+Copy remake/reference/inputs/battle01-player-ready.json into the run directory as sarah.json.
+Set id to detox-art-controlled-party, evidenceOwner to issue-2232 and bridgeBoundary to
+Controlled Sarah level and book only. Replace allies with one row as below. Choose the level
+and packed DETOX entry from the table.
+
+    [{"id":1,"classId":4,"level":4,"maxHp":11,"hp":11,"maxMp":10,"mp":10,"attack":9,"defense":5,"agility":5,"move":5,"status":0,"items":[213,0,0,127],"spells":[0,2,63,63],"exp":0,"kills":0,"defeats":0}]
+
+Write start.json beside sarah.json and select it via SF2_DETOX_START. The start hook admits
+the normal world, then imports Sarah's validated book and the controlled status before
+mounting the session. The clean Original case uses this document.
+
+    {"start":{"battle":"battle-4","activeAllies":["ally-0","ally-1"],"partyInput":"sarah.json","actors":[{"actor":"ally-0","position":{"x":4,"y":7},"status":0},{"actor":"ally-1","position":{"x":5,"y":7},"status":0}]}}
+
+| Case | Start edits from the clean Original case |
+| --- | --- |
+| Active poison and complete HD | battle-9, Bowie (6,2) status 2 and Sarah (6,1). |
+| Rank 2 and missing HD frame | Sarah level 13, packed spell 66 and position (5,8). Set Bowie status 1. Use a disposable successor package without detox/frame-10 in the Battle04 hdRasters bank and set reducedFlash to true. |
+| Rank 3 | Sarah level 33 and packed spell 130. |
+| Silence | Sarah status 768. |
+
+Set SF2_DETOX_RANK to 1, 2 or 3, SF2_DETOX_EFFECTIVE to 1 for the two cures, SF2_DETOX_HD
+to 1 for the complete HD case, and SF2_DETOX_SILENCED to 1 for silence. Set other switches to 0.
+Set SF2_OBSERVATION_OUTPUT to a fresh worktree-local JSON. Use version-1 input settings
+with language en and textMode instant. Select graphicsMode hd for complete HD and missing
+HD, and original for other cases.
+
+```powershell
+& $env:GODOT_BIN --headless --audio-driver Dummy --rendering-method gl_compatibility `
+    --fixed-fps 60 --resolution 1920x1080 --path remake/game `
+    --script res://probes/engine_detox_art_observation.gd -- --input-settings $settings
+```
+
+**Completed failures.** An overlapping Release build locked the shared Domain intermediate,
+then a serial build found an unnamed tuple in projection observation. Serial Release and
+Debug passed after correction. The first probe needed an explicit Array type for the cue
+readback. Battle04 rejects injected poison, so the poison witness moved to Battle09. That
+start exposed a dropped death-credit context in the controlled hook. It now preserves the
+admitted value in both start calls. One cancel/reopen rehearsal advanced from the retained
+Magic row to HEAL. The probe now closes the reopened list before making the fresh selection.
+Receipts and logs are retained in worktree-local issue2232. Some completed processes
+reported ObjectDB exit warnings, which retain their separate [#1716] owner.
+
+**Unknown.** Natural poison/stun acquisition for these casts, live enemy DETOX, DETOX4,
+hardware-exact flash/timing, subjective foreground appearance and conditions for natural
+pre-voyage learning. The controlled Battle04 no-effect cast establishes pre-voyage presentation.
+The executable rank-4 and enemy admissions retain their existing boundaries.
+
+The engine gate passed with 3,263 tests and 50 optional private skips. The existing tests cover
+rank masks, status refresh, equipped curse and separate item/Field handling. Release and Debug
+adapter builds and the three standalone tool builds passed. Public Ruff, design-contract and
+research-index checks passed. The committed engine-scoped plan and actual CI conclusions are in
+the Draft PR handoff.

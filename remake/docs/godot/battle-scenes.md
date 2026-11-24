@@ -26,6 +26,13 @@ Battles04–07 package and the separate Battle04 Kazin and Battle05 Galam Mage n
 The [prepared BLAZE2 scene](spell-presentation.md#prepared-blaze2-presentation) adds the medium
 flame, ten small meteors and ordered Battle04 reactions for Kazin's learned radius-1 cast.
 
+### Prepared DETOX presentation
+
+The [DETOX scene](spell-presentation.md#prepared-detox-presentation) uses the existing caster pose,
+recipient switch and result waits for learned ranks 1–3. The mounted mote and trail run from
+the cast trigger through SpellStop. The parent scene clock owns playback. Private scene
+admission and the shared graphics preference select complete Original/HD groups.
+
 ## Graphics variants
 
 Close-up bodies use the selected appearance and palette's complete frame group. Weapons use

@@ -267,6 +267,11 @@ perform finite poison cure through the existing scene/payment/end rules. Actual 
 private Talk/trades/return and a separate authored same-session purchase→battle→use→further control.
 The field snapshot preserves completed trade resources after service return and settlement.
 
+The [prepared DETOX scene](godot/spell-presentation.md#prepared-detox-presentation) binds the
+Original and HD mote/trail group in private Battle Magic 1–3. Controlled play covers Battle04
+paid no effect, Battle09 poison cure, rank-2 STUN cure at distance two, rank-3 payment, and
+silence. Field Magic and battle items retain their separate presentation and payment rules.
+
 Purchased Healing Drop restores up to 30 HP in battle for 0 MP. The Pacalon purchase and Battle26
 ordinary inputs cover slot consumption, bilingual feedback and cold battle Continue. Field Use
 keeps the item with no effect. Caravan Use refuses it under the source usability policy.
