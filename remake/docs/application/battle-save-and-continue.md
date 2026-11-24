@@ -446,6 +446,93 @@ for the wider state/codec/storage matrix; this is not a seven-battle natural cam
 Physical focus/OS-close device acceptance and arbitrary candidate resource corruption are not newly
 claimed by these headless observations. Exit warnings remain explicit in the verification owner.
 
+## Save, restore and first consumer review
+
+**Confirmed in the remake.** The sixth mechanism review found no defect in the admitted path
+from settled Save to the first resumed action. The existing High-rigor agreement governs
+save admission and recovery. [#2211](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2211) ·
+[Mechanism order](../domain/gameplay-rules.md#battle-mechanism-review-order)
+
+- Capture binds the live session and revision and requires Movement at the committed origin
+  with prior work complete. It copies the packed status, initialized/position fields, queue,
+  both RNG words and story operands. [Capture](../../src/Sf2.Remake.Application/Runtime/Persistence/BattleSave.cs)
+- Detached restore binds the saved actors to admitted definitions, checks MUDDLE admission against
+  its reconstructed slot state, builds the zero-distance movement preview and compares the
+  reconstructed values. It preserves the current queue entry. Fresh-start healing, refresh and
+  queue generation have their own entry path. [Restore](../../src/Sf2.Remake.Application/Runtime/Persistence/BattleRestore.cs)
+- The wire reader preserves explicit absence, including the casualty's position. The store
+  validates before and after publication. The title host reads the chosen record again and mounts
+  the prepared projection and audio at PlayerInput. The next Stay enters the ordinary turn and
+  scene continuations. [Wire](../../src/Sf2.Remake.Content/Persistence/BattleSaveWire.cs) ·
+  [Store](../../game/src/Persistence/LocalSaveStore.cs) · [Host](../../game/src/Entry/OpeningPersistenceHost.cs)
+
+In the controlled Battle25 case, Kazin paid 11 MP and earned 5 EXP once. Save at Gerhalt's
+round-25 Movement carried cursor 3, the Bishop's word 56 and an initialized enemy-0 at HP 0
+with absent position. The distinct Godot processes produced v2 slot sequences 3 and 4 with equal
+complete decoded `data`, including the queue, actors, story, gold, custody, music and RNG words
+1928591122 and 15768217. The complete live capture at the new session's attach also equaled the
+control's post-Save capture.
+
+Both processes used one Stay and acknowledged only pending presentation. They reached Bowie's
+Movement at cursor 5 with equal complete gameplay state and ordered effects. The main stream
+drew range/value 2/1 for self-guard, 16/14 for the inaction message and 48/24 for expiry, ending at
+2221995794. The thinking word stayed 15768217. The Bishop kept 39 HP and its word became 40. The
+casualty stayed unplaced and invisible. Kazin stayed at 3 MP and 72 EXP. During the resumed guard
+message, Save was disabled with `save-battle-busy`, and revision stood still while the menu was
+open. Closing it resumed the same scene.
+
+### Reproduce the first resumed action
+
+Prepare the disposable slot from the registered #1918 seed using the
+[Battle25 recipe](../domain/hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25).
+Use its #2001 priority-v1 package, #2001/#1941 Chinese catalogs and #1955
+`runner/settings-zh-CN.json`. Mount these read-only. Select a fresh external disposable save root
+and namespace with one prepared `sf2-opening/slot1.json`. After loading the owning worktree's
+configuration, build the Debug adapter with the [locked SDK workflow](../development-and-verification.md#locked-net-workflow)
+and import the local project if needed. Set `$runRoot` to a new ignored checkout-local directory
+and `$inputSettings` to the registered Chinese settings. Run the observer twice in serial against
+the same disposable namespace.
+
+```powershell
+foreach ($case in 'control', 'cold') {
+    $env:SF2_SAVE_CASE = $case
+    $env:SF2_SAVE_REPORT = Join-Path $runRoot "$case.json"
+    & $env:GODOT_BIN --headless --path remake/game --audio-driver Dummy --max-fps 120 `
+        --resolution 1920x1080 --log-file (Join-Path $runRoot "$case.log") `
+        --script res://probes/engine_battle_save_first_action_observation.gd -- --input-settings $inputSettings
+    if ($LASTEXITCODE) { throw "First-action observation failed in $case" }
+}
+```
+
+`control` takes the ordinary Magic action, then Save and Return and one Stay. `cold` uses ordinary
+title Continue, re-saves before a turn, then takes the same Stay with the busy Save check. Compare
+the decoded `data` from disposable `slot1.bak` (sequence 3) and `slot1.json` (sequence 4) after
+verifying both envelopes. In the receipts, compare `persistence.progress` at control `save-return`
+and cold `before-first-input`. Compare both `first-action-settled` captures and the
+`first-action-effects` arrays, allowing only process-local observation sequence and revision to
+differ. Verify distinct PIDs and inspect the process logs for session and presentation errors.
+
+From `remake/`, after loading the same SDK configuration, reproduce the actual-engine continuation,
+busy movement and fixed-slot MOVE cases:
+
+```powershell
+$filter = 'FullyQualifiedName~BattleSaveContinuationTests|FullyQualifiedName~BattleSaveEligibilityTests|FullyQualifiedName~ConfusedEnemyStaysAndTicksAfterTheFixedSlotIsKilledAndCleaned'
+& $env:DOTNET_BIN test tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj `
+    -c Release -p:RestoreLockedMode=true -p:UseSharedCompilation=false -nodeReuse:false --filter $filter
+```
+
+All 45 selected engine cases passed. The first native observer used a fallback Confirm after the
+guarded message, played into Bowie's action and exited 1. The final observer sends Confirm only
+when the scene requests acknowledgement. Both final processes exited 0 without session or
+presentation errors. A fresh run of the tracked probe from a disposable copy of sequence 3
+reproduced the same cold result. The uninterrupted process and tracked-probe repeat each reported
+two ObjectDB instances at exit. Shutdown ownership remains with
+[#1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716).
+
+**Unknown:** natural campaign reach of this exact rank-2/queue combination and its original
+timing. This review ends at Bowie's next stable input. The separately accepted EGRESS follow-up
+and recovery evidence retain their own boundaries.
+
 ## Empty-ground Options Quit caller (#1651)
 
 **Standard rigor for the bounded adapter entry; existing High persistence contract unchanged.**
