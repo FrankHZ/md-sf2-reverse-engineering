@@ -760,5 +760,7 @@ actions are admitted. The linked action owners track the remaining boundaries.
 - Packed spell learning and retention have their own coverage. Unsupported attack
   and healing ranks, including BLAZE 4, later FREEZE/BOLT ranks and higher campaign
   AURA ranks, stay with the [spell actions](church-promotion-design.md#current-battle-spells).
-  MUDDLE 2 remains with [#1967](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967).
+  MUDDLE 2 is admitted in private Magic and battle Continue. A rank-2 cast through
+  unchanged campaign history and natural ally confusion remain **Unknown**.
+  [Controlled Battle25 observation](../domain/hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25)
   DETOX 4 remains with [DETOX rank admission](../domain/detox-ranks-design.md).
