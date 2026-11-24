@@ -6,9 +6,8 @@
 [#2141](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2141) against the playable
 battles through Battle26 and the named authored cases. Keep the existing High-rigor transaction
 and save agreements where the review crosses them. Dispatch each slice separately after its
-prerequisites are dispositioned. The cases below are review questions, with retained evidence
-identified where available. The identity, movement, action transaction and casualty reviews are
-complete. Status lifetime and recovery are reviewed. Save/restore remains pending.
+prerequisites are dispositioned. The six planned mechanism slices have review dispositions.
+The playable boundary and the open questions in each mechanism owner still govern coverage.
 [Campaign boundary](../capability-status.md#campaign-feature-trace)
 
 **Shared boundary.** Content admits definitions, deployments and bindings. The session owns the
@@ -50,23 +49,14 @@ the admitted settled state through the same rules.
    the last-applied stats in use until the teammate finishes its own entry. Fresh battle
    recovery now rebuilds ATT for eligible allies after clearing the temporary status word.
    [Review and reproduction](support-spell-status-design.md#status-lifetime-and-recovery-review)
-6. **Save, restore and first consumer.** Close the review with one settled player Movement
-   save carrying a partly consumed queue, another actor's active rank-2 word, a cleaned slot
-   and both RNG words. Reuse the controlled Battle25 cold Continue. Compare with a busy
-   movement or scene save refusal. A slot can decode and still fail on the next automatic turn
-   if the packed word, queue cursor or fixed-slot casualty was reconstructed incorrectly.
-   Stop after comparing complete decoded play state before the first input and following a
-   real resumed input through automatic action, projection and the next stable decision or
-   usable field return. Use the existing engine case for the cleaned-slot MOVE branch and
-   retain the controlled native witness for the guarded action. The host owns Save/Continue
-   and presentation delivery; its displayed actor or animation progress does not authorize a
-   rule change or enter the battle save.
-   [Remake save agreement](../application/battle-save-and-continue.md#implemented-domainapplication-boundary-a) ·
-   [Capture](../../src/Sf2.Remake.Application/Runtime/Persistence/BattleSave.cs) ·
-   [Detached restore](../../src/Sf2.Remake.Application/Runtime/Persistence/BattleRestore.cs) ·
-   [Wire](../../src/Sf2.Remake.Content/Persistence/BattleSaveWire.cs) ·
-   [Title and slot host](../../game/src/Entry/OpeningPersistenceHost.cs) ·
-   [Battle25 controlled input](hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25)
+6. **Save, restore and first consumer — reviewed.** The controlled Battle25 save carries
+   the partially consumed queue, Dark Bishop's active rank-2 word, an initialized cleaned slot
+   and both RNG words. A fresh-process Continue preserves the complete captured and decoded data.
+   Both runs send one Stay and reach Bowie's Movement with the same guarded action, RNG draws,
+   projected casualty and gameplay state. Save is refused during the guarded scene. The actual
+   engine kill-and-clean case covers the adjacent empty MOVE branch. The bounded review found no
+   persistence or first-action defect.
+   [Review and reproduction](../application/battle-save-and-continue.md#save-restore-and-first-consumer-review)
 
 Start each follow-up with the named original contract, the accepted remake rule and the current
 consumer. Reuse retained evidence for matching boundaries. When static inspection leaves a

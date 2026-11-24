@@ -704,6 +704,12 @@ its own exit, so normal menu shutdown is outside this evidence. These inputs
 establish remake behavior with a controlled caster and queue. A rank-2 cast through unchanged campaign history and natural ally
 confusion remain **Unknown**.
 
+The [save/first-consumer review](../application/battle-save-and-continue.md#save-restore-and-first-consumer-review)
+rebuilds the same input and compares one uninterrupted Stay with one cold-continued Stay.
+Both reach Bowie's Movement at cursor 5 with the same full gameplay data and exactly three
+main-stream draws. The cold run also checks that the system menu disables Save during the
+guarded message. The initialized casualty remains off the projected board in both runs.
+
 ### Delivery sequence
 
 The internal automatic turns preceded the [current public binding](#public-rank-2-admission).
