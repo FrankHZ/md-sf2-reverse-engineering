@@ -237,7 +237,7 @@ def write_json(path: Path, document: dict) -> None:
 
 
 def world_dependencies(document: dict, world: Path) -> set[str]:
-    """Validate the relative encounter/audio inputs of an existing publication."""
+    """Validate the declared world-relative inputs of an existing publication."""
     world_document = document.get("world", document)
     dependencies = {
         value
@@ -252,6 +252,31 @@ def world_dependencies(document: dict, world: Path) -> set[str]:
         if "runtimeWav" in sound
     )
     source_root = world.resolve().parent
+    selected = {Path(name) for name in dependencies}
+    for visual in world_document["presentation"].get("maps", []):
+        if "hdTerrainFile" not in visual:
+            continue
+        if "hdBlocks" in visual or "hdBlockContexts" in visual:
+            raise ValueError("inline and external HD terrain cannot be combined")
+        name = visual["hdTerrainFile"]
+        if (
+            not isinstance(name, str)
+            or not name.endswith(".json")
+            or "\\" in name
+            or ":" in name
+            or any(not part or part.endswith((".", " ")) for part in name.split("/"))
+        ):
+            raise ValueError("HD terrain requires a package-relative JSON path")
+        path = Path(name)
+        if path in selected:
+            raise ValueError("duplicate HD terrain dependency")
+        member = source_root
+        for part in path.parts:
+            member /= part
+            if member.is_symlink() or member.is_junction():
+                raise ValueError("linked HD terrain dependency")
+        selected.add(path)
+        dependencies.add(name)
     for relative in dependencies:
         path = Path(relative)
         if (

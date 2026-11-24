@@ -15,10 +15,15 @@ func inspect_blocks(view: Node, density: int, foreground := false) -> Dictionary
     check(not rows.is_empty(), "actual visible block draws")
     var ids := {}
     var geometry := []
+    var uses := HashingContext.new()
+    uses.start(HashingContext.HASH_SHA256)
     var contextual := 0
+    var contextual_cells := {}
     var passes := {}
     for row in rows:
-        if row.selector.get("contextual", false): contextual += 1
+        if row.selector.get("contextual", false):
+            contextual += 1
+            contextual_cells[Vector2i(row.sourceX, row.sourceY)] = true
         passes[str(row.pass)] = true
         if not resources.has(row.resourceIdentity):
             var texture := instance_from_id(int(row.resourceIdentity)) as Texture2D
@@ -26,17 +31,25 @@ func inspect_blocks(view: Node, density: int, foreground := false) -> Dictionary
             check(image != null, "read the selected terrain texture")
             if image != null:
                 image.convert(Image.FORMAT_RGBA8)
-                for color in image.get_data().to_int32_array():
+                var pixels := image.get_data()
+                var digest := HashingContext.new()
+                digest.start(HashingContext.HASH_SHA256)
+                digest.update(pixels)
+                resources[row.resourceIdentity] = digest.finish().hex_encode()
+                for color in pixels.to_int32_array():
                     if color < 0: colors[color] = true # Opaque RGBA on the little-endian host.
-            resources[row.resourceIdentity] = true
+        uses.update(JSON.stringify([row.sourceX, row.sourceY, row.block, row.tile, row.pass,
+            row.layer, row.subject, row.words, row.x, row.y, row.width, row.height,
+            row.textureX, row.textureY, row.textureWidth, row.textureHeight, row.selector.get("contextual", false),
+            resources.get(row.resourceIdentity)]).to_utf8_buffer())
         check(row.overlay == foreground, "plane follows the source layout offset")
         check(is_equal_approx(row.width, row.textureWidth * 4.0) and is_equal_approx(row.height, row.textureHeight * 4.0), "unchanged world display scale")
         check(row.selector.pixels == density, "actual raster width for logical cell")
         ids[str([row.sourceX, row.sourceY, row.block])] = row.resourceIdentity
         geometry.append([row.sourceX, row.sourceY, row.tile, row.pass, row.x, row.y, row.width, row.height])
-    if density == 96 and OS.get_environment("SF2_SAVE_NAMESPACE").begins_with("issue1765-check-"):
+    if density == 96 and l1_bank():
         check(contextual > 0, "published neighborhood variant reached the actual draw")
-    samples.append({"opaqueColors":colors.size(), "textures":resources.size(), "foreground":foreground, "contextual":contextual, "passes":passes.keys(), "pixels":density, "draws":rows.size(), "cells":ids.size(), "map":info.map})
+    samples.append({"selectedDrawsSha256":uses.finish().hex_encode(), "opaqueColors":colors.size(), "textures":resources.size(), "foreground":foreground, "contextual":contextual, "contextualCells":contextual_cells.size(), "passes":passes.keys(), "pixels":density, "draws":rows.size(), "cells":ids.size(), "map":info.map})
     view.call("StopLayoutObservation")
     return {"ids":ids, "geometry":geometry, "colors":colors}
 
@@ -66,29 +79,47 @@ func change_mode(mode: String) -> void:
     if settings().draft.GraphicsMode != mode: await key(KEY_RIGHT)
     await select_setting("apply")
     var paused: Variant = observation(host, "ReadPersistenceObservationJson").progress
+    var started := Time.get_ticks_usec()
     await key(KEY_ENTER)
+    samples.append({"apply":mode, "inputThroughReleaseMs":(Time.get_ticks_usec() - started) / 1000.0})
     check(find("SettingsView") == null, "Apply accepted")
     check(paused == observation(host, "ReadPersistenceObservationJson").progress, "Apply preserves paused progress")
     if find("SystemMenuView") != null: await key(KEY_ESCAPE)
     await frames(4)
 
+func l1_bank() -> bool:
+    var space := OS.get_environment("SF2_SAVE_NAMESPACE")
+    return space == "issue2174" or space.begins_with("issue1765-check-")
+
+func hold_field_clock(node: Node) -> void:
+    if not node.has_signal("SessionResultObserved"): return
+    node.connect("SessionResultObserved", func(json: String):
+        if node.name == "ExplorationSessionView" and JSON.parse_string(json).boundary == "attach":
+            # Keep the same actor ink/occlusion phase; service ordinary input release each frame.
+            node.set_process(false)
+            process_frame.connect(node.call.bind("_Process", 0.0)))
+
 func run() -> void:
-    if not (OS.get_environment("SF2_SAVE_NAMESPACE").begins_with("issue1717-check-") or OS.get_environment("SF2_SAVE_NAMESPACE").begins_with("issue1765-check-")):
+    if not (OS.get_environment("SF2_SAVE_NAMESPACE").begins_with("issue1717-check-") or l1_bank()):
         push_error("select a disposable review slot"); quit(2); return
     var slot := OS.get_environment("SF2_SAVE_ROOT").path_join(OS.get_environment("SF2_SAVE_NAMESPACE")).path_join("sf2-opening/slot1.json")
     var slot_bytes := FileAccess.get_file_as_bytes(slot)
     check(not slot_bytes.is_empty(), "existing isolated Map3 slot")
+    if OS.get_environment("SF2_SAVE_NAMESPACE") == "issue2174":
+        node_added.connect(hold_field_clock)
     root.size = Vector2i(1920,1080)
     host = load("res://Main.tscn").instantiate()
     root.add_child(host)
     await frames(12)
     await key(KEY_ENTER); await key(KEY_E); await key(KEY_DOWN); await key(KEY_ENTER)
     if not await wait_slots("continue-slots"): finish(); return
+    var load_started := Time.get_ticks_usec()
     await key(KEY_ENTER)
     for i in range(1800):
         if find("ExplorationSessionView") != null: break
         await process_frame
     var view := find("ExplorationSessionView")
+    samples.append({"continueToViewMs":(Time.get_ticks_usec() - load_started) / 1000.0})
     check(view != null, "ordinary Continue mounted Map3")
     if view == null: finish(); return
     await frames(8)
@@ -97,15 +128,19 @@ func run() -> void:
     await inspect_party_portrait(48)
     var progress: Variant = observation(host, "ReadPersistenceObservationJson").progress
     await change_mode("hd")
+    if not failures.is_empty(): finish(); return
     var painted: Dictionary = await inspect_blocks(view, 96)
     var painted_roof: Dictionary = await inspect_blocks(view, 96, true)
-    if OS.get_environment("SF2_SAVE_NAMESPACE").begins_with("issue1765-check-"):
+    if l1_bank():
         check(painted.colors.keys().any(func(c): return not before.colors.has(c)), "additional shades in drawn terrain resources")
     await inspect_party_portrait(192)
     await change_mode("original")
     var after: Dictionary = await inspect_blocks(view, 24)
     var after_roof: Dictionary = await inspect_blocks(view, 24, true)
     await inspect_party_portrait(48)
+    var hd_resources := {}
+    for id in painted.ids.values() + painted_roof.ids.values(): hd_resources[id] = true
+    samples.append({"sampledHdTextures":hd_resources.size(), "liveAfterOriginal":hd_resources.keys().filter(func(id): return is_instance_id_valid(int(id))).size()})
     check(before.ids == after.ids and before.ids != painted.ids, "distinct HD and restored original textures")
     check(before.geometry == painted.geometry and after.geometry == before.geometry, "same visible tile passes and screen geometry")
     check(before_roof.ids == after_roof.ids and before_roof.ids != painted_roof.ids, "roof texture switch and restoration")

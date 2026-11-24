@@ -16,7 +16,7 @@ production input is the [complete #2156 selection](asset-inventory.md#complete-p
 Reuse the admitted original for the selected palette and frame. Where a caller needs an unmounted
 original, join its prepared index to that caller and verify Original first. Use only authorized
 materials for derivation and keep the existing private publication and public-asset boundaries.
-The deliverable for this slice is the design and resource calibration.
+The [Map3 companion candidate](asset-inventory.md#map3-terrain-companion-2174) implements the first transport slice. Map4 production is next.
 
 ## Coverage from the selected package
 
@@ -122,14 +122,17 @@ creation. Start with the current bounded, sequential prepare behavior and measur
 Apply. If it exceeds the interaction budget, scope preparation to the current mount and validate
 remaining banks at their mount boundary before projecting them.
 
-The current [world reader](../../src/Sf2.Remake.Content/Scenarios/PrivateExplorationReader.cs)
-reads the whole file and enforces 128 MiB. The existing closed-package collector recognizes
-encounter paths and external WAV companions and copies named entry PNGs. It has no external HD
-raster support. Add the terrain companion to that same closure in the transport slice. Keep the
-same world, entry, battle and opening selections and retain the same byte-identity checks. Baking
-every bank inline risks the limit and enlarges the upfront JSON allocation. Raising the limit
-increases that allocation. A general asset registry and extra operator selections add maintenance
-with no need from the first rollout. Keep later actor/UI variants inline only while measured
+The [world reader](../../src/Sf2.Remake.Content/Scenarios/PrivateExplorationReader.cs)
+retains its 128 MiB limit. The closed-package collector now includes each declared terrain file
+alongside encounter paths, external WAVs and named entry PNGs. Private Content opens each
+declared bank during world admission and passes its checked immutable rasters to the existing
+map model. A bank contains exactly `map`, `hdBlocks` and optional `hdBlockContexts`. Paths use
+package-relative JSON names with slash-separated components. Links, absolute paths, empty or
+traversal components and mixed inline/companion declarations are rejected. A missing declaration
+selects the ordinary inline/fallback behavior. The L1 producer preserves a selected companion's
+path when replacing its bank. The earlier painted producer recognizes both forms as already mounted.
+See the [package and native comparison](asset-inventory.md#map3-terrain-companion-2174) for the
+8 MiB bank bound, first Apply timing and handle lifetime. Keep later actor/UI variants inline only while measured
 world size has margin. Review any further placement change as a separate interface decision.
 
 ## Sample and budgets
@@ -303,17 +306,13 @@ selections independently of art coverage.
 
 ## Implementation order and acceptance
 
-The following are proposed downstream tickets. Main-gate assigns one writer per shared path and
+The following stages remain for downstream tickets. Main-gate assigns one writer per shared path and
 selects the accepted package at dispatch. Each ticket owns the listed paths and its matching
 probe or design paragraph. Expand an ownership list only after checking the actual caller chain.
 The `asset-inventory.md` trace receives consumer status after observed admission and use.
 
-1. **Map bank transport, then Map4 pilot.** Transport owns
-   `src/sf2tool/remake_command_menu.py`, `src/sf2tool/remake_private_package.py` and
-   `remake/src/Sf2.Remake.Content/Scenarios/ExplorationAssetReader.cs`. Use a small authored bank
-   to check old inline, companion, missing/corrupt, invalid reference and mixed declaration cases
-   at actual private admission. Preserve world size limit and ordinary selectors. The Map4 pilot
-   then owns `src/sf2tool/remake_map3_ramp.py`, `remake/game/src/Exploration/ExplorationPresentation.cs`
+1. **Map4 pilot.** [Map3 transport](asset-inventory.md#map3-terrain-companion-2174) is implemented.
+   The next pilot owns `src/sf2tool/remake_map3_ramp.py`, `remake/game/src/Exploration/ExplorationPresentation.cs`
    if the live lookup needs a correction, and `remake/game/probes/engine_map_art_observation.gd`.
    Compare Map3's accepted pixels and map-specific Map4 initial, each scripted copy and F624
    reconstruction to independently filtered planes. Drive the [#2167 route](../application/pre-voyage-campaign.md#castle-to-quake-handoff-from-a-player-save-2167)

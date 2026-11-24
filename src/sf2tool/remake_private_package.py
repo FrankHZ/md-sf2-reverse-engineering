@@ -8,6 +8,7 @@ import filecmp
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import wave
@@ -20,7 +21,7 @@ from sf2tool.remake_asset_build import ACCEPTED_UPSTREAM_COMMIT, _scale_rgba_nea
 from sf2tool.remake_attack_spell_mount import mount_attack_spells
 from sf2tool.remake_authored_audio import is_authored_defeat
 from sf2tool.remake_battle_scene_content import compose, sprite_layout
-from sf2tool.remake_command_menu import world_dependencies
+from sf2tool.remake_command_menu import world_dependencies, write_json
 from sf2tool.remake_exploration_content import _selected_growth, checked_canonical, map_compiler
 from sf2tool.remake_exploration_maps import compile_maps
 from sf2tool.remake_exploration_programs import OriginalPrograms
@@ -882,6 +883,36 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         dest.rename(destination)
 
 
+def write_hd_terrain(package: Path, visual: dict, relative: str) -> None:
+    """Write the selected world-relative bank in a fresh staged package."""
+    bank = {"map": visual["map"], "hdBlocks": visual.pop("hdBlocks")}
+    if "hdBlockContexts" in visual:
+        bank["hdBlockContexts"] = visual.pop("hdBlockContexts")
+    path = package / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8") as stream:
+        json.dump(bank, stream, separators=(",", ":"), ensure_ascii=False)
+    if path.stat().st_size > 8 * 1024 * 1024:
+        raise ValueError("HD terrain exceeds the 8 MiB reader limit")
+    visual["hdTerrainFile"] = relative
+
+
+def externalize_hd_terrain(package: Path, map_id: str) -> None:
+    """Move an existing inline bank in the staged copy without regenerating its rasters."""
+    if not re.fullmatch(r"[a-z][a-z0-9-]{0,63}", map_id):
+        raise ValueError("invalid map ID")
+    world = package / "world.json"
+    document = read_json(world)
+    matches = [v for v in document["world"]["presentation"]["maps"] if v["map"] == map_id]
+    if len(matches) != 1 or "hdBlocks" not in matches[0] or "hdTerrainFile" in matches[0]:
+        raise ValueError("select one map with an inline HD bank")
+    visual = matches[0]
+    write_hd_terrain(package, visual, f"hd/terrain/{map_id}.json")
+    write_json(world, document)
+    if world.stat().st_size > 128 * 1024 * 1024:
+        raise ValueError("world exceeds the private reader limit")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("world", "scene", "entry", "opening-inputs", "destination"):
@@ -889,7 +920,14 @@ def main() -> None:
     parser.add_argument(
         "--check", action="store_true", help="Compare existing output byte for byte"
     )
+    parser.add_argument(
+        "--externalize-hd-terrain",
+        metavar="MAP",
+        help="Move one inline map bank into the new package",
+    )
     args = parser.parse_args()
+    if args.check and args.externalize_hd_terrain is not None:
+        parser.error("--externalize-hd-terrain requires a fresh copy")
     destination = private_output(args.destination)
     if args.check != destination.is_dir() or (destination.exists() and not args.check):
         parser.error("select an existing directory for --check or a fresh destination for copying")
@@ -908,6 +946,15 @@ def main() -> None:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source, target)
             verify(files, candidate)
+            if args.externalize_hd_terrain is not None:
+                externalize_hd_terrain(candidate, args.externalize_hd_terrain)
+                files = package_files(
+                    candidate / "world.json",
+                    candidate / "main-scenes.json",
+                    candidate / "entry/entry.json",
+                    candidate / "opening-inputs",
+                )
+                size = sum(path.stat().st_size for path in files.values())
             candidate.rename(destination)
     print(json.dumps({"files": len(files), "bytes": size, "checked": args.check}))
 

@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Content.Scenarios;
 
-// Bounded services-world admission reproduction, not a general package copier.
+// Bounded private world admission observations.
 var watch = Stopwatch.StartNew();
 int exitCode = 1;
 long scratchBytes = 0;
@@ -14,25 +14,32 @@ try
     if (args is ["--help"])
     {
         Console.WriteLine("--repository <checkout> --package <services-package> --scratch <new-local-directory>");
+        Console.WriteLine("--repository <checkout> --hd-terrain <fresh-complete-package-copy-under-local>");
         Console.WriteLine("Package and scratch paths are relative to repository; repository is relative to cwd.");
         exitCode = 0;
         return 0;
     }
-    if (args.Length != 6 || args[0] != "--repository" || args[2] != "--package" || args[4] != "--scratch")
+    bool hdTerrain = args is ["--repository", _, "--hd-terrain", _];
+    if (!hdTerrain && args is not ["--repository", _, "--package", _, "--scratch", _])
         throw new ArgumentException("usage: --repository <checkout> --package <services-package> --scratch <new-local-directory>");
     string repository = Path.GetFullPath(args[1]);
     if (!Path.Exists(Path.Combine(repository, ".git")) ||
         !File.Exists(Path.Combine(repository, "remake/tools/Sf2.Remake.PrivateAdmission/Sf2.Remake.PrivateAdmission.csproj")))
         throw new ArgumentException("repository must be a checkout containing this maintained tool");
     string package = Path.GetFullPath(args[3], repository);
-    string scratch = Path.GetFullPath(args[5], repository);
+    string scratch = hdTerrain ? package : Path.GetFullPath(args[5], repository);
     string local = Path.Combine(repository, "local");
-    if (!Within(scratch, local) || Within(scratch, package) || Within(package, scratch) || scratch == package)
+    if (!Within(scratch, local) || !hdTerrain && (Within(scratch, package) || Within(package, scratch) || scratch == package))
         throw new ArgumentException("scratch must be beneath repository/local and separate from the input package");
     // A local-looking junction must not redirect writes into shared inputs or another checkout.
     for (var ancestor = new DirectoryInfo(scratch); ancestor is not null; ancestor = ancestor.Parent)
         if (ancestor.Exists && (ancestor.Attributes & FileAttributes.ReparsePoint) != 0)
             throw new ArgumentException("scratch ancestors must not be links or junctions");
+    if (hdTerrain)
+    {
+        scratchBytes = HdTerrainObservation.Run(package);
+        return exitCode = 0;
+    }
     if (Path.Exists(scratch)) throw new ArgumentException("scratch must be a fresh, nonexistent directory");
 
     string world = Path.Combine(package, "world.json");

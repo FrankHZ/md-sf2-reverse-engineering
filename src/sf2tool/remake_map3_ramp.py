@@ -18,7 +18,7 @@ from PIL import Image
 
 from sf2tool.remake_command_menu import world_dependencies, write_json
 from sf2tool.remake_map3_hd import NEAREST, block_images, comparison, compose
-from sf2tool.remake_private_package import package_files, private_output
+from sf2tool.remake_private_package import package_files, private_output, write_hd_terrain
 
 GFX_COMMIT = "172662709b31cb296b55f51894754ce810c30f6c"
 
@@ -214,6 +214,10 @@ def build(world, scene, out, algorithms, files, review):
         write_review(map_def, originals, review)
 
     out.mkdir(parents=True, exist_ok=True)
+    if "hdTerrainFile" in visual:
+        relative = visual["hdTerrainFile"]
+        del files[Path(relative)]  # Replace the selected bank in the staged output.
+        write_hd_terrain(out, visual, relative)
     write_json(out / "world.json", document)
     if (out / "world.json").stat().st_size > 128 * 1024 * 1024:
         raise ValueError("ramp world exceeds the private document limit")
