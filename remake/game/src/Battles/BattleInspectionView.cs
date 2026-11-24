@@ -25,7 +25,7 @@ internal sealed partial class BattleInspectionView : Control
     private readonly Button _back = new() { Name = "Back", FocusMode = FocusModeEnum.None,
         SizeFlagsVertical = SizeFlags.ShrinkCenter, MouseFilter = MouseFilterEnum.Ignore };
     private readonly BattleOverviewView _overview = new() { Name = "Overview" };
-    private readonly BattleMemberListView _memberList = new() { Name = "MemberList" };
+    private readonly MemberPageView _memberPage = new() { Name = "Members" };
     private BattleMemberSnapshot? _members;
     private readonly BattleInspectionOptions _options = new();
     private readonly BattleTerrainPanel _terrainPanel = new() { Name = "TerrainPanel" };
@@ -49,14 +49,18 @@ internal sealed partial class BattleInspectionView : Control
     internal string Page => _page;
     internal Action? RequestSpeed { get; set; }
     internal Action? RequestQuit { get; set; }
-    internal void ConfigureIcons(IdentityIcons icons, Sf2.Remake.Application.Content.Scenarios.ScenarioDefinition definition) =>
+    internal void ConfigureIcons(IdentityIcons icons, Sf2.Remake.Application.Content.Scenarios.ScenarioDefinition definition)
+    {
         _details.ConfigureIcons(icons, definition);
+        _memberPage.Details.ConfigureIcons(icons, definition);
+    }
 
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Ignore;
         Theme = StoryTheme.Create(); ZIndex = 90;
-        AddChild(_details); AddChild(_overview); AddChild(_memberList); AddChild(_options); AddChild(_hover); AddChild(_terrainPanel);
+        AddChild(_details); AddChild(_overview); AddChild(_memberPage);
+        _memberPage.Back = Return; AddChild(_options); AddChild(_hover); AddChild(_terrainPanel);
         AddChild(_footer);
         var instructions = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
         instructions.AddThemeConstantOverride("separation", 16);
@@ -71,7 +75,7 @@ internal sealed partial class BattleInspectionView : Control
     }
     public override void _EnterTree()
     { GetWindow().MouseExited += StopEdge; GetWindow().FocusExited += StopEdge; }
-    internal void SuspendPointer() { StopEdge(); _pointer.Suspend(); _options.Suspend(); }
+    internal void SuspendPointer() { StopEdge(); _pointer.Suspend(); _options.Suspend(); _memberPage.Suspend(); }
     public override void _Notification(int what)
     {
         bool hidden = what == NotificationVisibilityChanged && !IsVisibleInTree();
@@ -86,7 +90,7 @@ internal sealed partial class BattleInspectionView : Control
         if (!query.Available) return false;
         _session = session; _input = input; _map = map; _snapshot = query;
         _cursor = query.Units.Single(u => u.Actor == query.ActiveActor).Position;
-        _pointer.Suspend(); _page = "Cursor"; _unit = null; _land = null; _members = null; _optionIndex = 0; _memberList.Roster.Reset(); Show(); Project(); return true;
+        _pointer.Suspend(); _page = "Cursor"; _unit = null; _land = null; _members = null; _optionIndex = 0; _memberPage.Reset(); Show(); Project(); return true;
     }
     internal void Close()
     {
@@ -107,7 +111,13 @@ internal sealed partial class BattleInspectionView : Control
         if (!Active) return;
         StopEdge(); _pointer.Cancel(); _pointerFocus = false;
         bool open = action is GameAction.Attack or GameAction.Confirm;
-        bool details = _page is "Full" or "MemberFull";
+        if (_page == "Members")
+        {
+            _memberPage.Handle(action);
+            Project();
+            return;
+        }
+        bool details = _page == "Full";
         if (action == GameAction.Cancel || details && open)
         {
             Return();
@@ -132,14 +142,8 @@ internal sealed partial class BattleInspectionView : Control
                 _pointer.Suspend();
                 if (_optionIndex == 2) { RequestSpeed?.Invoke(); return; }
                 if (_optionIndex == 3) { RequestQuit?.Invoke(); return; }
-                _page = _optionIndex == 1 ? "Map" : "Members"; _knownIndex = 0; _memberList.Roster.Reset();
+                _page = _optionIndex == 1 ? "Map" : "Members"; _knownIndex = 0; _memberPage.Reset();
             }
-        }
-        else if (_page == "Members")
-        {
-            if (action is GameAction.Up or GameAction.Down)
-                _memberList.Roster.Select(_memberList.Roster.Index + (action == GameAction.Up ? -1 : 1));
-            else if (open) OpenMemberDetails();
         }
         else if (open)
         {
@@ -165,29 +169,24 @@ internal sealed partial class BattleInspectionView : Control
     private void Return()
     {
         if (_page == "Cursor") { Close(); return; }
-        _unit = null; _land = null;
+        _unit = null; _land = null; _members = null;
         _page = _page switch
         {
-            "MemberFull" => "Members",
             "Map" or "Members" => "Options",
             _ => "Cursor",
         };
         Project();
     }
 
-    private void OpenMemberDetails()
-    {
-        if (_memberList.Roster.Actor is not { } actor) return;
-        var query = _session!.QueryBattleMembers(_snapshot!.SessionId, _snapshot.Revision, actor);
-        if (!query.Available) { Close(); return; }
-        if (query.Unit is not { } detail) return;
-        _unit = detail; _page = "MemberFull"; _land = null;
-        _details.FocusPane = 1; _details.ResetReading();
-    }
-
     internal void HandlePointer(InputEvent input)
     {
         if (input is not InputEventMouse mouse) return;
+        if (_page == "Members")
+        {
+            _memberPage.HandlePointer(input);
+            Project();
+            return;
+        }
         if (mouse is InputEventMouseButton { ButtonIndex: MouseButton.Right } right)
         {
             StopEdge();
@@ -220,8 +219,7 @@ internal sealed partial class BattleInspectionView : Control
             _pointer.Cancel();
             if (!button.Pressed) return;
             int step = button.ButtonIndex == MouseButton.WheelUp ? -72 : 72;
-            if (_page is "Full" or "MemberFull") _details.Wheel(point, step);
-            if (_page == "Members") _memberList.Roster.Wheel(point, button.ButtonIndex == MouseButton.WheelUp ? -112 : 112);
+            if (_page == "Full") _details.Wheel(point, step);
             return;
         }
 
@@ -234,23 +232,15 @@ internal sealed partial class BattleInspectionView : Control
                 { index = option; id = "option:" + option; rect = _options.HitRect(option); }
             else if (_page == "Map" && _overview.Hit(point) is >= 0 and var known)
                 { index = known; id = "unit:" + known; rect = _overview.GetGlobalRect(); }
-            else if (_page == "Members")
-                (index, id, rect) = _memberList.Roster.Hit(point);
         }
         string? clicked = _pointer.Read(button, id, rect,
-            (_page, _snapshot!.SessionId, _snapshot.Revision, _memberList.Roster.Actor, _memberList.Roster.ScrollVertical));
+            (_page, _snapshot!.SessionId, _snapshot.Revision));
         if (clicked is null) return;
         if (clicked == "back") Handle(GameAction.Cancel);
         else if (_page == "Options") { _optionIndex = index; Handle(GameAction.Confirm); }
         else if (_page == "Map")
         {
             _cursor = _snapshot.Units[index].Position; _page = "Cursor"; _pointerFocus = false; Project();
-        }
-        else if (_page == "Members")
-        {
-            _memberList.Roster.Select(index, reveal: false);
-            OpenMemberDetails();
-            Project();
         }
     }
 
@@ -268,7 +258,8 @@ internal sealed partial class BattleInspectionView : Control
         _pointer.ReleaseIfNeutral();
         _options.Visible = _page == "Options";
         var size = GetViewportRect().Size;
-        _details.Visible = _page is "Full" or "MemberFull"; _memberList.Visible = _page == "Members"; _overview.Visible = _page == "Map";
+        _footer.Visible = _page != "Members";
+        _details.Visible = _page == "Full"; _memberPage.Visible = _page == "Members"; _overview.Visible = _page == "Map";
         _terrainPanel.Visible = _page == "Cursor";
         if (_terrainPanel.Visible) PresentHover();
         else _hover.Hide();
@@ -279,7 +270,7 @@ internal sealed partial class BattleInspectionView : Control
         {
             string name = DisplayNames.InspectionName(unit.Ally, unit.NameIndex, unit.Name, unit.CustomName);
             _details.Size = new(Mathf.Min(1000, size.X - 64), Mathf.Min(860, size.Y - 192));
-            _details.Position = (size - _details.Size) / 2 - new Vector2(0, 36); _details.Present(unit, name);
+            _details.Position = (size - _details.Size) / 2 - new Vector2(0, 36); _details.PresentBattle(unit, name);
             message = GameText.Get("battle.inspect.detail-help", _input.CompactHint(GameAction.Target), up, down);
         }
         else if (_page == "Options")
@@ -289,12 +280,8 @@ internal sealed partial class BattleInspectionView : Control
         }
         else if (_page == "Members")
         {
-            _members = _session!.QueryBattleMembers(_snapshot.SessionId, _snapshot.Revision);
-            if (!_members.Available) { Close(); return; }
-            _memberList.Size = new(Mathf.Min(820, size.X - 64), Mathf.Min(800, size.Y - 192));
-            _memberList.Position = (size - _memberList.Size) / 2 - new Vector2(0, 36);
-            _memberList.Present(_members, _map, _input.Settings.GraphicsMode == "hd");
-            message = GameText.Get("battle.member.help", up, down, a, c);
+            PresentMembers();
+            return;
         }
         else if (_page == "Map")
         {
@@ -309,13 +296,39 @@ internal sealed partial class BattleInspectionView : Control
         }
         if (_page == "Options") _options.Present(_input, _optionIndex, available: _optionsError is null ? null : [false, false, false, false]);
         _hint.Text = message;
-        _back.Text = (_page is "Full" or "MemberFull" ? $"{a}/{c}/{b}" : b)
+        _back.Text = (_page == "Full" ? $"{a}/{c}/{b}" : b)
             + " · " + GameText.Get(_page == "Cursor" ? "battle.inspect.return-movement" : "battle.back");
-        _back.Visible = _page is "Full" or "MemberFull" or "Cursor";
+        _back.Visible = _page is "Full" or "Cursor";
         if (!_back.Visible) _hint.Text += "\n" + _back.Text;
         _footer.Size = new(Mathf.Min(1040, size.X - 2 * StoryTheme.GameplayInset), 100);
         _footer.Position = new((size.X - _footer.Size.X) / 2, size.Y - StoryTheme.GameplayInset - _footer.Size.Y);
     }
+    private void PresentMembers()
+    {
+        var snapshot = _snapshot!;
+        var session = _session!;
+        if (_members?.SessionId != snapshot.SessionId || _members.Revision != snapshot.Revision)
+            _members = session.QueryBattleMembers(snapshot.SessionId, snapshot.Revision);
+        if (!_members.Available) { Close(); return; }
+        var entries = _members.Members.Select(member => new MemberRosterEntry(member.Actor,
+            DisplayNames.InspectionName(true, member.NameIndex, member.Name, member.CustomName),
+            !member.Available ? GameText.Get("party.value-unavailable") : member.Defeated ? GameText.Get("party.defeated") :
+                !member.Deployed ? GameText.Get("party.absent") : "",
+            member.Available, _map.RosterPortrait(member.Actor, _input.Settings.GraphicsMode == "hd"))).ToArray();
+        _memberPage.PresentRoster(entries, GameText.Get("battle.member.title"), _input);
+        var selected = _memberPage.Actor;
+        if (selected is not null && _members.Unit?.Actor != selected &&
+            (entries[_memberPage.Index].Available || _members.Unit is not null))
+            _members = session.QueryBattleMembers(snapshot.SessionId, snapshot.Revision, selected);
+        string name = entries.Length == 0 ? GameText.Get("battle.member.empty") : entries[_memberPage.Index].Name;
+        if (_members.Unit is { } unit) _memberPage.Details.PresentBattle(unit, name, session, entries[_memberPage.Index].Condition);
+        else _memberPage.Details.Present(null, name, session);
+        string hint = GameText.Get("battle.member.help", _input.CompactHint(GameAction.Up), _input.CompactHint(GameAction.Down),
+            _memberPage.FocusLabel, _input.CompactHint(GameAction.Target), _input.CompactHint(GameAction.Cancel),
+            _input.CompactHint(GameAction.Left), _input.CompactHint(GameAction.Right));
+        _memberPage.PresentFooter(hint, GameText.Get("battle.back"));
+    }
+
     private BattleMovementRange? CursorRange(ActorRef? actor)
     {
         if (actor is not { } unit)
@@ -336,8 +349,8 @@ internal sealed partial class BattleInspectionView : Control
     {
         active = Active, page = Active ? _page : null, cursor = Active ? _cursor : null,
         sessionId = _snapshot?.SessionId, revision = _snapshot?.Revision, actor = _snapshot?.ActiveActor?.Value,
-        options = _options.Observe(), optionsError = _optionsError, optionIndex = _optionIndex, memberIndex = _memberList.Roster.Index, members = _members?.Members,
-        roster = _memberList.IsVisibleInTree() ? _memberList.Observe() : null, unit = _unit, land = _land, units = _snapshot?.Units, terrain = _snapshot?.Terrain, hint = _hint.Text,
+        options = _options.Observe(), optionsError = _optionsError, optionIndex = _optionIndex, memberIndex = _memberPage.Index, members = _members?.Members,
+        roster = _memberPage.IsVisibleInTree() ? _memberPage.Observe(true) : null, unit = _page == "Members" ? _members?.Unit : _unit, land = _land, units = _snapshot?.Units, terrain = _snapshot?.Terrain, hint = _page == "Members" ? _memberPage.Hint : _hint.Text,
         footer = new { visible = _footer.IsVisibleInTree(), rect = BattleMapViewport.Rectangle(_footer.GetGlobalRect()),
             hintRect = BattleMapViewport.Rectangle(_hint.GetGlobalRect()), back = _back.Text, backVisible = _back.IsVisibleInTree(),
             backRect = BattleMapViewport.Rectangle(_back.GetGlobalRect()) },

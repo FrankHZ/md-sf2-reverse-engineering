@@ -15,8 +15,7 @@ func open_members() -> bool:
     await act("confirm")
     if not await inspect_page("Options"): return false
     if not check(("地图" if chinese else "Map") in state().inspection.options.commandList.rows[1].label, "Map remains an offered option"): return false
-    await act("up")
-    if not check(state().inspection.optionIndex == 0, "Up chooses Member"): return false
+    if not check(state().inspection.optionIndex == 0, "Member is the initial option"): return false
     await send_action("confirm", true)
     await frames(10)
     if not await inspect_page("Members"): return false
@@ -31,29 +30,26 @@ func select_member(actor: String) -> bool:
         await act("down")
     return fail("Admitted member not reachable: " + actor)
 
-func detail(actor: String, close: String) -> bool:
+func detail(actor: String) -> bool:
     if not await select_member(actor): return false
-    var selected: int = state().inspection.memberIndex
-    await act("attack")
-    if not await inspect_page("MemberFull"): return false
-    var s := sample("member-detail-" + actor + "-" + close)
+    var s := sample("member-detail-" + actor)
     var unit: Dictionary = s.inspection.unit
     var live: Dictionary = s.actors.filter(func(a): return a.id == actor)[0]
-    if not check(unit.Actor.Value == actor and unit.Hp == live.hp and unit.Mp == live.mp and unit.Attack == live.attack,
+    if not check(unit.Ally and unit.Actor.Value == actor and unit.Hp == live.hp and unit.Mp == live.mp and unit.Attack == live.attack,
             "Shared detail reads selected live battle scalars"): return false
-    if not check(s.inspection.full.stats.size() == 6 and s.inspection.full.items.entries.size() == 4
-            and s.inspection.full.stats.any(func(row): return row.label == ("等级" if chinese else "LEVEL")),
+    if not check(s.inspection.roster.layout.stats.size() == 6 and s.inspection.roster.layout.items.entries.size() == 4
+            and s.inspection.roster.layout.stats.any(func(row): return row.label == ("等级" if chinese else "LEVEL")),
             "Actual full-detail widgets show localized stats and loadout"): return false
     await act("target"); await act("down")
-    await send_action(close, true); await frames(8)
-    if not await inspect_page("Members"): return false
-    if not check(state().inspection.memberIndex == selected, "Sheet returns to selected roster row, including active actor"): return false
-    await send_action(close, false)
+    await act("target"); await act("down")
+    if not check(state().inspection.roster.layout.itemSlot == 1 and state().inspection.unit.Actor.Value == actor,
+            "Reading slot two retains the selected member"): return false
+    await act("target")
     return true
 
 func roster_pointer(rect: Dictionary, button: MouseButton, pressed: bool) -> void:
     var event := InputEventMouseButton.new()
-    event.position = Vector2(rect.x + rect.width / 2, rect.y + rect.height / 2)
+    event.position = root.get_stretch_transform() * Vector2(rect.x + rect.width / 2, rect.y + rect.height / 2)
     event.global_position = event.position
     event.button_index = button
     event.pressed = pressed
@@ -81,7 +77,7 @@ func authored_roster() -> bool:
     var roster: Dictionary = inspection.roster
     var rows: Array = roster.rows
     var large := case_name == "member-large"
-    if not check(rows.size() == (14 if large else 2) and roster.scroll == 0 and rows[0].focused
+    if not check(rows.size() == (14 if large else 2) and roster.rosterScroll == 0 and rows[0].focused
             and rows.map(func(row): return row.actor) == inspection.members.map(func(member): return member.Actor.Value)
             and rows.all(func(row): return not row.portrait and row.available),
             "Shared rows preserve battle order, focus and optional portrait space"): return false
@@ -89,34 +85,29 @@ func authored_roster() -> bool:
         if not check(rows[0].lines > 1 and rows[0].name.length() >= 60
                 and rows[1].condition == "Defeated" and rows[2].condition == "Absent",
                 "Long identity wraps and retained conditions differ"): return false
-        await act("confirm")
-        if not await inspect_page("MemberFull"): return false
-        var details := view.find_child("Details", true, false)
+        var details := view.find_child("MemberDetails", true, false)
         var name_label := details.get_node("MemberName") as Label
         var class_label := details.get_node("Class") as Label
         if not check(name_label.text == rows[0].name and name_label.get_visible_line_count() == name_label.get_line_count()
                 and name_label.get_global_rect().end.y <= class_label.get_global_rect().position.y,
                 "The long name remains readable on the full sheet"): return false
-        await act("cancel")
-        if not await inspect_page("Members"): return false
         for index in [1, 2]:
             var rect: Dictionary = state().inspection.roster.rows[index].rect
+            var previous: int = state().inspection.memberIndex
             await roster_pointer(rect, MOUSE_BUTTON_LEFT, false)
-            if not check(state().inspection.page == "Members", "Orphan release leaves roster open"): return false
+            if not check(state().inspection.memberIndex == previous, "Orphan release cannot switch member"): return false
             await roster_pointer(rect, MOUSE_BUTTON_LEFT, true)
             await roster_pointer(rect, MOUSE_BUTTON_LEFT, false)
-            if not await inspect_page("MemberFull"): return false
+            if not await inspect_page("Members"): return false
             var selected: Dictionary = sample("retained-detail-" + str(index)).inspection
             if not check(selected.unit.Actor.Value == rows[index].actor and selected.unit.Position == null
-                    and (selected.unit.Hp == 0) == (index == 1) and selected.full.items.entries.size() == 4
-                    and not selected.full.has("preparation"),
+                    and (selected.unit.Hp == 0) == (index == 1) and selected.roster.layout.items.entries.size() == 4
+                    and not selected.roster.prepareVisible and selected.roster.preparation == null,
                     "Defeated and absent members open ordinary read-only details"): return false
-            await act("cancel")
-            if not await inspect_page("Members"): return false
-            if not check(state().inspection.roster.rows[index].focused, "Pointer selection survives Back"): return false
-        await roster_pointer(roster.viewport, MOUSE_BUTTON_WHEEL_DOWN, true)
-        await roster_pointer(roster.viewport, MOUSE_BUTTON_WHEEL_DOWN, false)
-        if not check(state().inspection.roster.scroll > 0 and state().inspection.roster.rows[2].focused,
+            if not check(selected.roster.rows[index].focused, "Pointer focuses the selected row"): return false
+        await roster_pointer(roster.rosterRect, MOUSE_BUTTON_WHEEL_DOWN, true)
+        await roster_pointer(roster.rosterRect, MOUSE_BUTTON_WHEEL_DOWN, false)
+        if not check(state().inspection.roster.rosterScroll > 0 and state().inspection.roster.rows[2].focused,
                 "Wheel moves the viewport while preserving focus"): return false
         for index in range(3, rows.size()): await act("down")
     else:
@@ -124,23 +115,28 @@ func authored_roster() -> bool:
     inspection = sample("roster-last-focused").inspection
     roster = inspection.roster
     var last: Dictionary = roster.rows[-1]
-    if not check(last.focused and last.rect.y >= roster.viewport.y and
-            last.rect.y + last.rect.height <= roster.viewport.y + roster.viewport.height and
-            (roster.scroll > 0) == large, "Navigation reveals the last row"): return false
+    if not check(last.focused and last.rect.y >= roster.rosterRect.y and
+            last.rect.y + last.rect.height <= roster.rosterRect.y + roster.rosterRect.height and
+            (roster.rosterScroll > 0) == large, "Navigation reveals the last row"): return false
+    if not check(inspection.unit.Actor.Value == last.actor and inspection.roster.card.visible,
+            "Keyboard selection presents details beside the roster"): return false
+    var slot: Dictionary = roster.layout.items.entries[3].rowRect
+    await roster_pointer(slot, MOUSE_BUTTON_LEFT, true)
+    await roster_pointer(slot, MOUSE_BUTTON_LEFT, false)
     await act("confirm")
-    if not await inspect_page("MemberFull"): return false
-    if not check(state().inspection.unit.Actor.Value == last.actor, "Keyboard opens the focused member"): return false
-    var back: Dictionary = state().inspection.footer.backRect
-    await footer_mouse(back,MOUSE_BUTTON_LEFT,true)
-    await act("cancel")
-    if not await inspect_page("Members"): return false
-    await roster_pointer(last.rect,MOUSE_BUTTON_LEFT,false)
-    if not await inspect_page("Members"): return false
-    var restored: Dictionary = sample("roster-detail-back").inspection.roster
-    if not check(restored.scroll == roster.scroll and restored.rows[-1].actor == last.actor and restored.rows[-1].focused,
-            "Back restores exact scroll and actor focus"): return false
+    var reading: Dictionary = state().inspection.roster
+    if not check(reading.layout.itemSlot == 3 and reading.index == roster.index and reading.rosterScroll == roster.rosterScroll
+            and not reading.prepareVisible and reading.preparation == null, "Slot four can be read without entering a command"): return false
+    if large:
+        if not check(not reading.layout.description.text.is_empty(), "Filled fourth slot describes its effect"): return false
+        await act("down"); await act("down")
+        if not check(state().inspection.roster.layout.itemSlot == 1 and state().inspection.roster.layout.description.text.is_empty(),
+                "Empty slot clears the preceding item's description"): return false
     if not check(not board().movementRange.visible, "Member pages clear inspected movement"): return false
-    await act("cancel"); await act("cancel")
+    await roster_pointer(roster.closeRect, MOUSE_BUTTON_LEFT, true)
+    await roster_pointer(roster.closeRect, MOUSE_BUTTON_LEFT, false)
+    if not await inspect_page("Options"): return false
+    await act("cancel")
     if not await inspect_page("Cursor"): return false
     await act("cancel")
     return check(not state().inspection.active and state().failure == null and state().scene.error == null
@@ -186,7 +182,9 @@ func field_portraits() -> bool:
     var second := field_portrait(1, "field-second")
     if not check(second != 0 and second != first, "Different member selects different art"): return false
     await act("confirm")
-    if not check(state().partyStatus.preparation.visible, "Prepare opened on the selected member"): return false
+    var prepare: Dictionary = state().partyStatus.preparation
+    if not check(prepare.visible and prepare.stage == "actions" and prepare.failure == null,
+            "Prepare offers actions on the selected member"): return false
     await act("cancel")
     if not check(field_portrait(1, "field-prepare-back") == second, "Prepare Back restores the live selected texture"): return false
     await act("cancel")
@@ -200,28 +198,46 @@ func battle_portraits() -> bool:
     if not await enter_battle(): return false
     var baseline := signature(state())
     if not await enter_roster(): return false
+    var first := sample("battle-roster-first").inspection as Dictionary
+    if first.unit.CustomName != null and not check(first.unit.CustomName == first.roster.rows[0].name
+            and first.unit.CustomName == first.roster.layout.name, "Roster and detail preserve the player name"): return false
     var battle_first := roster_portrait(0, "battle-first")
     if battle_first == null: return false
     await act("down")
     var battle_second := roster_portrait(1, "battle-second")
     if not check(battle_second != null and battle_second != battle_first, "Battle selection has distinct admitted portraits"): return false
     var selected: Dictionary = state().inspection
-    await act("confirm")
-    if not await inspect_page("MemberFull"): return false
-    if not check(state().inspection.unit.Actor.Value == selected.roster.rows[1].actor, "Battle detail selected the portrait row"): return false
-    await act("cancel")
-    if not await inspect_page("Members"): return false
-    if not check(state().inspection.roster.rows[1].focused and roster_portrait(1, "battle-detail-back") == battle_second,
-            "Battle detail Back restores focus and live art"): return false
+    if not check(selected.unit.Actor.Value == selected.roster.rows[1].actor, "Details match the selected row"): return false
+    var portrait := view.find_child("MemberPortrait", true, false) as TextureRect
+    if not check(portrait_texture(portrait, "battle-selected-summary") == battle_second, "Sheet borrows selected portrait"): return false
     await act("cancel")
     if not await inspect_page("Options"): return false
     await act("confirm")
     if not await inspect_page("Members"): return false
-    return check(roster_portrait(0, "battle-reopen") == battle_first and state().scene.error == null,
-        "Reopened battle Member uses live first-row art") and purity(baseline, "portrait route")
+    if not check(roster_portrait(0, "battle-reopen") == battle_first and state().scene.error == null,
+            "Reopened battle Member uses live first-row art") or not purity(baseline, "portrait route"): return false
+    return await remounted_command_menu()
+
+# The field-to-battle handoff reparents the command menu before this inspection.
+func remounted_command_menu() -> bool:
+    await act("cancel"); await act("cancel"); await act("cancel"); await act("confirm")
+    if not check(state().menu.page == "Main", "Remounted command menu opens"): return false
+    var row: Dictionary = state().menu.layout.commands[3].rect
+    var move := InputEventMouseMotion.new()
+    move.position = Vector2(row.x + row.width/2, row.y + row.height/2)
+    move.relative = Vector2(12, 8)
+    Input.parse_input_event(move); await frames(3)
+    if not check(state().menu.layout.commands[3].surfaceColor == "204c76", "Reparented row receives hover"): return false
+    await roster_pointer(row, MOUSE_BUTTON_LEFT, true)
+    if not check(state().menu.layout.commands[3].surfaceColor == "354c64", "Reparented row receives press"): return false
+    root.mouse_exited.emit(); await frames(2)
+    if not check(state().menu.layout.commands[3].surfaceColor == "102c50", "Window exit clears captured row"): return false
+    await roster_pointer(row, MOUSE_BUTTON_LEFT, false)
+    return check(state().menu.page == "Main", "Release after window exit cannot commit Stay")
 
 func run() -> void:
-    root.size = Vector2i(1920,1080)
+    if case_name == "member-large": root.size = Vector2i(1600,900)
+    else: root.size = Vector2i(1920,1080)
     host = load("res://Main.tscn").instantiate(); root.add_child(host); root.grab_focus()
     await frames(4); bind_events()
     if case_name in ["member-field-portraits", "member-battle-portraits"]:
@@ -247,25 +263,36 @@ func run() -> void:
     if not await enter_battle(): return
     var initial := state()
     var baseline := signature(initial)
+    if case_name == "member-empty":
+        if not await enter_roster(): return
+        var empty: Dictionary = sample("empty-member-page").inspection
+        if not check(empty.members.is_empty() and empty.unit == null and empty.roster.count == 0
+                and empty.roster.card.actor == null and not empty.roster.prepareVisible
+                and empty.roster.layout.name == "No battle members available.", "Empty roster explains its state"): return
+        await act("target"); await act("target"); await act("down"); await act("confirm")
+        if not check(state().inspection.roster.layout.itemSlot == null and state().inspection.roster.layout.description.text.is_empty(),
+                "Empty roster has no selectable slot or stale description"): return
+        await act("cancel")
+        if await inspect_page("Options") and purity(baseline, "empty roster"): finish(true)
+        return
     samples.append({"label":"initial-live-state", "signature":baseline})
     if not await open_members(): return
     var roster := sample("connected-member-roster")
     if not check(roster.inspection.members.size() >= 2 and roster.inspection.members.all(func(m): return m.Available),
             "Actual connected force list has admitted initialized members"): return
-    if not check(roster.inspection.members.all(func(m): return roster.inspection.units.any(func(u): return u.Actor.Value == m.Actor.Value and u.Ally)),
-            "Member contains allies only"): return
-    if not check(("战斗成员" if chinese else "Battle members") in roster.inspection.roster.text,
+    if not check(roster.inspection.members.all(func(m): return not m.Deployed or roster.inspection.units.any(func(u): return u.Actor.Value == m.Actor.Value and u.Ally)),
+            "Deployed member rows match disclosed allied markers"): return
+    if not check(("战斗成员" if chinese else "Battle members") in roster.inspection.roster.header,
             "Localized roster is actually projected"): return
-    for action in ["up", "down", "attack", "confirm", "cancel"]:
-        if not check(OS.get_keycode_string(events[action].keycode) in roster.inspection.hint + roster.inspection.footer.back, "Hints use installed binding: " + action): return
+    for action in ["up", "down", "target", "cancel"]:
+        if not check(OS.get_keycode_string(events[action].keycode) in roster.inspection.hint, "Hints use installed binding: " + action): return
     await act("up")
     if not check(state().inspection.memberIndex == roster.inspection.members.size()-1, "Roster wraps upward"): return
     await act("down")
     if not check(state().inspection.memberIndex == 0, "Roster wraps downward"): return
-    for close in ["cancel", "confirm", "attack"]:
-        if not await detail(initial.actor, close): return
+    if not await detail(initial.actor): return
     var other: String = roster.inspection.members.filter(func(m): return m.Actor.Value != initial.actor)[0].Actor.Value
-    if not await detail(other, "cancel"): return
+    if not await detail(other): return
     if not purity(baseline, "current/other sheets, selection, scrolling, held close"): return
     await act("menu"); await act("cancel")
     if not await inspect_page("Members"): return
@@ -273,7 +300,7 @@ func run() -> void:
     await act("cancel")
     if not await inspect_page("Options"): return
     if not check(state().inspection.optionIndex == 0, "Member caller retains option selection"): return
-    await act("left"); await act("confirm")
+    await act("down"); await act("confirm")
     if not await inspect_page("Map"): return
     await act("cancel")
     if not await inspect_page("Options"): return
@@ -286,10 +313,10 @@ func run() -> void:
     if not purity(baseline, "entire Options/Member/Map/cursor return"): return
     sample("same-actor-Movement")
     samples.append({"label":"final-live-state", "signature":signature(state())})
-    # An actual replacement host must not inherit MemberFull or its selected actor.
+    # An actual replacement host must not inherit the member page or its selected actor.
     if not await open_members(): return
-    await act("confirm")
-    if not await inspect_page("MemberFull"): return
+    await act("down")
+    if not await inspect_page("Members"): return
     root.remove_child(host); host.free(); await frames(2)
     host = load("res://Main.tscn").instantiate(); root.add_child(host); await frames(4)
     admitted = host.call("StartPreVoyageLocalizationObservation", OS.get_environment("SF2_INSPECTION_START"))

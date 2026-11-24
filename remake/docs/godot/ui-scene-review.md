@@ -327,10 +327,9 @@ action flow; it does not turn Party Status into a battle command sheet.
 
 The [Party agreement](presentation.md#party-details-agreement) and
 [field preparation owner](../application/opening-session-lifecycle.md#implemented-field-preparation)
-retain the detailed capabilities. The proposed
-[shared member presentation](battle-ui-composition.md#read-only-inspection-and-the-member-view)
-brings the battle roster to the same selection, scrolling and detail treatment while keeping
-Prepare with its field caller. Apply the same labeled-list treatment to Use/Give/Equip/Drop
+retain the detailed capabilities. F5 Members and F8 Inspect → empty ground → Member
+mount the [shared roster and detail page](battle-ui-composition.md#shared-member-page-2154).
+Prepare belongs to the field caller. Apply the same labeled-list treatment to Use/Give/Equip/Drop
 and the admitted item/recipient/return slots. Distinct copies of an item keep their slot identity
 when focus moves or Back restores a choice.
 
@@ -451,9 +450,9 @@ friendly Target and playback. Back restores the chosen level, slot or command.
 
 [#2080](battle-ui-composition.md#fresh-target-input-and-direct-stay) delivers fresh target input
 and direct Stay. [#2081](battle-ui-composition.md#read-only-inspection-and-the-member-view)
-delivers the inspection movement field. [#2082](battle-ui-composition.md#shared-member-roster-2082)
-delivers shared field and battle Member rows. The inspection footer contains the instructions. Cursor and details also place a Back button in that footer. Cursor keeps identity and vitals on the unit card and coordinates on the terrain panel.
-Cancel or a complete right-click returns to the caller. Cursor and detail pages also accept a complete left-click on their Back button. Details restore the same cursor or roster selection.
+delivers the inspection movement field. [#2154](battle-ui-composition.md#shared-member-page-2154)
+uses the shared field and battle Member page and its own Back target. The inspection footer contains the instructions. Cursor and details also place a Back button in that footer. Cursor keeps identity and vitals on the unit card and coordinates on the terrain panel.
+Cancel or a complete right-click returns to the caller. Cursor and detail pages also accept a complete left-click on their Back button. Board-unit details restore the same cursor. The member page returns to the Member option.
 [Reader, return and card observation](battle-ui-composition.md#shared-description-reading-and-inspection-return)
 
 The selected spell reader describes the chosen level on Battle Magic and field Prepare Magic.
@@ -467,7 +466,7 @@ battlefield. [Spell reader](battle-ui-composition.md#selected-spell-descriptions
 | --- | --- | --- |
 | Battle entry / before player control | Present the existing scene/intro dialogue and real entry status. No commands while the script owns play. | Long intro uses the story reader; existing Skip appears only when eligible. No new deployment or pre-battle equipment screen is inferred. Host cover preserves delivery. |
 | Movement | An acting card and quiet round support the shared cursor and movement field. The cursor follows the displayed actor through preview and undo. | Preserve actual range/refusal feedback; no invented path legality. Confirm opens actions. Current Cancel and movement-preview behavior remain session-owned. [Held directions](presentation.md#battle-directional-hold-and-mode-isolation-1615) repeat within Movement. |
-| Main action | Four labeled rows beneath the acting card. The footer shows the consequence or refusal. At a registered faced chest, the last row offers Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). | Disabled focus is inspectable and cannot commit. Left/Right reads long reasons in the fixed reader without moving focus. Back undoes the preview through the current Cancel contract. Choosing ordinary Stay commits once at the legal stop. [Battle input behavior](battle-ui-composition.md#fresh-target-input-and-direct-stay) |
+| Main action | Four deep-blue rows beneath the acting card each contain the command icon and label. The footer shows the consequence or refusal. At a registered faced chest, the last row offers Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). | Disabled focus is inspectable and cannot commit. Left/Right reads long reasons in the fixed reader without moving focus. Main Back resumes Movement at the legal preview. Range is still calculated from the turn origin. If equipment puts the preview beyond current MOV, Back delivers the existing return path. Choosing ordinary Stay commits once at the legal stop. [Battle input behavior](battle-ui-composition.md#fresh-target-input-and-direct-stay) |
 | Spell / item list | A scrollable list replaces Main beneath the acting card. Rows identify the actual spell level, MP cost or inventory slot, and the selected offer's reason or detail uses the footer. | Confirm enters an enabled offer. Back restores the same command without changing resources or RNG. |
 | Target / affected area | One cursor marks the eligible recipient. One field shows reach and affected cells. The recipient card replaces the acting card. Cycle, Confirm and Back use the footer. | An empty, defeated, wrong-side or out-of-range cell clears the cursor, recipient card and effect inset. Confirm cannot commit the old target. Back returns to the prior row or Main. |
 | Equipment / Give / Drop | Reuse the auxiliary presenter and advertised mapped shortcuts from action choice; show the actual candidate, owner/recipient or consequence in one reading panel. | No simultaneous unrelated equipment/item/spell stacks. Preserve read-before-confirm and cancellation. Product connected Equip/Give have separate [Content admission](../content/profiles-and-trust.md#connected-battle-give-admission); [Drop](../content/profiles-and-trust.md#connected-battle-discard-admission) binds its own finite free transaction. Controlled field-only equipment bindings remain immutable. This layout grants no new mouse coverage or transaction capability. |
@@ -512,13 +511,12 @@ The [battle interaction baseline](battle-interaction-baseline.md) records the or
 path and current cursor, details, Map, Member, Speed and Quit consumers. Empty-ground options
 use the same labeled command items with each option's original art. Identify the inspected unit and terrain beside the freely moved board cursor.
 The whole-board Map has room for its unit list and legend. Only disclosed unit/terrain facts
-appear. Movement Cancel finishes the real undo before inspection opens at the origin. Action-menu
-Cancel returns to Movement first. On another unit, closing details restores the cursor. Map returns
+appear. Movement Cancel finishes the real undo before inspection opens at the origin. Main Cancel resumes Movement at its legal preview. On another unit, closing details restores the cursor. Map returns
 to Options, then cursor. Subordinate pages hide the board cursor and retain its cell.
-`Member` restores its selected roster row. Battle Quit uses its existing save eligibility and return
+Member shares the field roster and sheet and returns directly to Options. Battle Quit uses its existing save eligibility and return
 flow. Cyan ally and red enemy fields show traversal and legal stops from the inspected unit's actual
 cell. It clears on empty ground, subordinate pages, host cover and exit.
-[Inspected movement and pending shared roster](battle-ui-composition.md#read-only-inspection-and-the-member-view)
+[Inspected movement and shared members](battle-ui-composition.md#read-only-inspection-and-the-member-view)
 
 ### Presentation, outcome and usable return
 

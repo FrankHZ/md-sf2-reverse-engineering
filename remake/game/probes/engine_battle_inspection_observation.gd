@@ -469,7 +469,7 @@ func visible_return(page: String, parent: String, resize := false) -> bool:
     var footer: Dictionary = inspection.footer
     var frame := Rect2(footer.rect.x,footer.rect.y,footer.rect.width,footer.rect.height)
     var button := Rect2(footer.backRect.x,footer.backRect.y,footer.backRect.width,footer.backRect.height)
-    var has_button := page in ["Cursor", "Full", "MemberFull"]
+    var has_button := page in ["Cursor", "Full"]
     if not check(inspection.page == page and footer.visible and root.get_visible_rect().encloses(frame) and
         footer.backVisible == has_button and (not has_button or frame.encloses(button) and button.has_area()),
         page+": return affordance matches the inspection page"): return false
@@ -529,10 +529,11 @@ func inspected_movement_range() -> bool:
     if not await inspect_page("Options") or not range_checkpoint("options", baseline, "None"): return false
     await act("confirm")
     if not await inspect_page("Members") or not range_checkpoint("members", baseline, "None"): return false
-    await act("confirm")
-    if not await inspect_page("MemberFull") or not range_checkpoint("member-details", baseline, "None"): return false
-    if not await visible_return("MemberFull","Members"): return false
-    if not await visible_return("Members","Options"): return false
+    var members: Dictionary = state().inspection.roster
+    if not check(members.card.visible and not members.prepareVisible, "Member details share the roster page"): return false
+    await footer_mouse(members.closeRect,MOUSE_BUTTON_LEFT,true)
+    await footer_mouse(members.closeRect,MOUSE_BUTTON_LEFT,false)
+    if not await inspect_page("Options"): return false
     await act("down"); await act("confirm")
     if not await inspect_page("Map") or not range_checkpoint("map", baseline, "None"): return false
     if not await visible_return("Map","Options"): return false

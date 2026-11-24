@@ -169,7 +169,9 @@ func source_layout(p: Dictionary) -> bool:
     if not check(stats.all(func(row):return row.labelRect.x == stats[0].labelRect.x) and l.hpRect.x == l.mpRect.x and l.hpRect.y+l.hpRect.height <= l.mpRect.y, "Field attributes align separately from paired vitals"): return false
     if not check(p.portraitRect.x >= l.rect.x and p.portraitRect.y+p.portraitRect.height < stats[0].labelRect.y and p.recordRect.y >= l.rect.y+l.rect.height and p.recordRect.y == p.goldRect.y, "Portrait remains in identity group; records/gold below sheet"): return false
     if not check(l.magic.rect.y == l.items.rect.y and l.magic.rect.x+l.magic.rect.width < l.items.rect.x and l.items.rect.x+l.items.rect.width <= l.rect.x+l.rect.width, "Magic and items are parallel columns"): return false
-    if not check(l.rect.y+l.rect.height <= 960 and l.magic.rect.y == stats[0].labelRect.y and l.items.rect.y+l.items.rect.height <=960, "Readable groups remain inside1080p frame"): return false
+    if not check(l.rect.y+l.rect.height <= 960 and l.magic.rect.y >= l.mpRect.y+l.mpRect.height
+            and stats[-1].valueRect.y+stats[-1].valueRect.height <= l.rect.y+l.rect.height
+            and l.items.rect.y+l.items.rect.height <= l.rect.y+l.rect.height, "Spell, attribute and inventory groups clear their headers and fit the sheet"): return false
     for value in p.recordValues:
         if not check(value.minimumWidth <= value.rect.width and value.rect.x+value.rect.width <= p.recordRect.x+p.recordRect.width-24, "Measured accounting value fits summary border"): return false
     for row in stats:

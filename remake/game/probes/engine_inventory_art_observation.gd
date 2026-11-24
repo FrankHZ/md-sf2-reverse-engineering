@@ -108,15 +108,13 @@ func battle() -> void:
         var inspect: Dictionary = state().inspection
         if not inspect.units.any(func(u): return u.Position.X == inspect.cursor.X and u.Position.Y == inspect.cursor.Y): break
         await key(KEY_RIGHT)
-    await key(KEY_ENTER); await key(KEY_UP); await key(KEY_ENTER); await key(KEY_ENTER); await frames(4)
-    check(state().inspection.page == "MemberFull", "ordinary battle Member sheet")
-    sheet(state().inspection.full, "battle-member")
+    await key(KEY_ENTER); await key(KEY_ENTER); await frames(4)
+    check(state().inspection.page == "Members", "ordinary battle Member sheet")
+    sheet(state().inspection.roster.layout, "battle-member")
     await key(KEY_TAB); await key(KEY_DOWN); await frames(4); record("battle-member-scrolled")
-    await key(back)
-    check(state().inspection.page == "Members", "sheet returns to same member list")
-    await key(KEY_DOWN); await key(KEY_ENTER); await frames(4)
-    sheet(state().inspection.full, "battle-member-next")
-    for step in 4: await key(back)
+    await key(KEY_RIGHT); await frames(4)
+    sheet(state().inspection.roster.layout, "battle-member-next")
+    for step in 3: await key(back)
     check(not state().inspection.active and state().stage == "Movement" and state().actor == initial.actor, "Member caller returns to same Movement")
     await key(KEY_ENTER); await key(KEY_G); await frames(4)
     if state().stage == "GiveItemChoice":

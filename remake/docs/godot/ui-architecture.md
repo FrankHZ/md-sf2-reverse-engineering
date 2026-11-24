@@ -63,13 +63,12 @@ directly, and Main Back resumes Movement at the current preview when it is still
 
 ### Inspection and field pages
 
-`BattleInspectionView` owns Cursor, direct Full, Options, Map, Members and MemberFull and their
-focus. A provisional move first returns through the real movement delivery before inspection can
-open. Direct Full returns to Cursor, MemberFull returns to the retained roster, Map/Members return
-to Options, and Cursor Cancel restores Movement. Inspection rejects stale session/revision/actor
+`BattleInspectionView` owns Cursor, direct Full, Options, Map and the read-only Members caller. A provisional move first returns through the real movement delivery before inspection can
+open. Direct Full returns to Cursor, Map and Members return to Options, and Cursor Cancel restores Movement. Inspection rejects stale session/revision/actor
 identity, with a specific refresh after a successful paused Save can publish music. In exploration,
 `ExplorationSessionView` owns field-menu admission, the active service/wait and step settling.
-`PartyStatusView` owns the roster and detail pane. `FieldActionView` owns the preparation page, row
+Both Member callers mount `MemberPageView`, which owns actor selection, pane focus and scrolling.
+`PartyStatusView` supplies the field roster, records, gold and Prepare action. `FieldActionView` owns the preparation page, row
 and parent return. Field preparation sends a revision-bound command. Read-only inspection/roster
 calls and local Back do not publish a gameplay command. [Inspection entry and
 return](../../game/src/Battles/BattleSessionView.Inspection.cs) · [Inspection

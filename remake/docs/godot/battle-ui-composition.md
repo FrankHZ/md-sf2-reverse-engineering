@@ -44,7 +44,7 @@ Visibility and hit testing change together.
 | Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Targeting omits the terrain panel. | Each fresh direction or Target shortcut cycles the live candidates once. Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An invalid cell with eligible alternatives offers retargeting and Back. With zero eligible targets, the reason and Back remain. Back clears target state and restores the same command or item/spell row. |
 | Search confirmation, Equip, Give/exchange or Drop | Current transaction choice, slot, recipient or confirmation | Acting identity where relevant, the one existing auxiliary reader and its own instructions | Existing eligibility, selection, read-before-confirm, receipt and return contracts. The transaction replaces the command/target reader, board cursor and range. |
 | Free inspection, Cursor page | One board cursor on the inspected cell | A unit card on occupied cells, a terrain panel, one framed instruction and return panel, and the inspected unit's movement field when a living unit is disclosed | Directions and board pointer select a cell for reading. Confirm opens details on a unit or Options on empty ground. Empty ground clears the range and still shows terrain. Cancel restores live Movement. |
-| Inspection Options, Map, Members or details | The open panel's option, map selection, member row or detail pane | One framed instruction and return panel with data from the existing read-only query | Retain cursor coordinates and caller selection for Back, hide board cursor and range. Full → Cursor, MemberFull → Members, Map/Members → Options, Options → Cursor. An on-demand Map selection can locate its disclosed unit and return to Cursor. |
+| Inspection Options, Map, Members or details | The open panel's option, map selection, member row or detail pane | One framed instruction and return panel with data from the existing read-only query | Retain cursor coordinates and caller selection for Back, hide board cursor and range. Full → Cursor, Map/Members → Options, Options → Cursor. An on-demand Map selection can locate its disclosed unit and return to Cursor. |
 | Enemy action, close-up, field notice/death, result or battle exit | Actual delivered action or current message/return prompt | Playback cards for the actual participants, message reader, board only when owned by the continuation | Existing completion token and acknowledgement. All decision surfaces and board marks retire. Rebuild from live control after delivery. Field return uses field chrome. A failure shows once at its owning view. |
 | Host Menu, Save, Speed or recovery cover | Host/modal's current choice or reader | Only the permitted covered backdrop | Suspend battle gestures, holds and pacing using existing ownership. Restore the same eligible caller, with its current layout and fresh input after release. A resize while covered may recompute geometry. |
 
@@ -211,29 +211,30 @@ geometry under the battle's movement rules.
 [Inspection query](../../src/Sf2.Remake.Application/Runtime/Battles/BattleInspectionQuery.cs) ·
 [Movement rules](../../src/Sf2.Remake.Domain/Battles/Rules/BattleMovement.cs)
 
-### Shared member roster (#2082)
+<a id="shared-member-roster-2082"></a>
 
-[#2082](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2082) delivers the shared
-`MemberRosterView` in battle Member and field Party. This **Standard** adapter slice reuses
-the current content, input and detail owners. Each row binds an actor, localized name and condition,
-and an optional portrait from the caller's admitted sprite art. Names wrap, focused rows carry a
-marker, and unavailable rows stay readable in muted text. Mapped navigation reveals the focused
-row, and the pointer wheel scrolls independently. A complete battle row click selects and tries
-to open it. A field row click selects the member beside the sheet.
+### Shared member page (#2154)
 
-The list preserves the actor and scroll across details/Back or Prepare/Back. If refreshed membership
-removes the focused actor, it searches the previous order for the nearest surviving row and reveals
-it, preferring the following row on ties. If all prior rows disappear, it uses the former ordinal
-clamped to the new list. A fresh entry starts at the first row.
+Options → Member opens the same two-column page as field Party. The roster, portrait, attributes,
+vitals, spells, four inventory slots and fixed item reader appear together. Left/Right or the
+arrows switch members from any pane. Target cycles the roster, spells and items. Up/Down moves
+within the focused pane. A complete row or slot click selects it. The wheel scrolls the list or
+reader under the pointer. Switching to an empty slot clears the previous description.
 
-Battle retains `QueryBattleMembers` and its active-force order. An initialized member who is
-defeated or absent can open read-only `PartyDetailsPanel`; an uninitialized row is visible but
-cannot open a sheet. The battle detail header gives wrapped names and class text their measured
-height and leaves the existing stat, spell and item areas below. Field retains `QueryPartyDetails`,
-including its own membership and Prepare eligibility. A field row with unavailable detail data
-remains readable and uses the ordinary Prepare query. Direct inspection of a disclosed enemy
-still opens the inspection sheet.
-[Shared roster](../../game/src/UI/MemberRosterView.cs) ·
+The shared roster preserves the selected actor across refresh, reveals mapped selections and
+uses the nearest surviving row when membership changes. Field Prepare returns to its selected
+member and scroll. Battle Back returns directly to Options, then to the retained Cursor.
+A unit opened directly from the board retains its own Full → Cursor route.
+
+**Standard.** The adapter shares presentation across two callers with distinct read and command
+authority. Field uses its joined party, records, gold and preparation actions. Battle uses
+`QueryBattleMembers` in active-force order with its settled session/revision guard. Initialized
+defeated and unplaced allies retain their disclosed details. An uninitialized ally has a named
+row and unavailable details. Empty membership has an explicit message. Neither case initializes
+a combatant. Battle has only a Back action in the footer. Its projected spells, inventory and
+holder-specific item descriptions have no command callback.
+
+[Shared page](../../game/src/UI/MemberPageView.cs) ·
 [Battle query](../../src/Sf2.Remake.Application/Runtime/Battles/BattleMemberQuery.cs) ·
 [Field owner](field-and-shop.md#current-composition)
 
@@ -252,7 +253,7 @@ rectangles.
 | `member-large` | `engine_battle_member_observation.gd` | Ignored `member-large.json` prepared below |
 | `member-field` | `engine_party_details_observation.gd` | Ignored 14-member field variant described below |
 
-Generate the large battle package from the repository root with an existing ignored `local/issue2082`
+Generate the large battle package from the repository root with an existing ignored `local/issue2154`
 directory. All normal deployment and input admission rules apply.
 
 ```python
@@ -260,6 +261,7 @@ import copy, json
 from pathlib import Path
 
 package = json.loads(Path("remake/content/authored/stone-court.json").read_text(encoding="utf-8"))
+package["items"] = json.loads(Path("remake/content/authored/battle-equipment.json").read_text())["items"]
 placements = package["encounters"][0]["placements"]
 tables = package["actors"], package["start"]["actors"], placements
 templates = [copy.deepcopy(rows[1]) for rows in tables]
@@ -271,9 +273,10 @@ for i in range(14):
         for rows, row in zip(tables, (actor, initial, deployed)):
             rows.append(row)
     actor["id"] = "deliberately-long-authored-member-identity-to-check-wrapping-001" if i == 0 else f"member-{i:02}"
+    actor["items"] = [0, 127, 0, 0]
     initial.update(actor=actor["id"], hp=0 if i == 1 else 35, absent=i == 2)
     deployed.update(actor=actor["id"], x=1+i%7, y=1+i//7, processingOrder=i)
-Path("local/issue2082/member-large.json").write_text(json.dumps(package), encoding="utf-8")
+Path("local/issue2154/member-large.json").write_text(json.dumps(package), encoding="utf-8")
 ```
 
 For `member-field`, generate the 14-member public variant from
@@ -300,7 +303,21 @@ Require exit 0, `passed:true`, empty failures and unavailable lists, and clean r
 Also run the [#2081 authored corridor](#reproduce-the-inspected-movement-field) for enemy details,
 range clearing and return.
 
-**Confirmed, bounded native observation.** The two- and fourteen-member battle routes passed.
+**Confirmed, #2154.** Both battle sizes open the sheet on entry. The large route follows the last
+row into view, clicks slot four, reads its effect, clears it on the empty slot, and returns through
+Options and Cursor with the original battle signature. The field route selects the last of 14
+members, opens Prepare and restores the same actor and scroll. Its previous geometry assertion
+failed at “Readable groups remain inside1080p frame”: the stat column clears the portrait while
+the spell column clears the header. The current check measures each against those bounds.
+
+For visual review open F5 and F8 in [DesignPreview](../../game/probes/previews/README.md).
+Add `-- --inspect --authored-package <absolute member-large.json>` for the long battle sample.
+The 1600×900 and 1920×1080 English and Chinese comparison covered both callers, the wrapped
+name, defeated and absent rows, four slots and the selected description. It exposed roster arrows
+drawn behind the frame. Review of the corrected page showed both arrows and the separate footer
+actions. The ordinary native witnesses use inputs and projections. UI demo pictures stay local.
+
+**Earlier #2082 native observation.** The two- and fourteen-member battle routes passed.
 The large case checked the 64-character name in both list and sheet, defeated and absent detail
 eligibility, pointer and mapped input, exact scroll on Back, read-only state and ordinary Movement
 return. The fourteen-member field route opened Prepare, returned to the same focused member and
@@ -325,23 +342,25 @@ registered world, entry and battle scenes in place. Each case is an independent 
 through the existing host observer, with selection and Back driven by ordinary mapped keys.
 
 From the repository root, select `$case` below, use an absolute `$start` path under this
-checkout's ignored `local/`, and copy that case's tracked input unchanged to `$start`.
-Use the registered opening party. These cases need no separate party input.
+checkout's ignored `local/`, and copy the selected initial input there.
+Use the registered opening party. For the named Battle02 variant, set `start.names` to
+`{"ally-0":"WWWWWWW"}` in the ignored copy, select Chinese settings and use the pad route.
 
-| `$case` | Copy from `remake/reference/inputs/` | Input and observation |
+| `$case` | Initial input | Input and observation |
 | --- | --- | --- |
-| `member-field-portraits` | `yeel-to-battle03-start.json` | From settled Map66 Party, select two members, open Prepare and Back, then close/reopen Party. Read the selected row and summary textures directly. |
-| `member-battle-portraits` | `engine-battle02-egress-start.json` | Accept the initial Battle02 entry, open Member, select a second row, open details and Back, then close/reopen Member. No turn is committed. |
+| `member-empty` | Direct `battle` [start](battle-interaction-baseline.md#direct-production-reproduction) with `start.activeAllies = ["ally-0","ally-1","ally-2"]` | The direct battle has deployed allies and empty joined/active membership flags. Open Member, cycle the reading panes, confirm, then return to Options with the battle signature intact. Use English settings. |
+| `member-field-portraits` | `remake/reference/inputs/yeel-to-battle03-start.json` | From settled Map66 Party, select two members, open Prepare and Back, then close/reopen Party. Read the selected row and summary textures directly. |
+| `member-battle-portraits` | `remake/reference/inputs/engine-battle02-egress-start.json` | Accept the initial Battle02 entry, open Member, switch rows and close/reopen Member. Return to Main and check hover, press, window exit and stale release on Stay. |
 
 ```powershell
-$pack = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2035/galam-town-v1'
+$pack = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2177/pre-voyage-battle-v1'
 $env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $pack 'world.json'
 $env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $pack 'main-scenes.json'
 $env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $pack 'entry/entry.json'
 Get-ChildItem -LiteralPath (Join-Path $pack 'opening-inputs') -File -Filter 'SF2_*.json' |
     ForEach-Object { [Environment]::SetEnvironmentVariable($_.BaseName, $_.FullName, 'Process') }
 $env:SF2_INSPECTION_START = $start
-$env:SF2_INSPECTION_ROUTE = 'keyboard'
+$env:SF2_INSPECTION_ROUTE = $route  # keyboard, or pad for the named variant
 $env:SF2_VIEWPORT_CASE = $case
 $env:SF2_VIEWPORT_OUTPUT = $report
 Push-Location remake
@@ -352,7 +371,24 @@ $nativeExit = $LASTEXITCODE
 Pop-Location
 ```
 
-**Confirmed, bounded native observation.** Both cases exited 0 with `passed:true` and empty
+**Confirmed, #2154.** Connected Battle02 retained the seven-character player name on both sides
+of the page and borrowed the selected row portrait for the detail sheet. The Map66 field route
+opened actual Prepare actions and returned to the same portrait. A first launch supplied the tracked
+start directly and received `observation-input`. The worktree-local copy above passed.
+
+The direct empty-roster start initially omitted its deployment selection and received
+`ally-formation`. With the three listed allies, the page showed its localized empty message,
+no actor, selectable slot or stale description. Back returned to Options. The run exited 0
+with an ObjectDB shutdown warning (two instances).
+
+The first Battle02 run passed the input assertions but logged two errors disconnecting the
+`mouse_exited` signal on reparent and exit. #2152 had subscribed in `_Ready` and removed the
+handler on each `_ExitTree`. Pairing the subscription in `_EnterTree` with that removal restored
+hover and press after reparent. The native check delivered window exit during the press and
+verified release left Stay uncommitted. The corrected named run exited 0 without disconnect
+errors and reported an ObjectDB warning (four instances) at shutdown.
+
+**Earlier #2082 native observation.** Both cases exited 0 with `passed:true` and empty
 failures and unavailable lists. The sampled rows contained visible 48×64 textures in 48×72
 controls. Two selected members used different textures. Field's 144×192 summary shared the
 selected row texture through Prepare/Back and used the first row's texture after reopening.
@@ -546,9 +582,8 @@ gets the mapped reading request while it is present; the pack no longer scrolls 
 Resuming the same battle page preserves scroll and focus. A different page, acting member or
 focused offer starts at the top.
 
-The inspection footer contains instructions on every page. Cursor and the two detail sheets
-retain a measured Back button. Options, Map and Members show the mapped return in their
-instructions. Mapped Cancel, a complete right-click and an eligible Back button follow the
+Cursor and its unit detail use the inspection footer’s Back button. Options and Map show the
+mapped return in their instructions. Members uses the shared page footer and its Back target. Mapped Cancel, a complete right-click and an eligible Back button follow the
 same local parent and retain cursor or roster focus. The footer shields the board from left
 clicks. Cursor shows the shared unit card on occupied cells and keeps the terrain panel on empty ground.
 Resizing or changing page cancels an old capture.
@@ -739,7 +774,7 @@ before each implementation. The following are principal owners and distinct acce
 | 1. [#2079](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2079) Board focus and decision layout | One cursor/field/card owner per phase, the #2079 Main diamond (later corrected by [#2090](#vertical-battle-main-2090)), stable child and footer regions, auxiliary and close-up retirement. `BattleSessionView`, `BattleMapViewport`, range/cursor views, `BattleCommandMenu`/`BattleMenuLayout`, `BattleInspectionView`, `BattleSceneView`. | Short real Move → command → Attack/Magic/item target → Back → Movement and inspection/options/return. Include a rejected mouse target, ally crossing, multi-target and field delivery. Inspect visible/hit rectangles, focus, map clipping and errors in both languages, at supported minimum/1080p/larger wide viewport, with wide values/long text and Reduced Flash. Verify private source cursor and public fallback. Resize a retained close-up token while paused and check art/card positions and unchanged delivery on return. |
 | 2. [#2080](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2080) Target edges and ordinary Stay | One selection per fresh direction, one gesture to Stay, continuous Movement. `BattleSessionView.Navigation`, `BattleCommandMenu`, current `GameInput` release tracking and `BattleCommandDispatcher`. | Keyboard and pad/d-pad or stick single target and multiple targets for physical, Magic and Item. Compare hold, neutral/repress, fast taps, menu/move → target with inherited direction, target Back/reentry, host cover, and continued held movement. Origin and moved Stay commit once on key/pad/click. Exercise next actor or after-turn delivery while holding Confirm. Search and Give/Drop confirmations, refusal and backwards routes still work. |
 | 3a. [#2081](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2081) Inspected movement | Delivered through `QueryBattleInspectionRange`, `BattleInspectionView` and the shared board overlay. | [Authored corridor observation](#reproduce-the-inspected-movement-field) checks ally → enemy → empty, traversal versus stops, details/Map/Members/host transitions, cursor exit and state/seed equality. |
-| 3b. [#2082](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2082) Shared member presentation | Delivered shared scrollable roster rows and existing details through `MemberRosterView`, `PartyStatusView`, `BattleMemberListView` and `PartyDetailsPanel`. | [Short authored observations](#reproduce-the-shared-roster) cover roster size, long names, retained conditions, pointer and mapped focus, Back/scroll and field Prepare. |
+| 3b. [#2082](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2082) Shared member presentation | [#2154](#shared-member-page-2154) composes the roster, reading panes and footer in the same production page for both callers. | [Short authored observations](#reproduce-the-shared-roster) cover roster size, long names, retained conditions, pointer and mapped focus, Back/scroll and field Prepare. |
 | 4. [#2083](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2083) Describe spells by level and context | Implemented through `BattleChoices`, `FieldRecovery`, `SpellDescriptionFacts` and the shared localized reader. | [Battle and field observation](#reproduce-selected-spell-descriptions) covers two ranks, area, self, refusal, cancellation, free field use and recovery payment. |
 | 5. [#2144](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2144) Withdraw the current-round strip | The shared battle HUD leaves the strip unmounted. Redesign is deferred. | [Native HUD observation](#observe-the-battle-hud-without-the-strip) covers ordinary input, phase geometry and the DesignPreview Battle tab. |
 
