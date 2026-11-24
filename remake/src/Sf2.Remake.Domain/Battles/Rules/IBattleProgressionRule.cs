@@ -43,12 +43,13 @@ internal static class BattleProgressionRules
         if (contributions.Length > 0)
         {
             Require((kind == BattleActionKind.Healing || damage) && contributions.Length == reactions.Count);
+            int cap = damage || reactions.All(row => row.Kind is BattleReactionKind.Status or BattleReactionKind.Ineffective) ? 49 : 25;
             int accumulated = 0;
             for (int i = 0; i < contributions.Length; i++)
             {
                 var e = contributions[i];
                 Require(e.Actor == actor.Actor && e.Target == reactions[i].Target && e.Before == accumulated &&
-                    e.After >= accumulated && e.After <= (damage ? 49 : 25) && e.RandomRange is null && e.RandomValue is null);
+                    e.After >= accumulated && e.After <= cap && e.RandomRange is null && e.RandomValue is null);
                 accumulated = checked((int)e.After!.Value);
             }
         }

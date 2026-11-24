@@ -13,7 +13,7 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class FieldRecoveryTests
 {
     private static readonly SpellRef Heal = new("heal", 1), Detox = new("detox", 1);
-    private static readonly SpellRef Detox2 = new("detox", 2), Detox3 = new("detox", 3);
+    private static readonly SpellRef Detox2 = new("detox", 2), Detox3 = new("detox", 3), Detox4 = new("detox", 4);
     private static GameSession Recovery(byte mp = 7, ushort targetHp = 100, ushort targetStatus = 2, byte recoveryItem = 0,
         bool higherRanks = false, ushort casterStatus = 0, ushort casterHp = 50)
     {
@@ -21,10 +21,11 @@ public sealed class FieldRecoveryTests
             [new(recoveryItem, FieldRecoveryEffect.NoEffect), new(3, FieldRecoveryEffect.CurePoison)],
             [new(Heal, "Heal", 3, FieldRecoveryEffect.NoEffect), new(Detox, "Detox", 3, FieldRecoveryEffect.CurePoison),
              new(Detox2, "Detox", 6, FieldRecoveryEffect.CurePoisonAndParalysis),
-             new(Detox3, "Detox", 10, FieldRecoveryEffect.CurePoisonAndParalysis)]);
+             new(Detox3, "Detox", 10, FieldRecoveryEffect.CurePoisonAndParalysis),
+             new(Detox4, "Detox", 16, FieldRecoveryEffect.CurePoisonAndParalysis)]);
         var loadout = new BattleSourceLoadout([recoveryItem, 3, 3, 127], []);
         return Session(carried: actor => actor.Actor == Giver ? actor with { Hp = casterHp, Mp = mp, Status = casterStatus,
-            SourceLoadout = loadout, Progress = new(2, 200, 10, 20, 4, 60, higherRanks ? [Heal, Detox, Detox2, Detox3] : [Heal, Detox], loadout)
+            SourceLoadout = loadout, Progress = new(2, 200, 10, 20, 4, 60, higherRanks ? [Heal, Detox, Detox2, Detox3, Detox4] : [Heal, Detox], loadout)
             { CurrentStats = higherRanks ? new(8, 20, 3) : null } }
             : actor.Actor == Recipient ? actor with { Hp = targetHp, Status = targetStatus } : actor, preparation: content);
     }
@@ -91,9 +92,37 @@ public sealed class FieldRecoveryTests
         Assert.Equal(0, cured.Hp);
     }
 
+    [Fact]
+    public void RankFourFieldCuresOnlyTheChosenJoinedMemberWithClampedPayment()
+    {
+        var session = Recovery(mp: 7, targetHp: 0, targetStatus: 3, higherRanks: true, casterStatus: 0x102);
+        var before = session.Current.Exploration!.Party;
+        var choice = Assert.Single(session.QueryFieldActions(Giver).Spells, choice => choice.Spell == Detox4);
+        Assert.Equal(16, choice.MpCost);
+        Assert.Equal(SpellTarget.PartyMember, choice.Description!.Target);
+        Assert.Equal(0, choice.Description.Radius);
+        Assert.Equal<byte?>(7, choice.Description.FieldPayment);
+
+        var cast = Accept(session, new FieldCast(Giver, Detox4, Recipient));
+        var notice = Assert.Single(cast.Observations);
+        Assert.Equal(Recipient, notice.Target);
+        Assert.Equal(3, notice.FieldCuredStatus);
+        var after = session.Current.Exploration!.Party;
+        var caster = after.Actors.Single(actor => actor.Actor == Giver);
+        var target = after.Actors.Single(actor => actor.Actor == Recipient);
+        Assert.Equal(0x102, caster.Status);
+        Assert.Equal(0, caster.Mp);
+        Assert.Equal(before.Actors.Single(actor => actor.Actor == Giver).Exp, caster.Exp);
+        Assert.Equal(0, target.Status);
+        Assert.Equal(0, target.Hp);
+        Assert.Equal(before.MainSeed, after.MainSeed);
+        Assert.Equal(before.ThinkingSeed, after.ThinkingSeed);
+    }
+
     [Theory]
     [InlineData(2, 3, 408, 0x104, 35)]
     [InlineData(3, 7, 280, 0x100, 25)]
+    [InlineData(4, 7, 280, 0x100, 25)]
     public void FieldDetoxOnlyUnequipsTheCursedWornWordWhenTheRankClearsCurse(
         byte rank, ushort cleared, ushort ring, ushort status, byte gearAttack)
     {
@@ -129,7 +158,7 @@ public sealed class FieldRecoveryTests
         Assert.Equal(status, target.Status);
         Assert.Equal(new ushort[] { 220, ring, 24, 127 }, target.SourceLoadout!.Items);
         Assert.Equal(baseAttack + gearAttack, BattleEquipment.Attack(wizard.Definition, target.Progress, target.SourceLoadout, target.Status));
-        Assert.Equal((byte)(rank == 2 ? 14 : 10), after.Actors.Single(actor => actor.Actor == Giver).Mp);
+        Assert.Equal(rank switch { 2 => 14, 3 => 10, _ => 4 }, after.Actors.Single(actor => actor.Actor == Giver).Mp);
         Assert.Equal(equipped.Actors.Single(actor => actor.Actor == Recipient).Hp, target.Hp);
         Assert.Equal(equipped.MainSeed, after.MainSeed);
         Assert.Equal(equipped.ThinkingSeed, after.ThinkingSeed);

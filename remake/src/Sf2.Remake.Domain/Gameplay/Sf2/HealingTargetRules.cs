@@ -34,16 +34,19 @@ internal static class HealingTargetRules
         if (spell.IsAura && (battle.Actors.Any(unit => unit.Actor == center && (unit.ActivationWord.GetValueOrDefault() & 8) != 0) ||
             spell.Targets == HealingTargets.AuraAllAllies && center != actor))
             throw new BattleRuleException("invalid-aura-center", "target");
-        return RequireTarget(battle, actor, destination, spell.MinimumRange, spell.MaximumRange, center);
+        var target = RequireTarget(battle, actor, destination, spell.MinimumRange, spell.MaximumRange, center);
+        if (spell.Targets == HealingTargets.CureRadius)
+            ValidateSourceSlots(battle.Definition, "cure-source-slots");
+        return target;
     }
 
     internal static IReadOnlyList<BattleActorState> Resolve(EngineBattleState battle, ActorRef actor,
         MapPosition destination, HealingSpellDefinition spell, ActorRef center)
     {
         var target = RequireCenter(battle, actor, destination, spell, center);
-        if (!spell.IsAura) return [target];
+        if (spell.Targets == HealingTargets.Single) return [target];
         var caster = battle.GetActor(actor);
-        RequireAuraCaster(battle, caster);
+        if (spell.IsAura) RequireAuraCaster(battle, caster);
         var origin = center == actor ? destination : target.Position!;
         var placed = PlacedSide(battle, caster);
         return spell.Targets == HealingTargets.AuraAllAllies ? placed : placed.Where(row =>
@@ -85,13 +88,18 @@ internal static class HealingTargetRules
         // sign of current HP + recovery. Keep this finite family in their common domain.
         if (definition.Deployments.Any(d => d.Definition.MaxHp is 0 or > 32767))
             throw new BattleRuleException("aura-hp-domain", "actors.maxHp", true);
+        ValidateSourceSlots(definition, "aura-source-slots");
+    }
+
+    private static void ValidateSourceSlots(BattleDefinition definition, string error)
+    {
         var slots = definition.Initialization?.SourceCombatants;
         var deployments = definition.Deployments.ToDictionary(d => d.Actor);
         if (slots is null || slots.Count != definition.Deployments.Count ||
             slots.Values.Distinct().Count() != slots.Count || slots.Any(row =>
                 !deployments.TryGetValue(row.Value, out var d) ||
                     !(d.Faction == BattleFaction.Ally ? row.Key is >= 0 and < 30 : row.Key is >= 128 and < 160)))
-            throw new BattleRuleException("aura-source-slots", "initialization.sourceCombatants", true);
+            throw new BattleRuleException(error, "initialization.sourceCombatants", true);
     }
 
     internal static void ValidateAura(BattleDefinition definition)

@@ -15,7 +15,7 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class PoisonCureTests
 {
     private static readonly ActorRef Medic = new("medic-a"), Friend = new("guard-a");
-    private static readonly SpellRef Detox = new("detox", 1);
+    private static readonly SpellRef Detox = new("detox", 1), Detox4 = new("detox", 4);
 
     [Theory]
     [InlineData(false)] [InlineData(true)]
@@ -136,6 +136,189 @@ public sealed class PoisonCureTests
             [new(Medic, 20), new(Friend, 10)], 0, initial.Gold, initial.StartPolicy, initial.Regions,
             deathCredit: initial.DeathCredit);
         return BattleSaveFixture.At(battle, new StoryState([]));
+    }
+
+    private static SessionSnapshot AreaBattle(byte mp = 16, bool silenced = false)
+    {
+        var basis = AuraHealingTests.Battle();
+        var caster = basis.GetActor(AuraHealingTests.Caster);
+        var center = basis.GetActor(AuraHealingTests.Center);
+        var medic = caster.Deployment with
+        {
+            Definition = new(caster.Actor, BattleClassRule.Vicar, 25, caster.MaxHp, caster.MaxMp,
+                caster.BaseAttack, caster.BaseDefense, caster.BaseAgility, false, caster.Move, [Detox4])
+        };
+        var wizard = center.Deployment with
+        {
+            Definition = new(center.Actor, BattleClassRule.Wizard, 10, center.MaxHp, center.MaxMp,
+                10, center.BaseDefense, center.BaseAgility, false, center.Move, [],
+                equipment: new(10, [new(92, "Staff", 1u << 17, 25, 1, 1)],
+                    rings: [new(24, "Black Ring", 1u << 17, RingStat.Attack, 10, Cursed: true)]))
+        };
+        var original = basis.Definition;
+        var definition = new BattleDefinition(original.Encounter, original.Map, original.Width, original.Height, original.Terrain,
+            original.Deployments.Select(row => row.Actor == caster.Actor ? medic : row.Actor == center.Actor ? wizard : row),
+            [new(Detox4, 16, 0, 0, 3, HealingTargets.CureRadius, 2, CuresPoison: true)],
+            new(true), original.Initialization, original.Outcome, poison: true);
+        var pack = new BattleSourceLoadout([220, 408, 24, 127], [63, 63, 63, 63]);
+        var actors = basis.Actors.Select(actor => actor.Actor.Value switch
+        {
+            "z-priest" => new(medic, caster.Hp, mp, 0, caster.Position, 0, 0, status: silenced ? (ushort)0x100 : (ushort)0),
+            "b-center" => new(wizard, center.Hp, 0, 0, new(5, 3), 0, 0, status: 0x107, sourceLoadout: pack),
+            "a-edge" => actor.With(position: new(7, 3), status: 2),
+            "m-full" => actor.With(position: new(6, 4)),
+            "n-neutral" => actor.With(position: new(5, 4), status: 2),
+            "d-dead" => actor.With(position: new(5, 2), status: 2),
+            "f-far" => actor.With(position: new(8, 3), status: 2),
+            "enemy" => actor.With(position: new(6, 3), status: 2),
+            _ => actor,
+        });
+        return BattleSaveFixture.At(new(definition, actors, 0x1234, basis.ThinkingSeed, basis.Round,
+            [new(caster.Actor, 20), new(new("m-full"), 10)], 0, basis.Gold, basis.StartPolicy, basis.Regions), new StoryState([]));
+    }
+
+    [Fact]
+    public void RankFourUsesTheSelectedCenterAndReplaysOrderedCuresAfterOnePayment()
+    {
+        var start = AreaBattle();
+        var caster = AuraHealingTests.Caster;
+        var center = AuraHealingTests.Center;
+        var moved = Submit(start, new Move(ExplorationDirection.West));
+        var segment = moved.BattleMovement!;
+        var delivered = BattleMovementContinuation.Submit(moved, new CompletePresentation(segment.Token, segment.CompletionKind));
+        Assert.Null(delivered.Failure);
+        var actions = Submit(delivered.Snapshot, new Confirm());
+        var choices = BattleChoices.Query(actions, Sf2.Remake.Application.Gameplay.RuleCompositions.Sf2(), null, false);
+        var offer = Assert.Single(choices.Spells);
+        Assert.Equal<byte?>(3, offer.MaximumRange);
+        Assert.Equal(2, offer.Description!.Radius);
+        Assert.Equal(SpellEffect.CurePoisonParalysisAndCurse, offer.Description.Effect);
+        Assert.Contains(offer.Targets, target => target.Enabled && target.Actor == center);
+        var targets = Submit(actions, new SelectSpell(Detox4));
+        foreach (string invalid in new[] { "a-edge", "f-far", "n-neutral", "d-dead", "u-unplaced", "enemy" })
+        {
+            var refused = BattleCommandDispatcher.Submit(targets, new SelectTarget(new(invalid)));
+            Assert.NotNull(refused.Failure);
+            Assert.Same(targets, refused.Snapshot);
+        }
+
+        var selected = Submit(targets, new SelectTarget(center));
+        Assert.Equal(center, selected.Selection!.Target);
+        Assert.Equal(new MapPosition(3, 3), selected.Battle.GetActor(caster).Position);
+        Assert.Same(selected.Battle, Submit(selected, new ReturnToBattleActions()).Battle);
+        var committed = BattleCommandDispatcher.Submit(selected, new Confirm());
+        Assert.Null(committed.Failure);
+        var live = committed.Snapshot;
+        Assert.Equal(new[] { "a-edge", "b-center", "m-full" }, live.BattleScene!.HealingTargets.Select(row => row.Value));
+        Assert.False(live.BattleScene.IsAura);
+        Assert.Equal(new MapPosition(2, 3), live.Battle.GetActor(caster).Position);
+        Assert.Equal(16, live.Battle.GetActor(caster).Mp);
+        Assert.Equal(0x107, live.Battle.GetActor(center).Status);
+
+        var draws = committed.Observations.Where(row => row.RandomRange is not null).ToArray();
+        Assert.Equal(new ushort?[] { 8, 16, 16 }, draws.Select(row => row.RandomRange));
+        Assert.Equal(new long?[] { 5, 10, 10 }, committed.Observations
+            .Where(row => row.Kind == "healing-exp-contribution").Select(row => row.After));
+        var notices = new List<(string Actor, string Notice)>();
+        var events = new List<SessionObservation>();
+        for (int step = 0; live.BattleScene is { } scene; step++)
+        {
+            Assert.True(step < 40);
+            if (scene.Phase is BattleScenePhase.ResultMessage or BattleScenePhase.CureStunMessage or BattleScenePhase.CureCurseMessage)
+            {
+                Assert.Equal(scene.Target, scene.DisplayedAlly);
+                notices.Add((scene.Target!.Value.Value, scene.ShowsStunCure ? "stun" : scene.ShowsCurseCure ? "curse" :
+                    scene.ReactionKind == "Ineffective" ? "ineffective" : "poison"));
+            }
+            var next = BattleSceneContinuation.Submit(live, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token) :
+                new CompletePresentation(scene.Token, scene.CompletionKind));
+            Assert.Null(next.Failure);
+            events.AddRange(next.Observations);
+            live = next.Snapshot;
+        }
+        Assert.Equal(new[] { ("a-edge", "poison"), ("b-center", "poison"), ("b-center", "stun"),
+            ("b-center", "curse"), ("m-full", "ineffective") }, notices);
+        Assert.Single(events, row => row.Kind == "mp");
+        Assert.Single(events, row => row.Kind == "exp");
+        Assert.Equal(0, live.Battle.GetActor(caster).Mp);
+        int award = 10 + (draws[1].RandomValue == 0 ? 1 : 0) - (draws[2].RandomValue == 0 ? 1 : 0);
+        Assert.Equal<byte?>((byte)award, live.Battle.GetActor(caster).Exp);
+        var cured = live.Battle.GetActor(center);
+        Assert.Equal(0x100, cured.Status);
+        Assert.Equal(35, cured.Attack);
+        Assert.Equal(new ushort[] { 220, 280, 24, 127 }, cured.SourceLoadout!.Items);
+        Assert.All(start.Battle.Actors, actor => Assert.Equal(actor.Hp, live.Battle.GetActor(actor.Actor).Hp));
+        Assert.Equal(0, live.Battle.GetActor(new("a-edge")).Status);
+        Assert.All(new[] { "n-neutral", "d-dead", "f-far", "enemy" },
+            id => Assert.Equal(2, live.Battle.GetActor(new(id)).Status));
+        Assert.Equal(start.Battle.ThinkingSeed, live.Battle.ThinkingSeed);
+        Assert.Equal(new ActorRef("m-full"), live.Selection!.Actor);
+    }
+
+    [Fact]
+    public void RankFourCureExperienceCanAccumulatePastTheHpRecoveryLimit()
+    {
+        var start = AreaBattle();
+        var battle = start.Battle.With(actors: start.Battle.Actors.Select(actor => actor.Actor.Value switch
+        {
+            "z-priest" or "m-full" => actor.With(status: 2),
+            "f-far" => actor.With(position: new(5, 1)),
+            "d-dead" => actor.With(hp: 10),
+            _ => actor,
+        }));
+        var actions = Submit(BattleSaveFixture.At(battle, start.Story), new Confirm());
+        var selected = Submit(Submit(actions, new SelectSpell(Detox4)), new SelectTarget(AuraHealingTests.Center));
+        var cast = BattleCommandDispatcher.Submit(selected, new Confirm());
+        Assert.Null(cast.Failure);
+        Assert.Equal(new long?[] { 5, 10, 15, 20, 25, 30 }, cast.Observations
+            .Where(row => row.Kind == "healing-exp-contribution").Select(row => row.After));
+        Assert.InRange(cast.Snapshot.BattleScene!.Action.Reward!.Amount, 29, 31);
+    }
+
+    [Fact]
+    public void RankFourRefusesLowMpAndSilencePaysWithoutAnyTargetWork()
+    {
+        var poor = Submit(AreaBattle(mp: 15), new Confirm());
+        var refused = BattleCommandDispatcher.Submit(poor, new SelectSpell(Detox4));
+        Assert.Equal("insufficient-mp", refused.Failure!.Code);
+        Assert.Same(poor, refused.Snapshot);
+        var state = Submit(AreaBattle(silenced: true), new Confirm());
+        var selected = Submit(Submit(state, new SelectSpell(Detox4)), new SelectTarget(AuraHealingTests.Center));
+        var cast = BattleCommandDispatcher.Submit(selected, new Confirm());
+        Assert.Null(cast.Failure);
+        var live = cast.Snapshot;
+        var events = cast.Observations.ToList();
+        int suppressions = 0;
+        for (int step = 0; live.BattleScene is { } scene; step++)
+        {
+            Assert.True(step < 20);
+            Assert.False(scene.HasReaction);
+            if (scene.Phase == BattleScenePhase.SilencedCastMessage) suppressions++;
+            var next = BattleSceneContinuation.Submit(live, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token) :
+                new CompletePresentation(scene.Token, scene.CompletionKind));
+            Assert.Null(next.Failure);
+            events.AddRange(next.Observations);
+            live = next.Snapshot;
+        }
+        Assert.Equal(1, suppressions);
+        Assert.Single(events, row => row.Kind == "mp");
+        Assert.DoesNotContain(events, row => row.Kind == "exp");
+        var draw = Assert.Single(events, row => row.RandomRange is not null);
+        Assert.Equal("rng-silence-expiry", draw.Kind);
+        Assert.Equal((long)state.Battle.MainSeed, draw.Before);
+        Assert.Equal(draw.After, (long)live.Battle.MainSeed);
+        Assert.Equal(state.Battle.ThinkingSeed, live.Battle.ThinkingSeed);
+        Assert.Equal(0, live.Battle.GetActor(AuraHealingTests.Caster).Mp);
+        var center = AuraHealingTests.Center;
+        Assert.Equal(0x107, live.Battle.GetActor(center).Status);
+        Assert.Equal(state.Battle.GetActor(center).SourceLoadout, live.Battle.GetActor(center).SourceLoadout);
+    }
+
+    private static SessionSnapshot Submit(SessionSnapshot snapshot, SessionCommand command)
+    {
+        var result = BattleCommandDispatcher.Submit(snapshot, command);
+        Assert.Null(result.Failure);
+        return result.Snapshot;
     }
 
     [Theory]

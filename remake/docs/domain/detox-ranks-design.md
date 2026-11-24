@@ -1,12 +1,12 @@
-# DETOX 2 and 3 through first Pacalon
+# Learned DETOX through first Pacalon
 
-**Accepted design and implementation, [#1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965).**
-Standard rigor covers a two-caller change with shared status, equipment, presentation and save
-dependencies. Deliver learned player DETOX 2 and 3 through ordinary Field and Battle Magic.
-Retain the current campaign boundary at first Pacalon and Battle26. Field, battle and cure from
-an item each have their own admission, payment and feedback. The design uses the existing party,
-battle and reaction owners. DETOX 4, enemy casting, new ailment producers and progression past
-Battle26 are outside this agreement.
+Standard rigor covers the Field and Battle callers and their shared status, equipment, presentation
+and save dependencies. Learned player DETOX is admitted through first Pacalon and Battle26.
+Field, Battle and item cure have caller-specific admission, payment and feedback. The existing
+party, battle and reaction owners handle each result. Enemy casting and new ailment producers
+are outside this agreement.
+[Rank 2/3](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) ·
+[Rank 4](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2236)
 [Magic and support](../../../docs/design/synthesis/themes/tactical-battle-loop.md#magic-healing-and-support) ·
 [Action commit and replay](../../../docs/design/synthesis/themes/tactical-battle-loop.md#action-commit-construction-and-replay) ·
 [Campaign agreement](../application/remaining-campaign-risk-baseline.md) ·
@@ -25,9 +25,10 @@ are STUN `0x0001` (also called paralysis), POISON `0x0002` and CURSE `0x0004`.
 | DETOX 1 | `0x02` / 0 | 3 | Teammate at distance 0–1 / 0 | POISON |
 | DETOX 2 | `0x42` / 1 | 6 | Teammate at distance 0–2 / 0 | STUN, POISON (`0x0003`) |
 | DETOX 3 | `0x82` / 2 | 10 | Teammate at distance 0–2 / 0 | CURSE, STUN, POISON (`0x0007`) |
+| DETOX 4 | `0xC2` / 3 | 16 | Teammate at distance 0–3 / 2 | CURSE, STUN, POISON (`0x0007`) |
 
 The rank rows in `data/stats/spells/spelldefs.asm` use POWER 0 and
-TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE. Battle uses variations 1–3 of the shared DETOX animation.
+TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE. Battle uses the four variations of the shared DETOX animation.
 The masks above apply to both Magic callers. Cure result flags in battle use a different encoding
 (POISON 1, STUN 2, CURSE 4). Compute the intersection with the target's live word so a partial cure
 preserves the bits outside that rank's mask and every unrelated accepted effect.
@@ -47,8 +48,8 @@ checks HP, status, silence, MP sufficiency or map distance. Canceling the recipi
 Magic selection before payment or target writes.
 
 On confirmation, announce the selected cast, debit its MP with floor zero
-(`code/common/stats/combatantstats_2.asm:DecreaseCurrentMp`), then inspect the recipient. Rank 3
-processes and reports CURSE, then STUN, then POISON. Rank 2 starts at STUN. Each message corresponds
+(`code/common/stats/combatantstats_2.asm:DecreaseCurrentMp`), then inspect the recipient. Ranks 3 and 4
+process and report CURSE, then STUN, then POISON. Rank 2 starts at STUN. Each message corresponds
 to a bit actually removed. If the intersection is empty, report nothing happened. The field
 caller writes the resulting status and calls `UpdateCombatantStats` even on that branch. There is
 no EXP or RNG call on either result. HP stays where it was, including zero. Control returns to the
@@ -62,10 +63,10 @@ field menu, from which the player resumes walking. The cast does not itself save
 compares live MP with the selected packed rank's cost before target selection. From the caster's
 chosen square, `battlefield/buildactionrangegrids.asm:BuildSpellRangeGrid` uses Manhattan range and
 teammate occupancy. `battlefield/populatetargetslist.asm:PopulateTargetsListForSpell` expands the
-center by radius zero. Both use the occupancy filter in
+center by the selected rank's radius. Both use the occupancy filter in
 `battlefield/buildtargetsarray.asm:BuildTargetsArray`, which skips the neutral activation bit
-even for an ally-side combatant. Select one living, positioned, non-neutral ally, including the
-caster at distance zero. Fallen, undeployed or reserve members have no battle target. Need for
+even for an ally-side combatant. Select a living, positioned, non-neutral ally as the center,
+including the caster at distance zero. Fallen, undeployed or reserve members have no battle target. Need for
 a cure does not gate targeting. Cancel before confirmation with both seeds, MP, position
 commitment and turn unchanged. Insufficient MP returns to the spell selector.
 
@@ -154,8 +155,8 @@ DETOX 2/3 Save → Continue → return observation remains **Unknown**.
 `issue1955/slots/castle-*.json` Map36 saves both contain active PRST40 Sarah with packed byte
 130, the learned ceiling for ranks 1–3. Her MP is 59 in English and 56 in Chinese. The Chinese
 Battle26 road slot also has the packed entry, 56 MP and a placed Sarah.
-`PrivateFieldPreparation` and `PrivateBattleActionBindings.PoisonCure` bind the three ranks.
-Ranks 2 and 3 clear STUN and POISON. Rank 3 also treats admitted CURSE and unequips cursed gear. To inspect these seeds,
+`PrivateFieldPreparation` and `PrivateBattleActionBindings.PoisonCure` bind all four ranks. Rank 2 clears STUN and POISON. Ranks 3 and 4 also treat admitted CURSE
+and unequip cursed gear. To inspect the accepted rank 2 and 3 seeds,
 decode each slot envelope's base64 payload and verify its SHA-256 against the envelope. Read
 `data.allies` by `actor` and `data.activeAllies`, or `data.battle.actors` by `actorId`
 and its position and loadout. In both forms use `ally-1` for Sarah. Rank admission is keyed by
@@ -187,6 +188,8 @@ actual terms. Field Powder supplies no evidence of high-rank Magic targeting or 
 [Accepted DETOX 1](gameplay-rules.md#finite-purchased-supplies-and-detox1)
 
 ## Implementation decision and sequence
+
+Ranks 2 and 3 use the following shared cure and persistence decisions.
 
 1. **Connect both Magic ranks.** Reuse `FieldCast`, the joined-party
    query, the existing friendly battle spell and scene pipeline, and independently validated
@@ -240,7 +243,108 @@ settled return must survive cold Continue without replaying the cure or making a
 [Save and Continue agreement](../application/battle-save-and-continue.md#stable-commit-and-request-ux) ·
 [Support save rules](support-spell-status-design.md#save-compatibility-and-recovery)
 
-## Acceptance and input budget
+## DETOX 4 area and Field admission
+
+[#2236](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2236) uses Standard rigor for
+the fourth learned rank across the existing Battle and Field callers. Sarah learns packed entry
+`0xC2` at effective level 45 from her first spell list, which VICR uses at promoted level 25. The
+unpromoted level cap is 40. The current scope is Battle26/Pacalon with existing player classes,
+effects and assets.
+
+**Confirmed** static at the same pinned USA source. In `spelldefs.asm`, DETOX 4 has power 0,
+cost 16, the same teammate and silence flags, center distance 0–3, Manhattan radius 2 and
+animation variation 4 (selector 102). `PopulateTargetsListForSpell` uses the center's teammate
+occupancy grid and the radius table. `battleactions/battleactionsengine_1.asm:battlesceneScript_DetermineTargetsByAction`
+then calls `battleactions/sorttargets.asm:battlesceneScript_SortTargets`. For this friendly spell
+the result is ascending combatant slot.
+The selected center can appear anywhere in that list. Use the caster's provisional destination
+as its live tile for both center and area geometry. The center and recipients must be living,
+placed non-neutral allies. Status does not gate inclusion.
+
+`spellEffect_Detox` takes the same `0x0007` mask as rank 3. Each recipient contributes 5 EXP
+on any clear. In `battleactions/earnexp.asm`, `battlesceneScript_AddStatusEffectSpellExp`
+calls `battlesceneScript_AddExpAndApplyPerActionCap`, whose `PER_ACTION_EXP_CAP` is 49.
+`battlesceneScript_CalculateHealingExp` calls `battlesceneScript_AddExpAndApplyHealingCap`,
+whose `HEALING_ACTION_EXP_CAP` is 25. An ineffective recipient consumes one range-8 draw
+and contributes zero. The cast spends 16 MP
+once and pays the same-side award once after all results, using both range-16 draws. Silence
+pays once and skips the cast effect, recipient work and award. Cancellation and Battle
+insufficient MP leave state and seeds at the pre-commit boundary.
+
+`FieldMenu` chooses one joined recipient from the same list as the other ranks. At ranks
+above 2 it shares the CURSE → STUN → POISON path, including gear removal and refresh.
+Field pays 16 MP clamped to availability, including no effect, and leaves both seeds and EXP
+untouched. It allows low MP and silence, with no Battle geometry or area expansion.
+
+Keep the selected center in the existing command selection. The friendly target rule expands
+that center into ordered recipients at preparation and the detached action validates those
+reactions. Reuse existing cure, gear refresh and reward authorities. The scene consumes one
+cast effect and one finish wait around the ordered results. Its recipient bindings are checked
+before commitment. Field uses the same mask with its established single-member caller.
+Existing Save and Continue carry the result; no change to the record is required.
+
+Acceptance uses focused engine cases and one bounded ordinary Battle26 cast from a disposable
+VICR Sarah save with a source-legal level and learned book, followed by an independent title
+Continue comparison. The Field engine case exercises one recipient while another member
+also has a curable status.
+Reuse the registered DETOX successor in place. Budget up to six 128 KiB envelopes, 2 MiB of
+compact receipts and one serial native process. Natural high-level acquisition, enemy DETOX 4,
+hardware timing and later campaign progression stay outside this slice.
+
+### Battle26 input and independent Continue
+
+**Confirmed** in the remake with Godot 4.7.2 .NET. A disposable copy of the registered
+`derived/issue1956/vicar-review/receipts/vicar-road01/battle-ready-slot.json` sets Sarah to
+VICR 25 with packed book `[192,194,206,68]` and seeds poison and stun on six active members.
+The book, level and ailments are controlled starting state. Open ordinary Title → Continue,
+then Magic → DETOX 4, cycle to Kazin at (5,25) and confirm. Sarah starts at (6,25).
+
+The eight results appear in order for Bowie, Sarah, Kazin, Peter, Gerhalt, Rohde, Elric and
+Janet. Kazin receives poison and stun notices. Elric and Janet have no effect. One cast spends
+56→40 MP including Sarah's self-cure and awards 30 EXP (0→30) after six 5 EXP contributions.
+Two range-8 ineffective draws precede the two range-16 award draws. Selector 102 uses all
+11 mounted Original frames with one cast cue and one SpellStop cleanup. Kazin receives the next
+usable player action. The engine cases also exercise worn CURSE with retained gear and an
+unrelated status, inclusive range and radius, free cancellation, insufficient MP and silence.
+Field rank-4 coverage uses the actual engine command.
+
+Save at settled Battle Movement. A fresh Godot process and save namespace load a copy of that
+output via Title → Continue. The immediate re-save advances sequence 9→10 with checksums valid
+and equal complete decoded battle data, including the cured statuses, learned book, spent MP,
+EXP, actor control, queue and both seeds.
+
+Use the private driver registered at `derived/issue2236/review` with the
+[locked Debug adapter](../development-and-verification.md#locked-net-workflow). It mounts the
+existing `derived/issue2232/pre-voyage-detox-v1` in place. From the executing checkout use the
+approved disposable save root and a fresh journey name. Each mode launches its own Godot process.
+The cold mode uses that journey's cast save as input.
+
+```powershell
+. ./local/private-inputs.ps1
+$repo = (Get-Location).Path
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2236/review'
+$journey = 'review-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
+& pwsh -NoProfile -File "$review/Run.ps1" -Repo $repo -SaveRoot $disposableSaveRoot -Journey $journey -Mode cast
+if ($LASTEXITCODE) { throw 'Inspect cast receipt and exit' }
+& pwsh -NoProfile -File "$review/Run.ps1" -Repo $repo -SaveRoot $disposableSaveRoot -Journey $journey -Mode cold
+if ($LASTEXITCODE) { throw 'Inspect Continue receipt and exit' }
+```
+
+**Completed failures.** Early test assertions miscounted the two silence observations as two
+prompts and counted the ordinary post-turn silence-expiry draw as part of the suppressed cast.
+The final test checks the one presented notice and isolates the post-turn draw. The first
+native attempt stopped at commit with `battle-policy-failure` because the award validator
+still enforced the 25 EXP recovery cap. The six-target engine case now requires accumulated
+30 EXP, and both award validators admit the source status cap. A later observer omitted Janet
+from its expected area and therefore undercounted one no-effect draw. The registered reports
+retain both attempts. The successful cast and cold processes exited 0 with ObjectDB warnings
+(8 and 2 instances). These remain under the paused [#1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
+boundary.
+
+**Unknown.** Natural late-rank acquisition and casting, original full scene timing and
+enemy rank-4 delivery. The remake observation uses the controlled Battle26 input above.
+
+## Acceptance and input budget for ranks 2 and 3
 
 Use focused engine behavior cases at actual Field/Battle entry points. Vary rank, source actor,
 target and resource state within those boundaries.

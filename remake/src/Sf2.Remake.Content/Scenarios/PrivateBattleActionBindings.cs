@@ -114,13 +114,15 @@ internal static class PrivateBattleActionBindings
 
     internal static IEnumerable<HealingSpellDefinition> PoisonCure(PrivateBattleDefinitions definitions)
     {
-        foreach (var (rank, cost, range) in new (byte Rank, byte Cost, byte Range)[] { (1, 3, 1), (2, 6, 2), (3, 10, 2) })
+        foreach (var (rank, cost, range, radius) in new (byte, byte, byte, byte)[]
+            { (1, 3, 1, 0), (2, 6, 2, 0), (3, 10, 2, 0), (4, 16, 3, 2) })
         {
             if (!definitions.Spells.TryGetValue(new("detox", rank), out var spell)) continue;
-            Require(spell is { BaseId: 2, Code: "DETOX", Radius: 0, Power: 0, MinimumRange: 0 } &&
-                spell.MpCost == cost && spell.MaximumRange == range &&
+            Require(spell is { BaseId: 2, Code: "DETOX", Power: 0, MinimumRange: 0 } &&
+                spell.MpCost == cost && spell.MaximumRange == range && spell.Radius == radius &&
                 spell.PropertiesExpression == "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE", "source-detox-definition", "spells.detox", true);
-            yield return new(spell.Spell, spell.MpCost, 0, spell.MinimumRange, spell.MaximumRange, CuresPoison: true);
+            yield return new(spell.Spell, spell.MpCost, 0, spell.MinimumRange, spell.MaximumRange,
+                rank == 4 ? HealingTargets.CureRadius : HealingTargets.Single, spell.Radius, CuresPoison: true);
         }
     }
 

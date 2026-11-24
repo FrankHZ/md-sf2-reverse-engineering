@@ -80,7 +80,7 @@ public sealed record HealingItemDefinition(byte ItemId, string Name, ushort Powe
 
 public sealed record RetreatSpellDefinition(SpellRef Spell, byte MpCost);
 
-public enum HealingTargets { Single, AuraRadius, AuraAllAllies }
+public enum HealingTargets { Single, AuraRadius, AuraAllAllies, CureRadius }
 public sealed record HealingSpellDefinition(
     SpellRef Spell, byte MpCost, ushort Power, byte MinimumRange, byte MaximumRange,
     HealingTargets Targets = HealingTargets.Single, byte Radius = 0, bool CuresPoison = false)

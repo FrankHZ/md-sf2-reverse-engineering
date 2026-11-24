@@ -352,7 +352,8 @@ The [spell coverage inventory](godot/spell-presentation.md#coverage-by-family-an
 admitted, authored-only and unavailable ranks, with separate asset and observation boundaries.
 Battle26 exercises learned player BOLT 1 and HEAL 4. Controlled WIZ Tyrin casts BLAZE 4,
 FREEZE 3–4 and BOLT 3–4 through ordinary Magic with the shared elemental placeholders.
-AURA2–4 have [controlled ordinary casting and cold Continue](domain/gameplay-rules.md#private-learned-aura-ranks). DETOX4 remains pending.
+AURA 2–4 have [controlled ordinary casting and cold Continue](domain/gameplay-rules.md#private-learned-aura-ranks).
+DETOX 4 admits [area treatment in Battle and one recipient in Field](domain/detox-ranks-design.md#detox-4-area-and-field-admission).
 [Current battle spells](application/church-promotion-design.md#current-battle-spells) ·
 [High-rank observation](development-and-verification.md#high-rank-elemental-magic-observation)
 Battles04–07 can mount the prepared BLAZE1 flame with the actual caster, target and scene art.
@@ -449,8 +450,8 @@ on that same carried party, including defeated members' inventory access. The co
 shows the five command icons with persistent captions. Back returns to the retained member and
 slot. [Prepare presentation and headless acceptance](godot/field-and-shop.md#prepare-command-icons)
 Original field HEAL and ordinary HP-recovery item NoEffect are explicit. Antidote and DETOX 1 clear poison with caller-specific
-payment. Learned DETOX 2/3 clear poison and stun in Field and Battle Magic, with caller-specific
-costs, feedback and refresh. Rank 3 also treats CURSE through the shared equipment rules.
+payment. Learned DETOX 2–4 clear poison and stun, and ranks 3 and 4 remove CURSE through the
+shared equipment rules. Field Magic selects one joined member at every rank and clamps the MP debit.
 [Higher-rank availability and evidence](domain/detox-ranks-design.md).
 Fairy Powder clears poison and paralysis through Field Use and consumes the selected holder
 slot after target confirmation. [Pacalon Use and Continue](application/pacalon-first-visit.md#fairy-powder-use).

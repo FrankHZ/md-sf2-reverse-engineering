@@ -822,7 +822,7 @@ internal sealed partial class BattleSceneView : Control
         PresentStatus(state);
     }
     private static int? DetoxSelector(BattleSceneState? state) =>
-        state is { IsSilencedCast: false, Spell: { CuresPoison: true, Spell: { Value: "detox", Level: >= 1 and <= 3 } spell } }
+        state is { IsSilencedCast: false, Spell: { CuresPoison: true, Spell: { Value: "detox", Level: >= 1 and <= 4 } spell } }
             ? 6 + 32 * (spell.Level - 1) : null;
 
     internal object Observe() => new

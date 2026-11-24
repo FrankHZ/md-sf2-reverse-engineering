@@ -12,7 +12,7 @@ internal static class PoisonCureRules
     internal static ushort SpellMask(byte rank) => rank switch
     {
         1 => Poison,
-        3 => PoisonAndStun | CurseRules.Mask,
+        3 or 4 => PoisonAndStun | CurseRules.Mask,
         _ => PoisonAndStun,
     };
 

@@ -135,7 +135,10 @@ internal static class BattleChoices
             if (admission.Spell is { } spell && !SilenceRules.Present(battle.GetActor(actor).Status))
             {
                 if (spell.CuresPoison)
-                    RequireCureContent(battle, actor, target, content, requireContent);
+                {
+                    if (content is not null || requireContent)
+                        RequireCureContent(battle, actor, HealingTargetRules.Resolve(battle, actor, destination, spell, target), content);
+                }
                 else if (spell.IsAura)
                 {
                     if (content is not null || requireContent)
@@ -184,17 +187,12 @@ internal static class BattleChoices
     }
 
     // DETOX consumes ordinary cast/idle actors and scenery, never the HEAL fairy assets/cursor.
-    private static void RequireCureContent(EngineBattleState battle, ActorRef actor, ActorRef target,
-        BattleSceneDefinition? content, bool required)
+    private static void RequireCureContent(EngineBattleState battle, ActorRef actor,
+        IReadOnlyList<BattleActorState> recipients, BattleSceneDefinition? content)
     {
-        if (content is null)
+        if (content is null) throw new BattleRuleException("cure-scene-content", "battleScenes", true);
+        bool Visual(BattleActorState member, bool cast)
         {
-            if (required) throw new BattleRuleException("cure-scene-content", "battleScenes", true);
-            return;
-        }
-        bool Visual(ActorRef id, bool cast)
-        {
-            var member = battle.GetActor(id);
             if (!content.TryAllyVisual(member, out var visual) ||
                 visual.IdleTicks <= 0 || visual.Frames.Count == 0 ||
                 !visual.Frames.All(content.Rasters.ContainsKey) || !visual.Sequences.ContainsKey("idle") ||
@@ -203,7 +201,8 @@ internal static class BattleChoices
             return weapon is null || visual.Item == weapon;
         }
         if (content.Encounter != battle.Definition.Encounter || !content.Rasters.ContainsKey(content.Background) ||
-            !content.Rasters.ContainsKey(content.Ground) || !Visual(actor, true) || !Visual(target, false))
+            !content.Rasters.ContainsKey(content.Ground) || !Visual(battle.GetActor(actor), true) ||
+            recipients.Any(recipient => !Visual(recipient, false)))
             throw new BattleRuleException("cure-scene-content", "battleScenes", true);
     }
 

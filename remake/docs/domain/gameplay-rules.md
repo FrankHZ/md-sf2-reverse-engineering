@@ -98,8 +98,10 @@ input preserve the complete prior state. Learned DETOX 2/3 use MP6/10 and range 
 poison and stun on a single admitted teammate. Effective Battle casts refresh the recipient
 and award once per target. Field casts can target joined reserves or fallen members and
 clamp MP at zero, with refresh on both outcomes and no RNG or EXP. Rank 3 also clears CURSE
-and unequips cursed gear through the shared equipment rules. Rank 2 leaves CURSE and the
-worn words intact. [Higher-rank rules and acceptance](detox-ranks-design.md).
+and unequips cursed gear through the shared equipment rules. Rank 2 preserves CURSE and equipped
+words. Rank 4 uses the rank-3 mask,
+spends 16 MP and allows a center at range 0–3 with radius 2 in Battle. Field rank 4 keeps one
+joined recipient and clamps payment. [Higher-rank rules and acceptance](detox-ranks-design.md#detox-4-area-and-field-admission).
 Enemy cure effects (including a `heal/1` authored alias) reject at both finite
 HEAL AI decision and spell admission before any automatic movement, payment, effect or RNG publication;
 this does not admit enemy DETOX.
@@ -751,7 +753,7 @@ It now waits for panel state and selects the named Save entry. Failed reports re
 private review. Successful runs retain 2–6 ObjectDB exit warnings under paused #1716.
 
 **Unknown.** Natural high-level acquisition, enemy higher ranks, exact hardware timing and human
-visual acceptance. DETOX4 remains unbound. Controlled inputs retain the Battle26/Pacalon boundary.
+visual acceptance. Controlled inputs retain the Battle26/Pacalon boundary.
 
 ## Jaro conversion and source ally commandset6
 

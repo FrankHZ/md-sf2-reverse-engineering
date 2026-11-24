@@ -159,8 +159,9 @@ A palette or sprite match from another member is insufficient class admission.
   VICR uses the shared healer eligibility and EXP rules. HEAL 1, HEAL 3 and mounted
   AURA 1 apply 5/4 to the raw power before the missing-HP cap. HEAL 4 retains its
   full-recovery sentinel. The existing Battle26 bindings supply BLAST 1–4, SLOW 1–2,
-  admitted DETOX 1–3 and BOOST 1–2. Karna learns BOOST 2 and AURA 1 through growth.
-  Higher AURA ranks use the [recovery owner](../domain/gameplay-rules.md#private-learned-aura-ranks); DETOX4 remains unbound. [Sarah growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats01.asm) ·
+  DETOX 1–4 and BOOST 1–2. Sarah reaches her DETOX 4 learning threshold at VICR 25. Karna learns
+  BOOST 2 and AURA 1 through growth. [Higher AURA ranks](../domain/gameplay-rules.md#private-learned-aura-ranks) ·
+  [DETOX 4](../domain/detox-ranks-design.md#detox-4-area-and-field-admission). [Sarah growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats01.asm) ·
   [Karna growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats15.asm) ·
   [Healing power and EXP](../../../docs/design/contracts/battle/spell-resolution.md) ·
   [DETOX #1965](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1965) ·
@@ -759,8 +760,8 @@ actions are admitted. The linked action owners track the remaining boundaries.
   [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926).
 - Packed spell learning and retention have their own coverage. The
   [spell actions](church-promotion-design.md#current-battle-spells) track admitted learned
-  ranks, including AURA2–4, and the remaining DETOX4 boundary.
+  ranks, including AURA 2–4 and DETOX 4.
   MUDDLE 2 is admitted in private Magic and battle Continue. A rank-2 cast through
   unchanged campaign history and natural ally confusion remain **Unknown**.
   [Controlled Battle25 observation](../domain/hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25)
-  DETOX 4 remains with [DETOX rank admission](../domain/detox-ranks-design.md).
+  [DETOX rank admission](../domain/detox-ranks-design.md#detox-4-area-and-field-admission) covers Battle and Field Magic.

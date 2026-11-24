@@ -28,8 +28,10 @@ internal sealed class Sf2HealingRule : IHealingRule
         if (!actor.Spells.Contains(spellRef)) throw new BattleRuleException("spell-not-known", "spell");
         if (!battle.Definition.Spells.TryGetValue(spellRef, out var spell))
             throw new BattleRuleException("spell-effect", "spell", true);
-        if (spell.CuresPoison && (spellRef.Level != 1 && spellRef is not { Value: "detox", Level: 2 or 3 } ||
-            spell.IsAura || spell.Power != 0 || spell.Radius != 0))
+        bool areaCure = spellRef is { Value: "detox", Level: 4 };
+        if (spell.CuresPoison && (spellRef.Level != 1 && spellRef is not { Value: "detox", Level: >= 2 and <= 4 } ||
+            spell.Targets != (areaCure ? HealingTargets.CureRadius : HealingTargets.Single) ||
+            spell.Power != 0 || spell.Radius != (areaCure ? 2 : 0)))
             throw new BattleRuleException("poison-cure-definition", "spell", true);
         if (spell.CuresPoison && !actor.IsAlly)
             throw new BattleRuleException("enemy-poison-cure", "spell", true);
@@ -51,10 +53,7 @@ internal sealed class Sf2HealingRule : IHealingRule
 
     public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actorRef,
         MapPosition destination, HealingSpellDefinition spell, ActorRef targetRef)
-    {
-        var targets = HealingTargetRules.Resolve(battle, actorRef, destination, spell, targetRef);
-        return spell.IsAura ? battle.GetActor(targetRef) : targets[0];
-    }
+        => HealingTargetRules.RequireCenter(battle, actorRef, destination, spell, targetRef);
     public BattleActionResolution Prepare(
         EngineBattleState battle, ActorRef actorRef, MapPosition destination, SpellRef spellRef, ActorRef targetRef, IBattleProgressionRule progression)
     {
