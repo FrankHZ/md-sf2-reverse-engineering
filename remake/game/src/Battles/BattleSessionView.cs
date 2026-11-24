@@ -132,11 +132,16 @@ public sealed partial class BattleSessionView : Control
         }
     }
 
-    internal void PrepareTerrain(string mode) => _map.PrepareTerrain(mode);
+    internal void PrepareGraphics(string mode)
+    {
+        _map.PrepareTerrain(mode);
+        _scene.PrepareGraphics(mode, _mapScenes);
+    }
 
     internal void RefreshSettingsProjection()
     {
         _map.SelectTerrain(_input.Settings.GraphicsMode);
+        _scene.PublishGraphics();
         // Inspection refreshes through RefreshInputHints. Playback retains its wait token.
         if (_result is not null && _startupFailure is null && !_inspection.Active) Present();
     }
@@ -202,6 +207,7 @@ public sealed partial class BattleSessionView : Control
         {
             try
             {
+                _scene.PrepareGraphics(_input.Settings.GraphicsMode, session.Definition.ScenesFor(result.Snapshot.Battle.Definition));
                 _map.Build(result.Snapshot.Battle, session.Definition, _input.Settings.GraphicsMode);
                 _menu.ConfigureAssets(session.ActiveBattleScenes, session.Definition);
                 _inspection.ConfigureIcons(_menu.Icons, session.Definition);

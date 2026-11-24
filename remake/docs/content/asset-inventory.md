@@ -34,6 +34,7 @@ together. The active package is the set selected in the launch process.
 | **Pre-voyage companion candidate** · `derived/issue2174/pre-voyage-map3-companion-v1` | Complete selection for the HD rollout. Carries the same Map3 L1 centers and neighborhoods in one world-relative file. [Rebuild, admission and native comparison](#map3-terrain-companion-2174) |
 | **Pre-voyage static terrain** · `derived/issue2175/pre-voyage-terrain-v1` | Complete field and tactical selection with twenty L1 banks and the original Map3 companion. [Production and live checks](#pre-voyage-static-terrain-2175) |
 | **Pre-voyage actors and portraits** · `derived/issue2176/pre-voyage-actors-v1` | Complete terrain selection plus switchable shared actor/alternate and portrait banks. [Production and live checks](#pre-voyage-actors-and-portraits-2176) |
+| **Pre-voyage battle artwork** · `derived/issue2177/pre-voyage-battle-v1` | Current complete HD selection: preserves the actor/terrain package and adds eight close-up banks plus shared allied body/weapon donors. UI/entry and map tile animation retain their previous coverage. [Production](#derive-selected-battle-rasters) · [Actual consumers](hd-rollout.md#private-battle-artwork-acceptance) |
 | **PGNT** · `derived/issue1957/pgnt-v3` | Separate registered later progression/Battle26 witness. Its older Map3 HD bank has no L1 contexts and its cue 12 is the defeat placeholder. Preserve that evidence selection. Check resource lineage when proposing a successor that combines later progression with pre-voyage corrections. [PGNT reproduction](../development-and-verification.md#high-rank-elemental-magic-observation) |
 | **Display catalogs** · `derived/issue1957/catalogs-v1`, `derived/issue2001/catalogs-v1` | Independent prepared Chinese name overlays for the owning reproductions. Match the catalog and entry locale to the named reproduction. A catalog supplies display names and does not select world, scene or media. [PGNT catalog selection](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Retail catalog selection](presentation-assets.md#sleep-display-name) |
 | **Retail base and library** · `derived/issue2001/issue1966-original`, private asset Git `runtime/retail-v1` | Base world/entry provenance and preparation outputs used to assemble packages. Some prepared candidates have no current package binding. [Retail preparation](#retail-original-preparation) |
@@ -592,3 +593,158 @@ For an existing publication add `--check` to compare every file directly. Make t
 scratch unavailable and repeat a normal consumer through the published package. The
 [actor observations](hd-rollout.md#focused-observations) name the entry points and bounded claims.
 Reproduction requires no historical ignored reports. Other HD families remain tracked by #2171.
+
+## Battle raster variant binding (#2177)
+
+The optional `hdRasters` scene object binds independently prepared PNGs to exact keys in the
+scene's `rasters` object. The existing actor, palette, weapon and terrain selectors continue to
+select those keys. The same bank can contain the effect keys already selected by the spell,
+recovery or field-exit presenters. The package keeps the scene files and all existing dependencies
+at their registered relative paths. [Battle graphics consumer](../godot/battle-scenes.md#graphics-variants)
+· [Prepared spell groups](../godot/spell-presentation.md#graphics-variants)
+
+Pass a directory of authored variant PNGs for each scene to extend. A key such as `body/front`
+uses `body/front.png` relative to that directory. Each variant has equal-axis 2× or 4× original
+raster dimensions and preserves the exact nearest-expanded alpha and opaque-black masks.
+The producer checks the original raster identity before using it for this comparison. The
+existing 4 MiB bound applies to each full scene JSON after embedding the variants.
+
+```powershell
+. ./local/private-inputs.ps1
+uv sync --locked
+uv run --locked --with pillow==11.3.0 python -B -m sf2tool.remake_hd_battle_rasters `
+    --base $base --out $candidate --scene main-scenes.json $authoredPngs
+```
+
+Use an absolute fresh candidate destination under the worktree's `local/`. Repeat `--scene`
+for an admitted encounter sibling. The opening-input scene definition supplies battle setup;
+the raster owner is `main-scenes.json`. The command prints per-scene variant
+counts, input and output sizes, and the total closed-package size. An invalid declaration aborts
+staging before publication. Use the existing package copier to publish a verified candidate.
+[Closed package publication](#pre-voyage-actors-and-portraits-2176)
+
+**Confirmed** on original synthetic art and an authored scenario. The packager retained a main
+scene, an encounter scene, and the full declared closure, which was reopened after removing the
+input scratch. Wrong density and changed masks aborted staging. The [native observation](hd-rollout.md#battle-raster-observation)
+checks the runtime bindings independently. The registered production selection is
+`derived/issue2177/pre-voyage-battle-v1`; the private observations below cover its real consumers.
+
+### Derive selected battle rasters
+
+The same producer accepts `--derive --gfx-root` with one scene path per `--scene`. It reads
+the mounted Original rasters, generates temporary PNGs and passes them through the existing
+variant binder and closed-package staging. The pinned graphics checkout supplies the exact-RGBA
+edge-aware filter used by the actor producer.
+
+```powershell
+. ./local/private-inputs.ps1
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2176/pre-voyage-actors-v1'
+# $gfxRoot selects the pinned graphics checkout; $candidate is fresh ignored scratch.
+$scenes = @('main-scenes.json',
+    'inputs/scene02-field-01/shrine-mounted-scenes.json',
+    'inputs/scene03-field-03/shrine-mounted-scenes.json',
+    'inputs/scene04/shrine-mounted-scenes.json', 'inputs/scene05/shrine-mounted-scenes.json',
+    'inputs/scene06-cast/shrine-mounted-scenes.json', 'inputs/scene07-cast/shrine-mounted-scenes.json',
+    'inputs/scene08/shrine-mounted-scenes.json')
+$sceneArgs = foreach ($scene in $scenes) { '--scene'; $scene }
+uv run --locked --with pillow==11.3.0 python -B -m sf2tool.remake_hd_battle_rasters `
+    --base $base --out $candidate --derive --gfx-root $gfxRoot --shared-allies @sceneArgs
+```
+
+Use only encounter paths declared by the selected world's `encounters[].battleScenes`.
+Omit `--pilot` for full conversion of the selected scenes. Pilot selects the first complete
+body group, weapon group, background, ground, healing group, field-death group and each
+installed BLAZE1/BLAZE2/BLAST1 group. Overlapping groups close together. Full selection includes
+all actor frames and weapon frames, default and terrain-selected scenery, healing body/wing/dust,
+field exits and those three installed formal spell families. UI keys remain outside this closure.
+
+Use `--shared-allies` for a campaign package. `CampaignScenes` can supply an earlier battle's
+member-specific appearance from a later declared scene. The flag additionally derives only
+ally body and weapon groups in every remaining declared render scene. This deliberately
+includes the installed shared ally class/equipment superset, so revisits and member appearances
+follow the same existing campaign admission. Later enemy, backdrop and spell groups receive
+no additional coverage from the flag. Receipts label each processed file `selected-scene` or
+`shared-allies`. Pilot limits each donor to its first complete allied body and weapon groups;
+full coverage requires omitting `--pilot`.
+
+The producer also derives an existing raster matching a shared ally key when that scene's local
+actor rows omit the key. The runtime retains that existing Original when importing a donor
+appearance. Its HD therefore follows its own dimensions and pixels. The shared key set is
+collected sequentially from the same declared scene documents during preparation.
+
+The reader shares a variant only when it inserts that variant's Original from the same donor.
+The existing destination-first, then first-donor Original selection remains authoritative.
+A same-key Original already in the destination retains that destination's own variant or its
+Original fallback, even when another scene declares an HD value for the key. Runtime sharing
+uses the same immutable raster references. Source fields and the 4 MiB-per-render-scene bound
+remain part of package admission; the opening definition keeps its separate admission bound.
+
+Target dimensions follow the existing displayed footprint at four pixels per logical pixel.
+Native 96×96 ally frames, native spell effects and field-exit strips receive source×4. Other
+body frames, weapons, scenery and the installed doubled fairy art receive source×2. For a
+doubled source, every pixel must match a nearest-downsample/upsample round trip before logical
+pixels are recovered. Each reported key names its chosen method as `native-exact-rgba`,
+`recovered-nearest-2x` or `conservative-source-grid-2x`. The conservative method filters at
+the supplied pixel grid and takes the 2× result, preserving detail that prevents exact recovery.
+All methods verify alpha and opaque-black masks against the original. Field-exit halves filter
+independently.
+
+Scenery uses the conservative exact-RGBA family treatment. These independently composed horizon,
+ground and scrolling layers keep their existing palette and opaque-black contrast; they do not
+share the terrain producer's block neighborhood or density-ramp contract. Horizontal repeats
+provide the background filter's sampling neighbors before the center is cropped. This avoids
+introducing a second palette direction while preserving the accepted contour treatment. Direct
+production comparison confirms that output colors remain in each Original palette and masks
+remain exact. This slice does not claim L1 palette expansion for battle artwork.
+
+Processing is sequential per scene and per raster. Its work is linear in selected source and
+output pixels plus copied package bytes. Memory includes one parsed scene, its encoded variants
+and the current filtering grids and images. Each scene retains the 4 MiB JSON admission limit
+and each raster the 2048-pixel edge bound. Input/output size receipts support the caller's
+storage and admission planning. Real selected counts, peak memory and scene headroom must be
+measured in the private pilot before scaling.
+
+**Confirmed** with generated color patterns and the pinned filter. A native ally, exact doubled
+frame, non-reversible doubled frame, doubled fairy/scenery/weapon, two-half death strip and all
+three formal spell-key groups exercise the full selector. Pilot generated 34 variants in a
+33,419-byte nine-file package; full generated 35 in 33,980 bytes. The sample completed in
+approximately two seconds, including two CLI subprocesses. Every output mask matched, the
+Original raster objects remained equal, and the UI key received no variant.
+
+**Confirmed** with a synthetic donor scene. The shared-allies pass adds exactly its two allied
+body frames and one weapon, while its enemy, scenery, healing, exit and spell resources retain
+their Original fields without new variants. The two-scene full sample contains ten files and
+50,785 bytes. The focused `BattleSceneAllyAppearanceTests` exercise a missing destination
+Original, a different existing Original without HD and a different existing Original with its
+own HD. All three keep the selected appearance and paired Original/HD identity.
+An additional synthetic CLI case retains a 96×96 destination Original and a different 24×24
+donor Original under one shared body key; their produced HD widths remain 384 and 48 respectively.
+
+### Published battle package
+
+**Confirmed:** the Battle04 pilot produced 46 variants in 1.83 seconds; its scene was 954,082
+bytes. The complete conversion with shared allied donors took 47.84 seconds on the review
+machine. It adds 3,488 bindings across eight selected scene banks and eighteen shared-ally banks:
+1,644 body, 1,580 weapon, 38 background, 38 ground, 72 healing, 24 field-exit, eight BLAZE1,
+24 BLAZE2 and 60 BLAST1 bindings. Counts include repeated per-scene bindings. All 3,307 doubled
+frames recovered exactly; 205 native frame operations include the separately processed exit
+halves. No conservative source-grid fallback was needed in this selection.
+
+The closed 168-file package is 357,304,188 bytes, an increase of 16,134,737 bytes. Its largest
+scene is 3,224,271 bytes, leaving 970,033 bytes under the unchanged 4 MiB bound. The 142 other
+files, including world, entry, audio and opening inputs, are byte-identical to the source package.
+Removing `hdRasters` from each changed scene gives the identical original document. Every variant
+was decoded and compared for dimensions, alpha, opaque black and palette containment. The world
+remains 97,658,510 bytes. Total package and temporary work fit the existing storage allowance;
+full producer peak working set and cross-hardware timing remain **Unknown**.
+A repeated single-scene pilot measured 271,347,712 bytes (258.78 MiB) peak Windows working set
+including package discovery, JSON parsing and filtering; it completed in 1.12 seconds. This
+supports the 1 GiB offline planning allowance, without asserting a measured full-run peak.
+
+Publish with the existing closed-package copier, using the command above's `$candidate` and
+`$output = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2177/pre-voyage-battle-v1'`.
+Use the same four copier input arguments shown for [actors](#pre-voyage-actors-and-portraits-2176),
+then `--check` for an existing publication. Both copies contain the same relative dependencies.
+After making all producer package directories unavailable, the published selection independently
+passed BLAST1/death and HEAL/Settings observations. No producer scratch is a runtime dependency.
+The [native reproduction](hd-rollout.md#private-battle-artwork-acceptance) names the exact short inputs.

@@ -17,8 +17,8 @@ Reuse the admitted original for the selected palette and frame. Where a caller n
 original, join its prepared index to that caller and verify Original first. Use only authorized
 materials for derivation and keep the existing private publication and public-asset boundaries.
 The [static terrain selection](asset-inventory.md#pre-voyage-static-terrain-2175) carries the Map3
-companion and the other nineteen banks. The [actor extension](asset-inventory.md#pre-voyage-actors-and-portraits-2176) is the current closed
-package for later families.
+companion and the other nineteen banks. The [battle artwork extension](asset-inventory.md#published-battle-package)
+is the current closed package for later families; it retains the actor and portrait extension.
 
 ## Coverage from the selected package
 
@@ -46,9 +46,9 @@ replacement, additional Map60 ascent, and later Map14 movement.
 | --- | --- | --- |
 | Field and tactical terrain | Retail `maps/index.json` joins atlases, tiles, palettes, blocks, layouts and animation operands. The selected world admits original atlases and block words. All twenty selected maps mount L1 banks. | Field drawing, pickup occlusion and tactical terrain resolve the current block and neighborhood. Each tactical plane retains its encounter origin, priority and logical tile footprint. [Static terrain evidence](asset-inventory.md#pre-voyage-static-terrain-2175) |
 | Water and other animated tiles | The prepared map index and original [map animation contract](../../../docs/research/world/map-content.md) identify source tables. Map66's DMA witness is in [map-animation-vdp-v1](../../../tests/fixtures/h3/map-animation-vdp-v1.json). Current world maps carry working layout events and the presenter supports plane scroll and palette effects. | **Confirmed** the world visual has a static atlas and no tile-animation field or phase selector. Treat source tile substitution as a separate consumer slice. Static water, scrolling and palette changes each have their own observations. Eight selected maps have referenced animation targets. **Unknown** which phases are drawn during the accepted visits. |
-| Field and tactical sprites | Retail `walking/index.json` includes ordinary directions, class appearances and special streams. The current world has 163 sprite IDs, including 252/254/255, and three alternate graphics names on 252. | All 163 IDs have complete `hdDirections`; all three alternate names have `hdGraphics`. Ordinary field selection uses the saved graphics mode and the sprite's own HD directions. Shadow-removed and alternate graphics use their selected identity and density. Tactical world sprites resolve HD directions; scene-owned death frames still select Original. [Focused observations](#focused-observations) cover actual field/tactical selection, alternate/shadow fallback and 48px registration; they do not establish every later special dispatch. |
+| Field and tactical sprites | Retail `walking/index.json` includes ordinary directions, class appearances and special streams. The current world has 163 sprite IDs, including 252/254/255, and three alternate graphics names on 252. | All 163 IDs have complete `hdDirections`; all three alternate names have `hdGraphics`. Ordinary field selection uses the saved graphics mode and the sprite's own HD directions. Shadow-removed and alternate graphics use their selected identity and density. Tactical world sprites resolve HD directions; the eight selected battle banks also provide complete HD scene-owned death strips under #2177. [Focused observations](#focused-observations) cover actual field/tactical selection, alternate/shadow fallback and 48px registration; they do not establish every later special dispatch. |
 | Portraits | Retail `portraits/index.json` supplies atlases and replacements. The world mounts 46 portraits, all with `hdRaster`. | Field story and both Member surfaces select HD from the saved mode and the selected portrait's own variant independently of terrain coverage. [Focused observations](#focused-observations) cover complete bank production, distinct eye/mouth tiles, mirror and special-pose dialogue. Member/class identity rules are unchanged; this slice does not claim a new playthrough of every class/member menu. |
-| Battle close-up bodies and weapons | Retail `bodies` and `weapons` plus the mounted scene documents bind body/palette/weapon, frames and layer order. | Primary scene `rasters` are the current textures in `BattleSceneView`. There is no mode-specific lookup. Preserve idle/reaction/attack geometry, palette-dependent weapon colors, mirroring, offsets and front/back layer. |
+| Battle close-up bodies and weapons | Retail `bodies` and `weapons` plus the mounted scene documents bind body/palette/weapon, frames and layer order. | `BattleSceneView` selects optional `hdRasters` in complete frame groups with fixed logical dimensions. Campaign admission carries the paired Original/HD donor for shared appearances. [Actual checks](#private-battle-artwork-acceptance) preserve weapon layering, mirroring and geometry. |
 | Battle ground and backdrops | Retail `terrain` contains the source variants. Scene defaults and `terrainScenes` select installed pairs. | Derive by distinct selected raster and its display semantics. Keep the existing horizon, ground footprint, wrapping, and encounter-specific selector. |
 | Battle effect and field death | Retail `effects/index.json` retains indexed operands. Mounted scenes include healing/fairy, field death and prepared BLAZE1/2 and BLAST1 in Battles04–07. | Cover only original-art consumers already bound in the selected encounter. Scale complete existing draw frames or indexed chunks at their own composition boundary. Keep timing, reaction, skip and Reduced Flash. Placeholder attacks stay with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104). [Current effect status](../godot/spell-presentation.md#coverage-by-family-and-rank) |
 | Original UI rasters | Retail `icons` and `ui` distinguish semantic keys and highlight states. World mounts 204 identity states and 32 field/Item/Shop/Church command states. Battle scenes have separate identity, diamond and cursor keys. | `IdentityIconReader.ReadHd` accepts only the two herb states. `PartyStatusView` consumes them. Shops, command menus, the battle identity owner and target/inspection cursor still use their existing Original selectors. Cover admitted callers and preserve the selected state, disabled behavior, anchor and input geometry. Code-drawn feedback, panels, HUD, layouts, licensed text and device glyphs stay with the [UI design owners](presentation-assets.md#fonts-theme-and-input-glyphs). Source pixel glyphs and advances stay at their native grid. |
@@ -447,3 +447,121 @@ production-package errors. The first authored probe leaked its own Sprite2D; fre
 that probe-owned warning. The final shared-prepare field observation passed 36 checks: first
 HD Apply took 201ms and Original 51ms including input release, with two existing exit warnings.
 These are single-run measurements on the review machine, not cross-hardware guarantees.
+
+## Battle raster observation
+
+The battle raster binding and packager deliver #2177. They use the existing
+scene resource keys, the 4 MiB scene document bound and the Settings prepare/write/publish
+transaction. Packager input can be independently prepared art at 2× or 4× raster dimensions,
+or the existing scene rasters through the [derive entry](asset-inventory.md#derive-selected-battle-rasters).
+Installed scene keys and the working package retain their existing selection semantics.
+[Producer and package scope](asset-inventory.md#battle-raster-variant-binding-2177)
+
+Campaign admission shares member-specific allied appearances across declared scenes. Derive
+the selected scene families with `--shared-allies` so the producer also covers the allied
+body/weapon donor banks. `CampaignScenes` carries HD together with the Original it actually
+inserts. Existing destination resources retain their own variant selection. A render-bank
+scan before campaign composition alone does not prove closure at the real consumer.
+
+Build the Debug adapter after its locked restore, then run the short synthetic observation
+with the owned Godot installation.
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$project = 'remake/game/Sf2.Remake.Godot.csproj'
+& $env:DOTNET_BIN restore $project --locked-mode -p:UseSharedCompilation=false -nodeReuse:false
+& $env:DOTNET_BIN build $project --configuration Debug --no-restore `
+    -p:UseSharedCompilation=false -nodeReuse:false
+& $env:GODOT_BIN --headless --path remake/game `
+    --script res://probes/engine_hd_battle_raster_observation.gd --quit-after 300
+```
+
+**Confirmed** in the battle adapter with the authored `early-ranged` action and generated
+textures. The probe presents the actual physical scene, publishes Original → HD → Original
+on the same wait token, and observes both native and already doubled ally inputs, a partial
+enemy frame group, front and rear weapon layers, both weapon flips, ground and backdrop wrap.
+It checks a reparent while textures are borrowed, their release on return, and the scene-owned
+tactical exit strip crop with transparent and opaque-black pixels. BLAZE2 and BLAST1 compare
+the prepared presenter projections with synthetic textures. The deliberate truncated PNG
+should report native decode errors and preserve the current binding. A successful observation
+prints `BATTLE-RASTER-OBSERVATION PASS` and exits 0.
+
+Preparation also runs when movement has no mounted close-up sprites. It enumerates the admitted
+actor/weapon groups, scenery, healing, field exit and existing effect groups, then decodes the
+target mode's selected rasters. HD declarations are checked even for incomplete groups, followed
+by the selected Original fallback. UI rasters are outside this consumer check. A fully covered
+HD group can prepare with an unusable Original payload; applying Original rejects that payload.
+The synthetic observation checks those empty-binding cases and retains the mode, scene state
+and empty display on rejection. Decode residency is temporary and repeated bindings share one
+decode per preparation call.
+
+### Private battle artwork acceptance
+
+Use the [published complete package](asset-inventory.md#published-battle-package), its world,
+main scene, entry and six opening inputs in one launch process. Use an isolated disposable save
+root and fresh namespace, never the player's namespace. Build Debug with the command above.
+The following inputs are controlled formation/level witnesses, not natural campaign reach.
+
+Write each start JSON below under the current worktree's ignored `local/`. For BLAST1, use
+`start: {battle:"battle-4", activeAllies:["ally-0","ally-1"], partyInput:"sarah.json",
+actors:[{actor:"ally-1",position:{x:5,y:7}}, {actor:"enemy-1",hp:1,position:{x:6,y:7}}]}`.
+For BLAZE1/2 set `activeAllies:["ally-0","ally-4"]`, place `ally-4` at (4,7), retain the same enemy, and use `partyInput:"kazin.json"`;
+rank 2 also places enemy-2 at (6,8). Keep the outer `start` object. Use the existing
+`remake/reference/inputs/battle01-player-ready.json` shape for the two party files, replacing
+`allies` with the single record below and naming the controlled witness in `id`, `evidenceOwner`
+and `bridgeBoundary`:
+
+| Input | ID/class/level | HP/maxHP, MP/maxMP | ATT/DEF/AGI/MOV | Packed items | Packed spells |
+| --- | --- | --- | --- | --- | --- |
+| sarah.json | 1/4/10 | 11/11, 10/10 | 9/5/5/5 | 213,0,0,127 | 64,2,14,63 |
+| kazin.json | 4/3/5 | 12/12, 13/13 | 9/6/7/5 | 213,0,127,127 | 75,63,63,63 |
+
+Both use status/EXP/kills/defeats 0. The existing observation adapter imports only the accepted
+level/book before session construction; these files do not replace live stats or rules.
+
+Set `SF2_BLAST_START` or `SF2_BLAZE_START` to the corresponding absolute start path and
+`SF2_OBSERVATION_OUTPUT` to a fresh ignored JSON. Set `SF2_BLAZE_RANK` to `1` or `2`.
+The accepted cases set the matching `SF2_BLAST_*` or `SF2_BLAZE_*` `REDUCED_FLASH`,
+`SKIP_MESSAGES` and `HELD_RATE` switches to `0`, and `SF2_BLAZE_ENEMY=0`. Launch with
+`--input-settings` selecting `{ "formatVersion":1, "language":"en", "textMode":"instant",
+"graphicsMode":"hd" }`. Run the owned Godot with:
+
+```powershell
+& $env:GODOT_BIN --headless --audio-driver Dummy --rendering-method gl_compatibility `
+    --fixed-fps 60 --resolution 1920x1080 --path remake/game `
+    --script res://probes/engine_hd_wind_observation.gd -- --input-settings $settings
+# Replace the script with engine_hd_blaze_observation.gd for the two allied lethal cases.
+```
+
+For HEAL, reuse the wind formation but omit `partyInput` and the enemy HP override. Set
+`SF2_HEAL_START`, use `engine_hd_heal_observation.gd` and omit `--input-settings` so ordinary
+Settings owns writable isolated preferences. The adjacent enemy supplies a physical attack;
+Sarah then selects HEAL on herself using ordinary input. The observer checks all nine fairy
+body/wing/dust keys, unchanged logical footprints, MP and recovery, ordinary HD Apply, later
+Original playback, and a final HD preference Apply. That last Apply proves preference/state
+publication only; the preceding HD cast is the actual HD playback witness. Actor state excludes
+the expected sprite/global-rectangle changes, while both RNG values remain unchanged by Apply.
+The published-package observation measured 550ms for first HD Apply, 46ms for Original and
+418ms for the subsequent HD Apply, including key release. Those single-machine observations
+meet the one-second preparation target; they are not a cross-hardware performance guarantee.
+
+**Confirmed:** all four native cases completed without production errors. BLAST1 observed all
+15 effect frames, BLAZE1 both flame frames, and BLAZE2 all six composed frames, with actual MP,
+damage, death, EXP/gold and next control. The shared donor correction makes the native 96px
+Sarah body select 384px art alongside the already doubled weapon/enemy/scenery inputs.
+Each observed close-up texture is four pixels per Original logical pixel. Independent RGBA
+comparison matched 290 actual texture samples to the selected package; field-exit sprites
+used isolated 96px HD frames at the unchanged tactical footprint. The two published-package
+cold runs passed with all producer package directories unavailable. Existing 4–10 ObjectDB
+exit warnings remain tracked by #1716, not hidden as clean exits.
+
+The initial eight-bank conversion exposed an actual shared-appearance fallback: campaign
+admission imported a later Original body without its HD donor. The paired-donor correction
+and shared-allies production close that boundary. Initial observer failures included a settings
+file using `version` rather than `formatVersion`, a GDScript type inference error, blocked
+castle formation cells, an intentionally weak formation reaching defeat, and comparing sprite
+projection as if it were authoritative actor state. These were corrected in the observation
+inputs/checks; their failed results were retained through review. No screenshot or bulk frame
+collection was used. UI/entry art, map tile animation and placeholder spell families remain
+with #2178, #2179, #2180 and #2104 respectively; this slice does not claim their completion.

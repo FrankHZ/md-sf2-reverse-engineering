@@ -147,7 +147,7 @@ public sealed partial class GameRoot
         catch (ArgumentException) { return GameText.Get("ui.settings.display"); }
         try
         {
-            if (BattleSettingsAvailable) _battle!.PrepareTerrain(candidate.GraphicsMode);
+            if (BattleSettingsAvailable) _battle!.PrepareGraphics(candidate.GraphicsMode);
             else _exploration?.PrepareGraphics(candidate.GraphicsMode);
         }
         catch (InvalidOperationException) { return GameText.Get("ui.settings.graphics-error"); }

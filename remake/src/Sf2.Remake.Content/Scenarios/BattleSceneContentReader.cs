@@ -25,12 +25,15 @@ internal static class BattleSceneContentReader
             "scene-content-unavailable", "battleScenes", "Battle scene content cannot be read.")); }
         using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 16 });
         var root = document.RootElement;
-        ObjectOptional(root, "battleScenes", "terrainScenes", "version", "encounter", "background", "ground", "actors", "rasters", "texts", "memberNames", "healing", "fieldDeath");
+        ObjectOptional(root, "battleScenes",
+            ["version", "encounter", "background", "ground", "actors", "rasters", "texts", "memberNames", "healing", "fieldDeath"],
+            "terrainScenes", "hdRasters");
         _ = Number(root, "version", 1, 1);
         Require(Text(root, "encounter") == "battle-" + definitions.Encounter.Battle.Id, "scene-encounter", "battleScenes.encounter");
         var rasters = new Dictionary<string, ExplorationRaster>(StringComparer.Ordinal);
         foreach (var row in root.GetProperty("rasters").EnumerateObject())
             Require(rasters.TryAdd(row.Name, ExplorationAssetReader.Raster(row.Value)), "scene-duplicate-resource", "battleScenes.rasters");
+        var hdRasters = ReadHdRasters(root, rasters);
         ExplorationAssetReader.BattlefieldMenu(rasters);
         var cursorKeys = rasters.Keys.Where(key => key.StartsWith("battle-cursor.", StringComparison.Ordinal)).ToArray();
         Require(cursorKeys.Length == 0 || cursorKeys.Length == 1 &&
@@ -258,7 +261,27 @@ internal static class BattleSceneContentReader
             new ReadOnlyDictionary<int, string>(texts),
             System.Array.AsReadOnly(names), healing, fieldDeath, terrainScenes is null ? null : System.Array.AsReadOnly(terrainScenes),
             roster.ToDictionary(row => row.Actor, row => row.Enemy.DisplayName).AsReadOnly(), equipment.AsReadOnly(),
-            roster.ToDictionary(row => row.Actor, row => row.Enemy.Id).AsReadOnly(), appearances.AsReadOnly(), allyAppearances.AsReadOnly());
+            roster.ToDictionary(row => row.Actor, row => row.Enemy.Id).AsReadOnly(), appearances.AsReadOnly(), allyAppearances.AsReadOnly(),
+            hdRasters);
+    }
+
+    private static IReadOnlyDictionary<string, ExplorationRaster>? ReadHdRasters(JsonElement root,
+        IReadOnlyDictionary<string, ExplorationRaster> originals)
+    {
+        if (!root.TryGetProperty("hdRasters", out var bank)) return null;
+        const string field = "battleScenes.hdRasters";
+        Require(bank.ValueKind == JsonValueKind.Object, "object-required", field);
+        var variants = new Dictionary<string, ExplorationRaster>(StringComparer.Ordinal);
+        foreach (var row in bank.EnumerateObject())
+        {
+            Require(originals.TryGetValue(row.Name, out var original), "scene-hd-original", field);
+            var variant = ExplorationAssetReader.Raster(row.Value);
+            int factor = variant.Width / original!.Width;
+            Require(factor is 2 or 4 && variant.Width == original.Width * factor &&
+                variant.Height == original.Height * factor, "scene-hd-raster-shape", field);
+            Require(variants.TryAdd(row.Name, variant), "scene-duplicate-resource", field);
+        }
+        return variants.AsReadOnly();
     }
 
     // Pinned EnemyBattlesprites sprite and palette pairs.

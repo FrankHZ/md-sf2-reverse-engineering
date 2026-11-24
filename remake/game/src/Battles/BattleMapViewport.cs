@@ -462,12 +462,13 @@ internal sealed partial class BattleMapViewport : Control
     private ImageTexture Texture(int sprite, int direction, int walkingFrame = 0)
     {
         if (SpecialSprite(sprite)) direction = 0; // Both special poses are direction-independent.
+        var exit = sprite == 63 ? _sceneContent!.FieldDeath!.ExitFrames : null;
         var variant = sprite is 63 or KrakenHeadSprite ? null : _visuals?.Sprites[sprite].HdDirections;
-        bool hd = _hd && variant is not null;
+        bool hd = _hd && (exit is not null ? BattleSceneRaster.HasHdGroup(_sceneContent!, exit) : variant is not null);
         var key = (sprite, direction, walkingFrame, hd);
         if (_textures.TryGetValue(key, out var texture)) return texture;
         var raster = sprite == KrakenHeadSprite ? _sceneContent!.Rasters["field-kraken-head/frame" + walkingFrame]
-            : sprite == 63 ? _sceneContent!.Rasters[_sceneContent.FieldDeath!.ExitFrames[direction]]
+            : exit is not null ? (hd ? _sceneContent!.HdRasters! : _sceneContent!.Rasters)[exit[direction]]
             : (hd ? variant! : _visuals!.Sprites[sprite].Directions)[direction];
         using var sheet = ExplorationRasterImages.Open(raster);
         // Death and idle poses use frame0; movement consumes both admitted halves.
@@ -484,7 +485,7 @@ internal sealed partial class BattleMapViewport : Control
         }
         _textures[key] = texture;
         _resourceSelectors[texture] = new { sprite, direction, frame = walkingFrame, hd,
-            raster = sprite == KrakenHeadSprite ? "field-kraken-head/frame" + walkingFrame : sprite == 63 ? _sceneContent!.FieldDeath!.ExitFrames[direction] : null };
+            raster = sprite == KrakenHeadSprite ? "field-kraken-head/frame" + walkingFrame : exit?[direction] };
         return texture;
     }
 

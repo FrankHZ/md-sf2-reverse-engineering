@@ -2060,7 +2060,7 @@ msgid "ui.settings.graphics-coverage"
 msgstr "安装了高清素材的场景和物品会使用高清画面，其余使用原版。"
 
 msgid "ui.settings.battle-graphics"
-msgstr "HD 画面用于探索中有对应素材的场景和物品。战斗继续使用原版画面。"
+msgstr "战斗中已安装高清素材的画面会使用高清，其余使用原版。"
 
 msgid "ui.settings.battle-language"
 msgstr "菜单会立即更新。部分已打开的结果消息会保留当前语言，直到关闭。"

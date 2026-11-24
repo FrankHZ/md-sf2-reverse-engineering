@@ -78,17 +78,17 @@ internal static class PrivateWorldEncounterReader
 
     // An admitted party can revisit any selected encounter. Older scene inputs carry only
     // the ally resources known at their chapter. Share their immutable frames by reference.
-    private static BattleSceneDefinition[] CampaignScenes(BattleSceneDefinition[] scenes, PrivateBattleDefinitions source)
+    internal static BattleSceneDefinition[] CampaignScenes(BattleSceneDefinition[] scenes, PrivateBattleDefinitions source)
     {
-        var bodies = scenes.SelectMany(scene => scene.Allies.Select(pair => (pair.Key, pair.Value, scene.Rasters)))
+        var bodies = scenes.SelectMany(scene => scene.Allies.Select(pair => (pair.Key, pair.Value, Scene: scene)))
             .DistinctBy(row => row.Key).ToArray();
-        var equipment = scenes.SelectMany(scene => scene.Equipment!.Select(pair => (pair.Key, pair.Value, scene.Rasters)))
+        var equipment = scenes.SelectMany(scene => scene.Equipment!.Select(pair => (pair.Key, pair.Value, Scene: scene)))
             .DistinctBy(row => row.Key).ToArray();
         var appearances = scenes.SelectMany(scene => (scene.AllyAppearances ?? new Dictionary<(ActorRef Actor, BattleClassRule Class, int Item), BattleSceneActorVisual>())
-            .Select(pair => (pair.Key, pair.Value, scene.Rasters))).DistinctBy(row => row.Key).ToArray();
+            .Select(pair => (pair.Key, pair.Value, Scene: scene))).DistinctBy(row => row.Key).ToArray();
         // Spell icons have one source identity at every rank and can travel with
         // a learned book to earlier encounters just as its battle body can.
-        var sharedRasters = scenes.SelectMany(scene => scene.Rasters)
+        var sharedRasters = scenes.SelectMany(scene => scene.Rasters.Select(pair => (pair.Key, pair.Value, Scene: scene)))
             .Where(pair => pair.Key.StartsWith("kiwi-breath/", StringComparison.Ordinal) ||
                 pair.Key.StartsWith("phoenix-wave/", StringComparison.Ordinal) ||
                 pair.Key.StartsWith("identity-icon.spell.", StringComparison.Ordinal))
@@ -99,23 +99,32 @@ internal static class PrivateWorldEncounterReader
         return scenes.Select(scene =>
         {
             var rasters = scene.Rasters.ToDictionary();
-            foreach (var pair in sharedRasters) rasters.TryAdd(pair.Key, pair.Value);
+            var hdRasters = scene.HdRasters?.ToDictionary() ?? new Dictionary<string, ExplorationRaster>();
+            foreach (var pair in sharedRasters) IncludeRaster(pair.Key, pair.Scene);
             var allies = scene.Allies.ToDictionary();
             var weapons = scene.Equipment!.ToDictionary();
             var actorVisuals = (scene.AllyAppearances ?? new Dictionary<(ActorRef Actor, BattleClassRule Class, int Item), BattleSceneActorVisual>()).ToDictionary();
             foreach (var row in bodies)
-                if (allies.TryAdd(row.Key, row.Value)) IncludeFrames(row.Value, row.Rasters);
+                if (allies.TryAdd(row.Key, row.Value)) IncludeFrames(row.Value, row.Scene);
             foreach (var row in equipment)
-                if (weapons.TryAdd(row.Key, row.Value)) IncludeFrames(row.Value, row.Rasters);
+                if (weapons.TryAdd(row.Key, row.Value)) IncludeFrames(row.Value, row.Scene);
             foreach (var row in appearances)
-                if (actorVisuals.TryAdd(row.Key, row.Value)) IncludeFrames(row.Value, row.Rasters);
+                if (actorVisuals.TryAdd(row.Key, row.Value)) IncludeFrames(row.Value, row.Scene);
             return scene with { Rasters = rasters.AsReadOnly(), Allies = allies.AsReadOnly(), Equipment = weapons.AsReadOnly(),
-                AllyAppearances = actorVisuals.AsReadOnly(),
+                AllyAppearances = actorVisuals.AsReadOnly(), HdRasters = hdRasters.AsReadOnly(),
                 FieldDeath = scene.FieldDeath is { } field ? field with { AllySprites = sprites.AsReadOnly() } : null };
 
-            void IncludeFrames(BattleSceneActorVisual visual, IReadOnlyDictionary<string, ExplorationRaster> resources)
+            void IncludeFrames(BattleSceneActorVisual visual, BattleSceneDefinition donor)
             {
-                foreach (var id in visual.Frames.Concat(visual.WeaponFrames)) rasters.TryAdd(id, resources[id]);
+                foreach (var id in visual.Frames.Concat(visual.WeaponFrames)) IncludeRaster(id, donor);
+            }
+
+            void IncludeRaster(string id, BattleSceneDefinition donor)
+            {
+                // The existing first-wins Original binding owns variant provenance.
+                // A same-key resource already in this scene keeps its own HD coverage.
+                if (rasters.TryAdd(id, donor.Rasters[id]) && donor.HdRasters?.TryGetValue(id, out var hd) == true)
+                    hdRasters.Add(id, hd);
             }
         }).ToArray();
     }

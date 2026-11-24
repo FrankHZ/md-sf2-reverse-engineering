@@ -26,6 +26,23 @@ Battles04–07 package and the separate Battle04 Kazin and Battle05 Galam Mage n
 The [prepared BLAZE2 scene](spell-presentation.md#prepared-blaze2-presentation) adds the medium
 flame, ten small meteors and ordered Battle04 reactions for Kazin's learned radius-1 cast.
 
+## Graphics variants
+
+Close-up bodies use the selected appearance and palette's complete frame group. Weapons use
+their own complete group. The chosen ground and repeating backdrop bind independently, with the
+same texture used for both copies of the backdrop. Every sprite uses the Original raster's
+logical extent. A native 96×96 ally frame and a 192×192 ally frame retain their respective scale
+rules when a denser texture is selected. Position, mirror and weapon order still follow the
+active scene frame. The tactical field exit uses the three scene-owned direction strips as one
+group and crops the selected half at the selected density.
+
+Battle Settings prepares the target graphics mode before writing preferences. Publishing
+refreshes the mounted sprites and effect bindings without advancing their scene token or
+animation clock. Scene textures stay valid while the scene borrows them, including reparenting.
+The scene releases them after playback returns control or the view retires.
+[Binding and package contract](../content/asset-inventory.md#battle-raster-variant-binding-2177)
+· [Focused native observation](../content/hd-rollout.md#battle-raster-observation)
+
 ## Production playback and result layout
 
 **Confirmed bounded remake, #1686:** compact live status cards use the accepted F4 placement.

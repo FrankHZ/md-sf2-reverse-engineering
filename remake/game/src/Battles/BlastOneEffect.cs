@@ -3,7 +3,7 @@ using Godot;
 namespace Sf2.Remake.GodotAdapter.Battles;
 
 // Retail rank-1 composition with deterministic scheduling on the adapter clock.
-internal sealed class BlastOneEffect(Texture2D[] textures, bool targetIsAlly, bool reducedFlash)
+internal sealed class BlastOneEffect(Func<int, BattleSceneRaster> frames, bool targetIsAlly, bool reducedFlash)
 {
     internal static readonly string[] Resources = Enumerable.Range(0, 15).Select(i => "blast-1/frame-" + i).ToArray();
     internal const double Duration = 1.4;
@@ -50,12 +50,12 @@ internal sealed class BlastOneEffect(Texture2D[] textures, bool targetIsAlly, bo
         bool drawn = false;
         foreach (var sprite in Sprites(age))
         {
-            var texture = textures[sprite.Frame];
+            var raster = frames(sprite.Frame);
             Vector2 position = sprite.Position.Round();
-            if (sprite.FlipX) position.X += texture.GetWidth();
-            if (sprite.FlipY) position.Y += texture.GetHeight();
+            if (sprite.FlipX) position.X += raster.Size.X;
+            if (sprite.FlipY) position.Y += raster.Size.Y;
             node.DrawSetTransform(position, scale: new(sprite.FlipX ? -1 : 1, sprite.FlipY ? -1 : 1));
-            node.DrawTexture(texture, Vector2.Zero, new Color(1,1,1,sprite.Opacity));
+            raster.Draw(node, Vector2.Zero, new Color(1, 1, 1, sprite.Opacity));
             drawn = true;
         }
         if (drawn) node.DrawSetTransform(Vector2.Zero);
@@ -65,11 +65,16 @@ internal sealed class BlastOneEffect(Texture2D[] textures, bool targetIsAlly, bo
     internal object Observe(double age) => new
     {
         duration = Duration, targetIsAlly, reducedFlash,
-        sprites = Sprites(age).Select(sprite => new
+        sprites = Sprites(age).Select(sprite =>
         {
-            resource = Resources[sprite.Frame], x = MathF.Round(sprite.Position.X), y = MathF.Round(sprite.Position.Y),
-            width = textures[sprite.Frame].GetWidth(), height = textures[sprite.Frame].GetHeight(),
-            flipX = sprite.FlipX, flipY = sprite.FlipY, opacity = sprite.Opacity,
+            var raster = frames(sprite.Frame);
+            return new
+            {
+                resource = Resources[sprite.Frame], x = MathF.Round(sprite.Position.X), y = MathF.Round(sprite.Position.Y),
+                width = raster.Size.X, height = raster.Size.Y, hd = raster.Hd,
+                textureWidth = raster.Texture.GetWidth(), textureHeight = raster.Texture.GetHeight(),
+                flipX = sprite.FlipX, flipY = sprite.FlipY, opacity = sprite.Opacity,
+            };
         }).ToArray(),
     };
 }
