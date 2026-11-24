@@ -32,6 +32,7 @@ together. The active package is the set selected in the launch process.
 | --- | --- |
 | **Pre-voyage** · `derived/issue2156/pre-voyage-map3-l1-v1` | Complete inline pre-voyage selection and source for the companion candidate. Provides [Map3 Original and L1 terrain](#complete-private-package-and-rebuild-2156), original cue 12 and the mounted pre-voyage spell rasters. Gameplay reach belongs to the [pre-voyage campaign](../application/pre-voyage-campaign.md). |
 | **Pre-voyage companion candidate** · `derived/issue2174/pre-voyage-map3-companion-v1` | Complete selection for the HD rollout. Carries the same Map3 L1 centers and neighborhoods in one world-relative file. [Rebuild, admission and native comparison](#map3-terrain-companion-2174) |
+| **Pre-voyage static terrain** · `derived/issue2175/pre-voyage-terrain-v1` | Complete field and tactical selection with twenty L1 banks and the original Map3 companion. [Production and live checks](#pre-voyage-static-terrain-2175) |
 | **PGNT** · `derived/issue1957/pgnt-v3` | Separate registered later progression/Battle26 witness. Its older Map3 HD bank has no L1 contexts and its cue 12 is the defeat placeholder. Preserve that evidence selection. Check resource lineage when proposing a successor that combines later progression with pre-voyage corrections. [PGNT reproduction](../development-and-verification.md#high-rank-elemental-magic-observation) |
 | **Display catalogs** · `derived/issue1957/catalogs-v1`, `derived/issue2001/catalogs-v1` | Independent prepared Chinese name overlays for the owning reproductions. Match the catalog and entry locale to the named reproduction. A catalog supplies display names and does not select world, scene or media. [PGNT catalog selection](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Retail catalog selection](presentation-assets.md#sleep-display-name) |
 | **Retail base and library** · `derived/issue2001/issue1966-original`, private asset Git `runtime/retail-v1` | Base world/entry provenance and preparation outputs used to assemble packages. Some prepared candidates have no current package binding. [Retail preparation](#retail-original-preparation) |
@@ -45,7 +46,7 @@ snapshot. The current package and consumer owner establish what a particular gam
 | Resource and identity | Source and prepared details | Package, consumer and acceptance owner |
 | --- | --- | --- |
 | Map tiles, tilesets, palettes, blocks and layouts | Retail `maps/index.json` and `map-*` CSV rows join map, set and palette references. A block contains nine source tile words. [Map data](../../../docs/research/world/map-data-inventory.md#map-content-closure) · [Graphics](../../../docs/research/presentation/technical-graphics.md#renderer-mapping-private-extraction-tooling) | World map and `presentation.maps` select live layout and raster data. Field and battle projection consume admitted areas. [Field projection](../godot/presentation.md#field-projection) · [Battlefield maps](../godot/battle-scenes.md#battlefield-maps) |
-| Foreground, roof, door and animation variants | The map index retains plane, area, copy and animation operands. Preserve source tile flags and destination identity. [Map source](../../../docs/research/world/map-data-inventory.md) | The current map's live layout and renderer determine what copies and draws, including the Map3 context variants. [Working layout](../godot/presentation.md#bounded-working-layout-and-draw-operands) · [#2167 map handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2167) |
+| Foreground, roof, door and animation variants | The map index retains plane, area, copy and animation operands. Preserve source tile flags and destination identity. [Map source](../../../docs/research/world/map-data-inventory.md) | The current map's live layout and renderer determine what copies and draws, including the [pre-voyage static banks](#pre-voyage-static-terrain-2175). [Working layout](../godot/presentation.md#bounded-working-layout-and-draw-operands) · [#2167 map handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2167) |
 | Walking, class appearances and special poses | Retail `walking/index.json` joins strip/phase and member/class aliases. Special streams retain their indexed tiles and dispatch references. `manifests/map3-cast.csv` connects entity and party IDs to their Map3 sprite and portrait. [Special sprites](../../../docs/research/presentation/technical-graphics.md#special-sprites-and-view-routing) | World `presentation.sprites` mounts the chosen strips. Class and special-pose callers own their selected appearance and remaining dispatch gaps. [Promotion](../application/ordinary-promotion-classes.md) · [Special-pose dialogue](../godot/presentation.md#special-pose-dialogue-portraits-2070) |
 | Portraits and expressions | Retail `portraits/index.json` records slot aliases and replacement tiles. The atlas and eye/mouth mappings travel together. [Graphics](../../../docs/research/presentation/technical-graphics.md) | World `presentation.portraits` supplies dialogue and Member consumers, with optional Map3 density variants. [Story dialogue](../godot/presentation.md#shared-story-dialogue-agreement) · [Party details](../godot/presentation.md#party-details-agreement) |
 | Battle body, weapon, ground and background | Retail `bodies`, `weapons` and `terrain` indexes retain body/palette/frame, item selector and encounter environment identity. [Source scene engine](../../../docs/research/battle/battle-scene-engine.md) | Main and encounter-specific scene inputs select composition and placements. Review the class/weapon scene binding at the encounter caller. [Scene roster and limits](../godot/battle-scenes.md#which-combatants-need-a-scene) · [Weapon composition](../godot/battle-scenes.md#weapon-frame-composition-1620) · [Backdrops](../godot/battle-scenes.md#fixed-backdrops-for-the-private-campaign) |
@@ -53,7 +54,7 @@ snapshot. The current package and consumer owner establish what a particular gam
 | UI art, icons, cursors and fonts | Retail `icons` and `ui` indexes distinguish storage slots, semantic IDs and normal/highlighted states. Theme, glyphs and licensed fonts have separate provenance. [Menus](../../../docs/research/presentation/common-menus.md) · [Fonts and theme](presentation-assets.md#fonts-theme-and-input-glyphs) | World and scene namespaces mount supported menus and identity icons. Check each enabled caller's acceptance and legacy text fallback. [Menu inventory](presentation-assets.md#bounded-source-to-consumer-inventory) · [Identity art](../godot/presentation.md#identity-art-acceptance-1667) · [Target cursor](../godot/battle-scenes.md#original-target-and-inspection-cursor-publication) |
 | Entry and other special screens | Retail `entry/index.json` covers special streams and title/witch layout, palette and bubble inputs. [Original screens](../../../docs/research/presentation/special-screens.md) | The independent entry document mounts title/witch images and two music resources. Other screen streams are admitted per caller. [Entry consumer](../godot/presentation.md#production-entry-and-field-dialogue-1606) |
 | BGM and SFX | [Sound inventory](../../../docs/research/presentation/sound-data-inventory.md) owns source IDs, bank aliases and timer/channel context. The private coverage CSV, per-command candidate and inherited base own prepared variants. | World and entry audio rows own selection, including the [command 12 and authored 109 distinctions](music-command-inventory.md). [Session audio](../godot/audio.md) owns cue, finite default, lifetime and playback acceptance. |
-| Original/HD, authored UI and approved modern replacements | Match the original ID to its specific derivative or authored replacement. The graphics experiment and local derivative identities have their own provenance. [HD pilot](hd-art-pilot.md) · [Public authored resources](presentation-assets.md#product-design-and-distribution-limit) | Map3 terrain selects Original or L1 via Settings. Actor and portrait variants have separate mounts. Other consumer surfaces keep their selected assets. [Map3 review](#map3-density-ramp-terrain-1765) · [#1699 graphics](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1699) · [#1456 human acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456) |
+| Original/HD, authored UI and approved modern replacements | Match the original ID to its specific derivative or authored replacement. The graphics experiment and local derivative identities have their own provenance. [HD pilot](hd-art-pilot.md) · [Public authored resources](presentation-assets.md#product-design-and-distribution-limit) | The twenty pre-voyage terrain banks select Original or L1 via Settings. Actor and portrait variants have separate mounts. Other consumer surfaces keep their selected assets. [Map3 review](#map3-density-ramp-terrain-1765) · [#1699 graphics](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1699) · [#1456 human acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456) |
 
 For **map configuration**, start with the source
 [setup/selection records](../../../docs/research/world/map-data-inventory.md#setup-selection-and-rom-parity)
@@ -390,8 +391,120 @@ portrait width 48 → 192 → 48, with equal paused progress and identical slot 
 Apply includes input press through release. Both selections restored the original texture IDs
 and retained all 119 sampled HD handles in the visit cache after switching back. Both processes
 exited 0 with the existing two-ObjectDB cleanup warning. **Unknown** GPU memory, residency over
-a multi-map route and first Apply with additional maps. The renderer still prepares all admitted
-HD field rasters on first Apply. Recheck the one-second target as coverage expands.
+a multi-map route and first Apply with additional maps. The [twenty-bank measurement](#pre-voyage-static-terrain-2175) covers the expanded selection and active-map lifetime.
+
+## Pre-voyage static terrain (#2175)
+
+**Confirmed** for the twenty map IDs in the [rollout selection](hd-rollout.md#coverage-from-the-selected-package).
+Retail `runtime/retail-v1/maps/index.json` identifies original atlases, palettes, blocks and
+layouts. The producer consumes their admitted counterparts in the complete #2174 package and the
+Map3 L1 algorithms at graphics commit `172662709b31cb296b55f51894754ce810c30f6c`.
+Stop at first stable Map14 control. Packed additional rooms are an art capacity bound.
+Campaign admission still belongs to the [pre-voyage location agreement](../application/pre-voyage-optional-locations.md).
+Water and other animated tile phases belong to [#2180](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2180).
+
+The [working-layout selections](../../../src/sf2tool/remake_terrain_layouts.py) take copy operands
+from the mounted programs and event tables. Copies read the evolving layout in source order.
+Flag groups are applied together. Nearby door/chest changes contribute joint neighborhoods.
+One active roof can replace or clear its destination and restoration returns to the underlying
+layout. Tactical planes use the extent of their own source crop. Independent scene reads can
+sample elsewhere in the 64×64 layout. The [producer](../../../src/sf2tool/remake_pre_voyage_terrain.py)
+filters raster patches with one block of sampling halo and publishes only neighborhoods whose
+pixels differ from the center. The filter operates on exact source RGBA including transparent
+holes and opaque black. Geometry, flip and priority still come from the original words.
+
+From the checkout root select the configured immutable input and a fresh output. Set `$gfx` to the
+pinned graphics checkout. Scratch-only pilots compare crops to independently filtered whole planes.
+
+```powershell
+. ./local/private-inputs.ps1
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2174/pre-voyage-map3-companion-v1'
+$output = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2175/pre-voyage-terrain-v1'
+$producer = @('run','--locked','--with','pillow==11.3.0','python','-B','-m',
+    'sf2tool.remake_pre_voyage_terrain','--base',$base,'--gfx-root',$gfx)
+foreach ($map in 4,66) {
+    & uv @producer --pilot $map --out "local/pilot-$map"
+    if ($LASTEXITCODE) { throw "Terrain calibration failed for map $map" }
+}
+& uv @producer --out $output
+if ($LASTEXITCODE) { throw 'Terrain publication failed' }
+```
+
+| Pilot | Centers | Additional rasters | Distinct neighborhoods checked or selected | Bank bytes | Filter and publication | Process peak |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Map4 | 352 | 474 | 974 | 1,106,056 | 7.25 s | 261.01 MiB |
+| Map66 | 500 | 1,713 | 2,936 | 3,606,612 | 21.03 s | 284.11 MiB |
+
+Both pilots included package parsing, whole-plane comparison and bank serialization. Map4 compared
+6,984 cell crops across ten planes/states. Map66 compared 23,681 crops across nineteen.
+The timings exclude initial JSON parsing. Peak working sets include it. Map4 exercised the initial
+layout, every intermediate quake copy and F624 reconstruction. Map66 included its full 64×64
+plane, encounter footprints and the ship copy. Both stayed inside the planned 8 MiB per bank and
+1 GiB offline process peak. The serial full run peaked at 385.84 MiB. The closed output contains
+168 files and 342,904,510 bytes. World JSON is 99,393,569 bytes against the 128 MiB admission
+bound. The twenty banks total 20,390,075 bytes for 5,568 centers, 10,232 additional rasters and
+18,404 published context keys. All 148 previous files other than the world compare byte-for-byte.
+Removing the nineteen new `hdTerrainFile` fields gives exact parsed world equality. The source
+package, including Map3, remains a separate read-only reproduction. To repeat closure verification,
+enumerate both selections with `sf2tool.remake_private_package.package_files`, compare common
+non-world files directly and remove only the nineteen new references before comparing parsed worlds.
+Both final pilot files also compare byte-for-byte with the full publication.
+
+### Static terrain native replay
+
+Use the [ordinary closed package environment](presentation-assets.md#reuse-a-closed-private-package)
+with `$output`, writable Original settings, the locked Debug adapter and Godot 4.7.2 headless.
+Use checkout-local TEMP, APPDATA, LOCALAPPDATA and an external disposable save root. Under its
+`issue2175/sf2-opening/` copy the registered [post-tower slot 4 and the reconstructed Map4 slot 5](../application/pre-voyage-campaign.md#castle-to-quake-handoff-from-a-player-save-2167).
+Keep their original slot names. Place the [Map3 review slot](#map3-terrain-companion-2174) in a
+sibling disposable `issue2174/sf2-opening/` for the existing fixed-clock Map3 comparison.
+
+Run `engine_pre_voyage_terrain_observation.gd` for each row below. For controlled field inputs,
+write a JSON object with a `start` field to the selected worktree-local start file. Its fields are
+`map`, `player` (`entity-0`), `position` (`x`, `y`), `facing`, `speed` (32) and `flags`.
+For `shrine`, `signed` and `door`, decode the copied slot 4's base64 `payload` as UTF-8 JSON and
+take `data.registers.flags` excluding F133 and F901. These are controlled initial states.
+`hold` uses flags [32]. Each battle start uses only `battle` (`battle-5` or `battle-6`) and
+`activeAllies` ([`ally-0`]). Keep the save namespace separate from manual play.
+
+```powershell
+$env:SF2_SAVE_NAMESPACE = 'issue2175'
+$env:SF2_HOST_UI_CASE = $case
+$env:SF2_HOST_UI_START = Join-Path $runRoot "$case-start.json"
+$env:SF2_HOST_UI_OUTPUT = Join-Path $runRoot "$case.json"
+& $env:GODOT_BIN --headless --path remake/game --resolution 1920x1080 --audio-driver Dummy --max-fps 60 `
+    --log-file (Join-Path $runRoot "$case.log") --script res://probes/engine_pre_voyage_terrain_observation.gd
+```
+
+| Case | Initial condition and observed use |
+| --- | --- |
+| `quake` | Ordinary Continue slot 4. Castle warning and south exit select Map4. The first finished quake and F624 return each draw 99 contextual cells with 100 textures in the 11×10 region. The second south step remains blocked. F217 stays clear. All sampled castle handles expire on entering Map4 and first-visit Map4 handles expire at the docks. The source slot is byte-identical. |
+| `cold` | Fresh Continue slot 5. The reconstructed quake region gives 99 contextual cells in HD and 85 distinct native textures in Original. Apply preserves the paused progress and slot bytes. |
+| `battle5`, `battle6` | Controlled battles use Maps16/66 at origins (0,14)/(21,2). Original → HD → Original samples match on destination rectangles, block/tile words, priority, draw count and board geometry. The actual source tile is 8×8 or 32×32 at the same 32×32 destination. Compare each HD receipt's `contexts[].rgba` with the RGBA pixels of the bank PNG keyed by its row-major 3×3 neighborhood, clipped to its source footprint. Map16 yielded blocks 36 and 242, Map66 block 50. |
+| `door` | Map43 (11,10), Up. The door changes from 0xC42A to 0x0806. The active roof clears all 96 cells and leaving restores the cached rectangle. The field draws HD at each step. |
+| `shrine` | Map42 (19,23), Down. Ordinary Search changes 0xD801 to 0xD802 and sets F133. The lower room, upper hall and outside on Map41 all draw contextual HD. |
+| `hold`, `signed` | Map44 hold (59,9), Left, and deck (27,7), Up. Both hold layers draw. On deck, A(24,4) and B(24,36) project at the signed displacement of −32 cells. Blocks 29 and 207 select different 96px neighborhood textures. |
+| `voyage` | Continue slot 5, walk to the captain and accept. Map66 draws the shore, Map73 draws B at (0,10) and after the independent shift at (12,42). A short A-plane draw reached the nonempty source (11,0) with block 3, despite the blank 11×10 room at (0,0). The witness reads a single actual draw's source, texture and plane position together. First stable Map14 control draws HD with F700 set. |
+
+**Confirmed** with the same full candidate for both lifetime comparisons. At `6160df05`,
+the existing first Apply on Map3 walked every admitted field HD bank and took 1,055 ms.
+With active-bank preparation the fixed-clock Map3 probe measured 231 ms for Apply HD and 124 ms
+for Original, including press and release. Continue confirmation through mounted view took
+316 ms. All six actual readback/geometry digests matched across the two implementations. All 119
+sampled HD handles stayed valid for the toggle round trip on the same map. A map change retires
+the prior field bank's uploaded textures and pickup alpha masks. A battle retains its own active
+board textures until release. Encoded bytes remain in the admitted content model. **Unknown**
+driver memory and timings on other hardware. Static terrain observations establish neither
+tile-phase animation nor player approval of every map.
+
+The first probe selected the wrong slot by list position in a sparse directory. Selecting the
+visible slot label corrected that observation. The initial controlled shrine party lacked the
+join flags for the chest grant. The captured flags above restore that prerequisite. An early
+arrival check tried to read a second frame after seeing a nonempty A draw and missed the draw.
+The observation now samples the texture used by that draw directly. Another battle probe included
+ordinary playback between menu visits in its state comparison. Compare tactical state while
+Settings is paused and compare terrain geometry across all three draws. These were probe/input
+failures. The production layout and slot bytes retain their accepted identities.
 
 ## Earlier painted package
 

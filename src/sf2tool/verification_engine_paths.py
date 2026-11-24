@@ -20,6 +20,8 @@ REMAKE_PRODUCER_PATHS = frozenset(
         "src/sf2tool/map3_painted_materials.py",
         "src/sf2tool/remake_map3_hd.py",
         "src/sf2tool/remake_map3_ramp.py",
+        "src/sf2tool/remake_pre_voyage_terrain.py",
+        "src/sf2tool/remake_terrain_layouts.py",
         "src/sf2tool/remake_exploration_battles.py",
         "src/sf2tool/remake_exploration_actions.py",
         "src/sf2tool/remake_exploration_items.py",

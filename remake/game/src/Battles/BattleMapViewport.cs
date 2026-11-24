@@ -122,7 +122,17 @@ internal sealed partial class BattleMapViewport : Control
         Resized += Frame;
     }
 
-    internal void Build(EngineBattleState battle, ScenarioDefinition content)
+    internal void PrepareTerrain(string mode)
+    {
+        foreach (var layer in _terrain) layer.Prepare(mode == "hd");
+    }
+
+    internal void SelectTerrain(string mode)
+    {
+        foreach (var layer in _terrain) layer.SelectMode(mode == "hd");
+    }
+
+    internal void Build(EngineBattleState battle, ScenarioDefinition content, string graphicsMode)
     {
         var definition = battle.Definition;
         foreach (Node child in _board.GetChildren()) { _board.RemoveChild(child); child.QueueFree(); }
@@ -143,7 +153,7 @@ internal sealed partial class BattleMapViewport : Control
         _region = definition.SourceMapRegion;
         if (content.PrivateDefinitions is not null && _region is null)
             throw new InvalidOperationException("battlefield-map-region-unavailable");
-        if (_region is not null) BuildTerrain(battle, content);
+        if (_region is not null) BuildTerrain(battle, content, graphicsMode == "hd");
         else BuildAuthoredTerrain(definition);
         foreach (var chest in content.PrivateDefinitions is null ? definition.Search?.Chests ?? [] : [])
         {
@@ -199,7 +209,7 @@ internal sealed partial class BattleMapViewport : Control
         }
     }
 
-    private void BuildTerrain(EngineBattleState battle, ScenarioDefinition content)
+    private void BuildTerrain(EngineBattleState battle, ScenarioDefinition content, bool hd)
     {
         var definition = battle.Definition;
         var region = _region!;
@@ -248,7 +258,7 @@ internal sealed partial class BattleMapViewport : Control
             try
             {
                 layer.Configure(map, visual, region, layout, _mapTextures, definition.Width, definition.Height,
-                    CellSize, sourceOrigin, overlay, high, rearPlane && followsTarget);
+                    CellSize, sourceOrigin, overlay, high, rearPlane && followsTarget, hd);
             }
             catch { layer.Free(); throw; }
             if (rearPlane && view is not null)

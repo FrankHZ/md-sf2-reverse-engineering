@@ -12,6 +12,39 @@ internal sealed class MapBlockTextures : IDisposable
     private readonly Dictionary<ExplorationRaster, ImageTexture> _hd = [];
     private readonly Dictionary<(MapId Map, int Block, ExplorationRaster? Variant), Bitmap> _blockInk = [];
 
+    private ExplorationMapVisual? _checkedBank;
+    internal IEnumerable<ImageTexture> Textures => _blocks.Values.Concat(_hd.Values);
+
+    internal void PrepareHd(ExplorationMapVisual visual)
+    {
+        if (_checkedBank == visual || visual.HdBlocks is null) return;
+        foreach (var raster in visual.HdBlocks.Concat(visual.HdBlockContexts?.Values ?? []).Distinct())
+        {
+            using var image = Exploration.ExplorationRasterImages.Open(raster);
+        }
+        _checkedBank = visual;
+    }
+
+    internal static ExplorationRaster? Variant(ExplorationMapVisual visual, bool hd, WorkingMapLayout layout,
+        int x, int y, Rect2I bounds, out bool contextual)
+    {
+        contextual = false;
+        if (!hd || visual.HdBlocks is null) return null;
+        int block = layout[x, y] & 1023;
+        // A detached secondary plane may scroll off the normal packed-room bounds.
+        // Its source remains the same 64x64 working layout.
+        if (!bounds.HasPoint(new(x, y))) bounds = new(0, 0, 64, 64);
+        int At(int dx, int dy) => bounds.HasPoint(new(x + dx, y + dy)) &&
+            x + dx is >= 0 and < 64 && y + dy is >= 0 and < 64 ? layout[x + dx, y + dy] & 1023 : -1;
+        if (visual.HdBlockContexts is { } variants && variants.TryGetValue(new(At(-1,-1), At(0,-1), At(1,-1),
+            At(-1,0), block, At(1,0), At(-1,1), At(0,1), At(1,1)), out var variant))
+        {
+            contextual = true;
+            return variant;
+        }
+        return visual.HdBlocks[block];
+    }
+
     internal int Count => _blocks.Count + _hd.Count;
 
     internal ImageTexture Block(ExplorationMapVisual visual, int block, ExplorationRaster? variant = null)
@@ -74,6 +107,7 @@ internal sealed class MapBlockTextures : IDisposable
 
     public void Dispose()
     {
+        _checkedBank = null;
         foreach (var texture in _blocks.Values) texture.Dispose();
         foreach (var atlas in _atlases.Values) atlas.Dispose();
         foreach (var texture in _hd.Values) texture.Dispose();

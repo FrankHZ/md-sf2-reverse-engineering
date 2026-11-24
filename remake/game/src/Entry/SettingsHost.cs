@@ -145,7 +145,11 @@ public sealed partial class GameRoot
         catch (ArgumentException) { return GameText.Get("ui.settings.invalid"); }
         try { display = GameText.Prepare(candidate.Language); }
         catch (ArgumentException) { return GameText.Get("ui.settings.display"); }
-        try { _exploration?.PrepareGraphics(candidate.GraphicsMode); }
+        try
+        {
+            if (BattleSettingsAvailable) _battle!.PrepareTerrain(candidate.GraphicsMode);
+            else _exploration?.PrepareGraphics(candidate.GraphicsMode);
+        }
         catch (InvalidOperationException) { return GameText.Get("ui.settings.graphics-error"); }
         string? error = _preferences?.Write(candidate, reset);
         if (error is not null) return error + "\n" + GameText.Get("ui.settings.storage");

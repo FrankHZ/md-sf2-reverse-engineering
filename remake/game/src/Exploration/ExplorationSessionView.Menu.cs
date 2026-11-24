@@ -11,7 +11,7 @@ public sealed partial class ExplorationSessionView
     {
         if (_session is null) return;
         _partyStatus.PrepareGraphics(_session);
-        if (mode == "hd") _presentation?.PreparePaintedRasters();
+        if (mode == "hd" && _session.Current.Exploration is { } field) _presentation?.PreparePaintedRasters(field.Map);
     }
     internal void PublishGraphics()
     {
