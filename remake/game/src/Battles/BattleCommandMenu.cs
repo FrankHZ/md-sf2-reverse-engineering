@@ -22,12 +22,13 @@ internal sealed partial class BattleCommandMenu : Control
 
     public override void _Ready()
     {
-        _layout.InvalidatePointer = _pointer.Cancel;
+        _layout.InvalidatePointer = CancelPointer;
         MouseFilter = MouseFilterEnum.Ignore; AddChild(_layout);
+        GetWindow().MouseExited += CancelPointer;
     }
     internal void Arrange(Vector2 size)
     {
-        if (Size != size) _pointer.Cancel();
+        if (Size != size) CancelPointer();
         Size = size;
         _layout.Arrange(size);
     }
@@ -38,14 +39,29 @@ internal sealed partial class BattleCommandMenu : Control
     {
         if (keyboard) _pointer.Cancel();
         else { _pointer.Suspend(); _layout.StopFocusEmphasis(); }
+        _layout.ClearCommandPointer();
     }
-    public override void _Process(double delta) => _pointer.ReleaseIfNeutral();
+    private void CancelPointer()
+    {
+        _pointer.Cancel();
+        _layout.ClearCommandPointer();
+    }
+    public override void _Process(double delta)
+    {
+        bool captured = _pointer.PressedId is not null;
+        _pointer.ReleaseIfNeutral();
+        if (captured && _pointer.PressedId is null) _layout.ClearCommandPointer();
+    }
     public override void _Notification(int what)
     {
         if (what == NotificationPaused || what == NotificationUnpaused || what == NotificationVisibilityChanged && !IsVisibleInTree())
             SuspendPointer();
     }
-    public override void _ExitTree() => _layout.StopFocusEmphasis();
+    public override void _ExitTree()
+    {
+        GetWindow().MouseExited -= CancelPointer;
+        _layout.StopFocusEmphasis();
+    }
 
     internal (string Id, bool Activate)? ReadPointer(InputEventMouse input, BattleDecision decision)
     {
@@ -53,22 +69,25 @@ internal sealed partial class BattleCommandMenu : Control
         if (input is InputEventMouseMotion motion)
         {
             bool moved = _pointer.Moved(motion);
+            _layout.PresentCommandPointer(motion.Position, _pointer.PressedId);
             return moved && _layout.Hit(motion.Position).Id is { } id ? (id, false) : null;
         }
         if (input is not InputEventMouseButton button) return null;
         if (button.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown)
         {
-            _pointer.Cancel();
+            CancelPointer();
             if (button.Pressed) _layout.Wheel(button.Position, button.ButtonIndex == MouseButton.WheelUp ? -80 : 80);
             return null;
         }
         if (button.ButtonIndex is not (MouseButton.Left or MouseButton.Right))
         {
-            _pointer.Cancel();
+            CancelPointer();
             return null;
         }
         var hit = button.ButtonIndex == MouseButton.Right ? ("Back", GetGlobalRect()) : _layout.Hit(button.Position);
-        return _pointer.Read(button, hit.Item1, hit.Item2, decision.PointerBoundary) is { } activated ? (activated, true) : null;
+        var activated = _pointer.Read(button, hit.Item1, hit.Item2, decision.PointerBoundary);
+        _layout.PresentCommandPointer(button.Position, _pointer.PressedId);
+        return activated is not null ? (activated, true) : null;
     }
 
     internal void Present(BattleDecision decision, SessionFailure? failure, GameInput input, BattleActingStatus? acting)

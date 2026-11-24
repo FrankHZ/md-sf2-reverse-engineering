@@ -10,6 +10,7 @@ internal sealed class MenuPointer
     private bool _blocked;
     private Vector2? _position;
 
+    internal string? PressedId => _press?.Id;
     internal void Cancel() => _press = null;
     internal void ReleaseIfNeutral()
     {

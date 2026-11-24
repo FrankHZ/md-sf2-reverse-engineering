@@ -127,6 +127,20 @@ labels. The public schematic uses text when art is unavailable. Private art stay
 The [asset inventory](../content/presentation-assets.md#ordinary-menu-publication-and-coverage-1666)
 owns resource identity.
 
+Battle Main sits directly over the board. Each vertical row fills its existing hit rectangle
+with the action surface behind both the icon and caption. The gaps stay clear. A selected row
+keeps its gold marker, caption and selected art. An unavailable row uses the muted caption and
+disabled blue (`142235`) even when focused or pointed at. The pressed color follows the current
+captured gesture and ends on release or cancellation. Church, field Prepare and battle inspection
+Options use their enclosing panels as the action surface.
+
+In [DesignPreview](../../game/probes/previews/README.md), enter F4 and confirm the starting tile
+to see normal, selected and disabled rows. Hover over Magic and hold the left button to see
+the hover and pressed colors before releasing into the spell list. Back restores Main. Use L to
+compare English and Chinese at 1920×1080 and 1600×900. F3 Church shows the compact rows inside
+their enclosing panel. The [vertical Main observation](battle-ui-composition.md#reproduce-the-main-rows)
+covers ordinary input and layout.
+
 ## Focus, action and return
 
 **Keep item slots still.** Within the same inventory view, selectable, focused, unavailable
