@@ -1,6 +1,92 @@
-# Demo asset inventory and the Granseal art review
+# Remake asset inventory
 
-The detailed inventory is `manifests/pre-voyage-asset-inventory.csv` in the local product asset repository. Each row identifies a resource by owner, family and ID. Filter by `map-3` for the map, `shared actors` for walking frames, `shared dialogue` for portraits, or `battle-1` through `battle-7` for a particular encounter. `manifests/map3-cast.csv` joins map setup, entity or party member, sprite and portrait. These tables are produced from the selected demo content. They describe available assets; a conditional follower or unused block can be present without appearing in a playthrough.
+This is the entry point for tracking a resource from its USA source identity through preparation,
+selection, delivery and verification. The [presentation assets guide](presentation-assets.md)
+owns preparation, package assembly and local provenance. The
+[music command inventory](music-command-inventory.md) tracks each BGM command.
+
+**Standard scope.** [#2163](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2163)
+covers every presentation resource family, the two named private campaign selections and their
+owners. Review at the resource or binding level with direct document, manifest and package
+checks. Use the existing private manifests for per-ID graphics and SFX details. Capture, new
+consumers, release and hardware-equivalence decisions belong to their feature owners.
+
+## Read a resource row
+
+| Stage | Evidence to look for |
+| --- | --- |
+| Source identity | The pinned USA enumeration, table, pointer or selector. Keep aliases, intended source variants and actual caller overrides visible. |
+| Prepared material | The exact version of the private library, authored resource or derived art, with its ID and required palette, frame or timer binding. |
+| Selected package | The named world/scene/entry set and whether its resource is present, original, derived, modern, placeholder or missing. Independent catalogs have separate selections. |
+| Implemented consumer | The specific reader and the normal caller or presenter that can consume the selection. A compiled request records a static binding. Mark an unavailable reader, effect or use case **Unsupported**. |
+| Verification | The bounded comparison or observation, including its package and caller. Use **Unknown** for unobserved reach, playback or visual acceptance. |
+
+## Registered selections
+
+All identifiers here are relative to the configured shared data root. Keep each package's
+`world.json`, `main-scenes.json`, `entry/entry.json` and six `opening-inputs` selections
+together. The active package is the set selected in the launch process.
+[Ordinary package selection](presentation-assets.md#reuse-a-closed-private-package)
+
+| Selection | Purpose and resource boundary |
+| --- | --- |
+| **Pre-voyage** · `derived/issue2156/pre-voyage-map3-l1-v1` | The current complete pre-voyage selection and base for its successors. Provides [Map3 Original and L1 terrain](#complete-private-package-and-rebuild-2156), original cue 12 and the mounted pre-voyage spell rasters. Gameplay reach belongs to the [pre-voyage campaign](../application/pre-voyage-campaign.md). |
+| **PGNT** · `derived/issue1957/pgnt-v3` | Separate registered later progression/Battle26 witness. Its older Map3 HD bank has no L1 contexts and its cue 12 is the defeat placeholder. Preserve that evidence selection. Check resource lineage when proposing a successor that combines later progression with pre-voyage corrections. [PGNT reproduction](../development-and-verification.md#high-rank-elemental-magic-observation) |
+| **Display catalogs** · `derived/issue1957/catalogs-v1`, `derived/issue2001/catalogs-v1` | Independent prepared Chinese name overlays for the owning reproductions. Match the catalog and entry locale to the named reproduction. A catalog supplies display names and does not select world, scene or media. [PGNT catalog selection](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Retail catalog selection](presentation-assets.md#sleep-display-name) |
+| **Retail base and library** · `derived/issue2001/issue1966-original`, private asset Git `runtime/retail-v1` | Base world/entry provenance and preparation outputs used to assemble packages. Some prepared candidates have no current package binding. [Retail preparation](#retail-original-preparation) |
+
+## Resource families and owners
+
+The private asset Git entries below use `manifests/retail-v1-coverage.csv` for preparation
+status and selector, and `manifests/pre-voyage-asset-inventory.csv` for the inventoried demo
+snapshot. The current package and consumer owner establish what a particular game can show.
+
+| Resource and identity | Source and prepared details | Package, consumer and acceptance owner |
+| --- | --- | --- |
+| Map tiles, tilesets, palettes, blocks and layouts | Retail `maps/index.json` and `map-*` CSV rows join map, set and palette references. A block contains nine source tile words. [Map data](../../../docs/research/world/map-data-inventory.md#map-content-closure) · [Graphics](../../../docs/research/presentation/technical-graphics.md#renderer-mapping-private-extraction-tooling) | World map and `presentation.maps` select live layout and raster data. Field and battle projection consume admitted areas. [Field projection](../godot/presentation.md#field-projection) · [Battlefield maps](../godot/battle-scenes.md#battlefield-maps) |
+| Foreground, roof, door and animation variants | The map index retains plane, area, copy and animation operands. Preserve source tile flags and destination identity. [Map source](../../../docs/research/world/map-data-inventory.md) | The current map's live layout and renderer determine what copies and draws, including the Map3 context variants. [Working layout](../godot/presentation.md#bounded-working-layout-and-draw-operands) · [#2167 map handoff](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2167) |
+| Walking, class appearances and special poses | Retail `walking/index.json` joins strip/phase and member/class aliases. Special streams retain their indexed tiles and dispatch references. `manifests/map3-cast.csv` connects entity and party IDs to their Map3 sprite and portrait. [Special sprites](../../../docs/research/presentation/technical-graphics.md#special-sprites-and-view-routing) | World `presentation.sprites` mounts the chosen strips. Class and special-pose callers own their selected appearance and remaining dispatch gaps. [Promotion](../application/ordinary-promotion-classes.md) · [Special-pose dialogue](../godot/presentation.md#special-pose-dialogue-portraits-2070) |
+| Portraits and expressions | Retail `portraits/index.json` records slot aliases and replacement tiles. The atlas and eye/mouth mappings travel together. [Graphics](../../../docs/research/presentation/technical-graphics.md) | World `presentation.portraits` supplies dialogue and Member consumers, with optional Map3 density variants. [Story dialogue](../godot/presentation.md#shared-story-dialogue-agreement) · [Party details](../godot/presentation.md#party-details-agreement) |
+| Battle body, weapon, ground and background | Retail `bodies`, `weapons` and `terrain` indexes retain body/palette/frame, item selector and encounter environment identity. [Source scene engine](../../../docs/research/battle/battle-scene-engine.md) | Main and encounter-specific scene inputs select composition and placements. Review the class/weapon scene binding at the encounter caller. [Scene roster and limits](../godot/battle-scenes.md#which-combatants-need-a-scene) · [Weapon composition](../godot/battle-scenes.md#weapon-frame-composition-1620) · [Backdrops](../godot/battle-scenes.md#fixed-backdrops-for-the-private-campaign) |
+| Battle effect, spell, invocation and status/transition art | Retail `effects/index.json` retains indexed containers and effect controls. The spell table joins family and rank to selector and caller overrides. [Spell source](../godot/spell-presentation.md#source-and-status) | Check the scene mount and actual cast or Use separately. FREEZE 3/4 has admitted learned Magic and a bounded Battle26 witness with placeholder ice. Original effect composition and playback remain open. DAO has prepared source material with private summon gameplay unavailable. [Spell coverage and follow-ups](../godot/spell-presentation.md#attack-magic) |
+| UI art, icons, cursors and fonts | Retail `icons` and `ui` indexes distinguish storage slots, semantic IDs and normal/highlighted states. Theme, glyphs and licensed fonts have separate provenance. [Menus](../../../docs/research/presentation/common-menus.md) · [Fonts and theme](presentation-assets.md#fonts-theme-and-input-glyphs) | World and scene namespaces mount supported menus and identity icons. Check each enabled caller's acceptance and legacy text fallback. [Menu inventory](presentation-assets.md#bounded-source-to-consumer-inventory) · [Identity art](../godot/presentation.md#identity-art-acceptance-1667) · [Target cursor](../godot/battle-scenes.md#original-target-and-inspection-cursor-publication) |
+| Entry and other special screens | Retail `entry/index.json` covers special streams and title/witch layout, palette and bubble inputs. [Original screens](../../../docs/research/presentation/special-screens.md) | The independent entry document mounts title/witch images and two music resources. Other screen streams are admitted per caller. [Entry consumer](../godot/presentation.md#production-entry-and-field-dialogue-1606) |
+| BGM and SFX | [Sound inventory](../../../docs/research/presentation/sound-data-inventory.md) owns source IDs, bank aliases and timer/channel context. The private coverage CSV, per-command candidate and inherited base own prepared variants. | World and entry audio rows own selection, including the [command 12 and authored 109 distinctions](music-command-inventory.md). [Session audio](../godot/audio.md) owns cue, finite default, lifetime and playback acceptance. |
+| Original/HD, authored UI and approved modern replacements | Match the original ID to its specific derivative or authored replacement. The graphics experiment and local derivative identities have their own provenance. [HD pilot](hd-art-pilot.md) · [Public authored resources](presentation-assets.md#product-design-and-distribution-limit) | Map3 terrain selects Original or L1 via Settings. Actor and portrait variants have separate mounts. Other consumer surfaces keep their selected assets. [Map3 review](#map3-density-ramp-terrain-1765) · [#1699 graphics](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1699) · [#1456 human acceptance](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456) |
+
+For **map configuration**, start with the source
+[setup/selection records](../../../docs/research/world/map-data-inventory.md#setup-selection-and-rom-parity)
+and the remake [location](campaign-locations.md) and [flag](campaign-flags.md) owners. They identify
+the setup, guard, program and arrival to trace into the named world's map/program records and
+the actual session caller. The asset row tracks the tile, palette, block and layer data selected
+by that configuration. Configuration compilation, package selection and ordinary execution
+each have their own evidence.
+
+Source-derived media and its HD derivatives are private. Project-authored public assets
+and licensed fonts follow their own provenance and distribution terms. Keep original, modern
+and placeholder choices explicit where they share a semantic ID.
+[Distribution owner](presentation-assets.md#product-design-and-distribution-limit) ·
+[#1825 release](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1825)
+
+## Open resource and consumer checks
+
+- Keep original cue 12 and the L1 Map3 bank together in the next complete package that
+  needs both pre-voyage fidelity and later progression. Use the registered PGNT package
+  for its existing witness. [#1957 progression](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957)
+- Bind prepared cue 15 with the first admitted later caller that requests it, such as
+  Roft, and observe cue delivery and return. The compiled Map72 request follows the
+  init terminator. [Music row](music-command-inventory.md#non-silent-commands) ·
+  [#1818 campaign](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1818)
+- Check original cue 12 continuous playback across ordinary invaded-house stairs through
+  audio handoff ownership. [#2165 audio initialization](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2165)
+- Take placeholder attack effects and unsupported private summons through their specific
+  rank and encounter owners. Keep asset selection, gameplay admission and native
+  presentation evidence distinct. [#2104 spell presentation](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104) ·
+  [Spell family table](../godot/spell-presentation.md#attack-magic)
+
+## Demo inventory snapshot
+
+The detailed inventory is `manifests/pre-voyage-asset-inventory.csv` in the local product asset repository. Each row identifies a resource by owner, family and ID. Filter by `map-3` for the map, `shared actors` for walking frames, `shared dialogue` for portraits, or `battle-1` through `battle-7` for a particular encounter. `manifests/map3-cast.csv` joins map setup, entity or party member, sprite and portrait. These tables describe the inventoried demo snapshot. A conditional follower or unused block can be present without appearing in a playthrough.
 
 | Owner in the selected demo | Identity and grain of a row | Where to look or what the variant covers |
 | --- | --- | --- |
@@ -30,7 +116,7 @@ consumer bindings. The separate 7,040-row demo table above describes a different
 selector alongside each base row. Use its `retail_status` column. The reviewed commit
 `52435b04f49a84a6a9ed4444620055a070648001` records 3,375 prepared rows, 32 command-menu
 bindings already present and 204 inapplicable slots. These are CSV classification counts.
-The [audio exceptions](#base-audio-coverage-exceptions) qualify the entries inherited from the
+The [audio coverage interpretation](#audio-coverage-interpretation) qualifies the entries inherited from the
 base world. Each family index identifies the ROM and source revision. Aliased slots refer to
 shared physical art.
 
@@ -40,20 +126,15 @@ shared physical art.
 | Walking and portraits | 720 ordinary direction slots. 669 distinct physical strips carry both phases, with nine sentinel slots and the remaining aliases. 59 valid member/class bindings include ordinary and promoted field IDs, battle sprites and palettes. The six special/action streams retain native indexed tiles and the ten source pointers. The 56 portrait slots select 52 unique PNGs and retain eye/mouth tile mappings. Special-sprite dispatch, coordinate assembly and timed presentation still depend on the engine capability. |
 | Battle | Native-size transparent frames for 85 bodies with 163 palettes, plus the separate PLDN selection below. Both ally/enemy animation tables retain headers and frame/weapon operands. The 103 enemy species map to body/palette. 23 four-frame weapon tile banks, 42 two-color palettes and 84 item selectors retain the caller's body palette. All 30 ground and 30 backdrop pointers resolve to their physical variants. 23 spell containers, four invocation containers, status/transition graphics and Bolt sprite operands are available. Indexed effect tiles and control operands require the effect's original composition rule. No encounter matrix is generated. |
 | UI and entry | All 163 source icon slots have normal and highlighted art. The raw other-art slots keep their own identities. Only supported semantic keys are mounted. The nine UI tile groups and font have prepared images. Nine special-screen streams are decoded. Private title/witch resources include palette/layout/bubble operands and the six existing mounted entry rasters. |
-| Audio | The inventory includes 37 non-silent music commands and 56 SFX commands. The other 27 music slots select silent targets. New production supplied 18 music and 25 SFX candidates. Every new SFX records the controlled music timer context. The base supplies additional timer variants and the known authored entries below. Arbitrary caller/timer combinations and hardware waveform equality remain **Unknown**. |
+| Audio | The inventory includes 37 non-silent music commands and 56 SFX commands. The other 27 music slots select silent targets. The reviewed library carries 19 original-driver music and 25 SFX candidates. Each SFX candidate records its controlled music timer context. The base supplies additional timer variants and one retained authored cue. Arbitrary caller/timer combinations and hardware waveform equality remain **Unknown**. |
 
-### Base audio coverage exceptions
+### Audio coverage interpretation
 
-The historical base coverage counted inherited authored audio as prepared. Command 12/C4 used the
-two-second defeat chord through issue2106. The current local asset commit
-206f42802ccd06ddb880bcd453069f0c6284c8a6 adds the original cue at music/12/candidate.json,
-bringing newly prepared music candidates to 19. Coverage excludes the recognized defeat placeholder
-from original-audio coverage and selects the reviewed candidate when present.
-[Capture, current package and reconstruction](../godot/audio.md#invasion-map3-sad-theme)
-
-Command 109/C2 remains the explicitly authored 240 ms encounter notification. Its inherited coverage
-expresses the accepted modern cue. Original waveform coverage for that command remains **Unknown**.
-[Encounter capability](../capability-status.md#yeel-guide-through-battle03-implementation-agreement)
+The [music command inventory](music-command-inventory.md) joins prepared clips to the two
+registered selections and the consumer evidence for each command. Use it to interpret the
+inherited preparation counts. Command 12 is original in the current pre-voyage package
+and remains a placeholder in the older PGNT selection. Command 109 retains its accepted
+modern encounter notification. [Command 12 provenance](../godot/audio.md#invasion-map3-sad-theme)
 
 ### First consumers
 
@@ -67,7 +148,7 @@ expresses the accepted modern cue. Original waveform coverage for that command r
 | #1956 | Gerhalt and Peter use field sprites 23/19, portraits 49/48 and battle bodies 30/28 with palette 0. Mount selects six walking strips, ten body frames and two portraits. Both have unarmed rows. | Both progressions and class/member presentations are mounted. The PHNX overlay adds four 32×32 frames from prepared spell tileset 20. Its selector 61 played in Battle26. [Wolf Baron and Phoenix reproduction](../application/ordinary-promotion-classes.md#wolf-baron-and-phoenix-ordinary-reproduction) |
 | #1956 | Slade uses field sprite 15, portrait 50 and battle body 26 palette 0. Mount selects three walking strips, six body frames, eight compatible mounted sword layers and both states of icons 27/28. | Labeled controlled states exercise Ninja growth and its unarmed, sword and spell branches. [Ninja reproduction](../application/ordinary-promotion-classes.md#ninja-controlled-reproduction-and-ordinary-pilot) |
 | #1956 | Kiwi uses field sprite 17, portrait 51 and body 27 palette 0. Mount selects three walking strips, five body frames, the distinct special sequence 84 and two prepared flame particles. | Labeled controlled states exercise MNST growth, its unarmed strike and flame conversion. [Monster reproduction](../application/ordinary-promotion-classes.md#monster-controlled-reproduction-and-ordinary-pilot) |
-| #1950 / #1962 | Decimal 87 JUMP has 15,142 sample frames under Castle Timer B `D2` from Bedoe Map10. Decimal 99 BLOAB has 8,440 under Town `CB`. The latter is a controlled field context. | Both WAVs are available. Their feature tickets own the missing `SessionAudio.SoundSlots` classifications, actual calls and natural trigger verification. |
+| #1950 / #1962 | Decimal 87 JUMP has 15,142 sample frames under Castle Timer B `D2` from Bedoe Map10. Decimal 99 BLOAB has 8,440 under Town `CB`. The latter is a controlled capture context. | The Bedoe and Chirrup Sandals owners track their actual callers separately from these prepared WAVs. [Bedoe branch](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1950) · [Chirrup playback](special-equipment-reach.md#remake-controls-and-reproduction) |
 | #1967 | Both states for spell IDs 7 MUDDLE, 8 DESOUL and 9 SLEEP were read from the new field and Battle26 bindings. The prepared zh-CN catalog includes all three names. | Actual battle use and rule behavior belong to the consumer. |
 
 **Confirmed.** Offline assembly from the stable files yielded a 145-file, 294,283,435-byte

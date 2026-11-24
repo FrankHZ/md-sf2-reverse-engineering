@@ -5,7 +5,9 @@ prepared private worlds/scene documents; it does not reopen a ROM or reconstruct
 asset catalog. [Profiles and trust](profiles-and-trust.md) owns runtime admission and redistribution.
 [Godot](../godot/presentation.md) owns disposable rendering, not source provenance.
 
-The [demo asset inventory](asset-inventory.md) identifies the installed resources and their original/HD variants, with a detailed local table and the Map3 review route.
+The [asset inventory](asset-inventory.md) routes each resource family from its source and prepared
+version to the registered selection, actual consumer and bounded evidence. Use the
+[registered selections](asset-inventory.md#registered-selections) for current package identity.
 
 ## Public localization pilot assets
 
@@ -94,7 +96,7 @@ The retail preparation's private Git record is `manifests/retail-original-prepar
 local-only asset repository. It identifies the stable package relative to the registered shared
 data root, the exact asset manifest version used by the inventory, and the retained observation
 selections. The payload remains under shared `derived/`, outside all replaceable worktrees.
-The stable `issue1966-original` directory contains the matching `world.json`, `main-scenes.json`,
+The retail preparation baseline `issue1966-original` contains the matching `world.json`, `main-scenes.json`,
 entry media and opening selectors. Encounter inputs and external WAV files keep their relative
 names. Selecting or copying this package requires no ROM or H1 tool. Keep the world and scene
 selection together. Save slots and locale catalogs use their existing independent selections.
