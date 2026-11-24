@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
@@ -24,6 +25,17 @@ public sealed class SupportSpellActionTests
         d["actors"]![1]!["defense"] = 40;
         d["actors"]![1]!["agility"] = 24;
         d["encounters"]![0]!["rewards"]!["halvedExperience"] = true;
+    }
+
+    private static void BoostTwoBook(JsonNode doc)
+    {
+        Book(doc);
+        doc["spells"]!.AsArray().Add(new JsonObject { ["id"] = "boost", ["level"] = 2, ["mpCost"] = 5,
+            ["minimumRange"] = 0, ["maximumRange"] = 2, ["effect"] = new JsonObject { ["kind"] = "boost", ["radius"] = 2 } });
+        // This small authored fixture can list four expanded ranks. Replace BLAZE for these cases.
+        var learned = doc["actors"]![0]!["spells"]!.AsArray();
+        learned.RemoveAt(0);
+        learned.Insert(1, new JsonObject { ["id"] = "boost", ["level"] = 2 });
     }
 
     private static BattleActionResolution Cast(EngineBattleState battle, string name, byte lv, ActorRef center, MapPosition? destination = null) =>
@@ -68,12 +80,19 @@ public sealed class SupportSpellActionTests
         Assert.Equal(18, done.GetActor(Mage).Mp);
     }
 
-    [Fact]
-    public void OrdinaryBoostChoiceCanCancelThenShowsEachAllysAgiAndDefenseBeforeReturningControl()
+    [Theory]
+    [InlineData(1, 2)]
+    [InlineData(2, 5)]
+    public void OrdinaryBoostChoiceCanCancelThenShowsEachAllysAgiAndDefenseBeforeReturningControl(byte rank, byte cost)
     {
-        var session = EngineTestContent.Start("silence-watch", Book);
+        var session = EngineTestContent.Start("silence-watch", doc =>
+        {
+            if (rank == 2) BoostTwoBook(doc);
+            else Book(doc);
+            doc["encounters"]![0]!["placements"]![1]!["y"] = 2 + rank;
+        });
         var initial = session.Current.Battle;
-        SpellRef spell = new("boost", 1);
+        SpellRef spell = new("boost", rank);
         EngineTestContent.Accept(session, new Confirm());
         EngineTestContent.Accept(session, new SelectSpell(spell));
         EngineTestContent.Accept(session, new Cancel());
@@ -100,8 +119,92 @@ public sealed class SupportSpellActionTests
         Assert.True(session.Current.HasBattleControl);
         Assert.Equal(0x2000, session.Current.Battle.GetActor(Mage).Status);
         Assert.Equal(0x3000, session.Current.Battle.GetActor(Priest).Status);
-        Assert.Equal(18, session.Current.Battle.GetActor(Mage).Mp);
+        Assert.Equal(20 - cost, session.Current.Battle.GetActor(Mage).Mp);
         Assert.InRange((int)session.Current.Battle.GetActor(Mage).Exp!, 9, 11);
+    }
+
+    [Fact]
+    public void BoostTwoReachesTheRadiusEdgeAndRefreshesOnlyFreshRecipients()
+    {
+        ActorRef edge = new("edge"), outside = new("outside");
+        var setup = Battle(doc =>
+        {
+            BoostTwoBook(doc);
+            var encounter = doc["encounters"]![0]!;
+            var priest = encounter["placements"]![1]!;
+            priest["y"] = 4;
+            encounter["placements"]![2]!["x"] = 4;
+            encounter["placements"]![2]!["y"] = 4;
+
+            foreach (var (id, x, order) in new[] { ("edge", 5, 2), ("outside", 6, 3) })
+            {
+                var actor = doc["actors"]![1]!.DeepClone();
+                actor["id"] = id;
+                doc["actors"]!.AsArray().Add(actor);
+                var placement = priest.DeepClone();
+                placement["actor"] = id;
+                placement["x"] = x;
+                placement["processingOrder"] = order;
+                encounter["placements"]!.AsArray().Add(placement);
+                var start = doc["start"]!["actors"]![1]!.DeepClone();
+                start["actor"] = id;
+                doc["start"]!["actors"]!.AsArray().Add(start);
+                encounter["initialization"]!["sourceCombatants"]!.AsArray().Add(
+                    new JsonObject { ["slot"] = order, ["actor"] = id });
+            }
+        });
+        var battle = setup.With(actors: setup.Actors.Select(a => a.Actor == Mage || a.Actor == Priest
+            ? a.With(status: 0x1000, refreshStats: true) : a));
+        Assert.Equal("target-range", Assert.Throws<BattleRuleException>(() => Cast(battle, "boost", 2, edge)).Code);
+        var cast = Cast(battle, "boost", 2, Priest);
+        Assert.Equal(new[] { (Mage, BattleReactionKind.Ineffective), (Priest, BattleReactionKind.Ineffective),
+            (edge, BattleReactionKind.Status) }, cast.Reactions.Select(r => (r.Target, r.Kind)));
+        Assert.Equal(new ActorRef?[] { Mage, Priest },
+            cast.ConstructionEffects.Where(e => e.Kind == "rng-boost-recast").Select(e => e.Target));
+        Assert.InRange(cast.Reward!.Amount, 4, 6);
+
+        var done = cast.Reactions.Aggregate(cast.ApplySpellCost(cast.Prepared), cast.ApplyReaction);
+        Assert.Equal(15, done.GetActor(Mage).Mp);
+        Assert.Equal(0x1000, done.GetActor(Mage).Status);
+        Assert.Equal(0x3000, done.GetActor(Priest).Status);
+        Assert.Equal(45, done.GetActor(Priest).Defense);
+        Assert.Equal(27, done.GetActor(Priest).Agility);
+        Assert.Equal(0x3000, done.GetActor(edge).Status);
+        Assert.Equal(55, done.GetActor(edge).Defense);
+        Assert.Equal(0, done.GetActor(outside).Status);
+        Assert.Equal(0, done.GetActor(Smoke).Status);
+    }
+
+    [Fact]
+    public void BoostTwoUsesOrdinaryMpAdmissionAndSilencePayment()
+    {
+        var initial = Battle(BoostTwoBook);
+        var poor = initial.With(actors: initial.Actors.Select(a => a.Actor == Mage ? a.With(mp: 4) : a));
+        Assert.Equal("insufficient-mp", Assert.Throws<BattleRuleException>(() => Cast(poor, "boost", 2, Mage)).Code);
+        Assert.Equal(4, poor.GetActor(Mage).Mp);
+
+        var silenced = Status(initial, Mage, 0x300);
+        var blocked = Cast(silenced, "boost", 2, Mage);
+        Assert.NotNull(blocked.Silenced);
+        Assert.Empty(blocked.Reactions);
+        Assert.Empty(blocked.ConstructionEffects);
+        Assert.Null(blocked.Reward);
+        Assert.Equal(silenced.MainSeed, blocked.Prepared.MainSeed);
+        Assert.Equal(15, blocked.ApplySpellCost(blocked.Prepared).GetActor(Mage).Mp);
+    }
+
+    [Fact]
+    public void EnemyBoostTwoBookDoesNotQualifyForTheAutomaticSupportCommand()
+    {
+        var battle = Battle(doc =>
+        {
+            BoostTwoBook(doc);
+            doc["actors"]![2]!["spells"] = new JsonArray(
+                new JsonObject { ["id"] = "boost", ["level"] = 1 },
+                new JsonObject { ["id"] = "boost", ["level"] = 2 });
+        });
+        var rules = RuleCompositions.Sf2();
+        Assert.Null(EnemySupportDecision.Resolve(battle, Smoke, rules.Actions));
     }
 
     [Theory]
