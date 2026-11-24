@@ -58,15 +58,18 @@ that needs it. Each proposal retains the real presenter, application admission a
 - **Dialogue choice.** The F2 invitation only exercises the reading waits. A focused follow-up
   would stage the existing Map3 portrait-question approach or an authored portrait plus an
   admitted choice instruction. Exercise selection and Back in the existing dialogue presenter.
+  [Prepare and dialogue sample follow-up](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2213)
 - **Caravan.** F1–F10 select no Caravan service. The smallest useful entry would stage one
   disposable registered Map22 or Map26 approach and use ordinary Talk to mount the current
   service root. Use the existing world/catalog and service-ready custody inputs to reach Join/Purge,
   a Depot transfer or Item choice. A review can select one branch without staging all of them.
+  [Caravan sample follow-up](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2214)
 - **Host persistence and recovery.** A sample of paginated or protected slots would need a
   disposable numbered namespace, a compatible recipe and seeded history in place of the preview's
   single explicit file. Review admitted Save/Record or slot recovery one caller at a time. The
   actual client-size recovery check already has an ordinary-host route. Scaling the preview window
   changes the picture size while its inner gameplay client stays fixed.
+  [Save history and window recovery investigation](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2215)
 - **Campaign service variants and battle content.** Use the connected Promotion, Repair, Deals and
   playback routes for their supported content. If a visual change needs one of those subpages in
   the dedicated preview, stage only its existing admitted approach or package. F8's package
