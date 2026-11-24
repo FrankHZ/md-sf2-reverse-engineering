@@ -305,6 +305,56 @@ closure and human/aesthetic acceptance remain separate. The #1541 presentation a
 additional battle-art prerequisite for this chapter; its modern battle-effect and human-review
 limits remain with the existing presentation owners.
 
+### Castle-to-quake handoff from a player save (#2167)
+
+This bounded check starts at an ordinary v6 slot saved after Battle07 and ends at usable docks
+control after a quake-town revisit. It uses the complete
+[`issue2156/pre-voyage-map3-l1-v1` package](../content/asset-inventory.md#complete-private-package-and-rebuild-2156)
+with gameplay revision 4. Build the Debug adapter with the locked SDK. Set
+`SF2_PRIVATE_EXPLORATION_CONTENT` to its `world.json`, `SF2_PRIVATE_BATTLE_SCENE_CONTENT`
+to `main-scenes.json`, `SF2_PRIVATE_ENTRY_CONTENT` to `entry/entry.json`, and the matching
+opening inputs from `opening-inputs/`. Point `SF2_SAVE_ROOT` and `SF2_SAVE_NAMESPACE` to a fresh
+disposable copy of the saved namespace. [Locked SDK workflow](../development-and-verification.md#locked-net-workflow)
+
+Select slot 4 through ordinary Continue. Follow the castle
+warning at (16,5) and safe-place zone at (25,13), then cross the south exit on row 31. Acknowledge
+the reached dialogue. Take the east exit at (50,24), then the docks' west return at (0,25).
+
+| Boundary | Binding checked |
+| --- | --- |
+| Pinned original | Battle07's first aftermath writes F74/F640 and requests Map58. The victory caller writes F507. In Map19's F507 setup, the two castle zones write F622/F623 independently. The south warp requests Map3 at (29,2), Down. `SwitchMap` applies F640 from `flagswitchedmaps.asm`. Map4's init writes F624 only after its first script, and the stock flag-copy table supplies the finished layout on later loads. [Aftermath](../../../docs/research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md) · [Castle and quake](../../../docs/research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md) |
+| Selection and compilation | The opening selection admits maps 3/4/19/44, Map4 layout events, and the F507 variant of Map19. The compiler lowers explicit warps to Map3 into ordered F640-set and F640-clear events, including the Map19 south exit and Map44 west return. It serializes the two Map4 flag copies separately from the six script copies. [Opening selection](../../content/private/pre-voyage-opening.json) · [Map compiler](../../../src/sf2tool/remake_exploration_maps.py) |
+| Complete package | Its `world.json` has both warp rows in the relevant setup variants, Map4's F624 branch and copy records, and a Map4 Original visual bank. Map3 carries the L1 variant, and the selected audio includes original command 12. Map4 has no installed HD terrain bank. [Package selection](../content/asset-inventory.md#complete-private-package-and-rebuild-2156) |
+| Runtime | Continue restores the captured visit and verifies its reconstructed layout, actors, party and registers. Ordinary movement matches the live marker and F640 against the warp rows. Fresh map load applies enabled flag copies before init, and the first-entry script mutates the same working layout during the scene. Both collision and drawing read that layout. HD selects Original terrain on Map4 through the regular per-map artwork fallback. [Transfer](../../src/Sf2.Remake.Application/Runtime/Exploration/MapTransfer.cs) · [Drawing](../../game/src/Exploration/ExplorationPresentation.cs) |
+
+**Confirmed** in the remake with the 604291ad Debug adapter and Godot 4.7.2. Slot 4 opens in
+Map19's F507 setup at (4,3), Left. Its tile word `0x4031` is passable with stair traversal,
+the landing is unoccupied, and the royal followers and castle resident restore. Input is active
+with no script or wait. F507/F74/F640 are set and F622/F623/F624 are clear. The saved position
+requires no correction. The point at which the original player observation was made remains
+**Unknown**.
+
+Ordinary movement from that landing reaches both castle dialogues. Re-stepping the first zone
+does not replay it. The south exit selects Map4, which plays text 715–720 once, leaves both
+guards at (0,0), sets F624, and returns control at (29,4), Down. Read the 5×4 and 11×7
+destination rectangles with `ReadLayoutRegion` to verify the final working words. At (29,5),
+Down leaves the player at (29,5) because (29,6) is blocked by the copied layout. The east route
+reaches the docks, and the west exit reconstructs the same rectangles and parks the guards
+without replaying the first scene.
+
+Use `ObserveLayoutRegion(24, 0, 11, 10)` after first control, then read the matching draw
+request with `ReadLayoutRegion`. At 1920×1080, both Original and HD draw 110 sampled cells
+through identical block and tile passes at 24-pixel texture density. Engine, presentation and
+audio errors were null at these handoffs. The tested route reproduced the expected map
+replacement, collision and projection on the existing package.
+
+The first visit's active quake makes Save unavailable (`field-visit-mode`). On the return from
+the docks, walk to (29,4), let the followers settle, and save to a new slot in the disposable
+namespace. A fresh Debug process used ordinary Continue for that v6 slot. It restored Map4 at
+(29,4), Left, with the same two copied rectangles, F624 set, both guards parked, and no opening
+dialogue or wait. Down reached (29,5), and the Original draw again bound the changed blocks.
+The copied slot 4 retained its original bytes.
+
 ### Verification and preserved failures
 
 Use the existing world preparation command below, then the affected engine filter

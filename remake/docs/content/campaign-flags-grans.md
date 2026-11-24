@@ -34,6 +34,12 @@ to the rows below. Story rows are persistent unless a row says otherwise.
 
 ## Occupied Granseal and the voyage
 
+F640 can be set while the player remains in the tower or castle. The F507 castle warnings write
+their own latches, and the exit reads F640 to choose the destination. F624 marks the first town entry complete
+and drives later layout loads. The current complete package was checked from an ordinary castle
+save through that exit, the dock return and a cold Map4 Continue.
+[Castle-to-quake handoff](../application/pre-voyage-campaign.md#castle-to-quake-handoff-from-a-player-save-2167)
+
 | ID / owner | Original writer → reader and lifecycle | Remake binding and coverage |
 | --- | --- | --- |
 | F407/F456/F506, F6/F38 · Battle06 and Kiwi | The Battle06 before-program arms F407. F456 latch suppresses the intro on retry. Victory sets F506. Fresh occupied Granseal/castle select changed setups. F506 Map3 offers Kiwi while F6 is clear. A successful name confirmation precedes join. Decline returns without naming/membership, and the castle path works without Kiwi. [Battle06 to Battle07](../../../docs/research/chapters/grans-opening/battle06-to-battle07-content-route.md) | [Ordinary alternate Kiwi branches, after06 and Battle07](../application/pre-voyage-campaign.md#battle06-result-through-usable-tower-exploration). Seven possible actors and the six-member route are distinct legal states. F506 selects the single dock worker, and the west exit returns to Map3 with F640 clear. |

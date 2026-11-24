@@ -235,6 +235,11 @@ The [departure observations](application/pre-voyage-campaign.md#tower-return-thr
 retain state, input, drawn projection, audio, source bindings and completed failures. Independent
 integration and parent-campaign closure remain with main-gate.
 
+An ordinary v6 castle slot in the current complete package confirms the south exit selects Map4,
+whose first and repeated visits draw the changed layout and preserve the chasm collision. The
+revisited town supports a settled v6 Save and cold Continue. Map4 terrain uses its Original bank
+under both graphics selections. [Castle-to-quake handoff](application/pre-voyage-campaign.md#castle-to-quake-handoff-from-a-player-save-2167)
+
 The historical `battle07-return` observation covers Save/Quit/fresh-process Continue at Map58
 with the recorded anchor and rebuilt followers. Current [field Save](application/opening-session-lifecycle.md#unified-settled-field-snapshots)
 keeps a supported settled visit and its actual landing. The older slot remains readable under
