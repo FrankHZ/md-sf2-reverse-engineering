@@ -104,13 +104,11 @@ func inspect_case() -> bool:
     if not state().inspection.members.is_empty():
         await act("down")
         var member_index: int = state().inspection.memberIndex
-        await act("confirm")
-        if not await inspect_page("MemberFull"): return false
-        await act("cancel")
-        if not expect(state().inspection.page == "Members" and state().inspection.memberIndex == member_index,"Member detail Back restores exact roster row"): return false
-        samples.append({"label":"member-return","inspection":state().inspection})
+        if not expect(state().inspection.roster.card.actor == state().inspection.members[member_index].Actor.Value,
+                "Details follow the selected roster row"): return false
+        samples.append({"label":"member-selection","inspection":state().inspection})
     else:
-        if not expect(not state().inspection.roster.text.is_empty(),"Standalone start explicitly explains absent joined roster"): return false
+        if not expect(not state().inspection.roster.layout.name.is_empty(),"Standalone start explains empty roster"): return false
     await act("cancel")
     await act("down"); await act("confirm")
     if not await inspect_page("Map"): return false

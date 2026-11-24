@@ -13,8 +13,8 @@ geometry and errors, followed by independent main-gate review.
   directly consumes the accepted `CompactCommandList`, original command frames at nearest 3×,
   80px minimum rows and reserved markers. Up/Down follows the list and Cancel returns to the field.
   The list retains its initiating selection while a member/preparation page owns input.
-- `PartyStatusView` keeps the shared scrollable member column visible beside the selected sheet.
-  Wrapped names, condition and available portraits use the same row control as battle Member.
+- `PartyStatusView` mounts the same [member page](battle-ui-composition.md#shared-member-page-2154) as battle Member.
+  The roster and selected sheet share layout, focus, scrolling, row and item-slot input.
   Field membership comes from the live Party query. Portrait, identity, vitals, attributes,
   learned spells and inventory remain grouped. Member kills and defeats share a record frame,
   and Party gold has its own frame. All three values use 48px rows, 24px horizontal insets,
@@ -23,8 +23,7 @@ geometry and errors, followed by independent main-gate review.
   on return from actual shop transactions. The frames sit above the fixed bottom hint panel.
   Inside that panel the reading hint takes the space on
   the left; Prepare (Magic or Item at those entries) and Close sit together at the right inset.
-  Each uses its own visible rectangle for press and release. The field sheet opts into `PartyDetailsPanel.FieldLayout`;
-  the battle inspection caller retains its existing composition and 4× identity art.
+  Each uses its own visible rectangle for press and release. Both member callers use 3× list identity art. Direct board-unit inspection uses its compact sheet and 4× art.
 - Member → Prepare uses the same right-hand list for Equip, Give / exchange, Use item, Magic and
   Drop. Its four item commands use the published Item operation frames and Magic uses the Field
   Magic frames. Captions stay visible, and Reduced Flash holds the focused frame. The direct Item

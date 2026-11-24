@@ -2302,18 +2302,10 @@ list-specific return is covered by the separate [#1645 acceptance](#battle-membe
 
 ### Battle Member roster and read-only details (#1645)
 
-**Current reproduction:** the authored #2082 cases exercise the actual shared roster and detail
-return. Use the [production F8 observer](battle-interaction-baseline.md#direct-production-reproduction),
-case `retreat`, for connected joined-member detail/row return. The historical connected Member
-driver below covers the pre-#1686 Options layout. [Shared roster cases](battle-ui-composition.md#reproduce-the-shared-roster)
-
-**Standard rigor:** this bounded multi-layer extension completes Options → Member → selected full
-sheet → same selected roster row → same Options choice → cursor → the same actor's settled Movement.
-It reuses the inspection session/revision/actor lifecycle, mapped input/release barriers and
-`PartyDetailsPanel`; no transaction, new battle authority or persistence format is introduced.
-Scope is the current connected private Battles01–07 admission, with actual connected input observation
-on Battle01. Later campaigns, Speed/Quit and connected Drop remain separate; connected Equip/Give
-have their own [product admissions](battle-interaction-baseline.md).
+**Current reproduction.** Use the [shared page and native routes](battle-ui-composition.md#shared-member-page-2154)
+for field and battle member selection, live details and return. The connected #1645 receipt below
+records the former two-step roster flow. Board disclosure and joined/active eligibility still use
+the queries documented here.
 
 **Confirmed static disclosure:** pinned SF2DISASM
 `c834c652b6862bc5679fd7f69a38a7093206efc6`, S2 `BattlefieldMenu` calls `UpdateForce`, copies
@@ -2339,31 +2331,26 @@ reject explicitly. No live actor means no invented row or scalars.
 
 `BattleUnitProjection.Details` now supplies both map inspection and Member from the same live scalar,
 status, spell and loadout readers, retaining private ≥100 stat unavailability and missing inventory
-semantics. `BattleInspectionView` uses a distinct disposable `MemberFull` caller: A/B/C returns to
-`Members` with its selected actor and scroll, including the current actor. Back from details opened
-directly on the board returns to Cursor for any actor. Cancel on Cursor returns to Movement.
-Options retains the Member choice after list Back, and Map remains reachable.
-`BattleMemberListView` mounts the same scrollable rows as field Party, with localized wrapped names,
-optional admitted portraits and distinct defeated, absent and unavailable annotations. Up/Down
-reveals the selected row. A/C or a complete row click opens eligible details. Mapped hints come
-from `GameInput`, and browsing never submits gameplay. Changed revision, actor, unavailable control or host replacement retires the
-same inspection context. No Member state is saved.
+semantics. The shared page switches actors in place. Back returns to the same Member choice in
+Options, then to Cursor. Closing board-unit details returns directly to Cursor for any actor.
+Changed revision, actor, unavailable control or host replacement retires the inspection context.
+No Member state is saved.
 
-**Confirmed bounded engineering acceptance:** the finite engine behavior selection covers live scalar
+**Confirmed, earlier #1645 acceptance:** the finite engine behavior selection covers live scalar
 reuse/purity, active versus joined/reserve/unjoined disclosure, dead/unplaced and uninitialized states,
 empty membership, missing/enemy requests, stale revision/session and story/field/busy rejection.
-The actual connected observer
+At that revision the connected observer
 [`engine_battle_member_observation.gd`](../../game/probes/engine_battle_member_observation.gd)
-reuses the existing inspection input and signature methods. Its controlled Map57 `(8,14)` approach
-reaches ordinary Battle01 Movement; it is not a natural opening replay. English/default and Chinese
-remapped keyboard runs verify current/other member sheets, all A/B/C current-sheet returns, selection
+reused the existing inspection input and signature methods. Its controlled Map57 `(8,14)` approach
+reached ordinary Battle01 Movement; it is not a natural opening replay. English/default and Chinese
+remapped keyboard runs verified current/other member sheets, all A/B/C current-sheet returns, selection
 retention/wrapping, held entry/close release barriers, detail scrolling, host Menu pause/return,
 Member/Map parent choice, final same-actor Movement and actual host/session replacement. The unchanged
 post-entry signature covers session/revision/sequence, selection/path, queue/cursor, resources,
 loadout/status, story and both seeds. Chinese labels and hints are read from actual projected nodes.
 Defeated/unplaced/empty/unavailable shapes are engine checks, not claimed natural connected encounters.
 
-Reproduce after the existing locked environment, affected engine checks, adapter and Debug build.
+To reproduce the historical flow at the #1645 revision, use the locked environment, affected engine checks, adapter and Debug build.
 Use the registered world/action/scene/presentation selections; set `SF2_INSPECTION_START` to a
 worktree-local controlled Map57 approach document and `SF2_INSPECTION_ROUTE=keyboard`.
 Set `SF2_MEMBER_ZH=1` with ordinary `--input-settings <absolute-settings>` selecting `language=zh-CN`

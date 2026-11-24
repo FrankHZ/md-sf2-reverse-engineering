@@ -15,12 +15,21 @@ public partial class DesignPreview
         Tab.Witch => null,
         Tab.Dialogue => Authored("localization-pilot"),
         Tab.Church => new SampleSource("localization-pilot", StartAtChurch),
-        Tab.Battle or Tab.Inspect => Authored("practice-yard"),
+        Tab.Inspect => InspectionSource(),
+        Tab.Battle => Authored("practice-yard"),
         Tab.Members or Tab.Shop or Tab.Field or Tab.System => new SampleSource("shop-supplies", AddFieldSign),
         Tab.Results when outcome == Outcome.Defeat => Authored("progression-outcome-defeat"),
         Tab.Results when outcome == Outcome.Retreat => new SampleSource("progression-outcome-victory", TeachEgress),
         _ => Authored("progression-outcome-victory"),
     };
+
+    private static IScenarioSource InspectionSource()
+    {
+        var args = OS.GetCmdlineUserArgs();
+        int option = Array.IndexOf(args, "--authored-package");
+        return option >= 0 && option + 1 < args.Length
+            ? new AuthoredScenarioPackageReader(args[option + 1]) : Authored("practice-yard");
+    }
 
     private static string ContentPath(string name) => ProjectSettings.GlobalizePath($"res://../content/authored/{name}.json");
     private static AuthoredScenarioPackageReader Authored(string name) => new(ContentPath(name));

@@ -714,7 +714,7 @@ msgid "party.stat.move"
 msgstr "移动"
 
 msgid "party.hint"
-msgstr "{0}：整备 · {1}/{2}：{3}   {4}：切换区域   {5}/{6}：关闭\n鼠标：选择成员或道具栏位 · 滚轮：滚动当前列表"
+msgstr "{0}：整备 · {1}/{2}：{3}   {4}：切换区域   {5}/{6}：关闭\n{7}/{8}：切人 · 单击：选择 · 滚轮：滚动"
 
 msgid "prepare.empty"
 msgstr "没有可选内容 · 返回"
@@ -1737,7 +1737,7 @@ msgid "battle.member.empty"
 msgstr "没有可查看的战斗成员。"
 
 msgid "battle.member.help"
-msgstr "{0}/{1} · 选择队员　{2}/{3} · 详情"
+msgstr "{0}/{1}：{2}   {3}：切换区域   {4}：返回\n{5}/{6}：切人 · 单击：选择 · 滚轮：滚动"
 
 msgid "battle.command.search"
 msgstr "调查"

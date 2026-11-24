@@ -20,11 +20,12 @@ internal sealed partial class BattleCommandMenu : Control
     internal void AvoidSubject(Rect2 rectangle) => _layout.AvoidSubject(rectangle);
     internal void ReadDescription(GameAction direction) => _layout.ReadDescription(direction == GameAction.Left ? -80 : 80);
 
+    public override void _EnterTree() => GetWindow().MouseExited += CancelPointer;
+
     public override void _Ready()
     {
         _layout.InvalidatePointer = CancelPointer;
         MouseFilter = MouseFilterEnum.Ignore; AddChild(_layout);
-        GetWindow().MouseExited += CancelPointer;
     }
     internal void Arrange(Vector2 size)
     {

@@ -714,7 +714,7 @@ msgid "party.stat.move"
 msgstr "MOVE"
 
 msgid "party.hint"
-msgstr "{0}: Prepare · {1}/{2}: {3}   {4}: Focus   {5}/{6}: Close\nMouse: select a member or item slot · Wheel: scroll the open list"
+msgstr "{0}: Prepare · {1}/{2}: {3}   {4}: Focus   {5}/{6}: Close\n{7}/{8}: Member · Click: select · Wheel: scroll"
 
 msgid "prepare.empty"
 msgstr "Nothing available · Back"
@@ -1737,7 +1737,7 @@ msgid "battle.member.empty"
 msgstr "No battle members available."
 
 msgid "battle.member.help"
-msgstr "{0}/{1} · Select member    {2}/{3} · Details"
+msgstr "{0}/{1}: {2}   {3}: Focus   {4}: Back\n{5}/{6}: Member · Click: select · Wheel: scroll"
 
 msgid "battle.command.search"
 msgstr "Search"
