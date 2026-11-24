@@ -39,8 +39,12 @@ internal static class SceneEntities
         };
         var aliases = world.Aliases.ToDictionary(pair => pair.Key, pair => pair.Value);
         aliases[add.Entity] = slot;
-        return new(world.Definition, world.Layout, world.Player,
-            world.AllEntities.Where(row => row.Slot != slot).Append(entity), world.Party,
+        // An older visit can retain a link to the previous occupant of this physical slot.
+        bool replacing = world.AllEntities.Any(row => row.Slot == slot);
+        var entities = world.AllEntities.Where(row => row.Slot != slot)
+            .Select(row => replacing && row.Follower?.LeaderSlot == slot ? row with { Follower = null } : row)
+            .Append(entity);
+        return new(world.Definition, world.Layout, world.Player, entities, world.Party,
             world.SpriteSize, aliases, world.RoofState, world.Population, world.Quake, world.TravelMode, world.CurrentEntities, populationSource: world.PopulationSource);
     }
 

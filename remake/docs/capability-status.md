@@ -111,7 +111,9 @@ Continue restores the live population and follower links in the default and post
 setups. The published world retains the Healing Seed receipt and Church Egress across restart. [Pre-voyage save coverage](application/pre-voyage-optional-locations.md#pre-voyage-save-coverage)
 includes [Granseal F506](application/opening-session-lifecycle.md#granseal-f506-save-and-continue-observation).
 Cold Continue retains Kiwi's settled refusal or named join and same-visit follower. Ordinary
-reentry retires the actor. The F506 priest publishes the Map3 refuge through Record. [Galam
+reentry retires the actor. The F506 house stairs preserve the unjoined resident and keep a retired
+slot parked after recruitment through repeated trips. [House stair observation](application/pre-voyage-campaign.md#invaded-granseal-house-stairs)
+The F506 priest publishes the Map3 refuge through Record. [Galam
 Map16](application/opening-session-lifecycle.md#galam-town-save-and-continue-observation) restores
 the actual default or F663 cast, including the army's retirement on the same visit and the
 retired guard on an F505 return. Either priest publishes the Map16 refuge through Record.
