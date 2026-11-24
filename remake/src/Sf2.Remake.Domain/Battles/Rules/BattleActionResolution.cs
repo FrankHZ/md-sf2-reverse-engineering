@@ -117,15 +117,31 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
                     ChosenAction?.Kind == BattleActionKind.Healing || healingItem ? OffensiveTargetSide.OwnSide : Side)));
         uint seed = before.ThinkingSeed;
         uint main = before.MainSeed;
-        int categories = 0;
-        bool dualCategory = temporary && Effects.Any(row => row.Kind == "ai-item-candidate") &&
-            Effects.Any(row => row.Kind == "ai-spell-candidate");
-        bool choseFromThinking = false;
+        bool hasPhysical = false, hasItem = false, hasSpell = false, mainCategory = false;
+        ushort? thinkingCategory = null;
         BattleEffect? selfRoll = null;
         foreach (var effect in Effects)
         {
             Require(!string.IsNullOrWhiteSpace(effect.Kind) && effect.Actor == actorRef &&
                 (effect.Target is null || before.Actors.Any(unit => unit.Actor == effect.Target)));
+            if (effect.Kind is "ai-candidate" or "ai-item-candidate" or "ai-spell-candidate")
+            {
+                Require(selfRoll is null && !mainCategory && thinkingCategory is null);
+                hasPhysical |= effect.Kind == "ai-candidate";
+                hasItem |= effect.Kind == "ai-item-candidate";
+                hasSpell |= effect.Kind == "ai-spell-candidate";
+            }
+            if (effect.Kind == "ai-attack-unselected")
+            {
+                // An ordered command can finish an ATTACK without a target and advance to
+                // another one. Preserve the seeds and close only this attempt's category.
+                Require(!actor.IsAlly && MuddleRules.Confused(actor.Status) && selfRoll is null &&
+                    (hasPhysical || hasItem || hasSpell) && (hasItem && hasSpell) == thinkingCategory.HasValue &&
+                    effect == new BattleEffect("ai-attack-unselected", actorRef));
+                hasPhysical = hasItem = hasSpell = mainCategory = false;
+                thinkingCategory = null;
+                continue;
+            }
             if (effect.Kind == "rng-muddle-self-guard")
             {
                 Require(selfGuard && selfRoll is null && effect == BattleOffense.GuardRoll(actorRef, main));
@@ -136,26 +152,32 @@ internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnly
             if (effect.Kind == "rng-ai-attack-category")
             {
                 var category = BattleRandom.NextMain(main, 6);
-                Require(selfRoll is null && !dualCategory && ++categories == 1 && effect.RandomRange == category.Range && effect.Target is null &&
+                Require(selfRoll is null && hasItem != hasSpell && !mainCategory && thinkingCategory is null &&
+                    effect.RandomRange == category.Range && effect.Target is null &&
                     effect.Before == main && effect.After == category.After && effect.RandomValue == category.Value);
+                mainCategory = true;
                 main = category.After; continue;
             }
             if (effect.RandomRange is null)
             { Require(effect.RandomValue is null && !effect.Kind.StartsWith("rng-", StringComparison.Ordinal)); continue; }
             if (effect.Kind == "thinking-ai-attack-category")
             {
-                Require(selfRoll is null && dualCategory && !choseFromThinking && effect.RandomRange == 2 && effect.Target is null &&
-                    (Target is null || (effect.RandomValue == 1 ? itemAttack : ChosenAction is { Kind: BattleActionKind.AttackSpell })));
-                choseFromThinking = true;
+                Require(selfRoll is null && temporary && hasItem && hasSpell && thinkingCategory is null &&
+                    !mainCategory && effect.RandomRange == 2 && effect.Target is null && effect.RandomValue.HasValue);
+                thinkingCategory = effect.RandomValue;
             }
-            else Require(selfRoll is null && !choseFromThinking && effect.Kind == "thinking-rng" && effect.RandomRange <= byte.MaxValue);
+            else Require(selfRoll is null && !mainCategory && thinkingCategory is null &&
+                effect.Kind == "thinking-rng" && effect.RandomRange <= byte.MaxValue);
             var draw = BattleRandom.NextThinkingWord((ushort)(seed >> 16), (byte)effect.RandomRange!.Value);
             uint after = ((uint)draw.After << 16) | (seed & 65535);
             Require(effect.Before == seed && effect.After == after && effect.RandomValue == draw.Value);
             seed = after;
         }
         Require(selfGuard == (selfRoll is not null) && Guarded == (protectedCenter || selfRoll?.RandomValue == 1));
-        Require(dualCategory == choseFromThinking && Battle.ThinkingSeed == seed && Battle.MainSeed == main);
+        Require((hasItem && hasSpell) == thinkingCategory.HasValue &&
+            (thinkingCategory is null || Target is null ||
+                (thinkingCategory == 1 ? itemAttack : ChosenAction is { Kind: BattleActionKind.AttackSpell })) &&
+            Battle.ThinkingSeed == seed && Battle.MainSeed == main);
         if (QueueOnly) Require(ReferenceEquals(Battle, before) && Path.Count == 1 && Target is null);
     }
 }

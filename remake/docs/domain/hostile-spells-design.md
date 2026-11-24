@@ -543,11 +543,19 @@ movement and the existing scene. Controlled engine turns cover attacks on both f
 own sides, paid and guarded self actions, Black Ring wear and growth, the MNST conversion,
 fixed-slot pursuit, area casualties and terminal cleanup. Eligible double and counter draws
 still precede suppression. Enemy class ties keep the draws the search has consumed before it
-continues the commandset. Enemy learned spells and attack items share the raw-power estimate.
-Execution still uses the action's applicable damage power.
+continues the commandset. A point order that stays in place can finish one unsuccessful
+ATTACK and reach another. Validation keeps the ordered main and thinking RNG chains and
+checks the category within each attempt. Enemy learned spells and attack items share the
+raw-power estimate. For each spell center, AI scores the recipients in source coordinate order
+from the outermost ring to the center. Construction still uses the existing scene effect and
+reward order. [Spell range contract](../../../docs/design/contracts/battle/battlefield-navigation.md#range-and-target-construction)
 
 The inaction scene records the selected source message ID and uses generic English and Chinese
-feedback. Original effect animation and prose variants remain outside this slice. An absent
+feedback. Its targetless presentation accepts a fresh Confirm and continues to the award
+and after-turn. The same-side close-up shows one card for the displayed combatant, including
+self, spell and MNST reactions. Opposing close-ups retain separate cards. A controlled
+headless presenter observation exercised these paths with authored inputs and placeholder
+MNST rasters. Original effect animation and prose variants remain outside this slice. An absent
 or unplaced fixed pursuit slot rejects that internal continuation before the decision is
 published. Its original behavior remains **Unknown**. MUDDLE 2 is still learned-only.
 Public Start and battle Save/Continue still reject confused status words. The next slice

@@ -176,6 +176,7 @@ internal sealed class SourceMoveOrderAi(EngineBattleState battle, ActorRef actor
         if (search.Choice is { } choice) return choice with { MovementGrid = grid };
         _battle = search.Battle;
         _effects.AddRange(search.Effects);
+        if (search.HasReachable) _effects.Add(new("ai-attack-unselected", actorRef));
         return null;
     }
     private BattleAutomaticAction? Heal() => MuddleRules.Confused(Actor.Status) ? null : OnGrid(grid =>

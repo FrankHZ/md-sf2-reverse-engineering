@@ -266,6 +266,40 @@ public sealed class MuddleConfusedTurnTests
     }
 
     [Fact]
+    public void AnOwnTileMoveOrderCanFallThroughTwoAttackAttemptsInOneTurn()
+    {
+        var battle = EnemyParty.Battle(d =>
+        {
+            d["encounters"]![0]!["placements"]![1]!["initialization"]!["commandset"] = 7;
+            d["encounters"]![0]!["placements"]![2]!["y"] = 3;
+            d["encounters"]![0]!["placements"]![3]!["x"] = 5;
+            d["encounters"]![0]!["placements"]![3]!["y"] = 2;
+        });
+        var mage = battle.GetActor(EnemyParty.Mage).With(status: 0x18, activationWord: 0x3001, primaryOrder: 64);
+        var init = battle.Definition.Initialization!;
+        var ownPoint = new BattleInitializationDefinition(init.Regions, init.RegionProgram, init.AllyFormation,
+            [mage.Position!], init.SourceCombatants, init.EnemyCount, init.RegionPrograms);
+        battle = Replace(battle, mage, initialization: ownPoint);
+        battle = battle.With(actors: battle.Actors.Select(a => a.Actor == EnemyParty.Cleric || a.Actor == EnemyParty.Wounded
+            ? a.With(hp: 1) : a));
+
+        var (end, events) = Play(battle, mage.Actor, EnemyParty.Scout, 1680);
+        var categories = events.Where(e => e.Kind == "rng-ai-attack-category").ToArray();
+        Assert.Equal(2, categories.Length);
+        var order = Assert.Single(events, e => e.Kind == "ai-command-move-order1");
+        var attack = Assert.Single(events, e => e.Kind == "ai-command-attack1");
+        Assert.True(categories[0].Sequence < order.Sequence && order.Sequence < categories[1].Sequence &&
+            categories[1].Sequence < attack.Sequence);
+        Assert.Equal(-1, order.After);
+        Assert.Equal(-1, attack.After);
+        Assert.Equal(categories[0].After, categories[1].Before);
+        Assert.Equal(categories[1].After, Assert.Single(events, e => e.Kind == "rng-muddle-expiry").Before);
+        Assert.DoesNotContain(events, e => e.Kind is "rng-muddle-self-guard" or "hp" or "mp");
+        Assert.Equal(mage.Position, end.GetActor(mage.Actor).Position);
+        Assert.Equal(mage.LastTarget, end.GetActor(mage.Actor).LastTarget);
+    }
+
+    [Fact]
     public void AbsenceOfReachableAttacksPursuesItsOwnFixedSlot()
     {
         var battle = Battle(d =>
@@ -305,12 +339,13 @@ public sealed class MuddleConfusedTurnTests
 
     private static EngineBattleState Replace(EngineBattleState before, BattleActorState actor,
         AttackItemDefinition[]? attackItems = null, BattleOutcomeDefinition? outcome = null,
-        EnemyItemDropDefinition? drops = null, AttackSpellDefinition[]? extraSpells = null)
+        EnemyItemDropDefinition? drops = null, AttackSpellDefinition[]? extraSpells = null,
+        BattleInitializationDefinition? initialization = null)
     {
         var d = before.Definition;
         var updated = new BattleDefinition(d.Encounter, d.Map, d.Width, d.Height, d.Terrain,
             d.Deployments.Select(row => row.Actor == actor.Actor ? actor.Deployment : row),
-            d.Spells.Values, d.Rewards, d.Initialization, outcome ?? d.Outcome,
+            d.Spells.Values, d.Rewards, initialization ?? d.Initialization, outcome ?? d.Outcome,
             attackSpells: d.AttackSpells.Values.Concat(extraSpells ?? []),
             supportSpells: d.SupportSpells.Values, attackItems: attackItems, itemDrops: drops);
         return new(updated, before.Actors.Select(a => a.Actor == actor.Actor ? actor : a), before.MainSeed, before.ThinkingSeed,

@@ -140,7 +140,8 @@ internal static class EnemySpellDecision
                 int cost = grid.CostAt(candidate.Position!)!.Value;
                 int total = 0;
                 foreach (var affected in Sf2AttackSpellAction.Area(ordered, actor, actor.Position!,
-                        candidate.Target.Position!, effect.Radius, side))
+                        candidate.Target.Position!, effect.Radius, side)
+                    .OrderBy(unit => BattleRange.SpellScoreOrder(candidate.Target.Position!, unit.Position!)))
                     total += PhysicalTargetRules.Score(actor, affected, (byte)cost,
                         Sf2AttackSpellAction.PotentialDamage(actor, affected, effect, rawPower: true),
                         ref thinking, effects);

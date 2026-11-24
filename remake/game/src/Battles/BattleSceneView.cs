@@ -53,7 +53,8 @@ internal sealed partial class BattleSceneView : Control
     internal string? Error { get; private set; }
     private BattleSceneDefinition? Content => _session.ActiveBattleScenes;
     private static bool UsesMessagePlayback(BattleSceneState state) =>
-        state.SupportSpell is not null && state.EquipmentItem is null || state.IsSilencedCast || state.AttackSpell?.IsInstantDeath == true;
+        state.SupportSpell is not null && state.EquipmentItem is null || state.IsSilencedCast ||
+        state.AttackSpell?.IsInstantDeath == true || state.MuddleActionMessage is not null;
 
     private bool Suppressed(BattleSceneState state) => _settings.SuppressBattleHitCoinMessages && state.CanSuppressHitCoinMessage;
     internal bool WaitingForInput => _state is { RequiresAcknowledgement: true } state && !Suppressed(state) &&
@@ -508,8 +509,9 @@ internal sealed partial class BattleSceneView : Control
         var actor = battle.GetActor(state.Actor);
         var target = !state.IsAfterTurnNotice && state.Target is { } id ? battle.GetActor(id) : null;
         if (state.IsCurseRecoil) target = null;
-        // Recovery occupies one actual scene side, switching on Application's displayed participant.
-        if (state.Spell is not null || state.Item is not null || state.FriendlySupport)
+        // Single-side scenes switch the one status card to Application's displayed combatant.
+        if (state.Spell is not null || state.Item is not null || state.FriendlySupport ||
+            target?.Faction == actor.Faction)
         {
             actor = battle.GetActor(state.DisplayedAlly ?? state.DisplayedEnemy ?? state.Actor);
             target = null;
