@@ -44,22 +44,16 @@ shared physical art.
 
 ### Base audio coverage exceptions
 
-**Confirmed** in the private coverage CSV and the registered `issue1966-original` and
-`derived/issue2106/pre-voyage-spells-v2` worlds. Both rows are classified as prepared
-through inherited world/entry coverage. The pinned retail library has no separate
-prepared candidate for either command.
+The historical base coverage counted inherited authored audio as prepared. Command 12/C4 used the
+two-second defeat chord through issue2106. The current local asset commit
+206f42802ccd06ddb880bcd453069f0c6284c8a6 adds the original cue at music/12/candidate.json,
+bringing newly prepared music candidates to 19. Coverage excludes the recognized defeat placeholder
+from original-audio coverage and selects the reviewed candidate when present.
+[Capture, current package and reconstruction](../godot/audio.md#invasion-map3-sad-theme)
 
-| Command | Actual inherited asset |
-| --- | --- |
-| 12/C4 `MUSIC_SAD_THEME_2` | Authored two-second defeat chord, also selected during the Map3 invasion. [Audio boundary](../godot/audio.md#invasion-map3-music-gap) |
-| 109/C2 `SFX_BOOST` | Intentional authored 240 ms encounter notification. [Encounter capability](../capability-status.md#yeel-guide-through-battle03-implementation-agreement) |
-
-The retail audio preparation selects only rows marked `missing` in the base inventory.
-Requesting command 12 explicitly still skips its `present` row. Mount recognizes the inherited
-command when the library candidate is absent. Once a candidate is available, the existing
-publisher detects its differing music row and reports `conflicting audio binding 12`.
-A successor publication needs a targeted replacement of the known fallback, using the reviewed
-candidate and the full pre-voyage base.
+Command 109/C2 remains the explicitly authored 240 ms encounter notification. Its inherited coverage
+expresses the accepted modern cue. Original waveform coverage for that command remains **Unknown**.
+[Encounter capability](../capability-status.md#yeel-guide-through-battle03-implementation-agreement)
 
 ### First consumers
 

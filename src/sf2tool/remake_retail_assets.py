@@ -25,6 +25,7 @@ from sf2tool.h2.portraits import _read_animation_entries
 from sf2tool.h2.special_screen_graphics import RESOURCES as SCREEN_RESOURCES
 from sf2tool.paths import repo_path
 from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
+from sf2tool.remake_authored_audio import is_authored_defeat
 from sf2tool.remake_battle_scene_content import (
     build,
     campaign_selection,
@@ -495,7 +496,15 @@ def prepare(src, family, root, base, inventory, commands):
             (status == "present") != (c in available) for c, status in slots.items()
         ):
             raise ValueError(f"selected package and pinned {family} inventory differ")
-        prepare_commands(family, inventory, destination, src.path, src.rom, commands=commands)
+        prepare_commands(
+            family,
+            inventory,
+            destination,
+            src.path,
+            src.rom,
+            commands=commands,
+            authored_commands={r["command"] for r in selected if is_authored_defeat(r)},
+        )
         return
     missing = []
     if destination.exists():

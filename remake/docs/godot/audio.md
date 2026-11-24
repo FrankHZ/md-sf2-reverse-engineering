@@ -109,31 +109,75 @@ resolution of every campaign warning. No whole-campaign replay, current native-w
 save/restore leak-free claim follows. See the
 [current evidence and reproduction](../verification/host.md#current-exit-attribution-1570).
 
-## Invasion Map3 music gap
+## Invasion Map3 sad theme
 
-**Confirmed** in the registered `derived/issue2106/pre-voyage-spells-v2` world and its
-`issue1966-original` ancestor. `MUSIC_SAD_THEME_2` is command 12 with Timer B `C4`.
-The inline PCM has 44,100 mono sample frames at 22,050 Hz and loops over `[0, 44100)`.
-Its PCM matches the WAV from the registered `#1045` authored defeat candidate. To reproduce,
-read the unique command-12 row in `world.presentation.audio` and compare its PCM SHA-256
-with the decoded PCM of `handoffs/issue1045/authored-defeat-02/authored-defeat.wav` under
-the configured shared root. The
-[authored cue producer](../../../src/sf2tool/remake_authored_audio.py) records its origin.
+**Standard rigor.** This bounded content correction replaces the known command-12 placeholder,
+preserves the complete pre-voyage package and uses the existing producer and adapter. The local
+asset Git owns capture identity and runtime bytes. Acceptance covers candidate identity, loop
+bounds, package preservation, repeatable assembly and native cue delivery. Human listening is pending.
 
-The pinned [sound inventory](../../../docs/research/presentation/sound-data-inventory.md)
-and [static fixture](../../../tests/fixtures/h2/sound-data-static-v1.json) identify the
-original bank 0 `music12` entry at ROM offset `0x1FD818` in SF2DISASM
-`c834c652b6862bc5679fd7f69a38a7093206efc6`. The verified USA ROM reads Timer B `C4`
-from that header. The #2158 play observation selected the authored cue with no adapter
-error. Its recent receipts contain one music start followed by a warp effect finish.
-The two-second repeat is consistent with the admitted loop range.
+**Confirmed.** The previous issue2106 world and issue1966 ancestor contain the exact #1045 authored
+defeat PCM, 44,100 mono frames at 22,050 Hz with a two-second loop. The producer now recognizes its
+complete metadata and decoded PCM identity. Preparation includes it despite the historical inventory
+marking it present. Mount replaces that recognized placeholder with the selected same-cue/C4 candidate.
+Identical admitted rows are idempotent. Differing original resources still raise an audio-binding
+conflict. An absent requested candidate cannot silently retain this placeholder.
 
-The registered pre-voyage package still uses the authored loop. A complete private cue
-needs a reviewed runtime WAV, capture identity and loop bounds. The
-[asset inventory](../content/asset-inventory.md#base-audio-coverage-exceptions)
-records the current inventory and mount barriers. **Unknown** until a complete cue is
-available and admitted are its loop seam and native playback through same-cue requests,
-scene changes and restore on the successor package.
+**Confirmed source and capture.** The pinned sound fixture identifies bank 0 music12 at ROM offset
+0x1FD818, SF2DISASM c834c652b6862bc5679fd7f69a38a7093206efc6. The verified USA ROM reads Timer B C4.
+The existing BizHawk 2.11.1 Genplus-gx producer dispatched command 12 at frame 243 and matched complete
+driver-channel state at frames 2111 and 3977. Its 42,685,004-byte source WAV yielded 2,747,385 stereo
+frames at 44,100 Hz, about 62.30 seconds. The forward loop is [1374107, 2747385), about 31.14 seconds.
+The 10,989,584-byte runtime WAV uses the unchanged cropped PCM.
+[Sound inventory](../../../docs/research/presentation/sound-data-inventory.md)
+
+The local-only asset commit 206f42802ccd06ddb880bcd453069f0c6284c8a6 contains
+runtime/retail-v1/music/12 and source/retail-v1/music/12. Its existing manifests/retail-v1.json records
+capture/candidate identities and selection. The complete package is
+derived/issue2158/pre-voyage-sad-theme-v1 under the registered shared root. It has 148 files and
+325,146,081 bytes. Of the base files, 146 remain byte-identical. Only the command-12 row differs in
+the parsed world, and one external WAV is added. Gameplay definitions, save contracts, scenes,
+other media, entry and opening inputs retain their base values. The separate Chinese catalog
+continues through its existing selection.
+
+### Rebuild and validate
+
+Load the owning checkout configuration. Set $library to the private Git runtime/retail-v1 directory,
+$base to registered derived/issue2106/pre-voyage-spells-v2, and $candidate to a fresh registered output.
+
+    uv run --locked python -m sf2tool.remake_retail_assets --root $library --base $base --mount $candidate --family music --command 12
+
+Later producers consume the new complete package as their base. An independent reconstruction
+from private Git reproduced all 148 files after the production library was renamed out of selection.
+Native admission can select the rebuilt world, main scenes and six opening-inputs directly.
+
+For capture reproduction, use the existing Prepare-PrivateAssets.ps1 launcher with the owning Repo,
+Operation Prepare, Family music, Command 12 and a fresh ignored Library. Its registered pinned source,
+H1 listing and ROM remain read-only. The observer and crop owners are tools/bizhawk/retail_audio.lua
+and sf2tool.remake_retail_audio. Preserve failed native scratch. The single-cue budget is 14,500
+emulator frames, 300 seconds and 1 GiB disk headroom including a full package. Work scales linearly
+with selected sample and file bytes.
+
+Build the Debug adapter through the locked SDK workflow. Select the package using the existing
+SF2_PRIVATE_* variables. The existing engine_finite_audio_default_observation.gd accepts
+SF2_AUDIO_LOOP_CUE=MUSIC_SAD_THEME_2 and an absolute SF2_AUDIO_SELECTION_OUTPUT.
+Run headless with audio driver WASAPI. It admits through OpeningNewGameReader, repeats the same cue,
+seeks near the loop end, observes a native wrap, selects Town and uses PlayPrevious.
+
+**Confirmed native consumer.** WASAPI retained playback across 30 same-cue requests, wrapped with
+playback active and zero Finished callbacks, and restarted the previous cue once after Town.
+The controlled Map3 prelaunch input uses flags [32,33,34,35,506], entity-0 at (32,13), facing 0,
+speed 24 and program ms-map3-flag506-initfunction. Ordinary initialization selected Town followed
+by command 12. Actual right input moved the player one cell while command 12 retained its sole start
+receipt and advanced beyond three seconds. Session/audio errors were null. Natural preceding story
+reach and human listening acceptance remain **Unknown**.
+
+Private receipts under derived/issue2158/receipts retain the field script, start input and reports.
+Initial field attempts failed due to observer window setup, an absent settings override and an
+invalid starting cell. Corrected playback and field runs exited zero without error or leak warning.
+Earlier failed field attempts retain two-instance ObjectDB warnings. The old inline/external conflict
+experiment remains recorded. The instruction-based pause was reassessed before local-input
+preparation, and capture completed without a tool refusal.
 
 ## Audio Boundary
 

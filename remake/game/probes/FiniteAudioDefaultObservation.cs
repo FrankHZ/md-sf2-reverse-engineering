@@ -24,6 +24,12 @@ public partial class FiniteAudioDefaultObservation : Node
             Check(read is ExplorationReadAccepted, read.ToString()!);
             var assets = ((ExplorationReadAccepted)read).Definition.Exploration!.Visuals!.Audio;
             using var audio = new SessionAudio(this, assets);
+            string loopCue = Selected("SF2_AUDIO_LOOP_CUE");
+            if (!string.IsNullOrEmpty(loopCue))
+            {
+                await ObserveLoop(audio, assets[loopCue], loopCue);
+                return;
+            }
             audio.Play("MUSIC_MAIN_THEME"); // Real C2 music, unchanged recording.
             await Effect("death-command", () => audio.PlayEffect(116), "SFX_BATTLEFIELD_DEATH_TIMER_BD", 194);
             await Effect("death-named", () => audio.Play("SFX_BATTLEFIELD_DEATH_TIMER_C1"), "SFX_BATTLEFIELD_DEATH_TIMER_BD", 194);
@@ -72,6 +78,42 @@ public partial class FiniteAudioDefaultObservation : Node
             GD.PushError(error.ToString());
             GetTree().Quit(1);
         }
+    }
+
+    private async Task ObserveLoop(SessionAudio audio, ExplorationAudio asset, string cue)
+    {
+        Check(asset.LoopBegin is not null && asset.LoopEnd is not null, "selected loop boundaries");
+        audio.Play(cue);
+        var player = GetChildren().OfType<AudioStreamPlayer>().Single(p => p.Name == "SessionMusic");
+        int starts = audio.Starts;
+        await ToSignal(GetTree().CreateTimer(2), SceneTreeTimer.SignalName.Timeout);
+        double before = player.GetPlaybackPosition();
+        for (int i = 0; i < 30; i++)
+        {
+            audio.Play(cue);
+            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        }
+        Check(audio.Starts == starts && player.GetPlaybackPosition() >= before, "same cue keeps playback");
+        _samples.Add(new { label = "same-cue", audio = audio.ObservePlayback() });
+        double end = asset.LoopEnd!.Value / (double)asset.SampleRate;
+        double begin = asset.LoopBegin!.Value / (double)asset.SampleRate;
+        player.Seek((float)(end - 0.3));
+        await ToSignal(GetTree().CreateTimer(0.8), SceneTreeTimer.SignalName.Timeout);
+        double wrapped = player.GetPlaybackPosition();
+        Check(player.Playing && audio.Completions == 0 && wrapped >= begin && wrapped < begin + 2,
+            "actual forward loop wraps and stays playing");
+        _samples.Add(new { label = "loop-wrapped", wrapped, begin, end, audio = audio.ObservePlayback() });
+        audio.Play("MUSIC_TOWN");
+        Check(audio.MusicCue == "MUSIC_TOWN", "scene music switched");
+        audio.PlayPrevious();
+        Check(audio.MusicCue == cue && player.GetPlaybackPosition() < 1, "previous music restarts");
+        Check(audio.Starts == starts + 2 && audio.Error is null, "one switch and one restore");
+        _samples.Add(new { label = "previous-restored", audio = audio.ObservePlayback() });
+        audio.CutMusic();
+        System.IO.File.WriteAllText(OS.GetEnvironment("SF2_AUDIO_SELECTION_OUTPUT"),
+            JsonSerializer.Serialize(new { passed = true, driver = AudioServer.GetDriverName(), samples = _samples }));
+        GD.Print("LOOP-AUDIO PASS");
+        GetTree().Quit();
     }
 
     private static void Check(bool condition, string message)
