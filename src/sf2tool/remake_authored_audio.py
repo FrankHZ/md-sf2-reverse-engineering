@@ -9,6 +9,7 @@ The finite encounter notification likewise claims no original audio equivalence.
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import math
@@ -18,6 +19,27 @@ import wave
 from pathlib import Path
 
 from sf2tool.paths import repo_path
+
+
+def is_authored_defeat(row: dict) -> bool:
+    """Identify the retired defeat placeholder by its admitted PCM identity."""
+    expected = {
+        "command": 12,
+        "timerB": 196,
+        "cue": "MUSIC_SAD_THEME_2",
+        "sampleRate": 22050,
+        "channels": 1,
+        "sampleFrames": 44100,
+        "loopBegin": 0,
+        "loopEnd": 44100,
+        "sha256": "5707406BCBA3B3DB47583DE428F00A0CB96FC8F632C21FF5F4C8858FE4BA544A",
+    }
+    return (
+        all(row.get(key) == value for key, value in expected.items())
+        and isinstance(row.get("pcm16"), str)
+        and hashlib.sha256(base64.b64decode(row["pcm16"], validate=True)).hexdigest().upper()
+        == expected["sha256"]
+    )
 
 
 def prepare_defeat_cue(output: Path) -> dict:

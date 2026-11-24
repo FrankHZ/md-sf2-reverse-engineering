@@ -12,6 +12,7 @@ from pathlib import Path
 
 from sf2tool.h2.map_content import _entry_pointer_expressions
 from sf2tool.paths import repo_path
+from sf2tool.remake_authored_audio import is_authored_defeat
 from sf2tool.remake_command_menu import world_dependencies
 from sf2tool.remake_private_package import private_output, read_json
 
@@ -399,7 +400,7 @@ def prepared_coverage(baseline, root, base, output):
             for member in r.get("members", []):
                 pl[member] = "issue1966-original/inputs/battle26"
     old_audio = field["audio"] + read_json(base / "entry/entry.json")["presentation"]["audio"]
-    audio = {r["command"] for r in old_audio}
+    audio = {r["command"] for r in old_audio if not is_authored_defeat(r)}
     map_records = records.get("maps", {}).get("maps", [])
     walking = records.get("walking", {})
     classes = {(r["member"], r["slot"]): r for r in walking.get("classes", [])}

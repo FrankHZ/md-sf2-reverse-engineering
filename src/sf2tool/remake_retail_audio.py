@@ -164,10 +164,15 @@ def capture(rom_path: Path, rom: bytes, out: Path, command: int, cue: str, conte
     return receipt["asset"]
 
 
-def prepare_commands(family, inventory, root, rom_path, rom, *, commands=()):
+def prepare_commands(family, inventory, root, rom_path, rom, *, commands=(), authored_commands=()):
     """Only collect commands missing from the fixed selection. Resume by command."""
     failures = {}
-    rows = [row for row in inventory if row["family"] == family and row["status"] == "missing"]
+    rows = [
+        row
+        for row in inventory
+        if row["family"] == family
+        and (row["status"] == "missing" or int(row["id"]) in authored_commands)
+    ]
     for row in sorted(rows, key=lambda r: (int(r["id"]) not in (25, 87, 99), int(r["id"]))):
         command = int(row["id"])
         if commands and command not in commands:

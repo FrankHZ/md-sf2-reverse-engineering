@@ -18,6 +18,7 @@ from sf2tool.paths import repo_path
 from sf2tool.private_inputs import SHARED_INPUT_ROOT_ENV
 from sf2tool.remake_asset_build import ACCEPTED_UPSTREAM_COMMIT, _scale_rgba_nearest
 from sf2tool.remake_attack_spell_mount import mount_attack_spells
+from sf2tool.remake_authored_audio import is_authored_defeat
 from sf2tool.remake_battle_scene_content import compose, sprite_layout
 from sf2tool.remake_command_menu import world_dependencies
 from sf2tool.remake_exploration_content import _selected_growth, checked_canonical, map_compiler
@@ -324,7 +325,10 @@ def mount_prepared_audio(directory, command, dest, presentation):
     if existing is None:
         presentation["audio"].append(row)
     elif existing != row:
-        raise ValueError(f"conflicting audio binding {command}")
+        if is_authored_defeat(existing) and row["cue"] == existing["cue"] and timer == 196:
+            presentation["audio"][presentation["audio"].index(existing)] = row
+        else:
+            raise ValueError(f"conflicting audio binding {command}")
 
 
 def shared_color_weapon_frames(directory, index, scratch, scene, item, *, scale):
@@ -846,7 +850,10 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
                 continue
             directory = root / family / str(command)
             if not directory.is_dir():
-                if any(row["command"] == command for row in presentation["audio"]):
+                if any(
+                    row["command"] == command and not is_authored_defeat(row)
+                    for row in presentation["audio"]
+                ):
                     continue
                 entry_audio = read_json(base / "entry/entry.json")["presentation"]["audio"]
                 available = [r for r in entry_audio if r["command"] == command]
