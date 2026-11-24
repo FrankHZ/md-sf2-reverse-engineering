@@ -125,7 +125,8 @@ public sealed class PrivateBattleInitializationTests
     [Theory]
     [InlineData(0x130)]
     [InlineData(0x138)]
-    public void NewBattleRefreshClearsMuddleCarriedByARaisedAlly(ushort status)
+    [InlineData(0x5138)]
+    public void NewBattleRefreshClearsTemporaryStatusAndRebuildsStatsForARaisedAlly(ushort status)
     {
         var (scenario, start) = Setup();
         var battle = scenario.Encounters[start.Encounter];
@@ -135,6 +136,10 @@ public sealed class PrivateBattleInitializationTests
         var placed = BattleTurnFlow.Start(battle, carried).GetActor(ally.Actor);
         Assert.Equal(0, placed.Status);
         Assert.Equal(30, placed.Hp);
+        Assert.Equal(12, placed.Mp);
+        Assert.Equal(19, placed.Attack);
+        Assert.Equal(7, placed.Defense);
+        Assert.Equal(40, placed.Agility);
         Assert.NotNull(placed.Position);
     }
 

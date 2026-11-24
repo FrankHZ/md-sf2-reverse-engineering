@@ -51,6 +51,38 @@ public sealed class MuddleTurnTests
     }
 
     [Fact]
+    public void ContinuingSilenceTicksAgainWhenTheSameAllyUsesItsSecondEntry()
+    {
+        var battle = Status(Battle(), Mage, 0x358).With(mainSeed: 11u << 16, round: 4,
+            queue: [new(Mage, 30), new(Mage, 24), new(Priest, 20), new(null, 255)], cursor: 0);
+        var skipped = Advance(battle);
+        Assert.Contains(skipped.Observations, e => e.Kind == "sleeping-action-skipped" && e.Actor == Mage);
+        Assert.Equal(BattleScenePhase.SleepTurnMessage, skipped.Snapshot.BattleScene!.Phase);
+        var woke = Complete(skipped);
+        Assert.Equal(0x318, woke.Snapshot.Battle.GetActor(Mage).Status);
+        Assert.Equal(BattleScenePhase.MuddleTurnMessage, woke.Snapshot.BattleScene!.Phase);
+
+        var second = Complete(woke);
+        Assert.Equal(SessionStopReason.PlayerInput, second.StopReason);
+        Assert.Equal(Mage, second.Snapshot.Selection!.Actor);
+        Assert.Equal(4, second.Snapshot.Battle.Round);
+        Assert.Equal(1, second.Snapshot.Battle.Cursor);
+        Assert.Equal(0x200, second.Snapshot.Battle.GetActor(Mage).Status);
+        var silence = Assert.Single(second.Observations, e => e.Kind == "rng-silence-expiry");
+        Assert.Equal((ushort?)768, silence.RandomRange);
+        Assert.Equal((ushort?)298, silence.RandomValue);
+
+        var next = BattleSaveFixture.Stay(second.Snapshot);
+        Assert.Equal(Priest, next.Selection!.Actor);
+        Assert.Equal(4, next.Battle.Round);
+        Assert.Equal(2, next.Battle.Cursor);
+        Assert.Equal(battle.Queue, next.Battle.Queue);
+        Assert.Equal(0, next.Battle.GetActor(Mage).Status);
+        Assert.Equal(3151u << 16, next.Battle.MainSeed);
+        Assert.Equal(battle.ThinkingSeed, next.Battle.ThinkingSeed);
+    }
+
+    [Fact]
     public void DecrementPreservesConfusionOnASkippedEntryWithoutAnExpiryMessage()
     {
         var battle = Status(Battle(), Mage, 0xF8).With(mainSeed: 1000u << 16,

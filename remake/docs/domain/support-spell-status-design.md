@@ -138,6 +138,64 @@ AGI has a packed edge. `GetBaseAgi` reads the entire byte for the multiply. `Inc
 
 **Confirmed.** `battleloop/processkilledcombatants.asm` removes listed deaths, clears status and refreshes after kill/defeat accounting. Do not erase status early at the zero-HP damage command. Victory calls `HealLivingAndImmortalAllies`. Defeat restores the leader and adjusts gold before field return. Exploration entry and fresh battle entry heal living allies and Peter/Lemon, retaining only STUN/POISON/CURSE before refresh (curse is rederived from gear). Ordinary dead allies are skipped there. A normally processed casualty already lost these counters. EGRESS uses its existing return and field recovery. A suspended original battle follows flag 88 through `LoadBattle` into the individual-turn loop and skips fresh-entry healing/queue generation. Original SRAM copies combatant data. Remake saves have their own settled-input contract. [Original save contract](../../../docs/design/contracts/system/save-system.md)
 
+## Status lifetime and recovery review
+
+**Confirmed** at the original controller boundary. `BattleLoop` reloads the current queue
+entry after action settlement, invokes `ProcessAfterTurnEffects` and advances the cursor
+only after the second death and outcome pass. The after-turn routine skips HP zero. For a
+living actor it processes STUN, SLEEP, MUDDLE and SILENCE in that order, then SLOW, ATTACK
+and BOOST before the equipment/poison tail and stat refresh. The retained Battle01 fixture
+observes the individual counter branches at controlled RNG seams.
+[Controller contract](../../../docs/design/contracts/battle/battle-control-lifecycle.md#post-action-and-after-turn-order) ·
+[Original runtime fixture](../../../tests/fixtures/h3/after-turn-status-lifecycle-v1.json)
+
+**Confirmed** in the remake. The controlled ally starts at `0x0358` with two consecutive
+entries in one round. SLEEP skips the first action and wakes (`0x0318`), MUDDLE expires
+(`0x0300`), then SILENCE decrements (`0x0200`). The same ally receives Movement and takes
+an ordinary Stay. Its second entry clears SILENCE before the next ally receives Movement
+in the same round. The queue and thinking RNG stay fixed. Spell, item and physical status
+effects use the packed actor word and the existing reaction refresh. The ordinary BOOST
+recast on a teammate writes `0x3000` while DEF/AGI remain 45/27 from the applied `0x1000`.
+The recipient's Stay reduces duration to `0x2000` and refreshes DEF/AGI to 50/30, clearing the
+stored last-refresh operand. The existing controlled Battle26 observation covers the same
+refresh through native input.
+[After-turn continuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAfterTurnContinuation.cs) ·
+[Action reactions](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs)
+
+**Confirmed** at the controlled recovery boundaries. A processed casualty loses its temporary
+status in the death batch. Field recovery heals eligible living returnees and the two immortal
+allies, clearing temporary bits. An ordinary ally supplied already fallen retains its word
+through return and Raise. On fresh battle entry a living ally receives the same temporary-bit
+clear as in the source's `HealLivingAndImmortalAllies`. With admitted word `0x5138`, the remake
+previously cleared the word and carried the pre-refresh ATT of 21. Initialization now takes the
+existing stat calculation from base, loadout and the resulting status, giving ATT 19, DEF 7
+and AGI 40 in that case.
+[Source recovery](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleloop/heallivingandimmortalallies.asm) ·
+[Source stat refresh](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/updatecombatantstats.asm) ·
+[Church Raise contract](../../../docs/design/contracts/party/service-interactions.md#church-raise-runtime-seam) ·
+[Connected casualty review](gameplay-rules.md#casualty-reward-custody-and-outcome-review) ·
+[Field recovery and Raise cases](hostile-spells-design.md#public-rank-2-admission)
+
+Run the following from `remake/` after the [locked SDK setup](../development-and-verification.md#locked-net-workflow)
+and test-project restore.
+
+```powershell
+$project = 'tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj'
+$cases = @(
+    'FullyQualifiedName~ContinuingSilenceTicksAgain'
+    'FullyQualifiedName~FailedBoostRecastKeepsOldStats'
+    'FullyQualifiedName~NewBattleRefreshClearsTemporaryStatus'
+    'FullyQualifiedName~OutcomesRetainLivePlayer'
+    'FullyQualifiedName~RestoredFallenCasterKeepsTheWord'
+    'FullyQualifiedName~ConnectedConfusedSpellSettlesBothDeaths'
+) -join '|'
+& $env:DOTNET_BIN test $project --configuration Release --no-restore -p:UseSharedCompilation=false --filter $cases
+```
+
+**Unknown** in the original runtime are natural acquisition of the exact mixed word on
+consecutive entries and natural arrival at fresh battle entry carrying the controlled mixed
+ATTACK word. The remake checks establish behavior at those admitted boundaries.
+
 ## Implementation decisions
 
 1. **Bind each supported rank through the existing action entry.** Extend `PrivateSupportSpellBindings` and `SupportSpellDefinition` with the verified finite rows and target side. `PrivateBattleContentReader.SelectOpening` already selects the party growth books. `PrivateBattleDefinitionReader.Decode` expands each packed entry into ranks 1 through the learned rank and reads each source row by family and level. The presence of a higher rank in that catalog grants no action. Look up each independently so an encounter can bind BOOST or SLOW without DISPEL. Reuse the existing encounter spell dictionary, learned book, MP checks and silence gate. Resolve the same positioned target set in query, prepare and commit. Allocate each target's draws, construction writes and reaction in deployment processing order, as for DISPEL and attack spells. The private reader assigns original combatant indices to that order. An authored initialization or AI slot mapping can differ. `EnemySupportDecision` remains the admitted DISPEL AI selector. This slice grants no automatic BOOST/SLOW casting. Use `ValidateSupport` to check one ordered target outcome per target with zero, one or two draws according to the table. Only actual reactions refresh. In `ValidateState`, validate the masked write and retained operand only for targets that passed the first gate, preserving all other actor-state comparisons. In `Sf2BattleProgressionRule.Award`, only opposing support targets qualify for halving in a marked battle. Keep construction writes on the detached prepared actors, capture the cost word before them and validate the exact permitted transitions. Canceled/stale/invalid selections spend no MP, RNG or action. [Action](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2SupportSpellAction.cs) · [Resolution and replay](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs)

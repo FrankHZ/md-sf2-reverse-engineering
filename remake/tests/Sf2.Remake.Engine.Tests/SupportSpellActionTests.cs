@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
@@ -78,6 +79,38 @@ public sealed class SupportSpellActionTests
         Assert.Equal(27, done.GetActor(Priest).Agility);
         Assert.Equal(1, cast.Reward!.Amount);
         Assert.Equal(18, done.GetActor(Mage).Mp);
+    }
+
+    [Fact]
+    public void FailedBoostRecastKeepsOldStatsUntilTheRecipientFinishesItsEntry()
+    {
+        var document = EngineTestContent.Document("silence-watch");
+        Book(document);
+        document["encounters"]![0]!["placements"]![1]!["x"] = 4;
+        document["encounters"]![0]!["placements"]![1]!["y"] = 2;
+        document["encounters"]![0]!["placements"]![2]!["aiStrategy"] = "stay";
+        var input = Assert.IsType<ScenarioReadAccepted>(EngineTestContent.Reader(document).Read());
+        var start = input.Start.WithResources(input.Start.Actors.Select(actor => actor.Actor == Priest
+            ? actor with { Status = 0x1000 } : actor), input.Start.Gold);
+        var session = Assert.IsType<SessionStarted>(GameSession.Start(input.Definition, start)).Session;
+        Assert.Equal(Mage, session.Current.Selection!.Actor);
+
+        EngineTestContent.Accept(session, new Confirm());
+        EngineTestContent.Accept(session, new SelectSpell(new("boost", 1)));
+        EngineTestContent.Accept(session, new SelectTarget(Priest));
+        var cast = EngineTestContent.FinishBattleScenes(session, EngineTestContent.Accept(session, new Confirm()));
+        Assert.Equal(Priest, session.Current.Selection!.Actor);
+        Assert.Single(cast.Observations, e => e.Kind == "rng-boost-recast" && e.Target == Priest);
+        var waiting = session.Current.Battle.GetActor(Priest);
+        Assert.Equal(0x3000, waiting.Status);
+        Assert.Equal((ushort?)0x1000, waiting.LastRefreshBits);
+        Assert.Equal((45, 27), ((int)waiting.Defense, (int)waiting.Agility));
+
+        EngineTestContent.FinishBattleScenes(session, EngineTestContent.Stay(session));
+        var refreshed = session.Current.Battle.GetActor(Priest);
+        Assert.Equal(0x2000, refreshed.Status);
+        Assert.Null(refreshed.LastRefreshBits);
+        Assert.Equal((50, 30), ((int)refreshed.Defense, (int)refreshed.Agility));
     }
 
     [Theory]
