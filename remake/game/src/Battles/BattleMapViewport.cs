@@ -127,10 +127,23 @@ internal sealed partial class BattleMapViewport : Control
     internal void PrepareTerrain(string mode)
     {
         foreach (var layer in _terrain) layer.Prepare(mode == "hd");
-        if (mode != "hd" || _visuals is null) return;
-        foreach (var raster in _visuals.Sprites.Values.SelectMany(sprite => sprite.HdDirections ?? [])
-            .Concat(_visuals.Portraits.Values.Select(portrait => portrait.HdRaster).OfType<ExplorationRaster>()))
+        if (_visuals is null) return;
+        bool hd = mode == "hd";
+        foreach (var sprite in _visuals.Sprites.Values)
         {
+            foreach (var raster in hd ? sprite.HdDirections ?? sprite.Directions : sprite.Directions)
+            {
+                using var decoded = ExplorationRasterImages.Open(raster);
+            }
+            foreach (var (name, original) in sprite.Graphics ?? new Dictionary<string, IReadOnlyList<ExplorationRaster>>())
+                foreach (var raster in hd ? sprite.HdGraphics?.GetValueOrDefault(name) ?? original : original)
+                {
+                    using var decoded = ExplorationRasterImages.Open(raster);
+                }
+        }
+        foreach (var portrait in _visuals.Portraits.Values)
+        {
+            var raster = hd ? portrait.HdRaster ?? portrait.Raster : portrait.Raster;
             using var decoded = ExplorationRasterImages.Open(raster);
         }
     }
