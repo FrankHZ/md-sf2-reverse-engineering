@@ -209,8 +209,12 @@ func cursor_decision() -> bool:
     if not expect(state().previewX == initial.previewX-1,"Preview delivered to a legal stop"): return false
     await act("confirm")
     await act("cancel")
-    if not await settled() or not await movement_focus("After Main Back undo"): return false
-    if not expect(state().previewX == initial.previewX,"Undo returns to the original cell"): return false
+    if not await movement_focus("After Main Back"): return false
+    if not expect(state().previewX == initial.previewX-1 and state().movement == null,
+        "Main Back retains the displayed preview without a return step"): return false
+    await act("right")
+    if not await settled(): return false
+    if not expect(state().previewX == initial.previewX,"Fresh Right reselects the original cell"): return false
     await act("confirm")
     if not clear_marks("Main") or not await decision_geometry("Main at 1080p"): return false
     for i in range(posmod(1-state().menu.command,4)): await act("down")

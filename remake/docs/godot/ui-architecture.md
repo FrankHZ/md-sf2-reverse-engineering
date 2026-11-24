@@ -57,7 +57,7 @@ board, mapped actions and pointer gestures consume the same decision. An invalid
 cursor and effect marking. Confirm requires the attempted candidate to agree with the enabled
 session selection. Target Back clears the chosen action and target through the session and returns
 to the retained parent and row. Search keeps its distinct confirmation, ordinary Stay commits
-directly, and Main Back sends the movement return. [Decision](../../game/src/Battles/BattleDecision.cs) ·
+directly, and Main Back resumes Movement at the current preview when it is still in range. [Decision](../../game/src/Battles/BattleDecision.cs) ·
 [Transition owner](../../game/src/Battles/BattleSessionView.Decision.cs) ·
 [Battle composition](battle-ui-composition.md#battle-decision-projection-2107)
 

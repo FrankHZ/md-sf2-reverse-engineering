@@ -19,7 +19,6 @@ public sealed class BattleActionChoiceTests
     public void BackFromActionPreservesMovementAndResourcesAndAllowsAnotherKind(bool targetSelected)
     {
         var session = Open(Items());
-        var origin = session.Current.Selection!.Preview.Destination;
         Assert.Equal("wrong-selection-stage", Send(session, new ReturnToBattleActions()).Failure!.Code);
         FinishMovement(session, Accept(session, new Move(ExplorationDirection.South)));
         Accept(session, new Confirm());
@@ -38,8 +37,8 @@ public sealed class BattleActionChoiceTests
             before.Selection.Actor, new Confirm())).Failure!.Code);
         Accept(session, new SelectBattleAction(new(BattleActionKind.Stay)));
         Accept(session, new ReturnToBattleActions());
-        FinishMovement(session, Accept(session, new Cancel()));
-        Assert.Equal(origin, session.Current.Selection!.Preview.Destination);
+        Accept(session, new Cancel());
+        Assert.Same(before.Selection.Preview, session.Current.Selection!.Preview);
         Assert.Equal(BattleSelectionStage.Movement, session.Current.Selection.Stage);
     }
 

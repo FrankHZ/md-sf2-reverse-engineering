@@ -30,8 +30,7 @@ public sealed class RecoveryItemSessionTests
             Assert.Equal("invalid-heal-target", Send(session, new SelectTarget(new(id))).Failure!.Code);
         Accept(session, new ReturnToBattleActions());
         Assert.Same(atStop, session.Current.Battle);
-        FinishMovement(session, Accept(session, new Cancel()));
-        FinishMovement(session, Accept(session, new Move(ExplorationDirection.North)));
+        Accept(session, new Cancel());
         FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
         FinishMovement(session, Accept(session, new Confirm()));
         var commit = Use(session, Center);

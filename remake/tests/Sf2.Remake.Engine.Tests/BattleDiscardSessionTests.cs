@@ -37,9 +37,9 @@ public sealed class BattleDiscardSessionTests
         Assert.Equal(BattleSelectionStage.DiscardCommitReady, session.Current.Selection!.Stage);
         Accept(session, new Cancel()); Assert.Equal(BattleSelectionStage.ActionChoice, session.Current.Selection!.Stage);
         Assert.Same(preview, session.Current.Selection.Preview); Assert.Same(battle, session.Current.Battle);
-        FinishMovement(session, Accept(session, new Cancel()));
+        Accept(session, new Cancel());
         Assert.Equal(BattleSelectionStage.Movement, session.Current.Selection!.Stage);
-        Assert.Equal(new MapPosition(1, 2), session.Current.Selection.Preview.Destination);
+        Assert.Same(preview, session.Current.Selection.Preview);
     }
 
     [Theory]
@@ -74,10 +74,9 @@ public sealed class BattleDiscardSessionTests
         Assert.Same(battle, session.Current.Battle); Assert.Same(preview, session.Current.Selection!.Preview);
         Assert.Equal(Champion, session.Current.Selection.Actor); Assert.Equal(BattleSelectionStage.ActionChoice, session.Current.Selection.Stage);
         Assert.NotNull(Send(session, new Acknowledge(wait.Token)).Failure); Assert.Same(battle, session.Current.Battle);
-        FinishMovement(session, Accept(session, new Cancel()));
-        Assert.Same(battle.GetActor(Champion).SourceLoadout, session.Current.Battle.GetActor(Champion).SourceLoadout);
-        Assert.Same(battle.ItemCustody, session.Current.Battle.ItemCustody);
-        Assert.Equal(new MapPosition(1, 2), session.Current.Selection!.Preview.Destination);
+        Accept(session, new Cancel());
+        Assert.Same(battle, session.Current.Battle);
+        Assert.Same(preview, session.Current.Selection!.Preview);
         Stay(session);
         Assert.Equal(original.Cursor + 1, session.Current.Battle.Cursor);
         Assert.Equal(new ActorRef("receiver"), session.Current.Selection!.Actor);

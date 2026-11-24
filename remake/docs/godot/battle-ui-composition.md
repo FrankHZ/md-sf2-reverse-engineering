@@ -39,7 +39,7 @@ Visibility and hit testing change together.
 | --- | --- | --- | --- |
 | Battle entry, round program or appearance | Current scene, or the current message when it needs acknowledgement | Board and authored motion when delivery owns them | Existing continuation. Decision cards, command hints and board selection marks are hidden. |
 | Player movement or its delivered preview/return step | One cell cursor following the unit's displayed position through the delivered step | Acting card, round, one movement field and movement hint | Mapped movement holds continue on arrival. Confirm uses the real legal stop. Cancel from an unsettled move finishes undo before opening inspection. While movement is delivering, keep the display, with input governed by its existing step boundary. |
-| Main action | One focused row in the vertical command list | Acting card, round, footer with consequence/refusal and Back | Initial Attack when enabled, otherwise the Stay/Search row. Up/Down wraps focus and Confirm or a complete row click chooses. Mapped shortcuts choose their existing command. Main Back returns through the real movement undo. Choosing Stay commits the current legal stop in one gesture. |
+| Main action | One focused row in the vertical command list | Acting card, round, footer with consequence/refusal and Back | Initial Attack when enabled, otherwise the Stay/Search row. Up/Down wraps focus and Confirm or a complete row click chooses. Mapped shortcuts choose their existing command. Main Back resumes Movement at the displayed preview if it is still in range. Choosing Stay commits the current legal stop in one gesture. |
 | Magic or Item | One row, keyed by spell and level or actual inventory slot | Acting card, round, one selected-offer reader in the footer | Opening either child is available even with no usable offer. Child rows replace Main and keep focus visible while scrolling. A disabled row is readable. Choose an enabled row to enter target selection. Back restores the parent command. |
 | Target, including self, single- or multi-target | One board cursor at the current legal candidate | Recipient card replaces acting card. The one action field shows reach and the current effect. The footer shows a concise action name, Confirm/Back and refusal when needed. Targeting omits the terrain panel. | Each fresh direction or Target shortcut cycles the live candidates once. Hover previews a candidate. A complete stable legal click uses the existing commit path. An invalid cell clears the cursor/card/effect and disables commitment even if the session still holds an older target. An invalid cell with eligible alternatives offers retargeting and Back. With zero eligible targets, the reason and Back remain. Back clears target state and restores the same command or item/spell row. |
 | Search confirmation, Equip, Give/exchange or Drop | Current transaction choice, slot, recipient or confirmation | Acting identity where relevant, the one existing auxiliary reader and its own instructions | Existing eligibility, selection, read-before-confirm, receipt and return contracts. The transaction replaces the command/target reader, board cursor and range. |
@@ -47,6 +47,29 @@ Visibility and hit testing change together.
 | Inspection Options, Map, Members or details | The open panel's option, map selection, member row or detail pane | One framed instruction and return panel with data from the existing read-only query | Retain cursor coordinates and caller selection for Back, hide board cursor and range. Full → Cursor, MemberFull → Members, Map/Members → Options, Options → Cursor. An on-demand Map selection can locate its disclosed unit and return to Cursor. |
 | Enemy action, close-up, field notice/death, result or battle exit | Actual delivered action or current message/return prompt | Playback cards for the actual participants, message reader, board only when owned by the continuation | Existing completion token and acknowledgement. All decision surfaces and board marks retire. Rebuild from live control after delivery. Field return uses field chrome. A failure shows once at its owning view. |
 | Host Menu, Save, Speed or recovery cover | Host/modal's current choice or reader | Only the permitted covered backdrop | Suspend battle gestures, holds and pacing using existing ownership. Restore the same eligible caller, with its current layout and fresh input after release. A resize while covered may recompute geometry. |
+
+### Main Back and movement reselection
+
+Main Back closes the action list and resumes Movement in the same submission when the preview
+is still in range. Weighted reach starts at the actor's committed turn origin. Reopening Main
+does not extend the range. A subsequent, fresh Movement Cancel delivers the ordinary undo and
+enters inspection. Magic and Item Back restore Main. Target Back restores the originating row or
+command. Equipment and Search confirmation Back restore Main at the same preview.
+
+Equip and Drop return to the action menu at the already confirmed stop. If the equipment change
+put that stop outside current MOV, Main Back delivers the reverse of the validated path to the turn
+origin. Movement then uses the new MOV and keeps the gear or custody change.
+[Confirmed stop and running gear](../domain/ring-equipment-design.md#remake-loadout-actions-and-stats)
+
+**Confirmed, static original:** `ProcessBattleEntityControlPlayerInput` restores
+`BATTLE_ACTOR_X/Y`, rebuilds the movement grid and branches back to movement when the outer
+diamond menu returns `-1`. The remake's immediate reselection at the preview is the player-facing
+decision in #2153. Original input timing and presentation remain **Unknown**.
+[Pinned original branch](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/battlefunctions_2.asm#L145-L159)
+
+The [allied traversal corridor](battle-interaction-baseline.md#allied-traversal-range-2019)
+uses ordinary mapped input to check targeting and its parent returns, one held Back at (5,3),
+the restored range drawn from (3,3), and a fresh Right step to (6,3) without spending the turn.
 
 ## Vertical battle Main (#2090)
 
@@ -417,7 +440,7 @@ Stay click sends one `CommitBattleStay` at the legal preview stop. The session u
 admission, commit and after-turn continuation in that submission. Explicit staged action callers
 can still select Stay and submit Confirm. The ordinary presenter retains the decision and reason
 on refusal. The triggering input cannot operate the next actor or acknowledge an after-turn
-notice. Main Back before choice restores Movement through existing undo. A faced chest substitutes
+notice. Main Back before choice [resumes Movement at the preview](#main-back-and-movement-reselection). A faced chest substitutes
 Search with its own confirmation and result. Give and Drop keep their own confirmation and result
 handling.
 [Command presenter](../../game/src/Battles/BattleCommandMenu.cs) ·

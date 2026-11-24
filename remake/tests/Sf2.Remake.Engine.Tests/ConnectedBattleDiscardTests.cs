@@ -67,9 +67,9 @@ public sealed class ConnectedBattleDiscardTests
         Assert.Equal(BattleSelectionStage.ActionChoice, session.Current.Selection!.Stage);
         Assert.Same(preview, session.Current.Selection.Preview); Assert.Same(committed, session.Current.Battle);
         var settled = session.Current; Assert.NotNull(Send(session, new Acknowledge(wait.Token)).Failure); Assert.Same(settled, session.Current);
-        FinishMovement(session, Accept(session, new Cancel()));
+        Accept(session, new Cancel());
         Assert.Equal(BattleSelectionStage.Movement, session.Current.Selection!.Stage);
-        Assert.Equal(before.GetActor(new("champion")).Position, session.Current.Selection.Preview.Destination);
+        Assert.Same(preview, session.Current.Selection.Preview);
         Assert.Same(committed.GetActor(new("champion")).SourceLoadout, session.Current.Battle.GetActor(new("champion")).SourceLoadout);
         Assert.Same(committed.ItemCustody, session.Current.Battle.ItemCustody);
     }

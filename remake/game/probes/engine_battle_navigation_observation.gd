@@ -258,9 +258,10 @@ func movement_menu() -> void:
     await tap("confirm")
     check(state().stage == "ActionChoice", "Fresh Confirm opens actions at the delivered cell")
     await tap("cancel")
-    await settle()
-    check(same_position(origin, state()) and state().stage == "Movement", "Action-menu Cancel returns to origin")
-    await send("right", true)
+    var back := state("main-back-after-delivery")
+    check(same_position(arrived, back) and back.stage == "Movement" and back.movement == null,
+        "Action-menu Cancel returns immediately at the preview")
+    await send("left", true)
     await tap("menu")
     var paused: Dictionary = JSON.parse_string(host.call("ReadWindowSupportObservationJson"))
     check(paused.battlePaused == "Disabled", "Host menu owns input during the step")
@@ -269,18 +270,18 @@ func movement_menu() -> void:
     check(submissions == before, "No movement or commit behind the host menu")
     await tap("cancel")
     check(view.process_mode == Node.PROCESS_MODE_DISABLED, "Held gameplay input keeps the menu release barrier")
-    await send("right", false)
+    await send("left", false)
     await tap("cancel")
     var resumed := await settle()
     for i in 20: await process_frame
     check(not host.find_child("SystemMenuView", true, false) and submissions == before + 1
-        and resumed.stage == "Movement" and resumed.previewX == origin.previewX + 1 and resumed.actor == origin.actor,
+        and resumed.stage == "Movement" and same_position(origin, resumed) and resumed.actor == origin.actor,
         "Dismissing the menu only completes the interrupted step")
-    await tap("left")
+    await tap("right")
     await settle()
-    var returned := state("fresh-left-after-menu")
-    check(same_position(origin, returned) and returned.failure == null and returned.actor == origin.actor
-        and returned.stage == "Movement", "Fresh Left moves the same actor back to origin after resume")
+    var moved := state("fresh-right-after-menu")
+    check(same_position(arrived, moved) and moved.failure == null and moved.actor == origin.actor
+        and moved.stage == "Movement", "Fresh Right moves the same actor after resume")
 
 func menu_checks() -> void:
     await restart()
@@ -728,16 +729,35 @@ func traversal_range_checks() -> void:
     check(state("valid-confirm").stage == "ActionChoice" and not range_projection("range-in-actions").movementRange.visible,
         "Confirm on the empty cell opens actions and hides movement range")
     await tap("spell")
-    var spell := range_projection("spell-reach")
-    check(state("spell-list").menu.page == "Magic" and not spell.movementRange.visible and spell.actionRange.visible
-        and spell.actionRange.reach == expected.slice(2, 5), "Magic shows its own one-tile reach from the provisional stop")
+    var spell := state("spell-list")
+    check(spell.menu.page == "Magic" and not range_projection("spell-list-range").movementRange.visible,
+        "Magic opens without the movement range")
+    await tap("confirm")
+    var aim := range_projection("spell-target-reach")
+    check(state().menu.page == "Target" and aim.actionRange.visible and aim.actionRange.reach == expected.slice(2, 5),
+        "Magic Target shows one-tile reach from the provisional stop")
     await tap("cancel")
+    check(state().menu.page == "Magic" and state().menu.row == spell.menu.row, "Target Back restores the same spell row")
     await tap("cancel")
-    await settle()
+    check(state().stage == "ActionChoice" and state().menu.page == "Main", "Magic Back restores Main")
+    var before_back := submissions
+    await send("cancel", true)
+    var back := state("main-back-at-preview")
     var restored := range_projection("range-after-back")
-    check(same_position(initial, state("back-at-origin")) and state().stage == "Movement"
-        and restored.movementRange.visible and restored.movementRange.drawnReachableCells == expected
-        and not restored.actionRange.visible, "Back restores the original movement drawing after return")
+    check(same_position(beyond, back) and back.stage == "Movement" and back.movement == null
+        and back.menu.layout.help == initial.menu.layout.help and back.submissions == before_back + 1
+        and restored.movementRange.visible and restored.movementRange.origin == {"X": 3.0, "Y": 3.0}
+        and restored.movementRange.drawnReachableCells == expected and not restored.actionRange.visible,
+        "Main Back restores Movement and the origin-anchored drawing immediately at the preview")
+    for i in 20: await process_frame
+    check(submissions == back.submissions and not state().inspection.active,
+        "Holding Back does not also leave Movement")
+    await send("cancel", false)
+    await tap("right")
+    var next := await settle()
+    check(next.previewX == 6 and next.previewY == 3 and next.actor == initial.actor
+        and next.failure == null and next.queueCursor == initial.queueCursor and commits.is_empty(),
+        "A fresh direction starts at the retained preview without spending the turn")
 
 func run() -> void:
     root.size = Vector2i(1920, 1080)

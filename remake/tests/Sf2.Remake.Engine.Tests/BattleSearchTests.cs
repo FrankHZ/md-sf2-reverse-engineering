@@ -48,8 +48,7 @@ public sealed class BattleSearchTests
         Accept(session, new Confirm());
         Assert.Null(session.QueryBattleChoices().Search);
         Assert.NotNull(Send(session, new BeginBattleSearch()).Failure);
-        FinishMovement(session, Accept(session, new Cancel()));
-        FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
+        Accept(session, new Cancel());
         FinishMovement(session, Accept(session, new Move(ExplorationDirection.South)));
         Assert.Equal(new MapPosition(1, 2), session.Current.Battle.GetActor(initial.Selection!.Actor).Position);
         Accept(session, new Confirm());

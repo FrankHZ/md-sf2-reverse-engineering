@@ -55,6 +55,8 @@ internal static class BattleCommandDispatcher
                     var equipped = BattleEquipment.Equip(actor, chosen.Slot);
                     return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.ActionChoice),
                         "equipment-confirmed", battle.With(actors: battle.Actors.Select(a => a.Actor == actor.Actor ? equipped : a)));
+                case Cancel when selection.Stage == BattleSelectionStage.ActionChoice && !selection.StopExceedsCurrentMove(actor):
+                    return Selected(current, new(selection.Actor, selection.Preview, BattleSelectionStage.Movement), "selection-cancelled");
                 case Cancel:
                     return BattleMovementContinuation.BeginPlayer(current,
                         new(selection.Actor, BattleMovement.Preview(battle, selection.Actor, actor.Position!), BattleSelectionStage.Movement),

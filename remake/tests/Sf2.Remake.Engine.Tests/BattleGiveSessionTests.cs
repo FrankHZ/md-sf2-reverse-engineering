@@ -87,8 +87,8 @@ public sealed class BattleGiveSessionTests
         Accept(session, new Cancel()); Assert.Equal(BattleSelectionStage.GiveTargetChoice, session.Current.Selection!.Stage);
         Assert.Same(battle, session.Current.Battle); Assert.Equal(new MapPosition(2, 3), session.Current.Selection.Preview.Destination);
         Accept(session, new Cancel()); Accept(session, new Cancel());
-        FinishMovement(session, Accept(session, new Cancel()));
-        Assert.Equal(new MapPosition(1, 2), session.Current.Selection!.Preview.Destination);
+        Accept(session, new Cancel());
+        Assert.Equal(new MapPosition(2, 3), session.Current.Selection!.Preview.Destination);
         Assert.Equal(original.MainSeed, session.Current.Battle.MainSeed);
         Assert.Equal(original.ThinkingSeed, session.Current.Battle.ThinkingSeed);
         Assert.Equal(original.Cursor, session.Current.Battle.Cursor);

@@ -62,7 +62,6 @@ public sealed class BattleMovementTests
             Assert.Equal(2, session.Current.BattleMovement!.Path.Count);
             FinishMovement(session, result);
         }
-        Accept(session, new Confirm());
         var cancelled = Accept(session, new Cancel());
         var movement = session.Current.BattleMovement!;
         Assert.Equal(BattleMovementPurpose.Return, movement.Purpose);
