@@ -81,7 +81,8 @@ public sealed partial class GameRoot
                         PositionOverride = row.TryGetProperty("position", out var point)
                             ? new(point.GetProperty("x").GetInt32(), point.GetProperty("y").GetInt32()) : actor.PositionOverride };
                 }
-            var battle = new BattleStartInput(seed.Encounter, inputs, baseline.MainSeed, baseline.ThinkingSeed,
+            uint mainSeed = start.TryGetProperty("mainSeed", out var selectedSeed) ? selectedSeed.GetUInt32() : baseline.MainSeed;
+            var battle = new BattleStartInput(seed.Encounter, inputs, mainSeed, baseline.ThinkingSeed,
                 60, itemCustody: baseline.ItemCustody, deathCredit: baseline.DeathCredit);
             BeginSource(new LocalizationObservationSource(new ScenarioReadAccepted(admitted.Definition, battle)));
             return _session is null ? "observation-mount-failed" : "started";

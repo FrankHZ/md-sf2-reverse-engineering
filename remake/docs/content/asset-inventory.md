@@ -981,3 +981,21 @@ package is 361,493,189 bytes and the largest scene is 3,188,370 bytes of the exi
 4 MiB limit. The aggregate gain is 249,600 bytes. The [package recipe](presentation-assets.md#detox-successor)
 and [native acceptance](../godot/spell-presentation.md#prepared-detox-presentation)
 own reproduction and scope.
+
+
+## DEBUFF1 family #2238
+
+**Confirmed prepared and consumed.** USA identity and SF2DISASM c834c652 bind tileset 9's
+1,536-byte stream to three 32×32 clouds, tile offsets 0/16/32. Setup overrides its default
+palette slots 9/13/14 with source words 0888/0BBB/0DDD masked by VDP 0x0EEE. Update uses
+frame order 0/1/2/1/0. The producer checks the prepared index identity, stream length and
+Original/HD alpha masks, then uses the existing closed-package publisher. The accepted filter
+pin is 172662709b31cb296b55f51894754ce810c30f6c.
+
+The successor has 174 files and 361,637,333 bytes, including 26 mounted scenes. Its largest
+scene is 3,193,914 bytes. The three-frame pilot serialized group is 5,614 bytes. Complete HD
+and missing-frame fallback were observed through actual native sprites. The executable consumer
+is learned DISPEL1 and admitted enemy DISPEL, with SLOW/MUDDLE/SLEEP consumer acceptance pending.
+[Publication](presentation-assets.md#dispel-successor) and
+[scope, source, budgets and reproduction](../godot/spell-presentation.md#dispel-playback-implementation-2238)
+own further details. Private media remains outside Git.

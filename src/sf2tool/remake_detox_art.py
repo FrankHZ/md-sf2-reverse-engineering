@@ -81,7 +81,7 @@ def publish(base, output, originals, variants):
                 current = scene.setdefault(bank, {})
                 for key, value in additions.items():
                     if current.setdefault(key, value) != value:
-                        raise ValueError(f"conflicting DETOX raster {key}")
+                        raise ValueError(f"conflicting prepared spell raster {key}")
             target.write_text(json.dumps(scene, separators=(",", ":")), encoding="utf-8")
             if target.stat().st_size > 4 * 1024 * 1024:
                 raise ValueError("scene exceeds the existing 4 MiB reader limit")

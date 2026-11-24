@@ -26,6 +26,7 @@ internal static class PrivateSupportSpellBindings
             source.PropertiesExpression == properties &&
             (key.Value switch
             {
+                "dispel" => source is { EntryExpression: "DISPEL", AnimationExpression: "DEBUFF1" },
                 "sleep" => source is { EntryExpression: "SLEEP", AnimationExpression: "DEBUFF1" },
                 "muddle" => source.AnimationExpression == "DEBUFF1" && source.EntryExpression == (key.Level == 2 ? "MUDDLE|LV2" : "MUDDLE"),
                 _ => true,
