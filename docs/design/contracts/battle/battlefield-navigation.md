@@ -99,6 +99,19 @@ occupied by allies. The separate [`@CheckPosition` confirmation](https://github.
 checks other combatants' positions and refuses an occupied stop. Exact rendered appearance and timing
 remain **Unknown**.
 
+### Standby movement occupancy
+
+**Confirmed static.** `DetermineAiStandbyMovement` builds its movement arrays from current terrain
+before building the all-combatant target grid. It evaluates candidate stops through radius-zero
+`DetermineAttackPosition` and uses those movement arrays to construct the chosen AI move string.
+The target-grid occupancy check applies to the stop. Standby applies no new opposing-occupancy
+projection during propagation.
+[Pinned standby source](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/determineaistandbymovement_1.asm)
+
+The [remake movement review](../../../../remake/docs/domain/gameplay-rules.md#movement-terrain-and-occupancy-review)
+covers a controlled engine route and its delivery. Original runtime behavior of that route,
+natural-game exposure and rendered delivery remain **Unknown**.
+
 ## Weighted Propagation
 
 **Confirmed static and bounded runtime contract:** propagation uses a 64-byte stack frame as 32

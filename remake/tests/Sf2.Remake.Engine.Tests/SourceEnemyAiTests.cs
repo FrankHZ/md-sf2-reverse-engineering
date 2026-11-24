@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
@@ -150,6 +151,51 @@ public sealed class SourceEnemyAiTests
         var battle = new BattleDefinition("another-encounter", new("other-map"), 20, 20, terrain, deployments, []);
         var flags = new bool[16]; flags[6] = active;
         return new(battle, actors, 0xCAFE5678, thinking, 17, [], 0, null, regions: new(flags, 7));
+    }
+
+    [Fact]
+    public void InactiveMovementDeliversItsOwnGridRouteAndCommitsOnlyTheOpenStop()
+    {
+        var opponent = new ActorRef("other-party");
+        var origin = new MapPosition(6, 5);
+        var crossing = new MapPosition(6, 6);
+        var stop = new MapPosition(5, 6);
+        var basis = State(BattleMover.Regular, memory: 0x34, blockSouth: false, peer: false, allyPosition: crossing);
+        var terrain = basis.Definition.Terrain.ToArray();
+        terrain[4 * 48 + 5] = new(TerrainSurface.Barrier, TerrainProtection.None);
+        terrain[crossing.Y * 48 + crossing.X] = new(TerrainSurface.Brush, TerrainProtection.None);
+        var definition = basis.Definition;
+        var varied = new BattleDefinition(definition.Encounter, definition.Map, definition.Width, definition.Height,
+            terrain, definition.Deployments, definition.Spells.Values);
+        var battle = new EngineBattleState(varied,
+            basis.Actors.Select(actor => actor.Actor == Enemy ? actor.With(position: origin) : actor),
+            basis.MainSeed, basis.ThinkingSeed, basis.Round, [new(Enemy, 30), new(opponent, 20), new(null, 255)],
+            0, basis.Gold, regions: basis.Regions);
+        var current = new SessionSnapshot(Guid.NewGuid(), 0, 0, battle, null, SessionStopReason.SimulationWait);
+
+        var started = BattleAdvancer.Advance(current, []);
+        Assert.True(started.Failure is null, started.Failure?.ToString());
+        var moving = Assert.IsType<BattleMovementState>(started.Snapshot.BattleMovement);
+        Assert.Equal(BattleMovementPurpose.Automatic, moving.Purpose);
+        // The open approach costs four. The source walker retains the right bit and
+        // chooses the brush approach, which costs five and crosses the opposing unit.
+        Assert.Equal(new[] { origin, crossing, stop }, moving.Path);
+        Assert.Equal(origin, started.Snapshot.Battle.GetActor(Enemy).Position);
+        Assert.Equal(crossing, started.Snapshot.Battle.GetActor(opponent).Position);
+        Assert.Equal(battle.MainSeed, started.Snapshot.Battle.MainSeed);
+        Assert.Equal(2, started.Observations.Count(row => row.Kind == "thinking-rng"));
+
+        var first = BattleMovementContinuation.Submit(started.Snapshot, new CompletePresentation(moving.Token, moving.CompletionKind));
+        Assert.Null(first.Failure);
+        Assert.Equal(origin, first.Snapshot.Battle.GetActor(Enemy).Position);
+        var last = Assert.IsType<BattleMovementState>(first.Snapshot.BattleMovement);
+        var completed = BattleMovementContinuation.Submit(first.Snapshot, new CompletePresentation(last.Token, last.CompletionKind));
+        Assert.Null(completed.Failure);
+        Assert.Equal(stop, completed.Snapshot.Battle.GetActor(Enemy).Position);
+        Assert.Equal(crossing, completed.Snapshot.Battle.GetActor(opponent).Position);
+        Assert.Equal(opponent, completed.Snapshot.Selection!.Actor);
+        Assert.Equal(battle.MainSeed, completed.Snapshot.Battle.MainSeed);
+        Assert.Equal(started.Snapshot.Battle.ThinkingSeed, completed.Snapshot.Battle.ThinkingSeed);
     }
 
     [Theory]
