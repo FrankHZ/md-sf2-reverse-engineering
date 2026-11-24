@@ -209,52 +209,120 @@ check the name entry, cancel, then overwrite slot 1 through the final Start conf
 
 ## Dedicated numbered-save and native recovery demo
 
-**Proposed for #2215, standard rigor.** The review spans numbered storage, host input and the
-native window. Use a dedicated launch of [Main.tscn](../../game/Main.tscn) at the real root
-window, configured only for that process. Ordinary title, Witch, field and Menu input reach the
-samples. The [save contract](../application/battle-save-and-continue.md#manual-save-history-and-developer-files)
-and [window contract](presentation.md#window-support-and-recovery-1455) own all behavior.
-
-- A configured Main launch already uses numbered history when no explicit save file is selected.
-  It also initializes window support and receives native size changes. Reviewers trade the preview's
-  tab shortcuts for a short Witch → Continue → field → Menu route.
-- A separate preview scene could mount Main directly under the root window, but would add a
-  lifecycle and input entry around the same configuration. Extending the existing toolbar sample
-  would also need to change its viewport and host admission.
-  [DesignPreview](../../game/probes/previews/DesignPreview.cs) mounts Main inside a fixed
-  1920×1080 SubViewport, and the [preview setup in GameRoot](../../game/src/GameRoot.cs) returns
-  before native window support initializes. Use the direct launch for both scenarios.
+**Accepted design #2215 / #2223, implemented in #2224. Standard rigor** covers the interaction
+between numbered storage, host input and the native client. Run [Main.tscn](../../game/Main.tscn)
+in a dedicated process at the real root window. The ordinary title, Witch and field Menu reach
+the sample. The [save contract](../application/battle-save-and-continue.md#manual-save-history-and-developer-files)
+and [window contract](presentation.md#window-support-and-recovery-1455) own the behavior.
 
 ### Sample setup and reset
 
-1. Select the matched private entry/opening, connected world, battle and display inputs used by
-   the [ordinary field observation](#reproduction-and-finite-evidence). Reuse its current compatible,
-   disposable settled Map3 field save in slot 2, or generate one through that observation's existing
-   field admission and Save. Cold Continue must restore it to a saveable walking boundary with the
-   same build and content before preparing history. If it fails, regenerate the seed with that
-   selection. Keep each numbered filename matched to the record's embedded slot.
-2. Copy the seed to `sf2-opening/slot2.json` in a fresh setup namespace, leave slot 1 empty and
-   Continue slot 2. Use Menu → Save → Create a New Save to write slots 3–7 at the settled field.
-   Save over slot 7 once to produce its valid backup. After exit, stage only `slot2.json` through
-   `slot7.json` and `slot7.bak` for review. Replace only the staged slot 7 primary with the single
-   UTF-8 byte `{` before freezing the baseline.
-   This gives page 1 slots 1–6 and page 2 slot 7 with a protected primary and a recoverable backup.
-   Save offers slot 8. All compatible records come from the current production writer.
-3. For each review or reset, stage a copy in a new `ui-host-review-*` namespace below the configured
-   external disposable validation save root. Require a fresh destination, disjoint from player
-   storage and the seed, and stop setup if isolation or seed selection fails. Set `SF2_SAVE_ROOT`
-   and `SF2_SAVE_NAMESPACE` explicitly in the launch process after loading the registered inputs.
-   Keep app data, TEMP, logs and any review stills in per-run ignored scratch. Launch
-   `Godot --path <project> --resolution 1600x900 res://Main.tscn` in a visible window, without
-   `--load-save` or `--save-output`. Preferences use the disposable namespace. Reset by closing
-   the owned review process and making a new baseline copy. Keep the staged source read-only.
+Use a fresh PowerShell 7 session at the repository root, an imported project, and the Debug
+adapter from the [locked SDK workflow](../development-and-verification.md#locked-net-workflow).
+For the Debug build pass `-p:UseSharedCompilation=false -nodeReuse:false`. Set
+`$disposableSaveRoot` to a dedicated existing absolute validation directory outside the worktrees
+and player storage. Each launch creates its own namespace and uses the ordinary preferences file in
+that namespace. App data, TEMP, logs, seed and baseline stay in ignored worktree-local scratch.
 
-### Follow-up and acceptance
+```powershell
+$ErrorActionPreference = 'Stop'
+. ./local/private-inputs.ps1
+$package = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2179/pre-voyage-entry-v1'
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $package 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $package 'main-scenes.json'
+$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $package 'entry/entry.json'
+foreach ($file in Get-ChildItem -LiteralPath "$package/opening-inputs" -Filter 'SF2_PRIVATE_*.json' -File) {
+    [Environment]::SetEnvironmentVariable($file.BaseName, $file.FullName, 'Process')
+}
+$env:SF2_DISPLAY_CATALOG = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue1870/catalog02/world.zh-CN.json'
+if (![IO.Path]::IsPathFullyQualified($disposableSaveRoot) -or
+    !(Test-Path -LiteralPath $disposableSaveRoot -PathType Container)) { throw 'Select an external disposable save root' }
+$env:SF2_SAVE_ROOT = $disposableSaveRoot
+$review = (New-Item -ItemType Directory -Path "local/ui-host-review-$([guid]::NewGuid())").FullName
+$historyFiles = @(2..7 | ForEach-Object { "slot$_.json" }) + 'slot7.bak'
 
-Provision the sample and record the runnable setup here first. Verify it through the following
-short routes before linking the dedicated launch from the preview README. The follow-up owns the
-preview navigation, sample preparation and isolated launch recipe. Main, the store, the codec and
-the caller contracts already supply the required interfaces.
+function Invoke-NumberedSaveReview {
+    param(
+        [Parameter(Mandatory)][ValidateSet('seed', 'stage', 'continue', 'save', 'launch')][string]$Case,
+        [string]$From,
+        [ValidateSet('en', 'zh-CN')][string]$Language = 'en',
+        [string]$Resolution = '1600x900',
+        [switch]$Stills
+    )
+    $space = "ui-host-review-$([guid]::NewGuid())"
+    $run = (New-Item -ItemType Directory -Path "$review/$Case-$space").FullName
+    $env:SF2_SAVE_NAMESPACE = $space
+    $save = Join-Path $env:SF2_SAVE_ROOT $space
+    $slots = (New-Item -ItemType Directory -Path "$save/sf2-opening").FullName
+    $prefs = (New-Item -ItemType Directory -Path "$save/sf2-preferences").FullName
+    if ($Case -ne 'seed') {
+        $files = if ($Case -eq 'stage') { @('slot2.json') } else { $historyFiles }
+        foreach ($name in $files) {
+            $copy = Join-Path $slots $name
+            Copy-Item -LiteralPath (Join-Path $From $name) -Destination $copy
+            (Get-Item -LiteralPath $copy).IsReadOnly = $false
+        }
+    }
+    @{ formatVersion=1; language=$Language } | ConvertTo-Json |
+        Set-Content -LiteralPath "$prefs/input.json" -Encoding utf8NoBOM
+    $env:APPDATA = (New-Item -ItemType Directory -Path "$run/appdata").FullName
+    $env:LOCALAPPDATA = (New-Item -ItemType Directory -Path "$run/localappdata").FullName
+    $env:TEMP = (New-Item -ItemType Directory -Path "$run/temp").FullName
+    $env:TMP = $env:TEMP
+    $env:SF2_HOST_UI_CASE = $Case
+    $env:SF2_HOST_UI_OUTPUT = Join-Path $run 'native.json'
+    $env:SF2_HOST_UI_STILLS = if ($Stills) { '1' } else { '' }
+    if ($Case -eq 'seed') {
+        $env:SF2_HOST_UI_START = Join-Path $run 'start.json'
+        @{ start = @{ map='map-3'; player='entity-0'; position=@{x=32;y=13}; facing=1; speed=32;
+            flags=@(0,1,2,32,33,34,66,67,80,600,602,603,609,610) } } |
+            ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $env:SF2_HOST_UI_START -Encoding utf8NoBOM
+    }
+    $godotArgs = @('--path', 'remake/game', '--resolution', $Resolution, '--max-fps', '120',
+        '--audio-driver', 'Dummy', '--log-file', "$run/godot.log")
+    if ($Case -eq 'launch') { $godotArgs += 'res://Main.tscn' }
+    else { $godotArgs += @('--script', 'res://probes/numbered_save_review.gd') }
+    & $env:GODOT_BIN @godotArgs | Out-Host
+    if ($LASTEXITCODE) { throw "Review process failed. See $run" }
+    return $slots
+}
+```
+
+If you already have a compatible **disposable** format-6 field slot 2, set `$seed` to a read-only
+copy of its directory containing `slot2.json`. Otherwise run the existing controlled Map3 admission once and
+freeze its slot 2. The stage process cold-continues slot 2, verifies saveable walking, then uses
+Menu → Save to create slots 3–7 and overwrites slot 7 once to create the backup. On a seed mismatch,
+generate a new seed with the selected package.
+
+```powershell
+$generated = Invoke-NumberedSaveReview -Case seed
+$seed = (New-Item -ItemType Directory -Path "$review/seed").FullName
+Copy-Item -LiteralPath "$generated/slot2.json" -Destination $seed
+(Get-Item -LiteralPath "$seed/slot2.json").IsReadOnly = $true
+
+$staged = Invoke-NumberedSaveReview -Case stage -From $seed
+$baseline = (New-Item -ItemType Directory -Path "$review/baseline").FullName
+foreach ($name in $historyFiles) {
+    Copy-Item -LiteralPath (Join-Path $staged $name) -Destination $baseline
+}
+[IO.File]::WriteAllBytes((Join-Path $baseline 'slot7.json'), [byte[]]@(0x7B))
+Get-ChildItem -LiteralPath $baseline -File | ForEach-Object { $_.IsReadOnly = $true }
+```
+
+Slot 1 is empty. Page 1 offers slots 1–6, page 2 exposes the damaged slot 7 and its recoverable
+backup, and Save offers new slot 8. Each valid file keeps the slot identity assigned by the
+production writer. Open the sample and reset with the same command after closing the owned window.
+Each invocation copies the read-only baseline to another fresh namespace.
+
+```powershell
+$null = Invoke-NumberedSaveReview -Case launch -From $baseline
+```
+
+Choose `-Language zh-CN` for Simplified Chinese. Keep the dedicated client visible. Choose
+`-Resolution 1920x1080` when a decorated client fits. The root window owns startup fit, resize
+admission and native Fullscreen.
+
+### Routes and acceptance
 
 | Production route | Readback and visual acceptance |
 | --- | --- |
@@ -262,17 +330,34 @@ the caller contracts already supply the required interfaces.
 | Continue slot 2 → field → F10 → Save → Next → slot 7 | Read the protected-write reason and fresh-slot action. Back restores slot 7 on page 2, then the Save row in Menu, then field control. File bytes stay unchanged. On page 1, slot 6 shows the separate Cancel-first overwrite and its backup consequence. Cancel preserves bytes and selection. Confirm Save and Return on the reopened prompt and check that the previous slot 6 primary becomes its backup and the saved acknowledgement returns to the field. |
 | Continued field → F10 → Save, with page 2 selected | On a desktop that can fit a decorated 1600×900 client, shrink the actual window to an undersized client such as 1280×720. Read actual client/mode, pause and visibility from the running host. Only recovery owns input. Open Quit, verify Cancel starts selected, then cancel and choose Restore Window. Require actual supported readback, the same session, Save page and row, unchanged revision and files, and fresh input before activation. A pointer press started before resize must expire. |
 
-Use the existing [slot](#slot-recovery-and-overwrite-at-1080p) and
-[native window observations](../verification/host.md#window-boundary-design-observation-1455)
-for state, input, control bounds and errors. Read client size and mode with
-`ReadWindowSupportObservationJson` and progress at attach with `ReadPersistenceObservationJson`.
-Inspect the changed page in the dedicated launch at 1600×900 and at 1920×1080 where it fits. Review wrapped labels, the current focus, fixed action
-rows and the visible recovery cover at the actual undersized client. Native Fullscreen remains
-available through the same host when it fits the current screen. Physical fit and mode availability
-are claims about the desktop exercised. Use only necessary local stills from the dedicated run
-under the [preview visual rules](../development-and-verification.md#dedicated-ui-preview-visual-review).
-Ordinary gameplay and research observations remain image-free. The dedicated launch is planned,
-and its visual and physical-window results are **Unknown** pending the follow-up.
+The [numbered-save observer](../../game/probes/numbered_save_review.gd) reuses the ordinary host
+input and projections. It mounts Main in the native root, reads the actual client/mode and checks
+attached landing, names, gold and flags against the selected record. Review the report, native
+log and exit code. Add `-Stills` for individual local UI-page stills in this dedicated review
+only, under the [preview visual rules](../development-and-verification.md#dedicated-ui-preview-visual-review).
+
+```powershell
+$null = Invoke-NumberedSaveReview -Case continue -From $baseline -Language zh-CN -Resolution 1920x1080 -Stills
+$null = Invoke-NumberedSaveReview -Case save -From $baseline -Stills
+```
+
+**Confirmed** on a native Windows desktop with a 3586×2160 usable area. Chinese Continue at
+1920×1080 kept the damaged status, Previous, backup identity, primary detail and both actions
+readable. English Save at 1600×900 kept the protected-write reason, fresh slot and overwrite
+consequence above the fixed actions. The actual 1280×720 recovery cover hid Save and field,
+kept Restore/Fullscreen/Quit visible, and scrolled the last explanation line independently of
+the actions. Quit Cancel and Restore returned to the 1600×900 decorated client with the same
+session, revision, slot, page and files. The pre-resize press reached the selected row and its
+release after Restore left the row unchanged. A fresh Confirm opened slot 7's protected prompt.
+
+The two runs changed only their expected slot pairs. The frozen source bytes stayed identical.
+The first controlled start lacked a saveable boundary. The working seed uses the settled
+F609/F610 setup. Earlier observations also retain a script parse error, an attempted comparison
+between the field wire record and its narrower public progress projection, and a resize check
+that compared JSON numbers as dictionary variants. Fullscreen startup entered the actual
+3840×2160 mode. The 1920×1080 stills use a decorated client. Successful native
+processes returned 0. Some retained the existing two-instance ObjectDB exit warning. Physical
+fit on smaller work areas, DPI variations and display reading comfort remain **Unknown**.
 
 ## Reproduction and finite evidence
 

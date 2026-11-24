@@ -35,7 +35,7 @@ while the party faces the merchant. If the party has walked elsewhere, face the 
 or press F6 again for a fresh sample. Re-select the current tab to restart its sample. F10 toggles
 the eligible live host menu.
 Close an input-owning field page before opening it. The [preview gaps](../../../docs/godot/ui-scene-review.md#preview-gaps-and-targeted-follow-ups)
-cover numbered saves, actual window recovery and connected campaign variants.
+cover remaining connected campaign variants.
 
 The production viewport keeps the 1920×1080 canvas and fits below the toolbar. The preview
 translates pointer input into that viewport. Main panels, menus, dialogue, tooltips and status
@@ -70,6 +70,13 @@ For direct checks, inspect the actual mounted `GameRoot`, field and battle views
 same texture. Check that a purchase changes the party seen in F5, inspection returns through
 the right parent, F10 restores the covered session, and outcome waits reach actual field
 control. The scene review records bounded visual findings by page. Ordinary-game reading comfort and physical-device review remain **Unknown**.
+
+## Numbered saves and native window recovery
+
+Use the [dedicated Main launch and reset recipe](../../../docs/godot/host-ui.md#dedicated-numbered-save-and-native-recovery-demo)
+for Witch Continue and field Save on page 2, slot protection and backup recovery, and window
+recovery while Save is open. The launch opens a native root window with a fresh disposable copy
+of numbered history. The F1–F10 sample canvas has a fixed internal client.
 
 ## Caravan sample
 
