@@ -5,7 +5,7 @@ Open Settings at the Witch menu or from a settled field's system Menu. Display &
 aids, Controls and Debug & diagnostics share a draft. Controls → Change controls edits keyboard
 and controller alternatives; installed navigation remains active until top-level Apply. Back
 returns to the source row, and Back at the top discards the visit. The [E2 feature row](../evidence/opening-ui-gaps.md#e2-settings)
-tracks the player outcome. Standard rigor applies because capture, storage and live views share one input map.
+tracks the player outcome. The [host handoff](ui-architecture.md#one-event-from-device-to-page-and-back) owns the High-rigor native input boundary.
 
 ## Current production boundary
 
@@ -18,6 +18,13 @@ tracks the player outcome. Standard rigor applies because capture, storage and l
 | [InputSettings.Draft](../../game/src/Input/InputSettings.cs) and [SettingsView](../../game/src/UI/SettingsView.cs) | Drafts own a copy of their sparse bindings and arrays. Restore defaults loads model defaults for text mode/rate, swap, reduced flash, language, graphics, modern guidance, both debug flags and battle hit/coin suppression, preserving custom bindings. Battle Speed edits its own two preferences. Shared Settings also opens from the battle system Menu and offers grouped categories, installed Help, [capture and review](../../game/src/UI/SettingsView.Bindings.cs), Apply and Cancel. |
 | [SettingsHost](../../game/src/Entry/SettingsHost.cs) and [SettingsStore](../../game/src/Input/SettingsStore.cs) | The host prepares input, language and applicable field graphics before writing. Ordinary settings use `<SF2_SAVE_ROOT>/<SF2_SAVE_NAMESPACE>/sf2-preferences/input.json`. The store takes an exclusive lock, compares loaded bytes, flushes a same-directory temporary and atomically moves/replaces the file. Explicit `--input-settings` selects a read-only whole file. Invalid overrides fail startup. Missing ordinary preferences use defaults without creating a file on read. |
 | [Hint projection](../../game/src/Input/GameInput.Hints.cs) and [grouped Help](../../game/src/UI/ControlsHelpView.cs) | Both device families can operate at once. CompactHint selects the first installed alternative in the active family (pad buttons precede axes), or explicitly names the keyboard fallback. Help lists every installed alternative after the swap and preserves its page and scroll on hint refresh. Mouse shares keyboard hints and existing pointer gestures. Its clicks, wheel and motion have no entries in the bindings schema. Name editing retains its own keyboard controls. |
+
+Mapped navigation and pointer picking use the same mounted production rows. The host sends
+the actual Confirm key, button or axis synchronously to capture or Apply. A GUI activation
+arrives on mouse release. The visible Capture Back button and right-click return through
+the page's normal pointer route. Unmapped physical keys, including a retired Enter, cannot
+fall through to Godot’s default GUI actions while Settings is open.
+[Native Settings observation](../verification/host.md#native-settings-focus-and-gui-picking)
 
 ## Editing a binding
 

@@ -40,8 +40,11 @@ text overflows. Reading details keeps the choice focus, scroll and action positi
 appear on the Debug page when enabled. Controls → Change controls and Controls → Help share the Settings draft. Help reads
 installed bindings; only Apply publishes edits. See [changing controls](input-remapping.md)
 for capture, review, reset and refusal behavior. Battle Speed remains a separate two-row caller.
-The [native Settings design](ui-architecture.md#settings-and-its-children) covers the proposed change
-to focus and event delivery across these same routes.
+Settings owns the viewport focus while open. The host resolves keyboard and pad against the
+installed mapping once and consumes their raw events. Pointer picking and wheel scrolling use
+Godot GUI dispatch. Release over an eligible button invokes the same row operation as mapped
+activation. Resize, window exit and loss of focus cancel a pending click.
+[Input ownership](ui-architecture.md#settings-and-its-children) · [Reproduction](../verification/host.md#native-settings-focus-and-gui-picking)
 
 Gameplay aids → Hold speed cycles through 1.5×, 2×, 2.5× and 3×. The row shows the draft
 multiplier and its details show the installed Accelerate binding. Apply installs and saves the
@@ -110,7 +113,7 @@ Options → Speed shortcut keeps its own return to Options.
 | Text mode and speed | The display mode is chosen when a line opens. The new rate applies when gradual text resumes. Existing acknowledgement and presentation tokens stay in place. |
 | Reduced flash | Current battle presenters read the applied preference when projecting the selection or delivering cues. |
 | Help, controls and Confirm/Cancel convention | Help shows installed bindings. Apply switches bindings and refreshes hints. The activating input is consumed through its release, including when it no longer matches the installed map. |
-| Graphics and modern guidance | Apply saves these preferences for their exploration consumers. The Graphics row explains its field coverage. Battle artwork keeps its existing assets. |
+| Graphics and modern guidance | Battle uses installed HD artwork where available and Original elsewhere. Modern guidance applies during exploration. |
 | Debug | Diagnostics follow the applied preference. Auto-win can act once play resumes and the existing player Movement rule admits it. The row explains this before Apply. |
 
 The existing read-only launch override supports viewing preferences and Help. The

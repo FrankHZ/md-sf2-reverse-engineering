@@ -1321,12 +1321,15 @@ English/Chinese UI and installed-key-map acceptance; it is not a private source-
 the battle system Menu opens shared Settings and Help. Apply and Cancel return to Menu over the
 same selection or pending battle cue. Language and binding changes refresh the present battle UI.
 The [Hold speed preference](godot/host-ui.md#implemented-composition-and-return) applies to eligible exploration and
-battle while an installed Accelerate binding is held. Graphics and guidance retain their
-exploration scope. Debug auto-win can act once resumed play admits it.
+battle while an installed Accelerate binding is held. Graphics uses installed battle artwork
+where available. Modern guidance applies in exploration. Debug auto-win can act once resumed play admits it.
 [Setting effects](godot/host-ui.md#settings-from-the-battle-system-menu) ·
 [Native observation](verification/host.md#battle-system-settings-observation).
 
-**Planned:** [native focus and pointer handling for Settings and its child pages](godot/ui-architecture.md#settings-and-its-children).
+**Implemented:** Settings, its nested editor, Help and Battle Speed use Godot focus and GUI
+picking. The installed mapping, raw capture and host Apply retain one input route. Field
+and battle Member still use their existing input owners.
+[Mechanism](godot/ui-architecture.md#settings-and-its-children) · [Acceptance](verification/host.md#native-settings-focus-and-gui-picking).
 
 **Implemented, bounded [#1650](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1650):**
 settled inspection empty-ground Options → Speed uses the existing host transaction/persistence,

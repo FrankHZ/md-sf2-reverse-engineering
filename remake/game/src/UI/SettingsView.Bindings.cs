@@ -60,7 +60,7 @@ internal sealed partial class SettingsView
             case Page.Device: return [new("keyboard", S("keyboard")), new("pad", S("pad"))];
             case Page.Alternatives: return [.. Family(Row).Select((a,i) => new Choice("slot-" + i, LabelFor(a))), new("add", S("add")), ReservedRow()];
             case Page.Operation: return [new("replace", S("replace")), new("remove", S("remove")), ReservedRow()];
-            case Page.Capture: return [BackRow()];
+            case Page.Capture: return [new("back", T("entry.back"), Footer: true)];
             case Page.Review: return [new("accept", S("accept"))];
             default: throw new InvalidOperationException();
         }
@@ -170,7 +170,7 @@ internal sealed partial class SettingsView
         }
         if (_page != Page.Capture) return false;
         if (!GetWindow().HasFocus()) return true;
-        if (input is InputEventMouse) { HandlePointer(input); return true; }
+        if (input is InputEventMouse) return false; // The visible Cancel button uses the same GUI route.
         if (!fresh) return true;
         if (input is InputEventKey { Keycode: Key.Escape } or InputEventJoypadButton { ButtonIndex: JoyButton.Back })
         { _drain = input; Back(); return true; }

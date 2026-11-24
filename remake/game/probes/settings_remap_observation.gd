@@ -86,6 +86,47 @@ func hold(code: int, expected: float) -> void:
 
 func mounted() -> Dictionary: return observation(host,"ReadSettingsHostObservationJson")
 func progress() -> Variant: return observation(host,"ReadPersistenceObservationJson").progress
+func native_field() -> void:
+    await field_settings()
+    if settings().is_empty(): return
+    var field := state()
+    var field_progress: Variant = progress()
+    await go_setting("graphics")
+    var details := find("SettingsMessage") as Label
+    check(details.is_visible_in_tree() and "HD" in details.text and details.get_line_count() > 1,
+        "F10 Display shows the wrapped field graphics explanation")
+    var row := find("Setting_graphics") as Button
+    var draft: Dictionary = settings().draft
+    await mouse(row, true); await mouse(row, false)
+    check(find("Setting_graphics") == row and settings().draft.GraphicsMode != draft.GraphicsMode,
+        "pointer edits the same mounted value row")
+    await back(); await go_setting("help")
+    var help := find("ControlsHelpView")
+    var next := find("HelpNext") as Button
+    await mouse(next, true); await mouse(next, false)
+    check(observation(help, "ReadControlsHelpObservationJson").page == 1 and root.gui_get_focus_owner() == next,
+        "native Help Next turns once and owns focus")
+    await pad(JOY_BUTTON_DPAD_LEFT)
+    check(observation(help, "ReadControlsHelpObservationJson").page == 0 and root.gui_get_focus_owner() == find("HelpPrevious"),
+        "mapped pad turns the Help page back")
+    for pressed in [true, false]:
+        var click := InputEventMouseButton.new()
+        click.position = next.get_global_rect().get_center()
+        click.button_index = MOUSE_BUTTON_RIGHT; click.pressed = pressed
+        Input.parse_input_event(click); await frames()
+    check(find("ControlsHelpView") == null and root.gui_get_focus_owner() == find("Setting_help"),
+        "matched right-click over a native button restores Help's caller")
+    await to_root()
+    var apply := find("Setting_apply") as Button
+    await mouse(apply, true); await mouse(apply, false)
+    check(settings().is_empty() and selected_menu() == "Settings" and mounted().remapRelease == null,
+        "released mouse Apply returns to Menu without arming a key drain")
+    check(state().revision == field.revision, "Apply preserves the covered field revision")
+    await back()
+    check(state().sessionId == field.sessionId and state().map == field.map and progress() == field_progress
+        and state().movementDirection == null, "resume keeps the field caller without admitting movement")
+    check(bytes(slot) == slot_bytes, "field settings leave journey bytes unchanged")
+
 func run() -> void:
     if output.is_empty() or not OS.get_environment("SF2_SAVE_NAMESPACE").begins_with("issue1774-"):
         push_error("Choose a disposable issue1774-* save copy and explicit output"); quit(2); return
@@ -94,10 +135,12 @@ func run() -> void:
     var before := bytes(prefs); slot_bytes = bytes(slot)
     root.size = Vector2i(1920,1080)
     host = load("res://Main.tscn").instantiate(); root.add_child(host); await frames(8)
+    if case_name == "native-field":
+        await native_field(); finish(); return
     if case_name != "restart":
         await open_witch_settings()
         if settings().is_empty(): finish(); return
-        check(settings().rows == ["display","assist","input","debug","apply","back"] and settings().message.is_empty(),"root shows only categories and actions")
+        check(settings().rows == ["display","assist","input","debug","apply"] and settings().message.is_empty(),"root shows only categories and actions")
         await remap_q(); await back()
         check(bytes(prefs) == before, "cancel at Witch retains exact preferences")
     if not await continue_slot(): finish(); return
