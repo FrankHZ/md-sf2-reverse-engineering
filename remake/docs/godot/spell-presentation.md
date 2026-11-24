@@ -169,7 +169,8 @@ foreground visual acceptance remain **Unknown** where no named witness covers th
   DEBUFF decision. These are candidate presentation
   slices. [#1456] governs foreground acceptance and [#1616] the wider design review.
 - **P3 for current later content.** [#2104] groups the remaining elemental variants and shared
-  KATON/RAIJIN art, then BUFF/DEBUFF and private AURA rank coverage as actual callers need them.
+  KATON/RAIJIN art, then BUFF/DEBUFF as actual callers need them. Private allied AURA2–4
+  has [controlled ordinary coverage](../domain/gameplay-rules.md#private-learned-aura-ranks).
   [#2016], [#1967] and [#1926] own missing gameplay and item admission. Keep item gestures where
   the original selector path calls for them. Schedule equipment effect reuse at its first legal
   consumer.

@@ -759,7 +759,7 @@ actions are admitted. The linked action owners track the remaining boundaries.
   [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926).
 - Packed spell learning and retention have their own coverage. The
   [spell actions](church-promotion-design.md#current-battle-spells) track admitted learned
-  ranks and the remaining higher AURA and DETOX ranks.
+  ranks, including AURA2–4, and the remaining DETOX4 boundary.
   MUDDLE 2 is admitted in private Magic and battle Continue. A rank-2 cast through
   unchanged campaign history and natural ally confusion remain **Unknown**.
   [Controlled Battle25 observation](../domain/hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25)
