@@ -23,7 +23,7 @@ internal sealed partial class CaravanServiceView
                 break;
             case CaravanPhase.DepotMember:
             case CaravanPhase.DepotRecipient:
-                _title += "\n" + GameText.Get(wait.Phase == CaravanPhase.DepotMember ? "depot.donor" : "shop.recipient");
+                _title += "\n" + GameText.Get(wait.Phase == CaravanPhase.DepotMember ? "depot.donor" : "depot.recipient");
                 foreach (var member in members)
                 {
                     if (member.Deployment?.Initialization?.AllyPartyMember is not { } index)

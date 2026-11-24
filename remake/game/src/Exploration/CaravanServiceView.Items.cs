@@ -18,7 +18,9 @@ internal sealed partial class CaravanServiceView
                 break;
             case CaravanPhase.ItemMember:
             case CaravanPhase.ItemTarget:
-                _title += "\n" + GameText.Get(wait.Phase == CaravanPhase.ItemMember ? "depot.donor" : "shop.recipient");
+                string prompt = wait.Phase == CaravanPhase.ItemMember ? "caravan.items.choose-pack" :
+                    wait.ItemAction == CaravanItemAction.Use ? "prepare.use-target" : "prepare.give-target";
+                _title += "\n" + GameText.Get(prompt);
                 foreach (var member in members)
                 {
                     if (member.Deployment?.Initialization?.AllyPartyMember is not { } index)
@@ -30,7 +32,7 @@ internal sealed partial class CaravanServiceView
             case CaravanPhase.ItemSlot:
             case CaravanPhase.ItemExchange:
                 bool exchange = wait.Phase == CaravanPhase.ItemExchange;
-                _title += "\n" + GameText.Get(exchange ? "depot.exchange" : "prepare." + wait.ItemAction!.Value.ToString().ToLowerInvariant());
+                _title += "\n" + GameText.Get(exchange ? "prepare.exchange" : "prepare." + wait.ItemAction!.Value.ToString().ToLowerInvariant());
                 var owner = members.Single(row => row.Deployment?.Initialization?.AllyPartyMember ==
                     (exchange ? wait.ItemTarget : wait.Member));
                 var loadout = owner.Carried.SourceLoadout ?? owner.Carried.Progress?.SourceLoadout ?? owner.Deployment!.Definition.SourceLoadout!;

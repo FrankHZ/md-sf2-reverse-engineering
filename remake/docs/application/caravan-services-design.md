@@ -390,8 +390,10 @@ member selection returns to Item. Top Leave completes the original callback once
 ordinary control through ProgramRunner, without map reload, teleport or re-running entry rewards.
 Use existing English/Chinese layouts, focus retention, pointer/keyboard/pad mapping and release
 barriers from [field and shop](../godot/field-and-shop.md). Application owns phases, tokens, results
-and commands; Godot owns focus and rendering only. Save is available after the source return on
-existing settled ground; no mid-service save/resume protocol is proposed.
+and commands. Give, Use and Depot Retrieve name their own recipient selection in the
+[Caravan presentation](../godot/field-and-shop.md#caravan-formation). A full pack adds a return-slot
+selection whose destination is the giving member for Give and the Depot for Retrieve.
+Save is available on settled ground after the service returns to the field.
 
 ## Existing owners and minimum changes
 
