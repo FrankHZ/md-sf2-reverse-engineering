@@ -49,7 +49,8 @@ public sealed record ExplorationMapVisual(MapId Map, ExplorationRaster Atlas, in
     IReadOnlyDictionary<BlockNeighborhood, ExplorationRaster>? HdBlockContexts = null);
 public sealed record ExplorationSpriteVisual(int Sprite, IReadOnlyList<ExplorationRaster> Directions, int? Portrait, int Speech,
     IReadOnlyList<ExplorationRaster>? HdDirections = null,
-    IReadOnlyDictionary<string, IReadOnlyList<ExplorationRaster>>? Graphics = null);
+    IReadOnlyDictionary<string, IReadOnlyList<ExplorationRaster>>? Graphics = null,
+    IReadOnlyDictionary<string, IReadOnlyList<ExplorationRaster>>? HdGraphics = null);
 public sealed record PortraitTileChange(byte X, byte Y, byte AlternateX, byte AlternateY);
 public sealed record ExplorationPortraitVisual(int Portrait, ExplorationRaster Raster,
     IReadOnlyList<PortraitTileChange>? Eyes = null, IReadOnlyList<PortraitTileChange>? Mouth = null, ExplorationRaster? HdRaster = null);

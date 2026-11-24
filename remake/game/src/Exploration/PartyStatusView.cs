@@ -167,8 +167,7 @@ internal sealed partial class PartyStatusView : Control
         var appearance = session.Current.Exploration?.Population?.AllySprites?.FirstOrDefault(row => row.Character == binding);
         int? sprite = appearance is null ? null : appearance.JoinedFlag is { } joined && !session.Current.Story.Flags.Contains(joined)
             ? appearance.UnjoinedSprite : appearance.ForClass(member.Carried.Progress?.ClassId);
-        bool hd = _input?.Settings.GraphicsMode == "hd" && session.Current.Exploration is { } field &&
-            visuals?.Maps.GetValueOrDefault(field.Map)?.HdBlocks is not null;
+        bool hd = _input?.Settings.GraphicsMode == "hd";
         return MemberPortrait.ForSprite(visuals, sprite, hd);
     }
 

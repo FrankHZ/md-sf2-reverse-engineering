@@ -21,7 +21,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
         if (_visuals is null) return;
         if (_visuals.Maps.TryGetValue(map, out var visual)) _mapTextures.PrepareHd(visual);
         if (_paintPrepared) return;
-        foreach (var raster in _visuals.Sprites.Values.SelectMany(sprite => sprite.HdDirections ?? [])
+        foreach (var raster in _visuals.Sprites.Values.SelectMany(sprite => (sprite.HdDirections ?? [])
+            .Concat(sprite.HdGraphics?.Values.SelectMany(directions => directions) ?? []))
             .Concat(_visuals.Portraits.Values.Select(portrait => portrait.HdRaster).OfType<ExplorationRaster>()))
         {
             using var decoded = ExplorationRasterImages.Open(raster);
@@ -648,7 +649,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 foreach (var change in work?.MouthOpen == true ? visualPortrait.Mouth! : [])
                     tiles[change.Y * 8 + change.X] = change.AlternateY * 8 + change.AlternateX;
                 var key = (portrait, (flags & 0x40) != 0, work?.EyesClosed == true, work?.MouthOpen == true,
-                    Painted(world.Map) && visualPortrait.HdRaster is not null);
+                    _settings.GraphicsMode == "hd" && visualPortrait.HdRaster is not null);
                 if (!_portraits.TryGetValue(key, out var texture))
                 {
                     _portraits[key] = texture = ExplorationRasterImages.Portrait(visualPortrait, tiles, key.Item2, key.Item5);
@@ -866,16 +867,23 @@ internal sealed partial class ExplorationPresentation : IDisposable
         int orientation = entity.Motion.FlagsB & 3;
         int size = entity.RenderSize;
         bool shadowless = entity.ShadowRemovedAt == entity.SpriteRequest;
-        bool hd = !shadowless && Painted(map) && visual.HdDirections is not null;
         string? graphics = _spriteGraphics.GetValueOrDefault(entity.SpriteSlot);
+        var original = graphics is null ? visual.Directions :
+            visual.Graphics?.GetValueOrDefault(graphics) ?? throw new InvalidOperationException("shared-sprite-graphics-binding");
+        var variant = graphics is null ? visual.HdDirections : visual.HdGraphics?.GetValueOrDefault(graphics);
+        bool hd = _settings.GraphicsMode == "hd" && variant is not null;
         var key = (sprite, direction, half, nod, headShift, orientation, size, hd, shadowless, graphics);
         if (_sprites.TryGetValue(key, out var texture)) return texture;
-        var directions = graphics is null ? (hd ? visual.HdDirections! : visual.Directions) :
-            visual.Graphics?.GetValueOrDefault(graphics) ?? throw new InvalidOperationException("shared-sprite-graphics-binding");
+        var directions = hd ? variant! : original;
         using var sheet = ExplorationRasterImages.Open(directions[direction]);
         int density = sheet.GetHeight() / frameSize;
         using var image = sheet.GetRegion(new(half * sheet.GetHeight(), 0, sheet.GetHeight(), sheet.GetHeight()));
-        if (shadowless) ExplorationStoryEffects.RemoveShadow(image);
+        if (shadowless)
+        {
+            using var originalSheet = ExplorationRasterImages.Open(original[direction]);
+            using var originalFrame = originalSheet.GetRegion(new(half * frameSize, 0, frameSize, frameSize));
+            ExplorationStoryEffects.RemoveShadow(image, originalFrame);
+        }
         ExplorationStoryEffects.Transform(image, orientation, size);
         ExplorationStoryEffects.ShiftHead(image, headShift);
         if (nod)

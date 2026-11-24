@@ -10,9 +10,9 @@ namespace Sf2.Remake.Content.Scenarios;
 
 internal static class ExplorationAssetReader
 {
-    private static IReadOnlyDictionary<string, IReadOnlyList<ExplorationRaster>>? Graphics(JsonElement row, int size)
+    private static IReadOnlyDictionary<string, IReadOnlyList<ExplorationRaster>>? Graphics(JsonElement row, int size, string name = "graphics")
     {
-        if (!row.TryGetProperty("graphics", out var graphics)) return null;
+        if (!row.TryGetProperty(name, out var graphics)) return null;
         Require(graphics.ValueKind == JsonValueKind.Object, "sprite-graphics", "presentation.graphics");
         var result = new Dictionary<string, IReadOnlyList<ExplorationRaster>>(StringComparer.Ordinal);
         foreach (var property in graphics.EnumerateObject())
@@ -57,15 +57,19 @@ internal static class ExplorationAssetReader
         var sprites = new Dictionary<int, ExplorationSpriteVisual>();
         foreach (var sprite in Array(row, "sprites"))
         {
-            ObjectOptional(sprite, "spriteVisual", ["sprite", "directions", "portrait", "speech"], "hdDirections", "graphics");
+            ObjectOptional(sprite, "spriteVisual", ["sprite", "directions", "portrait", "speech"], "hdDirections", "graphics", "hdGraphics");
             int id = Number(sprite, "sprite", 0, 255);
             Require(id < 240 || id is 252 or 254 or 255, "sprite-id", "presentation.sprites");
             int size = id is 252 or 254 or 255 ? 48 : 24;
             var directions = Array(sprite, "directions").Select(Raster).ToArray();
             Require(directions.Length == 3 && directions.All(raster => raster.Width == 2 * size && raster.Height == size), "sprite-shape", "presentation.sprites");
             int? portrait = sprite.GetProperty("portrait").ValueKind == JsonValueKind.Null ? null : Number(sprite, "portrait", 0, 55);
+            var graphics = Graphics(sprite, size);
+            var hdGraphics = Graphics(sprite, size * 4, "hdGraphics");
+            Require(hdGraphics is null || hdGraphics.Keys.All(key => graphics?.ContainsKey(key) == true),
+                "hd-sprite-graphics-binding", "presentation.sprites.hdGraphics");
             Require(sprites.TryAdd(id, new(id, System.Array.AsReadOnly(directions), portrait, Number(sprite, "speech", 0, 255),
-                OptionalFrames(sprite, "hdDirections", 3, size * 8, size * 4), Graphics(sprite, size))), "duplicate-sprite-visual", "presentation.sprites");
+                OptionalFrames(sprite, "hdDirections", 3, size * 8, size * 4), graphics, hdGraphics)), "duplicate-sprite-visual", "presentation.sprites");
         }
         var portraits = new Dictionary<int, ExplorationPortraitVisual>();
         foreach (var portrait in Array(row, "portraits"))

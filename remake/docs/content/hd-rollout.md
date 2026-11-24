@@ -45,8 +45,8 @@ replacement, additional Map60 ascent, and later Map14 movement.
 | --- | --- | --- |
 | Field and tactical terrain | Retail `maps/index.json` joins atlases, tiles, palettes, blocks, layouts and animation operands. The selected world admits original atlases and block words. All twenty selected maps mount L1 banks. | Field drawing, pickup occlusion and tactical terrain resolve the current block and neighborhood. Each tactical plane retains its encounter origin, priority and logical tile footprint. [Static terrain evidence](asset-inventory.md#pre-voyage-static-terrain-2175) |
 | Water and other animated tiles | The prepared map index and original [map animation contract](../../../docs/research/world/map-content.md) identify source tables. Map66's DMA witness is in [map-animation-vdp-v1](../../../tests/fixtures/h3/map-animation-vdp-v1.json). Current world maps carry working layout events and the presenter supports plane scroll and palette effects. | **Confirmed** the world visual has a static atlas and no tile-animation field or phase selector. Treat source tile substitution as a separate consumer slice. Static water, scrolling and palette changes each have their own observations. Eight selected maps have referenced animation targets. **Unknown** which phases are drawn during the accepted visits. |
-| Field and tactical sprites | Retail `walking/index.json` includes ordinary directions, class appearances and special streams. The current world has 163 sprite IDs, including 252/254/255, and three alternate graphics names on 252. | 85 IDs have installed `hdDirections`. Field selection is gated by HD terrain and excludes shadow-removed and alternate graphics. Tactical sprites currently select Original, including scene-owned death frames. Cover both consumers and their actual special dispatches. |
-| Portraits | Retail `portraits/index.json` supplies atlases and replacements. The world mounts 46 portraits, 38 with `hdRaster`. | Bound complete eye/mouth replacement, mirror and member/class identity together. Field story and both Member surfaces presently tie portrait HD to terrain coverage. Resolve the saved mode and the selected portrait's own variant, including special-pose dialogue. |
+| Field and tactical sprites | Retail `walking/index.json` includes ordinary directions, class appearances and special streams. The current world has 163 sprite IDs, including 252/254/255, and three alternate graphics names on 252. | 85 IDs have installed `hdDirections`. Ordinary field selection uses the saved graphics mode and the sprite's own HD directions. Shadow-removed and alternate graphics use their selected identity and density. Tactical world sprites resolve HD directions; scene-owned death frames still select Original. Cover both consumers and their actual special dispatches. |
+| Portraits | Retail `portraits/index.json` supplies atlases and replacements. The world mounts 46 portraits, 38 with `hdRaster`. | Field story and both Member surfaces select HD from the saved mode and the selected portrait's own variant independently of terrain coverage. Complete early coverage, eye/mouth replacement, mirror and member/class identity still require native observation. |
 | Battle close-up bodies and weapons | Retail `bodies` and `weapons` plus the mounted scene documents bind body/palette/weapon, frames and layer order. | Primary scene `rasters` are the current textures in `BattleSceneView`. There is no mode-specific lookup. Preserve idle/reaction/attack geometry, palette-dependent weapon colors, mirroring, offsets and front/back layer. |
 | Battle ground and backdrops | Retail `terrain` contains the source variants. Scene defaults and `terrainScenes` select installed pairs. | Derive by distinct selected raster and its display semantics. Keep the existing horizon, ground footprint, wrapping, and encounter-specific selector. |
 | Battle effect and field death | Retail `effects/index.json` retains indexed operands. Mounted scenes include healing/fairy, field death and prepared BLAZE1/2 and BLAST1 in Battles04–07. | Cover only original-art consumers already bound in the selected encounter. Scale complete existing draw frames or indexed chunks at their own composition boundary. Keep timing, reaction, skip and Reduced Flash. Placeholder attacks stay with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104). [Current effect status](../godot/spell-presentation.md#coverage-by-family-and-rank) |
@@ -362,3 +362,42 @@ The `asset-inventory.md` trace receives consumer status after observed admission
    Run the relevant direct probes and use human viewing for presentation acceptance. Keep
    in-game observations to state, input and projection with existing probes. Activation of the
    play checkout follows independent acceptance and its own authorization.
+
+## Actor consumer implementation boundary
+
+The current adapter resolves ordinary and alternate exploration directions from the saved
+GraphicsMode and the selected sprite identity. Optional `hdGraphics` uses the same keys as
+`graphics`, with three 4× strips per declared key. A missing key selects the complete Original
+direction group. A declared malformed group fails content admission. Shadow removal uses the
+Original frame's black-pixel word mask at the selected density before orientation/head effects.
+Story and Member portraits use their own optional atlas, including the existing tile replacement
+and mirror composition. Tactical world sprites use their own directions and preserve logical
+extent and special-pose registration across density changes. Tactical settings prepare decodes
+HD world directions and portraits before preferences are written.
+
+**Confirmed** by the synthetic native `HdActorObservation` command below. Three directions,
+two halves, ordinary and 48px tactical textures preserve projected dimensions and registration
+through Original → HD → Original. Portrait crop dimensions and mirror composition execute with
+an authored solid-color atlas. An authored black-word mask exercises shadow removal at 4×.
+This observation invokes actual adapter consumers with synthetic immutable data through the
+existing reflection convention. It does not establish campaign reach or distinct eye/mouth pixels.
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+New-Item -ItemType Directory -Path ./local/tmp -Force | Out-Null
+$env:TEMP = Join-Path (Get-Location) 'local/tmp'
+$env:TMP = $env:TEMP
+uv run sf2 verify adapter
+& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
+& $env:GODOT_BIN --headless --path remake/game --script res://probes/engine_hd_actor_observation.gd
+```
+
+**Unknown** pending #2176 acceptance. Scene-owned death/exit and Kraken frames still select their
+existing scene rasters. Full exploration alternate/shadow input projection, distinct mouth/eye
+replacement, malformed-HD settings rollback, old-package fallback, and long-lived texture release
+need focused observations. No private actor candidate has been generated or selected. Early selector
+closure, producer calibration, world-size/latency measurements, complete package promotion and real
+consumer observations remain open. The synthetic probe's first run reported one leaked CanvasItem
+owned by its standalone Sprite2D. Explicitly freeing that node corrected the probe; its repeat passed
+without warnings. The previous ticket's completed engine fixture failures remain separate evidence.
