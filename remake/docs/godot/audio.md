@@ -147,9 +147,11 @@ $base to registered derived/issue2106/pre-voyage-spells-v2, and $candidate to a 
 
     uv run --locked python -m sf2tool.remake_retail_assets --root $library --base $base --mount $candidate --family music --command 12
 
-Later producers consume the new complete package as their base. An independent reconstruction
-from private Git reproduced all 148 files after the production library was renamed out of selection.
-Native admission can select the rebuilt world, main scenes and six opening-inputs directly.
+The [current complete package](../content/asset-inventory.md#complete-private-package-and-rebuild-2156)
+derives from this cue-12 publication and is the base for later mounts. An independent
+reconstruction of the cue-12 package from private Git reproduced all 148 files after the
+production library was renamed out of selection. Native admission can select the rebuilt world,
+main scenes and six opening inputs directly.
 
 For capture reproduction, use the existing Prepare-PrivateAssets.ps1 launcher with the owning Repo,
 Operation Prepare, Family music, Command 12 and a fresh ignored Library. Its registered pinned source,
