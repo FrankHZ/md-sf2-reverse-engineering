@@ -113,7 +113,7 @@ first line) and the existing eligible ally scene-end award. The same-side/scene 
 actual combatants and the MUDDLE 2 flag. Use the normal no-candidate movement/Stay route when no
 attack is selected. [Attack command][aiattack] · [Action guard][guard] ·
 [Scene targets][loop] · [Action message][message] ·
-[Controlled predicate and guard observations](../../../docs/research/battle/runtime-rng-and-battle-math.md#confirmed-muddle-confusion-predicate-truth-table)
+[Controlled guard observations](../../../docs/research/battle/runtime-rng-and-battle-math.md#confirmed-muddle-ally-and-enemy-action-guards)
 
 An attacker affected by either MUDDLE rank gives the defender a dodge on main range-2 roll
 zero. A sleeping or stunned defender skips the dodge draw. The scene's MUDDLE 2 flag gates ranged
@@ -564,6 +564,66 @@ With the registered worktree SDK environment loaded, run the engine project with
 [Actual turn cases](../../tests/Sf2.Remake.Engine.Tests/MuddleConfusedTurnTests.cs) ·
 [Estimate and execution cases](../../tests/Sf2.Remake.Engine.Tests/EnemySpellDecisionTests.cs) ·
 [Public entry cases](../../tests/Sf2.Remake.Engine.Tests/MuddleTurnTests.cs)
+
+### Identity, control and target relation review
+
+**Confirmed by static inspection and retained controlled cases.** The reviewed boundary runs from
+queued actor dispatch through source-command selection and offensive reaction admission in the
+playable profile through Battle26 and the named authored cases.
+
+- **Ordinary opposition.** Manual Attack, learned damage and offensive items default to opponents.
+  Ordinary enemy commands and activation-driven allies also score opponents. Slot 0 or 128 can
+  be an ordinary opposing center even when confusion protects it from its own side. HEAL and
+  friendly Support apply their own targeting rules.
+  [Ordinary enemy decisions](../../tests/Sf2.Remake.Engine.Tests/EnemySpellDecisionTests.cs) ·
+  [Spell admission](../../tests/Sf2.Remake.Engine.Tests/AttackSpellAdmissionTests.cs) ·
+  [Item turns](../../tests/Sf2.Remake.Engine.Tests/AttackItemSessionTests.cs)
+- **Temporary control.** After absent, sleep and stun checks, a player ally with a nonzero count
+  takes temporary commandset 06. Rank 1 searches opponents and may try HEAL when ATTACK fails.
+  Rank 2 searches its own side in source-slot order and skips healing and support. The enemy
+  keeps its normal source strategy. The temporary ally decision preserves deployment identity
+  and the activation bit that governs permanent control.
+  [Dispatch](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs) ·
+  [Ally commandset](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SourceAllyAi.cs) ·
+  [Enemy commandsets](../../src/Sf2.Remake.Domain/Gameplay/Sf2/SourceEnemyAi.cs) ·
+  [Rank-1 turns](../../tests/Sf2.Remake.Engine.Tests/MuddleAllyTurnTests.cs)
+- **Protected center and collateral.** The selectors feed the chosen physical target, spell
+  center or item center to the same post-selection guard. A protected center triggers inaction
+  with no guard draw. The actor keeps its origin and LastTarget and bypasses damage, cost and
+  wear. A legal center passes to the shared spell/item builder. The builder and reaction
+  validator use the resolved side and post-move caster position to enumerate the area.
+  [Guard](../../src/Sf2.Remake.Domain/Battles/Rules/BattleOffense.cs) ·
+  [Spell area](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2AttackSpellAction.cs) ·
+  [Item dispatch](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2ItemAction.cs)
+- **Self target and delivery.** A selected unprotected self consumes one main range-2 draw.
+  Validation checks its place in the recorded seed chain. Detached preflight discards prepared
+  state. The movement continuation carries the decided side into action preparation. Roll 1
+  produces a targetless inaction scene with the message draw and eligible ally award. Roll 0
+  allows the same actor to receive the reaction and retain its caster or holder identity.
+  [Decision preflight](../../src/Sf2.Remake.Domain/Battles/Rules/IBattleDecisionRule.cs) ·
+  [Delivery](../../src/Sf2.Remake.Application/Runtime/Battles/BattleMovementContinuation.cs) ·
+  [Decision and reaction validation](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs)
+
+The protected slot test also takes precedence for a protected actor selecting itself. In the
+controlled enemy area case, the slot-128 caster hits itself through the adjacent enemy's center.
+The guard examines that selected center, so the caster receives its collateral reaction without a
+self draw. The [scripted Jaro case](gameplay-rules.md#jaro-conversion-and-source-ally-commandset6)
+uses distinct enemy and ally actor refs and replaces their participation by slot. It writes
+activation control explicitly, outside temporary MUDDLE dispatch.
+
+The original [confusion predicate fixture](../../../tests/fixtures/h3/muddle-confusion-v1.json)
+establishes the count/flag distinction. The controlled [action guard fixture](../../../tests/fixtures/h3/muddle-action-guard-v1.json)
+establishes slot protection, the self roll on either side and the branch to action 5.
+The pinned [reachability][reachable], [ATTACK][aiattack] and [area][area] routines establish static
+selection and area order. Natural original turns from cast to selected self action or leader
+collateral remain **Unknown**. Later special AI and unadmitted slots remain outside this profile.
+
+The retained [confused turn cases](../../tests/Sf2.Remake.Engine.Tests/MuddleConfusedTurnTests.cs)
+distinguish protected centers on both sides, slot 128 collateral, physical self pass/fail and
+successful learned spell and equipment self-use. Reproduce these controls with the
+[engine project and filter](#internal-automatic-turns). This review reused that evidence and found
+no new rule defect within its boundary. Movement legality, settlement, status expiry and
+Save/Continue receive separate review under the [mechanism order](gameplay-rules.md#battle-mechanism-review-order).
 
 ### Public rank-2 admission
 

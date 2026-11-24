@@ -7,7 +7,8 @@
 battles through Battle26 and the named authored cases. Keep the existing High-rigor transaction
 and save agreements where the review crosses them. Dispatch each slice separately after its
 prerequisites are dispositioned. The cases below are review questions, with retained evidence
-identified where available. The planning pass checked documentation and selected production code.
+identified where available. The identity, control and target relation review is complete.
+The five subsequent slices remain pending.
 [Campaign boundary](../capability-status.md#campaign-feature-trace)
 
 **Shared boundary.** Content admits definitions, deployments and bindings. The session owns the
@@ -22,22 +23,12 @@ the admitted settled state through the same rules.
 [GameSession](../../src/Sf2.Remake.Application/Runtime/GameSession.cs) ·
 [Adapter input and projection](../../game/src/Battles/BattleSessionView.cs)
 
-1. **Identity, control and target relation.** Start here because a legal MUDDLE 2 turn crosses
-   both source commandsets and every offensive builder. Compare an ally whose temporary turn
-   retains ordinary targets at rank 1 with an admitted rank-2 turn scoring its own side. Use
-   slot 128 as the selected center of an enemy attack, then as collateral beside a legal center.
-   A blanket protection filter would discard the collateral. Check that the center guard runs
-   after selection, the self draw runs once when applicable, and the actor keeps its real faction
-   and permanent control. Stop when the two ranks, ordinary opposition and the guarded and
-   collateral controls agree from turn dispatch through reaction admission. The authored Jaro
-   conversion owns the separate case of a scripted faction change. Carry any placement or
-   settlement question to the relevant slice below.
-   [Original target and guard operands](hostile-spells-design.md#sleep-muddle-and-turn-ownership) ·
-   [Accepted relation](hostile-spells-design.md#muddle-2-automatic-action-design) ·
-   [Scripted conversion](#jaro-conversion-and-source-ally-commandset6) ·
-   [Turn dispatch](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs) ·
-   [Relation and guard](../../src/Sf2.Remake.Domain/Battles/Rules/BattleOffense.cs) ·
-   [Controlled cases](../../tests/Sf2.Remake.Engine.Tests/MuddleConfusedTurnTests.cs)
+1. **Identity, control and target relation — reviewed.** The bounded review traced ordinary
+   opposition, both MUDDLE ranks, and the protected, self and collateral cases through automatic
+   dispatch, selection and reaction admission. The shared relation preserves faction and permanent
+   control. No rule correction was required in the admitted profile.
+   [Review and reproduction](hostile-spells-design.md#identity-control-and-target-relation-review) ·
+   [Scripted conversion](#jaro-conversion-and-source-ally-commandset6)
 2. **Movement, terrain and occupancy.** Check the first slice's relation at the movement
    boundary before using a provisional destination for action range. In a weighted corridor, a
    living teammate can be traversable but cannot be a stop. A living opponent blocks the path
@@ -794,8 +785,9 @@ rebuild. These are the source subroutine/opcode orders, not an atomic roster tra
 player/automatic authority. The immutable strategy is `source-ally-physical`; ordinary authored
 control retains its earlier meaning. Queue generation still uses live placement/HP/agility, and
 sleep/dead-entry handling remains in ordinary turn flow. No enemy slot is substituted into the queue.
-The [internal MUDDLE prerequisites](hostile-spells-design.md#muddle-turn-prerequisites) cover packed
-expiry and physical dodge. The automatic MUDDLE consumers and public admission remain pending.
+The [finite MUDDLE consumers](hostile-spells-design.md#public-rank-2-admission) can use this
+activation-driven ally strategy when its existing physical profile is admitted. Temporary control
+of a player ally and scripted writes to the activation bit have separate entry conditions.
 
 **Confirmed static clarification:** at pinned SF2DISASM
 `c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to `disasm/`:
@@ -806,7 +798,8 @@ expiry and physical dodge. The automatic MUDDLE consumers and public admission r
 - `data/battles/global/aicommandsets.asm:AiCommandset06` orders ATTACK1, HEAL1, SUPPORT, MOVE1, STAY.
   `ai/command/support.asm:aiCommand_Support` immediately fails for an ally. The admitted loadout has
   four empty item127 slots and four source spell63 slots, no learned spells, ordinary range1 physical
-  attack and difficulty0. Item/spell/neutral/MUDDLE/auto-battle and other difficulty paths remain Unsupported.
+  attack and difficulty0. The authored conversion profile excludes item/spell, neutral occupancy,
+  global auto-battle and other difficulties.
 - `ai/command/attack/prioritizetargets.asm:AdjustTargetPriorityForAttackByDifficulty` selects Script3
   for an ally at difficulty0. Opponent targets follow ascending source slots; reachable priorities
   draw thinking RNG in reverse order. `PhysicalTargetRules.ScriptThree` is reused only for that raw
