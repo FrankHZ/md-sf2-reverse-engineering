@@ -118,7 +118,7 @@ The earlier painted master is `masters/map3-materials/surfaces.png` in the local
 
 ## Map3 density-ramp terrain (#1765)
 
-The current private review uses the Map3 L1 experiment from the project's graphics checkout at
+The current private terrain uses the Map3 L1 experiment from the project's graphics checkout at
 `172662709b31cb296b55f51894754ce810c30f6c`. The publisher runs its own `expand_ramp_dither` and
 `edge_aware_2x` implementations directly from that pinned checkout. Only offline production needs
 the graphics checkout. The experiment, painted master and derived game pixels remain private.
@@ -140,51 +140,76 @@ after a roof, door or flag copy. The area edge uses -1 for a missing neighbor. K
 are prepared from their source rectangles. An unpublished combination selects the center block's
 own L1 image. Older worlds continue to select their installed HD bank or original art.
 
-### Rebuild and review
+### Complete private package and rebuild (#2156)
 
-Select a complete ordinary private world and its matching opening scene. The observed review
-used the #1759 publication with town Search and shops. The publisher replaces just the Map3
-terrain variant. It preserves every original raster, existing character/portrait variant and
-gameplay field, and copies the existing scene and dependencies. The #1759 world is 127,169,379
-bytes. The review world is 125,267,166 bytes and the complete package with plates is about 191 MB.
-The retained 128 MiB world-document limit applies. Allow one output package and 1 GiB scratch on
-the output volume. Filtering visits only Map3's 447 blocks, three areas, foreground and bounded
-copy patches. Peak memory includes the parsed world and one plane's filter data. No cloud calls.
+**Standard scope.** Restore the selected L1 treatment in Map3's terrain bank and live
+neighborhoods. Retain the latest complete package's original art, existing HD actors and
+portraits, gameplay, entry and audio. Graphics settings, saves and the independent Chinese
+display catalog use their existing selections.
+
+**Confirmed.** The #1790 launcher selected the separate #1765 review world. That release world is
+absent from its retained handoff. The entire 447-raster bank in #2158 matches the retained #1717
+painted bank byte for byte. The #1759, #1857, #1966 and #2106 world selections all carry that
+bank and zero contexts. #1759 was also the input to the original L1 publisher, whose output
+contained only the world, scene and dependencies declared by that world. The complete-package
+copy takes the terrain of its selected source world. Carry the L1 world forward by starting from
+the complete package below. **Unknown:** which intervening launcher or operator selection first
+returned to the painted lineage. No complete L1 package was found in the registered inventory or
+in private asset Git.
+
+The registered selection is `derived/issue2156/pre-voyage-map3-l1-v1`. It derives from
+`derived/issue2158/pre-voyage-sad-theme-v1` and includes the original command-12 cue from that
+package. It has 148 files and 324,058,227 bytes. Of those files, 147 are byte-identical to #2158.
+In the parsed world, only Map3's `hdBlocks` and `hdBlockContexts` differ. Future mounts use this
+complete selection as their base. The optional plates go to checkout-local scratch.
+
+Allow one full output package and 1 GiB disk headroom. This run started with about 35 GB free,
+and produced a 100,937,361-byte world under the 128 MiB limit. I/O scales with the package bytes.
+Filtering is bounded to 447 blocks, three areas, the exterior foreground and source copy patches.
+Peak memory includes the parsed world and one plane's filter data.
 
 ```powershell
 . ./local/private-inputs.ps1
-# $world and $scene select the ordinary package; $gfx selects the pinned graphics checkout.
-# Choose a fresh ignored directory for $output.
-uv run --locked --with pillow==11.3.0 python -B -m sf2tool.remake_map3_ramp --world $world --scene $scene --gfx-root $gfx --out $output
-$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $output 'world.json'
-$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $output 'scene.json'
+$derived = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived'
+$base = Join-Path $derived 'issue2158/pre-voyage-sad-theme-v1'
+# $gfx selects the pinned graphics checkout. $output selects a fresh private destination.
+uv run --locked --with pillow==11.3.0 python -B -m sf2tool.remake_map3_ramp --base $base --gfx-root $gfx --out $output
 ```
 
-Keep the matching entry, display catalogs and battle inputs. Use the ordinary title **Continue →
-slot 1** from a separate review namespace with a compatible Map3 save near (32,13). Start in
-Original. Open **F10 → Settings → Graphics → HD → Apply**, then switch back at the same position.
-The prepared local `local/issue1765/Play Map3.cmd` launches this review. The neighboring
-`replay.ps1` runs the same Continue and settings sequence with its own fresh disposable slot.
+Add `--review $review` with a fresh checkout-local scratch path to retain private plates for
+the grass and trees, riverbank, roof and Continue view. The earlier `--world` and `--scene` pair
+still produces a terrain review with its own scene and world dependencies.
 
-| Static comparison at the same coordinates | Observation |
-| --- | --- |
-| Grass and trees at (10,15)–(15,20) | 103 of 82,944 L1 RGB pixels differ from the historical composite. The input already differs at 20 Original pixels. |
-| Riverbank at (20,14)–(27,17) | Block-local filtering differed from the old L1 at 501 pixels, including 362 in the boundary band. The final assembled blocks match all 73,728 reference pixels. |
-| Wall and roof at (29,8)–(33,14) | The old renderer converted black to transparency and treated palette zero differently. The current Original differs at 1,882 of 20,160 RGB pixels. The candidate differs at 8,148 of 80,640 L1 pixels. Its foreground uses the admitted alpha and remains independent of the ground. |
+Select the published `world.json`, `main-scenes.json`, `entry/entry.json` and six
+`opening-inputs` together via the ordinary `SF2_PRIVATE_*` variables. The
+[complete-package command](presentation-assets.md#reuse-a-closed-private-package) can check the
+published closure using those inputs. For the
+[native map-art probe](../../game/probes/engine_map_art_observation.gd), copy the registered
+disposable `issue2049-stable-map3-f609` slot at (32,13) into a fresh external
+`issue1765-check-*` namespace. Start with default Original and writable preferences. Use the
+Debug adapter, a 1920×1080 headless window and a private `SF2_HOST_UI_OUTPUT`. The probe drives
+ordinary title Continue, then switches through F10 Settings in both directions.
 
-The complete static exterior reassembled from the actual published 96×96 payloads, at native
-L1 density, equals the separately filtered and composited plane image byte for byte. The bank
-contains **58 distinct opaque colors** across base and context variants, up from 15. The earlier
-84-entry table includes unused levels. Inspect `review/grove.png`, `riverbank.png`, `roof.png` and
-`continue.png` for the same crops in Original and HD. These are private asset plates.
+**Confirmed static.** All 447 blocks match the fixed L1 filter and nearest doubling. The bank
+and its 767 context rasters cover 1,389 neighborhood keys and contain 58 opaque colors, including
+opaque black. Transparent holes remain distinct. Reconstructing the three areas and exterior
+foreground from the published textures at 48 px matches independent whole-plane filtering.
+This includes grass and trees, the dirt and water boundary, walls and roof. Independent
+whole-plane checks also match the six door edits, the eight distinct roof edits and the visible
+flag-506 copy at (28,22). The second flag-506 copy at (57,23) lies outside the admitted planes.
+The [earlier comparison with the graphics experiment](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/614aa3979d8a54f46609b4177eaf77484f716277/remake/docs/content/asset-inventory.md#rebuild-and-review)
+records source-pixel and transparency differences in that historical selection.
 
-**Confirmed:** the [running host witness](../../game/probes/engine_map_art_observation.gd) loaded
-the ordinary slot on the integrated UI. In 180 visible ground cells, selected textures used
-15 → 42 → 15 opaque colors. Eleven foreground cells used 8 → 12 → 8. Both directions kept the
-same tile passes, screen rectangles, four display pixels per logical pixel, paused progress and
-slot bytes. Returning to Original reused its texture handles. The existing portrait changed
-texture density within the same 144×192 panel. The native exit can still report its known
-two-ObjectDB-instance cleanup warning. **Unknown:** player acceptance of the terrain style.
+**Confirmed native.** The published package continued with the producer plates unavailable.
+Ground switched 24 → 96 → 24, with 115 of 180 visible ground cells and all 11 foreground cells
+selecting neighborhood variants in HD. Ground and foreground kept their tile passes, draw
+rectangles and 96 px world cells. The portrait switched 48 → 192 → 48 inside the same
+144×192 panel. Both Apply operations preserved progress and the copied slot bytes.
+In a separate Continue, ordinary Down
+input changed the church door at (32,15) from block 143 to copied block 14, both with live HD
+neighborhood selection. At (32,16) the roof restored its saved words and resumed contextual
+96 px foreground draws in pass 3. Both observations exited 0 with the known two-ObjectDB
+cleanup warning. Player review of this rebuilt package remains **Unknown**.
 
 ## Earlier painted package
 

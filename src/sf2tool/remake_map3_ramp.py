@@ -18,6 +18,7 @@ from PIL import Image
 
 from sf2tool.remake_command_menu import world_dependencies, write_json
 from sf2tool.remake_map3_hd import NEAREST, block_images, comparison, compose
+from sf2tool.remake_private_package import package_files, private_output
 
 GFX_COMMIT = "172662709b31cb296b55f51894754ce810c30f6c"
 
@@ -168,23 +169,14 @@ def publish_terrain(visual, map_def, filter_, review):
             plane(initial, area, ox, oy, events["roofs"])
             roof = plane(closed, area, ox, oy)
             ground.alpha_composite(roof)
-        if area == map_def["areas"][0]:
+        if review is not None and area == map_def["areas"][0]:
             ground.save(review / "exterior-l1.png")
     visual["hdBlockContexts"] = [
         {"raster": raster, "neighbors": sorted(uses[key])} for key, raster in variants.items()
     ]
 
 
-def build(world, scene, out, algorithms):
-    document = json.loads(world.read_bytes())
-    world_data = document["world"]
-    visual = next(row for row in world_data["presentation"]["maps"] if row["map"] == "map-3")
-    map_def = next(row for row in world_data["maps"] if row["id"] == "map-3")
-    originals = list(block_images(visual))
-    review = out / "review"
-    review.mkdir(parents=True)
-    publish_terrain(visual, map_def, TerrainFilter(originals, algorithms), review)
-
+def write_review(map_def, originals, review):
     original = compose(map_def, originals, map_def["areas"][0])
     with Image.open(review / "exterior-l1.png") as hd:
         for name, bounds in (
@@ -200,32 +192,81 @@ def build(world, scene, out, algorithms):
             comparison(
                 left.resize(right.size, NEAREST), backing, review / f"{name}.png", name.upper()
             )
-    dependencies = world_dependencies(document, world)
-    if dependencies.intersection({"world.json", "scene.json", "review"}):
-        raise ValueError("dependency collides with publication output")
-    for relative in sorted(dependencies):
-        target = out / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(world.parent / relative, target)
-    shutil.copyfile(scene, out / "scene.json")
+
+
+def build(world, scene, out, algorithms, files, review):
+    document = json.loads(world.read_bytes())
+    if files is None:
+        dependencies = world_dependencies(document, world)
+        if dependencies.intersection({"world.json", "scene.json", "review"}):
+            raise ValueError("dependency collides with publication output")
+        files = {Path(name): world.parent / name for name in dependencies}
+        files[Path("scene.json")] = scene
+
+    world_data = document["world"]
+    visual = next(row for row in world_data["presentation"]["maps"] if row["map"] == "map-3")
+    map_def = next(row for row in world_data["maps"] if row["id"] == "map-3")
+    originals = list(block_images(visual))
+    if review is not None:
+        review.mkdir(parents=True)
+    publish_terrain(visual, map_def, TerrainFilter(originals, algorithms), review)
+    if review is not None:
+        write_review(map_def, originals, review)
+
+    out.mkdir(parents=True, exist_ok=True)
     write_json(out / "world.json", document)
     if (out / "world.json").stat().st_size > 128 * 1024 * 1024:
         raise ValueError("ramp world exceeds the private document limit")
+    for relative, source in files.items():
+        if relative == Path("world.json"):
+            continue
+        target = out / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ("world", "scene", "gfx-root", "out"):
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument("--base", type=Path, help="complete ordinary private package")
+    inputs.add_argument("--world", type=Path, help="world for a terrain-only review")
+    parser.add_argument("--scene", type=Path, help="matching scene when using --world")
+    parser.add_argument("--review", type=Path, help="fresh private directory for optional plates")
+    for name in ("gfx-root", "out"):
         parser.add_argument("--" + name, type=Path, required=True)
     args = parser.parse_args()
-    if args.out.exists():
+    if (args.world is not None) != (args.scene is not None):
+        parser.error("--scene and --world must be selected together")
+    out = private_output(args.out.resolve())
+    input_root = args.base.resolve() if args.base else args.world.resolve().parent
+    if out.exists() or out.is_relative_to(input_root):
         raise ValueError("choose a fresh private output")
+    review = private_output(args.review.resolve()) if args.review else None
+    if review and (
+        review.is_relative_to(input_root)
+        or review.is_relative_to(out)
+        or out.is_relative_to(review)
+    ):
+        raise ValueError("choose a review directory separate from the input and output packages")
+
+    world = args.world
+    files = None
+    if args.base:
+        world = args.base / "world.json"
+        files = package_files(
+            world,
+            args.base / "main-scenes.json",
+            args.base / "entry/entry.json",
+            args.base / "opening-inputs",
+        )
     algorithms = load_filter(args.gfx_root)
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(dir=args.out.parent, prefix=".map3-ramp-") as folder:
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=out.parent, prefix=".map3-ramp-") as folder:
         stage = Path(folder) / "pack"
-        build(args.world, args.scene, stage, algorithms)
-        stage.rename(args.out)
+        if args.world and review is None:
+            review = stage / "review"
+        build(world, args.scene, stage, algorithms, files, review)
+        stage.rename(out)
 
 
 if __name__ == "__main__":
