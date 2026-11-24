@@ -33,8 +33,12 @@ internal sealed partial class BattleCommandMenu : Control
         Size = size;
         _layout.Arrange(size);
     }
-    internal void ConfigureAssets(BattleSceneDefinition? content, ScenarioDefinition definition)
-    { _content = content; _definition = definition; _layout.ConfigureAssets(content); }
+    internal void ConfigureAssets(BattleSceneDefinition? content, ScenarioDefinition definition, InputSettings settings)
+    {
+        _content = content; _definition = definition;
+        Icons.Preferences = settings;
+        _layout.ConfigureAssets(content);
+    }
     internal UI.IdentityIcons Icons => _layout.Icons;
     internal void SuspendPointer(bool keyboard = false)
     {
@@ -119,7 +123,7 @@ internal sealed partial class BattleCommandMenu : Control
             var commandRow = (BattleCommandRow)i;
             button.CaptionOverride = commandRow == BattleCommandRow.Stay && decision.Search ? "battle.command.search" : null;
             button.RefreshCaption();
-            button.SetSelection(mainPage && command == commandRow, input.Settings.ReducedFlash);
+            button.SetSelection(mainPage && command == commandRow, input.Settings);
             button.Available = decision.CommandAvailable(commandRow);
         }
         var rows = list ? offers : [];

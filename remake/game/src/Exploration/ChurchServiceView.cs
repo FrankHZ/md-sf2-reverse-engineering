@@ -1,6 +1,7 @@
 using Godot;
 using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.GodotAdapter.Input;
 using Sf2.Remake.GodotAdapter.UI;
@@ -50,7 +51,8 @@ internal sealed partial class ChurchServiceView : Control
         if (!ReferenceEquals(_session, session))
         {
             AssetError = null;
-            try { ConfigureAssets(session.Definition.Exploration?.Visuals?.ChurchMenu); }
+            var visuals = session.Definition.Exploration?.Visuals;
+            try { ConfigureAssets(visuals?.ChurchMenu, visuals?.HdChurchMenu); }
             catch (Exception error) when (error is InvalidOperationException or ArgumentException)
             { AssetError = error.Message; }
         }
@@ -152,7 +154,7 @@ internal sealed partial class ChurchServiceView : Control
             for (int i = 0; i < _commands.Length; i++)
             {
                 _commands[i].RefreshCaption(); _commands[i].Available = _options[i].Command is not null;
-                _commands[i].SetSelection(i == _index, input.Settings.ReducedFlash);
+                _commands[i].SetSelection(i == _index, input.Settings);
             }
             _commandsList.Present(_options.Select(option => option.Label).ToArray());
         }
@@ -209,8 +211,9 @@ internal sealed partial class ChurchServiceView : Control
         _requiresRelease = true; _pointer.Suspend();
         foreach (var command in _commands) command.StopFocusEmphasis();
     }
-    private void ConfigureAssets(IReadOnlyDictionary<string, Sf2.Remake.Application.Content.Scenarios.ExplorationRaster>? rasters) =>
-        MenuRasterTextures.Configure(_commands, rasters, "", "church-menu");
+    private void ConfigureAssets(IReadOnlyDictionary<string, ExplorationRaster>? rasters,
+        IReadOnlyDictionary<string, ExplorationRaster>? hd) =>
+        MenuRasterTextures.Configure(_commands, rasters, "", "church-menu", hd);
     private void Choose(ChurchCommand? command)
     {
         if (IsMenu) _serviceIndex = _index;

@@ -681,10 +681,12 @@ collisions are excluded. Empty spell slots have no selectable row; empty item127
 their distinct source identities. Item equipped flags are masked with127, and live slot order remains
 independent of image identity, duplicate items, translated names and action availability.
 
-The optional [field-only HD herb pair and saved Original/HD setting](hd-art-pilot.md#a-switch-in-the-same-game)
-use `presentation.hdIdentityIcons`, keyed by the same herb identities with separately checked64×96
-payloads. Only the field inventory/preparation owner consumes it; missing HD falls back per identity,
-while absent baseline art retains text. The pilot owner contains publication, scope and replay.
+The optional `presentation.hdIdentityIcons` bank binds the existing identity state keys to 64×96
+variants. `hdFieldMenu`, `hdItemMenu`, `hdShopMenu` and `hdChurchMenu` bind their source menu
+keys to 96×96 variants. Battle declarations use the existing `hdRasters` bank under the same
+Original keys. The [complete UI raster package](asset-inventory.md#pre-voyage-ui-rasters-2178)
+preserves the previously mounted herb pair. The [consumer contract](hd-rollout.md#ui-raster-consumers-2178)
+defines group fallback and the saved Original/HD setting.
 
 World `presentation.identityIcons` and every selected battle scene's `rasters` carry
 `identity-icon.item.<id>.normal/selected`, `identity-icon.spell.<base-id>.normal/selected`, and

@@ -209,7 +209,7 @@ public sealed partial class BattleSessionView : Control
             {
                 _scene.PrepareGraphics(_input.Settings.GraphicsMode, session.Definition.ScenesFor(result.Snapshot.Battle.Definition));
                 _map.Build(result.Snapshot.Battle, session.Definition, _input.Settings.GraphicsMode);
-                _menu.ConfigureAssets(session.ActiveBattleScenes, session.Definition);
+                _menu.ConfigureAssets(session.ActiveBattleScenes, session.Definition, _input.Settings);
                 _inspection.ConfigureIcons(_menu.Icons, session.Definition);
                 _inspection.ConfigureOptions(session.ActiveBattleScenes);
             }

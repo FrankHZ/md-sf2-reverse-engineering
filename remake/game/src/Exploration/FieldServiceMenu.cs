@@ -40,14 +40,16 @@ internal sealed partial class FieldServiceMenu : Panel
         _notes.AddChild(_reason); _notes.AddChild(_hint);
         ItemRectChanged += () => InvalidatePointer();
     }
-    internal void Configure(IReadOnlyDictionary<string, ExplorationRaster>? rasters) => Configure(_resourceGroups.Keys.Single(), rasters);
-    internal void Configure(string owner, IReadOnlyDictionary<string, ExplorationRaster>? rasters) =>
-        MenuRasterTextures.Configure(_resourceGroups[owner], rasters, "", owner);
+    internal void Configure(IReadOnlyDictionary<string, ExplorationRaster>? rasters,
+        IReadOnlyDictionary<string, ExplorationRaster>? hd) => Configure(_resourceGroups.Keys.Single(), rasters, hd);
+    internal void Configure(string owner, IReadOnlyDictionary<string, ExplorationRaster>? rasters,
+        IReadOnlyDictionary<string, ExplorationRaster>? hd) =>
+        MenuRasterTextures.Configure(_resourceGroups[owner], rasters, "", owner, hd);
     internal void Present(GameInput input, int index, string title, string reason, string hint, IReadOnlyList<bool>? available = null)
     {
         _title.Text = title;
         for (int i = 0; i < _icons.Length; i++)
-        { _icons[i].Available = available is null || available[i]; _icons[i].RefreshCaption(); _icons[i].SetSelection(i == index, input.Settings.ReducedFlash); }
+        { _icons[i].Available = available is null || available[i]; _icons[i].RefreshCaption(); _icons[i].SetSelection(i == index, input.Settings); }
         if (_reason.Text != reason || _hint.Text != hint) _reading.ScrollVertical = 0;
         _reason.Text = reason;
         _reason.Visible = reason.Length > 0;

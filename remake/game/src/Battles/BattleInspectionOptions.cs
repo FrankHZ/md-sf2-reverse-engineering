@@ -20,12 +20,12 @@ internal sealed partial class BattleInspectionOptions : PanelContainer
         _list = new(_icons) { InvalidatePointer = () => InvalidatePointer() }; column.AddChild(_list);
         ItemRectChanged += () => InvalidatePointer();
     }
-    internal void Configure(IReadOnlyDictionary<string, ExplorationRaster>? rasters, string prefix) =>
-        MenuRasterTextures.Configure(_icons, rasters, prefix, "battlefield-menu");
+    internal void Configure(BattleSceneDefinition? scene) =>
+        MenuRasterTextures.Configure(_icons, scene?.Rasters, "battlefield-menu.", "battlefield-menu", scene?.HdRasters);
     internal void Present(GameInput input, int index, IReadOnlyList<bool>? available = null)
     {
         for (int i = 0; i < _icons.Length; i++)
-        { _icons[i].RefreshCaption(); _icons[i].Available = available is null || available[i]; _icons[i].SetSelection(index == i, input.Settings.ReducedFlash); }
+        { _icons[i].RefreshCaption(); _icons[i].Available = available is null || available[i]; _icons[i].SetSelection(index == i, input.Settings); }
         _list.Present(_icons.Select(i => i.Caption).ToArray()); _list.CustomMinimumSize = new(528, _list.RequestedHeight);
         Size = new(556, 0); Position = new(GetViewportRect().Size.X - 32 - 556, 160);
     }

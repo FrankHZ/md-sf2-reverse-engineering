@@ -17,8 +17,8 @@ Reuse the admitted original for the selected palette and frame. Where a caller n
 original, join its prepared index to that caller and verify Original first. Use only authorized
 materials for derivation and keep the existing private publication and public-asset boundaries.
 The [static terrain selection](asset-inventory.md#pre-voyage-static-terrain-2175) carries the Map3
-companion and the other nineteen banks. The [battle artwork extension](asset-inventory.md#published-battle-package)
-is the current closed package for later families; it retains the actor and portrait extension.
+companion and the other nineteen banks. The [UI raster extension](asset-inventory.md#pre-voyage-ui-rasters-2178) carries the closed
+battle, actor, portrait and terrain selections forward.
 
 ## Coverage from the selected package
 
@@ -51,7 +51,7 @@ replacement, additional Map60 ascent, and later Map14 movement.
 | Battle close-up bodies and weapons | Retail `bodies` and `weapons` plus the mounted scene documents bind body/palette/weapon, frames and layer order. | `BattleSceneView` selects optional `hdRasters` in complete frame groups with fixed logical dimensions. Campaign admission carries the paired Original/HD donor for shared appearances. [Actual checks](#private-battle-artwork-acceptance) preserve weapon layering, mirroring and geometry. |
 | Battle ground and backdrops | Retail `terrain` contains the source variants. Scene defaults and `terrainScenes` select installed pairs. | Derive by distinct selected raster and its display semantics. Keep the existing horizon, ground footprint, wrapping, and encounter-specific selector. |
 | Battle effect and field death | Retail `effects/index.json` retains indexed operands. Mounted scenes include healing/fairy, field death and prepared BLAZE1/2 and BLAST1 in Battles04–07. | Cover only original-art consumers already bound in the selected encounter. Scale complete existing draw frames or indexed chunks at their own composition boundary. Keep timing, reaction, skip and Reduced Flash. Placeholder attacks stay with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104). [Current effect status](../godot/spell-presentation.md#coverage-by-family-and-rank) |
-| Original UI rasters | Retail `icons` and `ui` distinguish semantic keys and highlight states. World mounts 204 identity states and 32 field/Item/Shop/Church command states. Battle scenes have separate identity, diamond and cursor keys. | `IdentityIconReader.ReadHd` accepts only the two herb states. `PartyStatusView` consumes them. Shops, command menus, the battle identity owner and target/inspection cursor still use their existing Original selectors. Cover admitted callers and preserve the selected state, disabled behavior, anchor and input geometry. Code-drawn feedback, panels, HUD, layouts, licensed text and device glyphs stay with the [UI design owners](presentation-assets.md#fonts-theme-and-input-glyphs). Source pixel glyphs and advances stay at their native grid. |
+| Original UI rasters | Retail `icons` and `ui` distinguish semantic keys and highlight states. The world has 204 identity states and 32 field/Item/Shop/Church command states. Battle render scenes have identity, command, inspection option and cursor keys. | [UI raster consumers](#ui-raster-consumers-2178) bind those keys through Original/HD. The existing selection, disabled behavior, anchors and input geometry still apply. Code-drawn feedback, panels, HUD, licensed text and device glyphs stay with the [UI design owners](presentation-assets.md#fonts-theme-and-input-glyphs). Source pixel glyphs and advances stay at their native grid. |
 | Title and Witch | Retail `entry/index.json` identifies preparation. `entry/entry.json` mounts six 256×224 named layers with title/numeral and Witch arrival/base/blink/mouth. | `EntryPresentationReader` and `EntryPresentationAssets` expect Original dimensions. `EntryBackdrop` chooses by the entry clock. Add one optional coherent alternate set and preserve the 256×224 logical box, numeral offset and expression cadence. Other decoded special screens require admitted callers. |
 
 **Confirmed** by the prepared index and admitted block words. Maps 3, 4, 14, 16, 41, 44, 66
@@ -565,3 +565,80 @@ projection as if it were authoritative actor state. These were corrected in the 
 inputs/checks; their failed results were retained through review. No screenshot or bulk frame
 collection was used. UI/entry art, map tile animation and placeholder spell families remain
 with #2178, #2179, #2180 and #2104 respectively; this slice does not claim their completion.
+
+
+## UI raster consumers (#2178)
+
+The [prepared UI banks](asset-inventory.md#pre-voyage-ui-rasters-2178) supply density for the
+existing draw rectangles. Identity icons switch as individual normal/selected pairs. Field,
+Item, Shop, Church, battle command and battlefield option menus switch by complete source family.
+Prepare combines Item and field commands, so each family retains its own decision even when the
+view displays only one command from that family. Target, inspection and movement share the one
+tactical cursor key. A missing member of a group selects the whole Original group. Public
+unmounted identity and command namespaces retain their existing text path.
+
+World and scene admission verify every declaration's key, payload identity and 4× dimensions.
+The active view decodes its resources at mount, including declared frames from incomplete groups.
+A failed decode takes the owning view's presentation error path. The menu buttons and cursor
+own their two density sets. Identity rows borrow textures from the identity owner. Mount or
+replacement prepares textures before they can be drawn. Settings applies to these owners through
+the existing prepare, saved preference and projection sequence. Toggling or temporarily covering
+a view keeps its texture handles alive.
+
+| Prepared family | Actual view and bounded input |
+| --- | --- |
+| Item and field command states, carried item pairs | Map3 Field → Item → member → Use, then Back. Field → Member → Prepare shows the five-command mixed-source list, then Back restores Member. |
+| Shop command and item states | Map16 item counter → Buy → stock, then Back to counter. |
+| Church command states | Map3 priest → Raise focus → Cure focus, then Back. |
+| Battle command, spell, cursor and battlefield options | Battle04 Sarah turn → Main → Magic → BLAST target, then Back to Movement → inspection cursor → empty-ground Options. |
+
+### Native reproduction
+
+Use the [published complete selection](asset-inventory.md#pre-voyage-ui-rasters-2178) and the
+[ordinary package selection variables](presentation-assets.md#reuse-a-closed-private-package).
+Build the Debug adapter with the [locked SDK](../development-and-verification.md#locked-net-workflow).
+Use a fresh `issue2178-*` namespace under the authorized external disposable save root. Keep
+APPDATA, LOCALAPPDATA, TEMP and logs worktree-local. Use one native process at a time. No mode
+override is needed. The probe uses the normal Settings UI and checks the saved preference and
+progress after Apply.
+
+Set `SF2_HOST_UI_CASE` to `field`, `church`, `shop` or `battle` and `SF2_HOST_UI_OUTPUT` to a
+fresh ignored JSON. Set `SF2_HOST_UI_START` to the corresponding ignored controlled start:
+
+- Field and Church use `{"start":{"map":"map-3","player":"entity-0","position":{"x":32,"y":13},"facing":1,"speed":32,"flags":[0,1,2,32,33,66,80,600,602,603,604,605]}}`.
+- Shop uses `{"start":{"map":"map-16","player":"entity-0","position":{"x":35,"y":26},"facing":1,"speed":32,"flags":[0,1,2,32,33,34,663]}}`.
+- Battle uses the [Battle04 Sarah/BLAST formation and party file](#private-battle-artwork-acceptance).
+  The probe uses Stay once if the leader acts first. It observes the BLAST target before submitting
+  the cast.
+
+```powershell
+& $env:GODOT_BIN --headless --audio-driver Dummy --rendering-method gl_compatibility `
+    --fixed-fps 60 --resolution 1920x1080 --path remake/game `
+    --log-file $nativeLog --script res://probes/engine_hd_ui_observation.gd
+```
+
+The probe captures real drawn state keys, raster density and decoded payload identity. It also
+checks available/disabled rows, input geometry, cursor overhang and unchanged save projection
+across Original → HD → Original. The `field` run leaves HD selected. Launch again with the
+same namespace and `reopen` to observe persisted HD in a fresh process. The accepted
+[F5 Prepare demo](../godot/ui-scene-review.md#scenes-in-the-playable-demo) uses authored text
+commands. The connected Map3 Prepare check supplies the actual private raster bindings.
+
+For `partial` or `invalid`, use the same Map3 start with an isolated copy of the selected package.
+For `partial`, remove `hdFieldMenu["member.normal"]` and
+`hdIdentityIcons["identity-icon.item.71.selected"]` in world presentation. The whole Field menu
+and both states of that item use Original under HD, while the Item menu and other item pairs
+use HD. For `invalid`, replace `hdFieldMenu["member.normal"]` with
+`fieldMenu["member.normal"]`. Admission rejects the declaration as `ui-hd-raster-shape`.
+
+**Confirmed:** field/Prepare, Shop, Church and Battle04 passed their Original → HD → Original
+runs. The independent comparison matched 153 rendered RGBA readbacks to the installed raster
+keys, including the partial-selection case. The measured Settings navigation plus first HD Apply
+took 303–704 ms over those cases on the review machine. The partial and invalid-dimension
+observations passed. With both producer destinations moved aside, a fresh process read the
+persisted HD preference and used the registered package for field/item art. The registered
+Battle04 run passed the same 135 checks from a fresh namespace. These final native runs logged
+no adapter errors.
+
+The observations cover real consumers from controlled preconditions. Subjective visual acceptance
+under ordinary play, GPU residency and later campaign UI coverage remain **Unknown**.

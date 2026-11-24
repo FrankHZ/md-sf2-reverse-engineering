@@ -33,12 +33,12 @@ internal static class ExplorationRasterImages
         return new(logicalRegion.Position * density, logicalRegion.Size * density);
     }
 
-    internal static Image Open(ExplorationRaster raster)
+    internal static Image Open(ExplorationRaster raster, string failure = "raster-decode")
     {
         if (raster.Format == "rgba8") return Image.CreateFromData(raster.Width, raster.Height, false, Image.Format.Rgba8, raster.CopyBytes());
         var image = new Image();
         if (image.LoadPngFromBuffer(raster.CopyBytes()) != Error.Ok || image.GetWidth() != raster.Width || image.GetHeight() != raster.Height)
-        { image.Dispose(); throw new InvalidOperationException("raster-decode"); }
+        { image.Dispose(); throw new InvalidOperationException(failure); }
         return image;
     }
 

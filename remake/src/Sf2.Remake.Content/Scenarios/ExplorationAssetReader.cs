@@ -26,7 +26,8 @@ internal static class ExplorationAssetReader
 
     internal static ExplorationVisuals Read(JsonElement row, string? worldDirectory = null)
     {
-        ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu", "fieldMenu", "identityIcons", "itemMenu", "shopMenu", "hdIdentityIcons");
+        ObjectOptional(row, "presentation", ["maps", "sprites", "portraits"], "audio", "churchMenu", "fieldMenu", "identityIcons", "itemMenu", "shopMenu",
+            "hdIdentityIcons", "hdChurchMenu", "hdFieldMenu", "hdItemMenu", "hdShopMenu");
         var maps = new Dictionary<MapId, ExplorationMapVisual>();
         foreach (var map in Array(row, "maps"))
         {
@@ -137,7 +138,11 @@ internal static class ExplorationAssetReader
             new ReadOnlyDictionary<int, ExplorationPortraitVisual>(portraits), new ReadOnlyDictionary<string, ExplorationAudio>(audio),
             churchMenu,
             fieldMenu, identityIcons,
-            itemMenu, shopMenu, IdentityIconReader.ReadHd(row, identityIcons));
+            itemMenu, shopMenu, IdentityIconReader.ReadHd(row, "hdIdentityIcons", identityIcons),
+            IdentityIconReader.ReadHd(row, "hdChurchMenu", churchMenu),
+            IdentityIconReader.ReadHd(row, "hdFieldMenu", fieldMenu),
+            IdentityIconReader.ReadHd(row, "hdItemMenu", itemMenu),
+            IdentityIconReader.ReadHd(row, "hdShopMenu", shopMenu));
     }
 
     internal static IReadOnlyList<ExplorationRaster>? OptionalFrames(JsonElement owner, string field, int count, int width, int height)

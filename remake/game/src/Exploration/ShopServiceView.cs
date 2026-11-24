@@ -48,13 +48,15 @@ internal sealed partial class ShopServiceView : Control
         _session = session; _input = input; _submit = submit;
         if (session.Current.Story.Wait is not ShopWait wait) { Hide(); _wait = null; return; }
         Show();
+        _icons.Preferences = input.Settings;
         if (!ReferenceEquals(_assetSource, session.Definition))
         {
             _assetSource = session.Definition; _assetError = null;
             try
             {
-                _services.Configure(session.Definition.Exploration?.Visuals?.ShopMenu);
-                _icons.Configure(session.Definition.Exploration?.Visuals?.IdentityIcons);
+                var visuals = session.Definition.Exploration?.Visuals;
+                _services.Configure(visuals?.ShopMenu, visuals?.HdShopMenu);
+                _icons.Configure(visuals?.IdentityIcons, visuals?.HdIdentityIcons);
             }
             catch (InvalidOperationException error) { _assetError = error.Message; }
         }
