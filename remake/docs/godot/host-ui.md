@@ -12,8 +12,8 @@ The existing [system Menu](presentation.md#system-menu-agreement-1518),
 [save host](presentation.md#gameplay-save-and-quit-windows-1450),
 [window recovery](presentation.md#window-support-and-recovery-1455) and
 [battle persistence](../application/battle-save-and-continue.md) retain behavior authority.
-No game rule, persistence format, savepoint, auto-save, binding capture or device detector is added.
-Battle, field/Party and shop presenters keep their separate owners.
+The host delegates journey admission and persistence to the existing save contracts. Battle,
+field/Party and shop presenters keep their separate owners.
 
 ## Implemented composition and return
 
@@ -55,11 +55,14 @@ installed multiplier and bindings. The same preference applies to eligible explo
 
 The shared slots use the same square theme for both Witch entry and gameplay callers. Gameplay
 Save/Quit has a 1040px capped panel and bounded reading, with its hint outside the scrolling region.
-Full actual name, date, destination, backup and failure information remains available. Slots support
-Left/Right reading as well as the existing mouse scroll path. Save
-confirmation starts on Cancel. Returning from confirmation restores the chosen slot, including
-slot2; Back from slots restores the originating system Save row. Successful Save and return closes
-the host to gameplay. Quit uses the existing clean/dirty warning and starts on Cancel. Corrupt
+Full name, date, destination, backup and failure information remains available. Ordinary numbered
+history supports paging and a new numbered destination on write entry.
+Left/Right and mouse scroll read long slot labels. Save confirmation starts on Cancel. Returning
+from confirmation restores the chosen slot; Back from slots restores the originating system Save
+row. The dedicated preview uses one explicitly selected disposable file.
+[Save history contract](../application/battle-save-and-continue.md#manual-save-history-and-developer-files)
+
+Successful Save and return closes the host to gameplay. Quit uses the existing clean/dirty warning and starts on Cancel. Corrupt
 primary data remains an explicit failure with a separately offered backup, never an empty slot or
 automatic fallback. See the [1080p reading and recovery check](#slot-recovery-and-overwrite-at-1080p).
 Publication uncertainty still requires inspection rather than a blind retry.
@@ -83,7 +86,7 @@ finished animation never establishes save eligibility.
 
 | Current boundary | Settings/help | Save and return / Save and Quit |
 | --- | --- | --- |
-| Witch action menu | Ordinary preferences, or read-only values/help with `--input-settings`. Back keeps the entry phase. | Continue/New Game retain their existing two-slot entry routes. |
+| Witch action menu | Ordinary preferences, or read-only values/help with `--input-settings`. Back keeps the entry phase. | Continue reads paged history; New Game can choose a fresh numbered destination. |
 | Settled walking field, no Party/service/story owner | Preferences and help available. | Only an admitted finite recipe after stable player/followers, story, display and music checks. |
 | Moving field/followers | The existing menu-entry settlement runs first; no new timeout or settlement rule. | The same bounded settlement may admit Save; failure keeps its reason and no queued write. |
 | Text, choices, services, story motion, fades, transfer or outcome programs | Conditional rows remain unavailable until their real owner returns control. Party/preparation prevents system entry until closed. | Busy state or missing recipe refuses Save. Church's explicit Save caller retains its own completed-parent return. |

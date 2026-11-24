@@ -417,13 +417,22 @@ owner; their4×/cardinal geometry is not a current gate. No removed observation 
 
 ## Caravan formation
 
-The [ordinary Caravan service](../application/caravan-services-design.md#current-formation-implementation)
-uses the field choice and pack panels. Up/Down selects a row, Left/Right scrolls, Confirm commits the
-current choice and Back returns to its owning selection or exits the root. Pointer rows/footer and
-controller actions use the same commands. The member list shows current HP/MP and the selected pack;
-dead members require confirmation. Bowie refusal is readable, and Depot/Item stay visibly unavailable.
-Application owns phases and member validation; the view retains only focus, scroll and input release.
-Each new token requires release before another confirmation; service input excludes movement,
-ordinary field menus and automatic field time. Source greeting/exit dialogue completes before field
-movement and Save resume. Native evidence covers keyboard/held-input traversal in both languages;
-no new controller hardware or screenshot acceptance is claimed.
+The ordinary Map22/26 Caravan service uses the field choice and pack panels.
+Up/Down selects a row, Left/Right scrolls, Confirm chooses and Back returns to the owning selection
+or exits the root. Pointer rows/footer and controller actions use the same commands.
+
+- [Join and Purge](../application/caravan-services-design.md#current-formation-implementation)
+  show current HP/MP and the selected pack, with dead-member confirmation, full-formation Relief
+  and a readable Bowie refusal.
+- [Depot](../application/caravan-services-design.md#current-depot-implementation) opens Look,
+  Deposit, Derive (retrieve) and Drop. Stored indices and numbered pack slots remain explicit
+  when choosing an item, recipient or return slot.
+- [Item](../application/caravan-services-design.md#current-item-implementation) opens Use, Give,
+  Equip and Drop. Admitted actions reuse Field pack choices and return to the owning service page.
+  Unsupported effects keep their refusal.
+
+Application owns phases and member validation. Each token requires release before another
+confirmation. Service input excludes movement and ordinary field menus. The greeting and exit
+dialogue bracket the service before field input and Save resume. The linked ordinary observations
+cover the current pages. Physical hardware and dedicated preview appearance remain **Unknown**.
+[Scene review and preview gap](ui-scene-review.md#caravan-service-pages)

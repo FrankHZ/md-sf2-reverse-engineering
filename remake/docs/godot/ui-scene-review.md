@@ -3,25 +3,74 @@
 This is the scene application of the [shared visual language](ui-design-language.md) for
 [#1616](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1616).
 The user accepted the F1–F10 layouts in the [Godot preview](../../game/probes/previews/README.md).
-The ordinary pre-voyage game uses the corresponding production presenters. The entries below link to the actual
-controls, their observed returns and the limits that matter during play.
+The ordinary game uses the corresponding production presenters.
 
 ## Scenes in the playable demo
 
-Every F1–F10 preview tab uses the production host. F5, F6 and F7 keep the same field
-session when switching directly, so the roster reads real Shop transactions. F1's preview
-save lives in a disposable slot. F9 opens actual authored outcome approaches. The
-[preview scene ownership and controls](../../game/probes/previews/README.md#scene-ownership)
-describe the direct startup and data for each tab.
+This Standard-rigor coverage audit for [#2147](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2147)
+maps the main player-facing layers to their design and current review entry. It distinguishes a
+reachable preview page from a connected game route and from a proposed sample. The review boundary
+is the affected page and its parent/return, with representative content and input states. UI
+mechanism migration, new gameplay and comprehensive visual coverage have separate scope.
 
-| Scene | What the player can do | Production evidence and limit |
-| --- | --- | --- |
-| F1 Witch and slots / F2 dialogue | Start or Continue in either slot, read a portrait question, answer and regain control. A new name requires a physical keyboard, even when navigating with a pad. | [Entry and dialogue](presentation.md#production-entry-and-field-dialogue-1606) covers retained drafts, safe overwrite Back, backup recovery and an actual Map3 Yes/No in English and Chinese. |
-| F3 Church | Scan labeled services with Up/Down, decline a quote, or Record and return from the shared slots to the field. Promotion displays its refusal. | [Church list and caller](#10-production-church-and-battle-command-lists) distinguishes the actual private Record route from the authored paid Raise case. |
-| F5 party / F6 shop / F7 field | Open Member, Magic, Item or contextual Search. Inspect four numbered slots, compare a recipient’s pack or a Galam quote, then back out or confirm. | [Field, party and shop](field-and-shop.md#verification-boundary-and-remaining-gaps) covers selection return, full-pack exchange, Search dismissal and real buy/sell followed by walking. The [field footer and shop hint audit](#production-controls-audit) checks the mounted controls across input and shop phases. Repair and Deals remain unavailable. |
-| F4 battle / F8 inspection | Move with directions, confirm a stop, then choose a labeled command row. Cycle or hover eligible targets. F8 starts at free inspection in a fresh Practice Yard battle. | Both preview tabs mount `Main.tscn`. The [preview route](../../game/probes/previews/README.md#f4-action-playback) uses the same decision, playback card and inspection presenters as [the game](battle-interaction-baseline.md#production-f4f8f9-contract). |
-| F9 results | Read damage, death, rewards and growth, then wait for the next actor or walk after a field return. | [Playback and results](battle-scenes.md#production-playback-and-result-layout) distinguishes Battle01 combat, connected Battle02 EGRESS and authored victory/defeat. [Campaign handoffs](../application/pre-voyage-campaign.md#session-and-handoffs) cover Galam, the tower and the later return. |
-| F10 Menu, Settings, Save and recovery | Open Help from shared Settings at the Witch menu, in settled field or from the battle system Menu. Cancel a slot overwrite or settings draft, restore a covered page after resize, and Continue a saved turn. | [Host access and restore](host-ui.md#access-through-the-finite-demo) lists actual Save predicates. The tower return on Map58 supports Save; first control on Map14 has no field-save recipe. |
+The [preview launcher](../../game/probes/previews/README.md#run-from-the-repository-root) mounts
+production `Main.tscn` in a fixed gameplay-size viewport below its toolbar. The paths below
+were checked against the [tab and sample selection](../../game/probes/previews/DesignPreview.cs),
+[authored inputs](../../game/probes/previews/DesignPreview.Samples.cs) and
+[host admission](../../game/src/Entry/PreviewHost.cs). A direct entry stages its named sample.
+Subsequent choices use the same controls as the game. Use the
+[display composition contract](display-composition-contract.md#viewport-and-visible-group-contract)
+for world/UI layering and the [shared visual language](ui-design-language.md) for text, focus and spacing.
+
+| Scene or main layer | Design | Current production review entry | Visual acceptance focus |
+| --- | --- | --- | --- |
+| Title → Witch greeting → choices | [Title and Witch](#1-title-and-the-witch) | Start the preview on F1 with the registered opening inputs. Start, read the greeting, then focus New Game or Continue. Open Settings from the Witch's own action. | Keep Witch art clear of the reading column; separate the paged greeting, focused action and hint. |
+| New Game → slot → name → final Start; Continue → slot | [Entry and naming](#2-new-game-name-and-slot-choice) | F1 → Start → New Game; select the one disposable slot, edit the name on a keyboard and back out or confirm Start. Return to F1 → Start → Continue after writing the preview slot. For history pages, protected writes and backup recovery, use the [disposable ordinary-host observations](host-ui.md#slot-recovery-and-overwrite-at-1080p). | Slot and destination remain explicit; name errors stay by the editor. Keep Cancel, overwrite consequences and failure details readable. |
+| Field speech → Yes/No → play | [Exploration and dialogue](#3-exploration-world-speech-choices-and-search) | F2 (`--dialogue`) begins at the authored invitation. Confirm through its two reading waits and return to walking. Use the [Map3 question](presentation.md#production-entry-and-field-dialogue-1606) for an actual portrait and Yes/No choice. | Reserve portrait, reading, choice and footer space; restore walking after acknowledgement. |
+| Field HUD → Adventure → Search reader | [Exploration and Search](#3-exploration-world-speech-choices-and-search) | F7 (`--field`) opens Adventure facing the sign. Select Search, read, dismiss and return to walking. | Keep the context cue and Adventure target inside the footer. Long Search text must leave a usable reading/return cue. |
+| Field Member → stats, spells and numbered Items; Prepare or direct Magic/Item | [Party and inventory](#4-party-inventory-and-preparation) · [Field composition](field-and-shop.md#current-composition) | F5 (`--members`) opens Member. Read the roster, change pane with Tab, and inspect a slot after a F6 purchase. The public package reaches the unavailable Prepare outcome. Use the [connected field member route](battle-ui-composition.md#reproduce-registered-portraits) for actual Prepare → Magic or Item, or open their direct Adventure entries there. | Compare selection, grouped stats, four slot identities, costs, the recipient/exchange and read-before-commit states. Check the fixed footer after Back. |
+| Church → service → quote/refusal/result; Record → Save | [Church](#5-church-services) | F3 (`--church`) opens the practice Church. Choose Raise for a quote, decline or pay and read the result; Promotion can show refusal. Use the [ordinary Church/Record route](#direct-reproduction) for Save and the [admitted promotion route](../application/church-promotion-design.md#playable-hero-and-reproduction) for an actual rite. | Keep priest and gold visible, then check member/condition/price and distinct choices. Record must hand off to one host page and return to the field. |
+| Shop → Buy, Sell, Repair or Deals → selection, quote and result | [Shop](#6-shop-stock-recipient-and-price-before-commitment) | F6 (`--shop`) talks to the faced merchant. Buy and switch directly to F5 to inspect the added item. Return to F6 and sell from its actual slot. For admitted [Repair](../domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction) and [Deals repurchase](field-and-shop.md#hassan-deals-and-cold-continue), use the connected inputs. | Keep the merchant and recipient pack readable. Compare exact price, gold, full-pack/funds refusals and the return from a canceled quote. |
+| Caravan → Join/Purge, Depot or Item | [Caravan pages](#caravan-service-pages) | The ordinary [Map22/26 service](../application/caravan-services-design.md#current-formation-implementation) and its [Depot](../application/caravan-services-design.md#current-depot-implementation) and [Item](../application/caravan-services-design.md#current-item-implementation) recipes reach these production pages. The preview has no service entry. | Distinguish active/reserve lists, numbered packs, ordered Depot rows and confirmation. Return from a subpage to its caller and from Leave to the field. |
+| Battle move → Main → Magic/Item → Target or confirmation | [Battle decision and target](#from-entry-to-committed-action) · [Target layout](#showing-range-and-choosing-a-target) | F4 (`--battle`): move Down, wait for delivery, Confirm Main, then H → MEND → GUARD A. Back from Target returns to the spell; execute for a production recovery scene. Main also exposes Attack, Item and Stay; connected action families have their own [decision evidence](battle-interaction-baseline.md#production-f4f8f9-contract). | Check cyan move vs warm target marks, acting vs recipient card, unavailable reasons, selected row and fixed footer. On Back, preserve the preview stop and the relevant row. |
+| Inspection cursor → unit details or empty ground → Options → Member, Map, Speed or Quit | [Viewing the battlefield](#viewing-the-battlefield) | F8 (`--inspect`) starts on the acting unit; Confirm an occupied cell for details or an empty cell for Options. For Member, switch panes and inspect a slot, then Back twice to the cursor. The [large package](battle-ui-composition.md#reproduce-the-native-member-layout) adds long names and roster pressure. Options Save eligibility remains [host-owned](host-ui.md#access-through-the-finite-demo). | Compare world and detail cards, movement field, Map legend, member conditions, all four slot rows and retained cursor after cover or Back. |
+| Playback → result or outcome → next input | [Presentation and outcome](#presentation-outcome-and-usable-return) | F4 MEND covers recovery playback. F9 outcome picker or `--results` / `--defeat` / `--retreat`: advance the before-battle message, confirm a stop, then Attack / Stay / Magic → EGRESS respectively. Read through actual results and resume field movement. [Connected playback and outcome evidence](battle-scenes.md#production-playback-and-result-layout) covers different content. | Keep action cards, artwork and current message distinct; read reward/defeat/retreat text before control changes. |
+| System Menu → Settings → category / Help / Change controls | [Host layout](#7-host-menu-settings-save-and-recovery) · [Control editing](input-remapping.md#current-production-boundary) | F10 (`--system`) boots the authored field when opened without a session. With an eligible battle or field loaded, F10 uses that caller. Open Settings → Controls → Help or Change controls → Accelerate → Keyboard → Capture/Review; Back or Apply at the root. The Witch has its own Settings entry in F1. | Compare focus and draft values, full binding names, reader vs fixed actions, muted Apply reason and retained caller on return. Preview preferences are in memory. |
+| Host Save/overwrite, Quit, backup and window recovery | [Host layout](#7-host-menu-settings-save-and-recovery) · [Host admission](host-ui.md#access-through-the-finite-demo) | F10 on the authored field shows the Save refusal and supports Quit confirmation. For admitted Save and return/quit, cold Continue, backup and undersized-window recovery, use the [ordinary host cases](host-ui.md#reproduction-and-finite-evidence). The preview's inner 1920×1080 viewport is fixed. | Keep the continuation destination, options and reasons legible. Recovery hides covered pages and restores their selection when the gameplay client is supported again. |
+
+**Confirmed, bounded preview navigation:** at 1600×900, F2 delivered two field text waits
+before walking resumed. Starting directly in F10 reached Menu with Save unavailable and Confirm
+opened Settings. Switching to F5, F6 and F7 reached Member, Shop and Adventure in the same
+field session. F3 mounted the practice Church wait. The deeper choices in the table are mapped
+from production owners and the linked observations.
+
+### Preview gaps and targeted follow-ups
+
+The connected routes above already exercise production behavior. Actual appearance in a dedicated
+preview is **Unknown** for the uncovered branches below. Add an entry only for a subsequent review
+that needs it. Each proposal retains the real presenter, application admission and Back chain.
+
+- **Prepare.** F5 uses the authored shop party, which can show the sheet and its unavailable
+  Prepare outcome. A focused follow-up would let F5 stage the existing
+  [prepare-authored sample](field-and-shop.md#prepare-command-icons) to reach real action rows.
+  Use the registered connected inputs when the review needs original icons or portraits.
+  Retain F5–F7's shared default shop session.
+- **Dialogue choice.** The F2 invitation only exercises the reading waits. A focused follow-up
+  would stage the existing Map3 portrait-question approach or an authored portrait plus an
+  admitted choice instruction. Exercise selection and Back in the existing dialogue presenter.
+- **Caravan.** F1–F10 select no Caravan service. The smallest useful entry would stage one
+  disposable registered Map22 or Map26 approach and use ordinary Talk to mount the current
+  service root. Use the existing world/catalog and service-ready custody inputs to reach Join/Purge,
+  a Depot transfer or Item choice. A review can select one branch without staging all of them.
+- **Host persistence and recovery.** A sample of paginated or protected slots would need a
+  disposable numbered namespace, a compatible recipe and seeded history in place of the preview's
+  single explicit file. Review admitted Save/Record or slot recovery one caller at a time. The
+  actual client-size recovery check already has an ordinary-host route. Scaling the preview window
+  changes the picture size while its inner gameplay client stays fixed.
+- **Campaign service variants and battle content.** Use the connected Promotion, Repair, Deals and
+  playback routes for their supported content. If a visual change needs one of those subpages in
+  the dedicated preview, stage only its existing admitted approach or package. F8's package
+  override is specific to inspection.
 
 ### Player-facing copy
 
@@ -36,7 +85,7 @@ controls as a translated row; text diagnostics can be inspected separately.
 | Slots / naming | Choosing a slot does not write it. A blank name shows the actual default once; invalid input shows the limit beside the editor. Final Start names the slot, opening return, backup and loss of unsaved progress after success. Back retains the draft. An uncertain write directs both languages to Continue. |
 | Field / Search | Each Adventure row says what it does. “Field effects and MP costs follow the existing preparation rules” becomes “Choose who will cast the spell.” / “选择施法的队员。” The reading hint appears for overflowing notes. Talk, choice, item/full-pack results and navigation bindings remain. A missing story translation preserves the body and diagnostic reason; only Debug diagnostics adds that reason to the reading cue. |
 | Party / inventory | The selected field row leads to the existing member or preparation screen. Keep the four slot identities, full-pack exchange, equipment changes and resource costs at their own choices. The [member footer](field-and-shop.md#current-composition) owns its actions and layout. |
-| Shop / Church | Repair, Deals and Promotion are marked unavailable in the list; their explanation appears on attempted selection. “Opens your save slots. Closing them returns you to the field.” / “打开存档列表。关闭后回到地图。” replaces the two-slot tutorial on Record. Keep merchant/priest dialogue, quotes, payment and refusal results. |
+| Shop / Church | Unavailable offers and invalid selections retain their service-specific reasons. Record explains that closing the slots returns to the field. Keep merchant/priest dialogue, quotes, payment and refusal results. |
 | System / recovery | Short System and slot pages omit the scroll instruction; overflowing pages keep it. Host actions that skip disabled rows still show their reasons. Save destinations, uncertain writes, backup recovery and Quit consequences retain their own messages. “Restore window size” names the action; the recovery body still gives the host's required and current dimensions. [Settings](host-ui.md) and the desktop size policy have separate owners. |
 | Battle / results | Give and exchange name the items, recipient and end of the action. Drop asks once and says that movement and another action remain available. Keep targeted-click execution, MP, damage, item, reward and return messages. English battle-story lines in Chinese mode keep the reading cue; Debug diagnostics can add the untranslated-body reason. |
 
@@ -117,6 +166,15 @@ input boundary, description reader, gameplay projection or resource lifetime. St
 accepted caller and the requested behavior. Compare the changed layout and controls against
 that baseline, including their direction and Back semantics. A change to an accepted player
 interaction needs explicit scope. [UI architecture and current product constraint](ui-architecture.md)
+
+Open the changed layer through the table and compare its actual appearance to the linked design.
+Pick the relevant states, such as normal and focused, an unavailable choice, long localized
+content, or a page covered by another modal. Read at the affected supported size. Check that text
+fits or can be read in full, hierarchy and focus are clear, and fixed actions remain distinct.
+State, focus and geometry evidence serve the separate behavior check. Use the
+[dedicated preview exception](../development-and-verification.md#dedicated-ui-preview-visual-review)
+for any necessary local stills. Record the page, route, size, language and what was seen or remains
+**Unknown** in the owning review.
 
 Follow one changed operation through input, admission, result, projection and return. Name
 the authoritative snapshot or wait, the local focus owner and the visible activation target.
@@ -243,11 +301,13 @@ the observed layout, inputs, name validation and return from slots.
 Reuse the same right-column footprint while the Witch is present. Show a short heading, the current
 step, choices/editor, then a fixed action/help area. Never compress the Witch to make more room.
 Slot cards identify the actual slot, occupant and supported continuation information; unavailable
-or corrupt data does not masquerade as an empty slot. The current two-slot design remains two slots.
+or corrupt data does not masquerade as an empty slot. Ordinary history starts with slots 1 and 2,
+discovers stored numbered slots and pages the rows. New Game and Save can offer a new numbered
+destination. F1 uses a single disposable file. [Manual save history](../application/battle-save-and-continue.md#manual-save-history-and-developer-files)
 
 | State | Layout and return rule |
 | --- | --- |
-| Choose slot / focus | Two clearly separated measured rows; marker beside the current row. Long occupant and location information wraps before the confirmation/footer. Opening a slot does not overwrite it. |
+| Choose slot / focus | Clearly separated measured rows and a marker beside the current row. Page controls appear when history spans pages. Long occupant and location information wraps before the confirmation/footer. Opening a slot does not overwrite it. |
 | Name editing | The focused editor shows the draft and fixed editing keys. Invalid input brings up the length or character explanation beside it. Enter/Escape retain their physical-keyboard editing behavior. The admitted alphabet and seven-character limit also apply in zh-CN. |
 | Invalid name / failed storage | Error sits immediately below the editor or affected slot/action, before the fixed buttons. Keep the draft and safe Retry/Back where currently supported. Do not erase the name or consume the final Start confirmation. |
 | Occupied slot / final Start | Separate confirmation names the destination and consequence; Cancel is initially selected where the existing lifecycle requires it. No pointer-down or returning held key can confirm. |
@@ -333,6 +393,14 @@ Prepare belongs to the field caller. Apply the same labeled-list treatment to Us
 and the admitted item/recipient/return slots. Distinct copies of an item keep their slot identity
 when focus moves or Back restores a choice.
 
+**Confirmed, visual preview:** run `DesignPreview.tscn` with `--resolution 1600x900` and
+`-- --members`, then press L for English. The F5 footer kept its wrapped operation hint, Prepare
+and Close in separate readable regions. The English caption is literally `Prepare…` in
+[the catalog](../../game/localization/en.po); the visible ellipsis is part of the title.
+Capacity under other long localized captions and ordinary desktop/device comfort remain
+**Unknown**. The [large F8 review](battle-ui-composition.md#reproduce-the-native-member-layout)
+covers a different roster and deliberately long content.
+
 ## 5. Church services
 
 Use the compact right-hand service list with the priest visible. Each row shows the original
@@ -359,15 +427,18 @@ reading the longest reason. The reviewed Church veil dims the room while the lis
 | State | Layout, transaction and return |
 | --- | --- |
 | Root / selected service | Show each name with its original icon and focus marker on the current row. Keep current gold visible. |
-| Quote / confirm | Replace the service list and use a reading panel with the actual next source-ordered member, condition, exact price and funds, followed by distinct Confirm/Decline rows. No new member picker or remote service. |
+| Treatment quote / confirm | Replace the service list and use a reading panel with the actual next source-ordered member, condition, exact price and funds, followed by distinct Confirm/Decline rows. No new member picker or remote service. |
 | Unavailable / refusal / no eligible member | Actual curse, promotion, funds and no-member reasons remain readable. A refusal is located where the quote/result belongs, not as a fleeting toast behind another panel. No automatic payment. |
 | Long reason / name / localized hint | Grow the reading region or page the reason. Keep the focused row visible and measure the full mapped footer. Do not shrink fonts or delete hints to preserve the starting height. |
+| Promotion | With an admitted class variant, select a member, read regular/special class and item terms, and confirm or decline. Keep the result and Back in the Church caller. |
 | Result / Back | Result acknowledgement proceeds to the next real offer or services. Cancel declines the quote or leaves services as the existing wait dictates; prior paid treatment is retained. Restore the prior service focus where supported. |
 | Record / host overlap | Record completes the Church caller before the shared Save host opens at a legal settled point. Do not stack slots above an active ChurchWait or restore a consumed quote after Save. Other host/gameplay modals retain current exclusion. |
 
 The reviewed layout uses the transactions defined by the
 [Church/save agreement](presentation.md#church-and-shared-save-agreement-1519).
-Promotion, curse removal and general free healing are not delivered by drawing their labels.
+The [promotion owner](../application/church-promotion-design.md#playable-hero-and-reproduction)
+describes the admitted classes and connected service route. Raise and Cure keep their treatment
+eligibility and quote; the practice Church can refuse Promotion.
 
 ## 6. Shop: stock, recipient and price before commitment
 
@@ -380,13 +451,23 @@ price and shows the balance before and after payment. Keep the merchant visible.
 | --- | --- |
 | Buy / Sell selection | Marker identifies the current mode and subsequently the stock/owned-item row. Show the actual eligible stock and owner; no implied infinite depot or cross-town catalogue. |
 | Recipient / equipment preview | Name and occupied slots remain visible before purchase. Show only the existing equip/stat information; do not invent a purchase-and-auto-equip action. |
-| Insufficient funds / pack full / unsupported | Explain the actual refusal beside the affected selection/quote. Deals/Repair and unsupported rare/broken-item sales do not become enabled because the original menu had them. |
+| Insufficient funds / pack full / unsupported | Explain the actual refusal beside the affected selection/quote. Show the Repair slot refusal when it applies and the actual Deals stock or empty state according to custody. |
+| Repair | Show the selected broken item and actual price before agreeing to Repair; return to owner/slot selection with unchanged custody on decline. [Repair route](../domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction) |
 | Long stock names / wide gold | Allow taller rows and an aligned amount column; never cut a digit or replace the full price with an ellipsis. Scroll stock independently of fixed Back/confirm controls. |
 | Confirmation / result / Back | Display item, member and exact payment before the existing explicit commit. Back unwinds the current provisional phase; a successful sale/purchase stays committed. Leave completes the real service caller. |
 | Overlay / access | The real service owns input throughout; no Party/Menu panel competes for clicks. No near-town shortcut is added. Actual Galam caller/setup admission stays with the [capability owner](../capability-status.md#finite-galam-shop-and-purchased-supply-closure). |
 
 The [Galam shop observation](field-and-shop.md#verification-boundary-and-remaining-gaps)
 covers actual payment, slot changes, refusal and the merchant’s return to walking.
+
+### Caravan service pages
+
+The ordinary Caravan uses the field choice and pack panels. Keep the selected member's HP/MP and
+pack beside Join/Purge choices and show the confirmation for relief or dead members. Depot shows
+ordered stored items and the selected member's numbered pack for Deposit, Derive and exchange.
+Item routes Use/Give/Equip/Drop through the real service caller. Check the stored/donor slot,
+recipient or return slot, then the confirmation or refusal. Back unwinds that operation; Leave
+finishes the caller and restores walking. [Current Caravan composition and routes](field-and-shop.md#caravan-formation)
 
 ## 7. Host Menu, Settings, Save and recovery
 
@@ -403,8 +484,8 @@ when directional navigation skips them. Do not add a second persistent toolbar.
 | Page / state | Normal and focused composition | Unavailable, long, covered and return states |
 | --- | --- | --- |
 | Menu | Settings receives initial focus. Journey and Session are quiet group headings. Selected action uses marker/outline plus gold. | Save, Settings and New Game retain their real access predicates. Longer reasons wrap. Mapped Cancel, right-click or Menu resumes the retained gameplay phase after release. |
-| Settings / help | Current preference label, value and description are aligned; the root Apply action sits outside the reading/scroll area. Focus identifies the edited control. | Apply publishes the draft. Cancel returns through the current page. Existing binding help/configuration remains; no binding-capture or device-detection UI is added. Long bilingual help scrolls. Return to the originating host page without applying on Cancel. |
-| Save slots / overwrite | Two clear slot rows; full actual continuation destination and selected slot. Overwrite is a separate consequence panel, Cancel initially selected. | Unavailable location is a reason, not a disabled-looking successful save. Wrap occupant/date/location/error text; keep Retry/Back where legal. Back from confirmation → slots → Menu for that origin; Church entry follows its completed-caller route. |
+| Settings / help | Current preference label, value and description are aligned; the root Apply action sits outside the reading/scroll area. Focus identifies the edited control. | Apply publishes the draft. Cancel returns through the current page. Controls → Change controls keeps capture and review in the shared draft; Help reads installed bindings. An incomplete draft keeps Apply unavailable with its reason. Long bilingual help scrolls. Return to the originating host page without applying on Cancel. |
+| Save slots / overwrite | Paged numbered history with clear focus, full continuation destination and the new-slot action when offered. Overwrite is a separate consequence panel, Cancel initially selected. | Unavailable location is a reason, not a disabled-looking successful save. Wrap occupant/date/location/error text; keep Retry/Back where legal. Back from confirmation → slots → Menu for that origin; Church entry follows its completed-caller route. |
 | Continue / backup recovery | Name the actual primary failure and the offered backup; recover only through the existing explicit choice. | Never label corrupt primary as Empty or silently load backup. Preserve the failure detail and safe Back. Loaded state, not UI recollection, determines the resulting world. |
 | Quit / session replacement | Quit shows the clean/dirty consequence with Cancel initially selected. The replacement menu opens on Settings and also offers New Game. | Long warnings fit before action rows; no destructive click-through. Cancel returns to the origin, including recovery if it owned entry. |
 | Undersized-window recovery | Recovery is the sole visible host action owner; offer the current legal restore/fullscreen/quit actions. | It hides covered host pages and restores the same page/selection on exit before gameplay resumes. No sub-1080p gameplay, forced restart or automatic save is introduced. |
@@ -414,7 +495,7 @@ Keep the current [system Menu](presentation.md#system-menu-agreement-1518),
 [Save/Quit](presentation.md#gameplay-save-and-quit-windows-1450) and
 [window recovery](presentation.md#window-support-and-recovery-1455) authorities.
 The [implemented battle Save/Continue contract](../application/battle-save-and-continue.md#implemented-ordinary-host-boundary-c)
-now supplies admitted settled-Movement eligibility, two-slot Save and return / Save and Quit,
+supplies admitted settled-Movement eligibility, Save and return / Save and Quit with shared history,
 battle destination labels and fresh-process continuation. The [host observation](host-ui.md#reproduction-and-finite-evidence) covers a real save and fresh-process Continue at the saved actor.
 The current user slot and backup must never be a design-validation fixture.
 
@@ -579,7 +660,7 @@ Movement at the actor’s origin. For the final stretch, save on the Map58 tower
   [Mappings and acceptance](presentation.md#mappings-first-use-and-reading-limits)
 - **Movement input.** F4 and the game use mapped directions, then Confirm. Mouse input is
   supported on full Main rows, child rows, eligible targets and the free-inspection board.
-  [Preview controls](../../game/probes/previews/README.md#f4-action-playback) ·
+  [Preview controls](../../game/probes/previews/README.md#scene-ownership) ·
   [Movement agreement](presentation.md#battle-movement-range-agreement) · [Production input](battle-interaction-baseline.md#production-f4f8f9-contract)
 - **F4 decision vitals and layout.** The acting and recipient cards use stacked HP and MP rows
   with aligned bars and readings, a measured name and admitted ally class/level, and a double-gold
