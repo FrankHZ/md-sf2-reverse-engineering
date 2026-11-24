@@ -207,6 +207,73 @@ early storage failure. Confirm the overwrite and verify the storage diagnostic a
 primary and backup. For the New Game path, choose Create a New Save from the format error,
 check the name entry, cancel, then overwrite slot 1 through the final Start confirmation.
 
+## Dedicated numbered-save and native recovery demo
+
+**Proposed for #2215, standard rigor.** The review spans numbered storage, host input and the
+native window. Use a dedicated launch of [Main.tscn](../../game/Main.tscn) at the real root
+window, configured only for that process. Ordinary title, Witch, field and Menu input reach the
+samples. The [save contract](../application/battle-save-and-continue.md#manual-save-history-and-developer-files)
+and [window contract](presentation.md#window-support-and-recovery-1455) own all behavior.
+
+- A configured Main launch already uses numbered history when no explicit save file is selected.
+  It also initializes window support and receives native size changes. Reviewers trade the preview's
+  tab shortcuts for a short Witch → Continue → field → Menu route.
+- A separate preview scene could mount Main directly under the root window, but would add a
+  lifecycle and input entry around the same configuration. Extending the existing toolbar sample
+  would also need to change its viewport and host admission.
+  [DesignPreview](../../game/probes/previews/DesignPreview.cs) mounts Main inside a fixed
+  1920×1080 SubViewport, and the [preview setup in GameRoot](../../game/src/GameRoot.cs) returns
+  before native window support initializes. Use the direct launch for both scenarios.
+
+### Sample setup and reset
+
+1. Select the matched private entry/opening, connected world, battle and display inputs used by
+   the [ordinary field observation](#reproduction-and-finite-evidence). Reuse its current compatible,
+   disposable settled Map3 field save in slot 2, or generate one through that observation's existing
+   field admission and Save. Cold Continue must restore it to a saveable walking boundary with the
+   same build and content before preparing history. If it fails, regenerate the seed with that
+   selection. Keep each numbered filename matched to the record's embedded slot.
+2. Copy the seed to `sf2-opening/slot2.json` in a fresh setup namespace, leave slot 1 empty and
+   Continue slot 2. Use Menu → Save → Create a New Save to write slots 3–7 at the settled field.
+   Save over slot 7 once to produce its valid backup. After exit, stage only `slot2.json` through
+   `slot7.json` and `slot7.bak` for review. Replace only the staged slot 7 primary with the single
+   UTF-8 byte `{` before freezing the baseline.
+   This gives page 1 slots 1–6 and page 2 slot 7 with a protected primary and a recoverable backup.
+   Save offers slot 8. All compatible records come from the current production writer.
+3. For each review or reset, stage a copy in a new `ui-host-review-*` namespace below the configured
+   external disposable validation save root. Require a fresh destination, disjoint from player
+   storage and the seed, and stop setup if isolation or seed selection fails. Set `SF2_SAVE_ROOT`
+   and `SF2_SAVE_NAMESPACE` explicitly in the launch process after loading the registered inputs.
+   Keep app data, TEMP, logs and any review stills in per-run ignored scratch. Launch
+   `Godot --path <project> --resolution 1600x900 res://Main.tscn` in a visible window, without
+   `--load-save` or `--save-output`. Preferences use the disposable namespace. Reset by closing
+   the owned review process and making a new baseline copy. Keep the staged source read-only.
+
+### Follow-up and acceptance
+
+Provision the sample and record the runnable setup here first. Verify it through the following
+short routes before linking the dedicated launch from the preview README. The follow-up owns the
+preview navigation, sample preparation and isolated launch recipe. Main, the store, the codec and
+the caller contracts already supply the required interfaces.
+
+| Production route | Readback and visual acceptance |
+| --- | --- |
+| Title → Witch → Continue → Next → slot 7 | Read the second page and Previous action. Verify the actual damaged-primary reason, backup identity and Cancel-first prompt. Cancel returns to the Witch caller with both files unchanged. Reopen the prompt and explicitly recover. Compare the installed primary and retained backup to the original backup bytes, then check the restored field progress and usable control. Use a fresh copy for the write review. |
+| Continue slot 2 → field → F10 → Save → Next → slot 7 | Read the protected-write reason and fresh-slot action. Back restores slot 7 on page 2, then the Save row in Menu, then field control. File bytes stay unchanged. On page 1, slot 6 shows the separate Cancel-first overwrite and its backup consequence. Cancel preserves bytes and selection. Confirm Save and Return on the reopened prompt and check that the previous slot 6 primary becomes its backup and the saved acknowledgement returns to the field. |
+| Continued field → F10 → Save, with page 2 selected | On a desktop that can fit a decorated 1600×900 client, shrink the actual window to an undersized client such as 1280×720. Read actual client/mode, pause and visibility from the running host. Only recovery owns input. Open Quit, verify Cancel starts selected, then cancel and choose Restore Window. Require actual supported readback, the same session, Save page and row, unchanged revision and files, and fresh input before activation. A pointer press started before resize must expire. |
+
+Use the existing [slot](#slot-recovery-and-overwrite-at-1080p) and
+[native window observations](../verification/host.md#window-boundary-design-observation-1455)
+for state, input, control bounds and errors. Read client size and mode with
+`ReadWindowSupportObservationJson` and progress at attach with `ReadPersistenceObservationJson`.
+Inspect the changed page in the dedicated launch at 1600×900 and at 1920×1080 where it fits. Review wrapped labels, the current focus, fixed action
+rows and the visible recovery cover at the actual undersized client. Native Fullscreen remains
+available through the same host when it fits the current screen. Physical fit and mode availability
+are claims about the desktop exercised. Use only necessary local stills from the dedicated run
+under the [preview visual rules](../development-and-verification.md#dedicated-ui-preview-visual-review).
+Ordinary gameplay and research observations remain image-free. The dedicated launch is planned,
+and its visual and physical-window results are **Unknown** pending the follow-up.
+
 ## Reproduction and finite evidence
 
 Use the existing selected SDK/Godot installation and product content, worktree-local runtime/cache

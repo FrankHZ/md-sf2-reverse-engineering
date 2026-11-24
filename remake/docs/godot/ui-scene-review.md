@@ -36,7 +36,7 @@ for world/UI layering and the [shared visual language](ui-design-language.md) fo
 | Inspection cursor → unit details or empty ground → Options → Member, Map, Speed or Quit | [Viewing the battlefield](#viewing-the-battlefield) | F8 (`--inspect`) starts on the acting unit; Confirm an occupied cell for details or an empty cell for Options. For Member, switch panes and inspect a slot, then Back twice to the cursor. The [large package](battle-ui-composition.md#reproduce-the-native-member-layout) adds long names and roster pressure. Options Save eligibility remains [host-owned](host-ui.md#access-through-the-finite-demo). | Compare world and detail cards, movement field, Map legend, member conditions, all four slot rows and retained cursor after cover or Back. |
 | Playback → result or outcome → next input | [Presentation and outcome](#presentation-outcome-and-usable-return) | F4 MEND covers recovery playback. F9 outcome picker or `--results` / `--defeat` / `--retreat`: advance the before-battle message, confirm a stop, then Attack / Stay / Magic → EGRESS respectively. Read through actual results and resume field movement. [Connected playback and outcome evidence](battle-scenes.md#production-playback-and-result-layout) covers different content. | Keep action cards, artwork and current message distinct; read reward/defeat/retreat text before control changes. |
 | System Menu → Settings → category / Help / Change controls | [Host layout](#7-host-menu-settings-save-and-recovery) · [Control editing](input-remapping.md#current-production-boundary) | F10 (`--system`) boots the authored field when opened without a session. With an eligible battle or field loaded, F10 uses that caller. Open Settings → Controls → Help or Change controls → Accelerate → Keyboard → Capture/Review; Back or Apply at the root. The Witch has its own Settings entry in F1. | Compare focus and draft values, full binding names, reader vs fixed actions, muted Apply reason and retained caller on return. Preview preferences are in memory. |
-| Host Save/overwrite, Quit, backup and window recovery | [Host layout](#7-host-menu-settings-save-and-recovery) · [Host admission](host-ui.md#access-through-the-finite-demo) | F10 on the authored field shows the Save refusal and supports Quit confirmation. For admitted Save and return/quit, cold Continue, backup and undersized-window recovery, use the [ordinary host cases](host-ui.md#reproduction-and-finite-evidence). The preview's inner 1920×1080 viewport is fixed. | Keep the continuation destination, options and reasons legible. Recovery hides covered pages and restores their selection when the gameplay client is supported again. |
+| Host Save/overwrite, Quit, backup and window recovery | [Host layout](#7-host-menu-settings-save-and-recovery) · [Host admission](host-ui.md#access-through-the-finite-demo) | F10 on the authored field shows the Save refusal and supports Quit confirmation. For admitted Save and return/quit, cold Continue, backup and undersized-window recovery, use the [ordinary host cases](host-ui.md#reproduction-and-finite-evidence). The [dedicated native-client demo](host-ui.md#dedicated-numbered-save-and-native-recovery-demo) is planned. | Keep the continuation destination, options and reasons legible. Recovery hides covered pages and restores their selection when the gameplay client is supported again. |
 
 **Confirmed, bounded preview navigation:** at 1600×900, F2 delivered two field text waits
 before walking resumed. Starting directly in F10 reached Menu with Save unavailable and Confirm
@@ -76,12 +76,10 @@ The connected routes above already exercise production behavior. Actual appearan
 preview is **Unknown** for the uncovered branches below. Add an entry only for a subsequent review
 that needs it. Each proposal retains the real presenter, application admission and Back chain.
 
-- **Host persistence and recovery.** A sample of paginated or protected slots would need a
-  disposable numbered namespace, a compatible recipe and seeded history in place of the preview's
-  single explicit file. Review admitted Save/Record or slot recovery one caller at a time. The
-  actual client-size recovery check already has an ordinary-host route. Scaling the preview window
-  changes the picture size while its inner gameplay client stays fixed.
-  [Save history and window recovery investigation](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2215)
+- **Host persistence and recovery.** The [planned dedicated Main launch](host-ui.md#dedicated-numbered-save-and-native-recovery-demo)
+  uses a disposable numbered history with real Witch Continue and field Save paths in the native
+  client. Scaling F1–F10 changes the displayed picture while its inner gameplay client stays fixed.
+  Use the existing ordinary-host cases for current behavior evidence.
 - **Campaign service variants and battle content.** Use the connected Promotion, Repair, Deals and
   playback routes for their supported content. If a visual change needs one of those subpages in
   the dedicated preview, stage only its existing admitted approach or package. F8's package
