@@ -80,11 +80,17 @@ def bind_variants(source: Path, png_root: Path, target: Path) -> dict[str, int]:
     return {"variants": len(variants), "originalBytes": source.stat().st_size, "sceneBytes": size}
 
 
-def selected_groups(scene: dict) -> list[tuple[str, list[str], int]]:
+def selected_groups(
+    scene: dict,
+    allies_only: bool = False,
+    shared_keys: dict[str, str] | None = None,
+) -> list[tuple[str, list[str], int]]:
     """Return existing consumer groups with their Original raster density."""
     groups = []
     rasters = scene["rasters"]
     for actor in scene["actors"]:
+        if allies_only and actor["side"] != "ally":
+            continue
         # Native 96-square allies are the existing consumer's one-scale exception.
         for key in actor["frames"]:
             row = rasters[key]
@@ -96,6 +102,18 @@ def selected_groups(scene: dict) -> list[tuple[str, list[str], int]]:
         groups.append(("body-group", actor["frames"], 0))
         if actor["weaponFrames"]:
             groups.append(("weapon", actor["weaponFrames"], 2))
+    # CampaignScenes retains a destination's existing same-key Original even when
+    # its local actor rows do not reference that key. Cover that retained donor too.
+    for key, family in (shared_keys or {}).items():
+        if key not in rasters:
+            continue
+        row = rasters[key]
+        density = 1 if family == "body" and (row["width"], row["height"]) == (96, 96) else 2
+        groups.append((family, [key], density))
+        if family == "body":
+            groups.append(("body-group", [key], 0))
+    if allies_only:
+        return groups
     scenery = [scene, *scene.get("terrainScenes", [])]
     for row in scenery:
         groups.append(("background", [row["background"]], 2))
@@ -117,11 +135,19 @@ def selected_groups(scene: dict) -> list[tuple[str, list[str], int]]:
     return groups
 
 
-def derive_variants(source: Path, png_root: Path, scale, pilot: bool) -> list[dict]:
+def derive_variants(
+    source: Path,
+    png_root: Path,
+    scale,
+    pilot: bool,
+    *,
+    allies_only: bool = False,
+    shared_keys: dict[str, str] | None = None,
+) -> list[dict]:
     if source.stat().st_size > _SCENE_LIMIT:
         raise ValueError("input scene exceeds the 4 MiB reader limit")
     scene = read_json(source)
-    groups = selected_groups(scene)
+    groups = selected_groups(scene, allies_only, shared_keys)
     selected = {}
     for family, keys, density in groups:
         if density:
@@ -240,6 +266,7 @@ def prepare(
     *,
     scale=None,
     pilot: bool = False,
+    shared_allies: bool = False,
 ) -> dict:
     base, destination = base.resolve(strict=True), private_output(destination)
     files = _files(base)
@@ -254,6 +281,20 @@ def prepare(
         if path not in allowed or path in bindings:
             raise ValueError("select each declared battle scene at most once")
         bindings[path] = png_root.resolve(strict=True) if png_root is not None else None
+    donors = allowed - bindings.keys() if shared_allies else set()
+    shared_keys = {}
+    if shared_allies:
+        for relative in sorted(allowed):
+            source = files[relative]
+            if source.stat().st_size > _SCENE_LIMIT:
+                raise ValueError("input scene exceeds the 4 MiB reader limit")
+            for actor in read_json(source)["actors"]:
+                if actor["side"] != "ally":
+                    continue
+                for field, family in (("frames", "body"), ("weaponFrames", "weapon")):
+                    for key in actor[field]:
+                        if shared_keys.setdefault(key, family) != family:
+                            raise ValueError(f"shared ally resource has conflicting roles: {key}")
     if destination.exists() or any(
         destination.is_relative_to(root) for root in (base, *bindings.values()) if root is not None
     ):
@@ -266,13 +307,26 @@ def prepare(
         for relative, source in files.items():
             target = stage / relative
             target.parent.mkdir(parents=True, exist_ok=True)
-            if relative in bindings:
-                png_root = bindings[relative]
+            if relative in bindings or relative in donors:
+                png_root = bindings.get(relative)
                 receipts = None
                 if png_root is None:
                     png_root = Path(temp) / "pngs" / relative
-                    receipts = derive_variants(source, png_root, scale, pilot)
+                    receipts = derive_variants(
+                        source,
+                        png_root,
+                        scale,
+                        pilot,
+                        allies_only=relative in donors,
+                        shared_keys=shared_keys,
+                    )
+                    if not receipts:
+                        shutil.copyfile(source, target)
+                        continue
                 report[relative.as_posix()] = bind_variants(source, png_root, target)
+                report[relative.as_posix()]["scope"] = (
+                    "shared-allies" if relative in donors else "selected-scene"
+                )
                 if receipts is not None:
                     report[relative.as_posix()]["derived"] = receipts
             else:
@@ -295,15 +349,35 @@ def main():
     parser.add_argument("--derive", action="store_true", help="derive selected consumer groups")
     parser.add_argument("--gfx-root", type=Path, help="pinned graphics implementation for --derive")
     parser.add_argument("--pilot", action="store_true", help="derive one complete group per family")
+    parser.add_argument(
+        "--shared-allies",
+        action="store_true",
+        help="also derive only ally body/weapon groups in remaining declared scenes",
+    )
     args = parser.parse_args()
     expected = 1 if args.derive else 2
     if any(len(row) != expected for row in args.scene):
         parser.error("--scene takes SCENE with --derive, otherwise SCENE PNG_ROOT")
-    if args.derive != (args.gfx_root is not None) or args.pilot and not args.derive:
-        parser.error("--derive requires --gfx-root; --pilot requires --derive")
+    if (
+        args.derive != (args.gfx_root is not None)
+        or (args.pilot or args.shared_allies)
+        and not args.derive
+    ):
+        parser.error("--derive requires --gfx-root; --pilot/--shared-allies require --derive")
     scale = load_filter(args.gfx_root)[1] if args.derive else None
     scenes = [(row[0], None if args.derive else Path(row[1])) for row in args.scene]
-    print(json.dumps(prepare(args.base, args.out, scenes, scale=scale, pilot=args.pilot)))
+    print(
+        json.dumps(
+            prepare(
+                args.base,
+                args.out,
+                scenes,
+                scale=scale,
+                pilot=args.pilot,
+                shared_allies=args.shared_allies,
+            )
+        )
+    )
 
 
 if __name__ == "__main__":

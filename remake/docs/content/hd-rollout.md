@@ -457,6 +457,12 @@ or the existing scene rasters through the [derive entry](asset-inventory.md#deri
 Installed scene banks and the working package retain their existing selection.
 [Producer and package scope](asset-inventory.md#battle-raster-variant-binding-2177)
 
+Campaign admission shares member-specific allied appearances across declared scenes. Derive
+the selected scene families with `--shared-allies` so the producer also covers the allied
+body/weapon donor banks. `CampaignScenes` carries HD together with the Original it actually
+inserts. Existing destination resources retain their own variant selection. A render-bank
+scan before campaign composition alone does not prove closure at the real consumer.
+
 Build the Debug adapter after its locked restore, then run the short synthetic observation
 with the owned Godot installation.
 

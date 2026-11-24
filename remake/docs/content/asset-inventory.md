@@ -640,7 +640,7 @@ edge-aware filter used by the actor producer.
 . ./local/private-inputs.ps1
 uv run --locked --with pillow==11.3.0 python -B -m sf2tool.remake_hd_battle_rasters `
     --base $base --out $candidate --derive --gfx-root $gfxRoot `
-    --scene main-scenes.json --scene inputs/battle04/battle-scenes.json --pilot
+    --scene main-scenes.json --scene inputs/battle04/battle-scenes.json --shared-allies --pilot
 ```
 
 Use only encounter paths declared by the selected world's `encounters[].battleScenes`.
@@ -649,6 +649,27 @@ body group, weapon group, background, ground, healing group, field-death group a
 installed BLAZE1/BLAZE2/BLAST1 group. Overlapping groups close together. Full selection includes
 all actor frames and weapon frames, default and terrain-selected scenery, healing body/wing/dust,
 field exits and those three installed formal spell families. UI keys remain outside this closure.
+
+Use `--shared-allies` for a campaign package. `CampaignScenes` can supply an earlier battle's
+member-specific appearance from a later declared scene. The flag additionally derives only
+ally body and weapon groups in every remaining declared render scene. This deliberately
+includes the installed shared ally class/equipment superset, so revisits and member appearances
+follow the same existing campaign admission. Later enemy, backdrop and spell groups receive
+no additional coverage from the flag. Receipts label each processed file `selected-scene` or
+`shared-allies`. Pilot limits each donor to its first complete allied body and weapon groups;
+full coverage requires omitting `--pilot`.
+
+The producer also derives an existing raster matching a shared ally key when that scene's local
+actor rows omit the key. The runtime retains that existing Original when importing a donor
+appearance. Its HD therefore follows its own dimensions and pixels. The shared key set is
+collected sequentially from the same declared scene documents during preparation.
+
+The reader shares a variant only when it inserts that variant's Original from the same donor.
+The existing destination-first, then first-donor Original selection remains authoritative.
+A same-key Original already in the destination retains that destination's own variant or its
+Original fallback, even when another scene declares an HD value for the key. Runtime sharing
+uses the same immutable raster references. Source fields and the 4 MiB-per-render-scene bound
+remain part of package admission; the opening definition keeps its separate admission bound.
 
 Target dimensions follow the existing displayed footprint at four pixels per logical pixel.
 Native 96×96 ally frames, native spell effects and field-exit strips receive source×4. Other
@@ -680,3 +701,12 @@ three formal spell-key groups exercise the full selector. Pilot generated 34 var
 approximately two seconds, including two CLI subprocesses. Every output mask matched, the
 Original raster objects remained equal, and the UI key received no variant. These small
 measurements provide algorithm evidence; private production capacity remains **Unknown**.
+
+**Confirmed** with a synthetic donor scene. The shared-allies pass adds exactly its two allied
+body frames and one weapon, while its enemy, scenery, healing, exit and spell resources retain
+their Original fields without new variants. The two-scene full sample contains ten files and
+50,785 bytes. The focused `BattleSceneAllyAppearanceTests` exercise a missing destination
+Original, a different existing Original without HD and a different existing Original with its
+own HD. All three keep the selected appearance and paired Original/HD identity.
+An additional synthetic CLI case retains a 96×96 destination Original and a different 24×24
+donor Original under one shared body key; their produced HD widths remain 384 and 48 respectively.
