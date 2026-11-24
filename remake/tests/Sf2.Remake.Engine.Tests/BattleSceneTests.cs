@@ -112,7 +112,7 @@ public sealed class BattleSceneTests
     }
 
     [Fact]
-    public void MultipleDeathsAccumulateCreditsAndNeverReprocessRemovedActors()
+    public void MultipleDeathsAccumulateCreditsInReactionOrder()
     {
         var battle = Start("stone-court").Current.Battle;
         var firstAlly = battle.Actors.First(a => a.IsAlly).Actor;
@@ -122,7 +122,8 @@ public sealed class BattleSceneTests
         {
             var before = battle.GetActor(id);
             var after = before.With(hp: 0);
-            batch = batch.Append(before, after).Append(after, after);
+            batch = batch.Append(before, after).Append(before, after);
+            if (id == ids[0]) after = after.With(clearPosition: true);
             battle = battle.With(actors: battle.Actors.Select(a => a.Actor == id ? after : a));
         }
         Assert.Equal(ids, batch.Actors);
@@ -131,7 +132,6 @@ public sealed class BattleSceneTests
         Assert.Equal(1, cleaned.Battle.GetActor(firstAlly).Defeats!.Value);
         Assert.Equal(ids, cleaned.Effects.Where(e => e.Kind == "death-cleanup").Select(e => e.Actor));
         Assert.All(ids, id => Assert.Null(cleaned.Battle.GetActor(id).Position));
-        Assert.Empty(batch.Clean(cleaned.Battle, firstAlly, new Sf2BattleProgressionRule()).Effects);
     }
 
     [Theory]

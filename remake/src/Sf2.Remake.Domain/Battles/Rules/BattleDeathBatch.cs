@@ -26,10 +26,9 @@ internal sealed record BattleDeathBatch(IReadOnlyList<ActorRef> Actors, IReadOnl
         foreach (var id in Actors)
         {
             var dead = battle.GetActor(id);
-            // Ordinary action entries remain positive-to-zero transitions. Forced entries
-            // must still be consumed when positive-HP or unplaced; their exactly-once
-            // custody is the field continuation, never an inferred HP mutation.
-            if (Forced?.Contains(id) != true && (dead.Hp != 0 || dead.Position is null)) continue;
+            // Scene return can unplace a casualty before this pass. The retained batch
+            // owns the work and FieldExit consumes it once. Forced entries may still have HP.
+            if (Forced?.Contains(id) != true && dead.Hp != 0) continue;
             if (dead.IsAlly || firstAlly is not null)
             {
                 var owner = dead.IsAlly ? dead : battle.GetActor(firstAlly!.Value);

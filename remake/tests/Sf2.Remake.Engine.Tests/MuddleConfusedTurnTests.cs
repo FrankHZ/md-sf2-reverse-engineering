@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
@@ -7,6 +8,7 @@ using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Gameplay.Sf2;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
+using static Sf2.Remake.Engine.Tests.EngineTestContent;
 using static Sf2.Remake.Engine.Tests.SilenceSpellTests;
 using EnemyParty = Sf2.Remake.Engine.Tests.EnemySpellDecisionTests;
 
@@ -213,6 +215,143 @@ public sealed class MuddleConfusedTurnTests
             Assert.Single(events, e => e.Actor == casualty && e.Kind == "death-cleanup");
         }
         Assert.DoesNotContain(events, e => e.Kind is "muddle-inaction" or "gold" or "kills");
+    }
+
+    [Fact]
+    public void ConnectedConfusedSpellSettlesBothDeathsAfterSceneRepositioningAndReturnsToField()
+    {
+        var world = Document("battle-drops");
+        var battle = Document("enemy-spells");
+        world["battle"] = battle;
+        battle["maps"]![0]!["id"] = "arena";
+        battle["spells"]![0]!["level"] = 2;
+        battle["spells"]![0]!["effect"]!["radius"] = 1;
+        battle["actors"]![0]!["physical"]!["leader"] = true;
+        battle["actors"]![1]!["spells"]![0]!["level"] = 2;
+        battle["actors"]![3]!["physical"]!["leader"] = true;
+        battle["actors"]![3]!["items"] = new JsonArray(61);
+        var encounter = battle["encounters"]![0]!;
+        encounter["id"] = "arena-battle";
+        encounter["map"] = "arena";
+        encounter["placements"]![3]!["x"] = 5;
+        encounter["placements"]![3]!["y"] = 2;
+        encounter["leaderCleanup"] = JsonNode.Parse("""
+            {"bowie":"scout","enemySlots":[{"actor":"mage","slot":128},{"actor":"cleric","slot":129},{"actor":"wounded","slot":130}]}
+            """);
+        encounter["itemDrops"] = JsonNode.Parse("""
+            {"battle":18,"enemySlots":[{"actor":"wounded","slot":130}],"rows":[{"battle":18,"enemySlot":130,"item":61,"onceFlag":24}]}
+            """);
+        battle["dropItems"] = JsonNode.Parse("""[{"id":61,"name":"Achilles Sword","rare":true}]""");
+        var input = battle["start"]!;
+        input["encounter"] = "arena-battle";
+        input["mainSeed"] = 48997u << 16; // After the nine first-round draws, the caster starts at 1680.
+        input["actors"]![1]!["hp"] = 1;
+        input["actors"]![2]!["hp"] = 0;
+        input["actors"]![3]!["hp"] = 1;
+        input["itemCustody"] = JsonNode.Parse("""{"onceFlags":[],"deals":[{"item":61,"count":3}]}""");
+        var route = world["world"]!["maps"]![1]!["battle"]!;
+        route["completedFlag"] = 501;
+        route["outcome"]!["deathPositions"] = JsonNode.Parse("""
+            [{"slot":0,"position":{"x":2,"y":2}},{"slot":128,"position":{"x":5,"y":2}}]
+            """);
+
+        var read = Reader(world).Read();
+        Assert.True(read is ExplorationReadAccepted, read.ToString());
+        var admitted = (ExplorationReadAccepted)read;
+        var original = admitted.Definition;
+        var defaults = original.EncounterStarts.Values.Single();
+        // Control the enemy state at battle entry using the same admitted turn operands as the directed case.
+        var controlled = defaults.WithResources(defaults.Actors.Select(actor => actor.Actor == EnemyParty.Mage
+            ? actor with { Status = 0x18 } : actor.Actor == EnemyParty.Wounded ? actor with { Status = 0x10 } : actor), defaults.Gold);
+        var definition = new ScenarioDefinition(original.Package, original.Encounters.Values,
+            exploration: original.Exploration, encounterStarts: [controlled]);
+        var session = Assert.IsType<SessionStarted>(GameSession.Start(definition, admitted.Start)).Session;
+        Accept(session, new Interact(new("ferryman")));
+        SettleOutcomeField(session);
+        Assert.Equal(EnemyParty.Scout, session.Current.Selection!.Actor);
+
+        var before = session.Current.Battle;
+        var events = FinishMovement(session, Stay(session)).Observations.ToList();
+        SessionCommand? finalDeathWait = null;
+        for (int step = 0; step < 200 && session.Current.BattleScene is { } scene; step++)
+        {
+            Assert.False(session.Current.HasBattleControl);
+            SessionCommand command = AttackSpellSessionTests.Next(session.Current);
+            if (scene is { Phase: BattleScenePhase.FieldExit, FieldStep: 2 })
+            {
+                var casualty = session.Current.Battle.GetActor(EnemyParty.Wounded);
+                Assert.Equal(0, casualty.Hp);
+                Assert.Equal(0x10, casualty.Status);
+                Assert.Null(casualty.Position);
+            }
+            if (scene.Phase == BattleScenePhase.FieldSettle)
+            {
+                finalDeathWait = command;
+                Assert.Equal(3, session.Current.Battle.GetActor(EnemyParty.Mage).Mp);
+                Assert.Null(session.Current.Battle.DeathCredit!.Ally);
+                Assert.Equal(61, session.Current.Battle.GetActor(EnemyParty.Wounded).SourceLoadout!.Items[0]);
+                Assert.All(scene.DeadActors, id =>
+                {
+                    var dead = session.Current.Battle.GetActor(id);
+                    Assert.Equal(0, dead.Hp);
+                    Assert.Equal(0, dead.Status);
+                    Assert.Null(dead.Position);
+                });
+            }
+            events.AddRange(Accept(session, command).Observations);
+            if (scene is { Phase: BattleScenePhase.FieldExit, FieldStep: 2 })
+            {
+                var settled = session.Current;
+                Assert.NotNull(Send(session, command).Failure);
+                Assert.Same(settled, session.Current);
+            }
+        }
+        Assert.True(finalDeathWait is not null, string.Join(", ", events.Select(e => e.Kind)));
+        Assert.Equal(EnemyParty.Wounded, Assert.Single(events, e => e.Kind == "ai-spell-target").Target);
+        ActorRef[] casualties = [EnemyParty.Mage, EnemyParty.Wounded];
+        Assert.Equal(casualties, events.Where(e => e.Kind == "hp").Select(e => e.Actor!.Value));
+        Assert.Equal(casualties, events.Where(e => e.Kind == "death-cleanup").Select(e => e.Actor!.Value));
+        Assert.Single(events, e => e.Kind == "mp");
+        Assert.Equal("Victory", Assert.Single(events, e => e.Kind == "battle-outcome").Detail);
+        Assert.Single(events, e => e.Kind == "outcome-program-started");
+        Assert.DoesNotContain(events, e => e.Kind is "exp" or "level" or "gold" or "kills" or "defeats" or
+            "drop-once-set" or "item-received" or "item-to-deals" or "player-control" or "rng-muddle-self-guard");
+        var pendingReturn = session.Current;
+        Assert.NotNull(Send(session, finalDeathWait).Failure);
+        Assert.Same(pendingReturn, session.Current);
+
+        SettleOutcomeField(session, events);
+        var returned = session.Current;
+        Assert.Equal(SessionStopReason.PlayerInput, returned.StopReason);
+        Assert.Single(events, e => e.Kind == "battle-completed-set" && e.Detail == "501");
+        Assert.Single(events, e => e.Kind == "battle-unlock-cleared" && e.Detail == "401");
+        Assert.Contains(501, returned.Story.Flags);
+        Assert.DoesNotContain(401, returned.Story.Flags);
+        var party = returned.Exploration!.Party;
+        Assert.Equal(before.Gold, party.Gold);
+        Assert.Same(before.ItemCustody, party.ItemCustody);
+        var scout = Assert.Single(party.Actors);
+        Assert.Equal(before.GetActor(EnemyParty.Scout).Exp, scout.Exp);
+        Assert.Equal(before.GetActor(EnemyParty.Scout).Kills, scout.Kills);
+        Assert.Equal(before.GetActor(EnemyParty.Scout).SourceLoadout!.Items, scout.SourceLoadout!.Items);
+        var position = returned.Exploration.PlayerEntity.Position;
+        Accept(session, new Move(ExplorationDirection.East));
+        SettleOutcomeField(session);
+        Assert.Equal(new MapPosition(position.X + 1, position.Y), session.Current.Exploration!.PlayerEntity.Position);
+    }
+
+    private static void SettleOutcomeField(GameSession session, List<SessionObservation>? observations = null)
+    {
+        for (int tick = 0; tick < 2000 && session.Current.Mode == SessionMode.Exploration && session.Current.Story.Wait is { } wait; tick++)
+        {
+            var result = Accept(session, wait switch
+            {
+                DialogueWait => new Acknowledge(wait.Token),
+                FullFadeWait { LogicalDone: true } fade => new CompletePresentation(wait.Token, fade.Kind),
+                _ => new AdvanceSimulation(wait.Token),
+            });
+            observations?.AddRange(result.Observations);
+        }
     }
 
     [Fact]

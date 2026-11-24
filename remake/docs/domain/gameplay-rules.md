@@ -7,8 +7,8 @@
 battles through Battle26 and the named authored cases. Keep the existing High-rigor transaction
 and save agreements where the review crosses them. Dispatch each slice separately after its
 prerequisites are dispositioned. The cases below are review questions, with retained evidence
-identified where available. The identity, movement and action transaction reviews are complete.
-Casualties, status lifetime and save/restore remain pending.
+identified where available. The identity, movement, action transaction and casualty reviews are
+complete. Status lifetime and save/restore remain pending.
 [Campaign boundary](../capability-status.md#campaign-feature-trace)
 
 **Shared boundary.** Content admits definitions, deployments and bindings. The session owns the
@@ -39,23 +39,11 @@ the admitted settled state through the same rules.
    [Review and reproduction](#action-admission-construction-and-payment-review) ·
    [Remake transaction contract](#implementable-api-and-transaction-boundary) ·
    [Offensive item contract](offensive-items-design.md#remake-item-action)
-4. **Casualties, rewards, custody and outcome.** Check the irreversible battle and campaign
-   effects before auditing which queue entries can still tick. Start with the controlled confused
-   enemy cast that targets its leader and hits the caster in protected slot 128 as collateral.
-   Trace the ordered reactions through both removals and terminal outcome. Check that each
-   casualty is processed once and that enemy-on-enemy deaths award no player kill credit or
-   drop. Use an ordinary lethal carrier hit as a positive custody control and an admitted ally
-   same-side hit in a half-EXP encounter as a reward control. Check
-   leader-loss precedence if both terminal conditions are reachable, and that a terminal action
-   leaves no next playable turn. Stop at one outcome and usable return, with a directed batch or
-   award check where the paired control needs it. Keep EXP credit, growth, pack/Deals receipts,
-   defeat counters and completed flags attributable to their own stages.
-   [Original cleanup and outcome](../../../docs/design/contracts/battle/battle-control-lifecycle.md#death-worklists-and-combatant-cleanup) ·
-   [Remake progression and outcome](#implemented-progression-and-outcome-policies) ·
-   [Death batch](../../src/Sf2.Remake.Domain/Battles/Rules/BattleDeathBatch.cs) ·
-   [Action publication](../../src/Sf2.Remake.Application/Runtime/Battles/BattleActionCommitter.cs) ·
-   [Directed reward and casualty cases](../../tests/Sf2.Remake.Engine.Tests/MuddleConfusedTurnTests.cs) ·
-   [Field return](../../src/Sf2.Remake.Application/Runtime/Exploration/BattleOutcome.cs)
+4. **Casualties, rewards, custody and outcome — reviewed.** The connected confused-enemy area
+   cast settles two ordered deaths without player rewards or a drop, then returns to usable
+   exploration. The review corrected death cleanup for casualties already hidden by the scene
+   return table. The ordinary carrier, ally half-EXP and leader-loss controls cover the adjacent
+   settlement rules. [Review and reproduction](#casualty-reward-custody-and-outcome-review)
 5. **Status lifetime and recovery.** Use the surviving queue owner from settlement to trace
    effect application, refresh, skip, decrement, expiry and renewed control. A living ally with
    SLEEP, MUDDLE and SILENCE on consecutive entries in the same round can skip the first,
@@ -961,6 +949,57 @@ clears the death list each turn; its no-action/dead branches do not initialize f
 `battleactions/battleactionsengine_1.asm:battlesceneScript_InitializeActors` assigns that custody
 from the admitted scene's initial ally (including the ally target of an enemy physical attack).
 These static facts do not establish original natural reach or hardware timing.
+
+### Casualty, reward, custody and outcome review
+
+**Confirmed static.** The scene return position table can move combatants off the map and zero
+enemy HP. The original accounting pass still walks the retained killed list and clears status
+and coordinates for each entry. The first count after cleanup gives allied leader loss priority
+and exits before after-turn work when terminal. The table's other removals and the separate
+leader sweep have their existing source-specific rules.
+[Original lifecycle](../../../docs/design/contracts/battle/battle-control-lifecycle.md#death-worklists-and-combatant-cleanup) ·
+[Pinned scene return table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/cutscenes/afterenemyleaderdeathpositions.asm) ·
+[Pinned killed-list processing](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleloop/processkilledcombatants.asm)
+
+**Confirmed in the remake.** In the controlled connected encounter, the confused enemy selects
+its own leader as the BLAZE 2 center. The protected slot-128 caster and then the carrier in
+slot 130 reach zero HP in reaction order. Scene return hides slot 130 before field exit. The
+previous position guard skipped that entry and left status `0x10` on the dead carrier. The
+retained batch now processes an already-unplaced casualty, including eligible kill or defeat
+credit. The field-exit token owns once-only delivery. Replaying its completion
+leaves the accepted snapshot intact.
+[Protected target relation](hostile-spells-design.md#identity-control-and-target-relation-review) ·
+[Death batch](../../src/Sf2.Remake.Domain/Battles/Rules/BattleDeathBatch.cs) ·
+[Field exit](../../src/Sf2.Remake.Application/Runtime/Battles/BattleFieldDeathContinuation.cs)
+
+The cast pays MP once. It awards no player EXP, growth, gold, kills or drop. The carrier keeps
+its item until the roster exits, and the return preserves the ally pack and Deals. The paired
+ordinary carrier case exercises construction-time pack receipt or rare Deals fallback and its
+once bit. The ally same-side physical hit still earns the half-EXP damage award, with EXP credit
+and any growth owned by scene reward playback. After terminal cleanup the connected case emits
+one victory, grants no further battle control, writes the completed/unlocked flag changes once,
+and accepts a field move. The Prism control kills the allied leader and enemy gate in one action
+while the firing enemy survives. It reaches defeat and skips the sweep. The outcome rule also
+prioritizes allied leader loss when the living enemy count is zero.
+[Progression stages](#implemented-progression-and-outcome-policies) ·
+[Carrier control](../../tests/Sf2.Remake.Engine.Tests/EnemyItemDropSessionTests.cs) ·
+[Leader-loss control](../../tests/Sf2.Remake.Engine.Tests/PrismLaserSessionTests.cs) ·
+[Field return](../../src/Sf2.Remake.Application/Runtime/Exploration/BattleOutcome.cs)
+
+Use the [locked .NET environment](../development-and-verification.md#locked-net-workflow) from
+`remake/` to reproduce the directed cases.
+
+```powershell
+$project = 'tests/Sf2.Remake.Engine.Tests/Sf2.Remake.Engine.Tests.csproj'
+$filter = ('MuddleConfusedTurnTests', 'EnemyItemDropSessionTests', 'PrismLaserSessionTests',
+    'LeaderCleanupTests', 'BattleSceneTests' | ForEach-Object { "FullyQualifiedName~$_" }) -join '|'
+& $env:DOTNET_BIN test $project --configuration Release --filter $filter `
+    -p:RestoreLockedMode=true -p:UseSharedCompilation=false -nodeReuse:false
+```
+
+**Unknown.** Natural original leader collateral, hardware timing and a legal action that kills
+the allied leader and last placed enemy together remain open. This boundary ends at usable
+field return. Status lifetime and save/restore have their own review slices.
 
 ## Finite Taros physical effectiveness
 
