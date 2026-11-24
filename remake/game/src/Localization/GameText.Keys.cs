@@ -696,6 +696,7 @@ internal static partial class GameText
         ["church.low-level"] = 1,
         ["church.no-promotion"] = 1,
         ["church.special-offer"] = 2,
+        ["church.special-confirm"] = 4,
         ["church.special-unavailable"] = 2,
         ["church.promoted"] = 2,
         ["church.promotion"] = 0,

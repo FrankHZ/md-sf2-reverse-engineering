@@ -68,18 +68,21 @@ internal sealed partial class ChurchServiceView : Control
             _wait = wait; _language = GameText.Language; _options.Clear();
             var members = session.QueryPartyDetails()!.Members;
             string Member(PromotionOffer offer) => PartyStatusView.MemberName(members.Single(m => m.Carried.Actor == offer.Member), session);
-            string Destination(PromotionOffer offer)
+            string Destination(byte? classId)
             {
-                var name = session.Definition.PrivateDefinitions?.Classes.GetValueOrDefault(offer.Destination!.Value)?.NameExpression.Trim('"');
-                return DisplayNames.Name("name.class", offer.Destination, name ?? GameText.Get("party.class-unavailable"));
+                var name = session.Definition.PrivateDefinitions?.Classes.GetValueOrDefault(classId!.Value)?.NameExpression.Trim('"');
+                return DisplayNames.Name("name.class", classId, name ?? GameText.Get("party.class-unavailable"));
             }
             string Special(string key, PromotionOffer offer)
             {
                 var item = offer.SpecialItem!;
                 var holder = members.Single(m => m.Carried.Actor == item.Holder);
                 var name = session.Definition.PrivateDefinitions?.Items.GetValueOrDefault((byte)(item.Word & 127))?.DisplayName;
-                return GameText.Get(key, PartyStatusView.MemberName(holder, session),
-                    DisplayNames.ItemWord(item.Word, name ?? GameText.Get("party.item-unavailable")));
+                string holderName = PartyStatusView.MemberName(holder, session);
+                string itemName = DisplayNames.ItemWord(item.Word, name ?? GameText.Get("party.item-unavailable"));
+                if (key == "church.special-offer" && offer.SpecialDestination is { } destination)
+                    return GameText.Get("church.special-confirm", holderName, itemName, Member(offer), Destination(destination));
+                return GameText.Get(key, holderName, itemName);
             }
             if (wait.Phase == ChurchPhase.AnotherService)
             {
@@ -99,7 +102,7 @@ internal sealed partial class ChurchServiceView : Control
                 _title.Text = wait.Phase switch
                 {
                     ChurchPhase.Special => Special("church.special-offer", row),
-                    ChurchPhase.Regular => GameText.Get("church.regular", Member(row), Destination(row)),
+                    ChurchPhase.Regular => GameText.Get("church.regular", Member(row), Destination(row.Destination)),
                     _ => GameText.Get("church.consent", Member(row)),
                 };
                 _options.Add((GameText.Get("story.yes"), new AnswerPromotion(wait.Token, row, true)));
@@ -114,7 +117,7 @@ internal sealed partial class ChurchServiceView : Control
                     ChurchResultKind.LowLevel => GameText.Get("church.low-level", Member(wait.Candidate!)),
                     ChurchResultKind.SpecialUnavailable => Special("church.special-unavailable", wait.Candidate!),
                     ChurchResultKind.Unavailable => GameText.Get("church.promotion"),
-                    ChurchResultKind.Promoted => GameText.Get("church.promoted", Member(wait.Candidate!), Destination(wait.Candidate!)),
+                    ChurchResultKind.Promoted => GameText.Get("church.promoted", Member(wait.Candidate!), Destination(wait.Result.PromotedClass)),
                     ChurchResultKind.Declined => GameText.Get("church.declined"),
                     ChurchResultKind.InsufficientGold => GameText.Get("church.insufficient"),
                     _ => GameText.Get("church.paid." + EffectKey(wait.Result.Treatment!.Effect), wait.Result.Treatment.Cost),
@@ -134,7 +137,7 @@ internal sealed partial class ChurchServiceView : Control
                 _title.Text = GameText.Get("church.menu", session.Current.Exploration!.Party.Gold?.ToString() ?? "?");
                 _options.AddRange([(GameText.Get("church.raise"), new ChooseChurch(wait.Token, ChurchAction.Raise)),
                     (GameText.Get("church.cure"), new ChooseChurch(wait.Token, ChurchAction.Cure)), (GameText.Get("church.promote"),
-                        session.Definition.Encounters.Values.Any(e => e.Deployments.Any(d => d.RegularPromotion is not null))
+                        session.Definition.Encounters.Values.Any(e => e.Deployments.Any(d => d.PromotionVariants.Count > 0))
                             ? new ChooseChurch(wait.Token, ChurchAction.Promote) : null),
                     (GameText.Get("church.save"), new LeaveChurch(wait.Token, true))]);
             }

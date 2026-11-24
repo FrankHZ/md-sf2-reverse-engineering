@@ -2849,6 +2849,9 @@ msgstr "{0} should remain in the current class."
 msgid "church.special-offer"
 msgstr "The special promotion using the {1} held by {0} is unavailable. Choose No to consider ordinary promotion."
 
+msgid "church.special-confirm"
+msgstr "Use the {1} held by {0} to promote {2} to {3}?"
+
 msgid "church.special-unavailable"
 msgstr "{0} holds the {1}. This special promotion is unavailable."
 

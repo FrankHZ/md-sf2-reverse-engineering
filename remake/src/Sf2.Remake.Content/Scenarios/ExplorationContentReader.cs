@@ -130,7 +130,7 @@ internal static class ExplorationContentReader
             ExplorationPopulation? population = null;
             if (row.TryGetProperty("population", out var populationRow))
             {
-                population = ReadPopulation(populationRow);
+                population = ExplorationPopulationReader.Read(populationRow);
                 Require(entities.All(entity => entity.Sprite is not null), "population-sprites", "map.entities");
             }
             var setups = new List<ExplorationSetupDefinition>();
@@ -144,7 +144,7 @@ internal static class ExplorationContentReader
                     Require(setups.All(value => value.Id != key), "duplicate-setup", "map.setups");
                     setups.Add(new(key, ReadEntities(variant), Array(variant, "events").Select(ReadEvent).ToArray(),
                         Location(variant.GetProperty("onLoad")), Location(variant.GetProperty("input")),
-                        ReadPopulation(variant.GetProperty("population")), variant.TryGetProperty("search", out var variantSearch) ? FieldSearchReader.Read(variantSearch, texts) : null));
+                        ExplorationPopulationReader.Read(variant.GetProperty("population")), variant.TryGetProperty("search", out var variantSearch) ? FieldSearchReader.Read(variantSearch, texts) : null));
                 }
             FieldReturnAnchor? savepoint = null;
             if (row.TryGetProperty("churchSavepoint", out var point))
@@ -446,29 +446,6 @@ internal static class ExplorationContentReader
         return entities;
     }
 
-    private static ExplorationPopulation ReadPopulation(JsonElement row)
-    {
-        ObjectOptional(row, "population", "allySprites", "allyCount", "nonAllyStart", "playerSprite", "followers");
-        var followers = Array(row, "followers").Select(follower =>
-        {
-            Object(follower, "follower", "flag", "character", "sprite");
-            return new ExplorationFollowerDefinition(Number(follower, "flag", 0, 65535),
-                Number(follower, "character", 0, 255), Number(follower, "sprite", 0, 255));
-        }).ToArray();
-        return new(Number(row, "allyCount", 1, 128), Number(row, "nonAllyStart", 128, 255),
-            Number(row, "playerSprite", 0, 255), System.Array.AsReadOnly(followers),
-            row.TryGetProperty("allySprites", out _) ? System.Array.AsReadOnly(Array(row, "allySprites").Select(appearance =>
-            {
-                ObjectOptional(appearance, "allySprite", ["character", "sprite", "joinedFlag", "unjoinedSprite"], "promotionClass", "promotionSprite");
-                int? joined = NullableNumber(appearance, "joinedFlag", 65535), unjoined = NullableNumber(appearance, "unjoinedSprite", 255);
-                Require((joined is null) == (unjoined is null), "ally-sprite-override", "population.allySprites");
-                Require(appearance.TryGetProperty("promotionClass", out _) == appearance.TryGetProperty("promotionSprite", out _), "ally-promotion-sprite", "population.allySprites");
-                return new ExplorationAllySprite(Number(appearance, "character", 0, 255), Number(appearance, "sprite", 0, 255), joined, unjoined,
-                    appearance.TryGetProperty("promotionClass", out _) ? (byte)Number(appearance, "promotionClass", 0, 31) : null,
-                    appearance.TryGetProperty("promotionSprite", out _) ? Number(appearance, "promotionSprite", 0, 255) : null);
-            }).ToArray()) : null);
-    }
-
     private static WorkingMapBlockCopy ReadCopy(JsonElement copy)
     {
         Object(copy, "blockCopy", "source", "destination", "width", "height");
@@ -762,7 +739,7 @@ internal static class ExplorationContentReader
                 Object(row, opcode, "op", "population", "position", "facing", "entities");
                 var entities = ReadEntities(row);
                 Require(entities.Length <= 48 && entities.All(entity => entity.Sprite is not null), "scene-entities", "program.entities");
-                return new LoadSceneEntities(ReadPopulation(row.GetProperty("population")), Position(row.GetProperty("position")),
+                return new LoadSceneEntities(ExplorationPopulationReader.Read(row.GetProperty("population")), Position(row.GetProperty("position")),
                     (byte)Number(row, "facing", 0, 3), System.Array.AsReadOnly(entities));
             case "visibility": Object(row, opcode, "op", "entity", "visible"); return new SetEntityVisibility(new(Id(row, "entity")), Boolean(row, "visible"));
             case "motion":
@@ -908,7 +885,7 @@ internal static class ExplorationContentReader
                 var sprites = map.Population is { } population
                     ? map.Entities.Where(entity => entity.Sprite >= population.AllyCount).Select(entity => entity.Sprite)
                         .Concat(population.Followers.Where(follower => follower.Character >= population.AllyCount).Select(follower => (int?)follower.Sprite))
-                        .Concat((population.AllySprites ?? []).SelectMany(sprite => new int?[] { sprite.Sprite, sprite.UnjoinedSprite, sprite.PromotionSprite })).Append(population.PlayerSprite)
+                        .Concat((population.AllySprites ?? []).SelectMany(sprite => sprite.ReferencedSprites())).Append(population.PlayerSprite)
                     : map.Entities.Select(entity => entity.Sprite);
                 Require(sprites.All(sprite => sprite is null || visuals.Sprites.ContainsKey(sprite.Value)), "missing-sprite-visual", "presentation.sprites");
             }
@@ -964,7 +941,7 @@ internal static class ExplorationContentReader
                             ? visuals.Sprites.ContainsKey(190) : visuals.Sprites.ContainsKey(add.Sprite), "missing-sprite-visual", "program.sprite"); break;
                     case LoadSceneEntities load when definition.Visuals is { } visuals:
                         var sprites = load.Entities.Where(entity => entity.Sprite >= load.Population.AllyCount).Select(entity => entity.Sprite)
-                            .Concat((load.Population.AllySprites ?? []).SelectMany(sprite => new int?[] { sprite.Sprite, sprite.UnjoinedSprite, sprite.PromotionSprite }))
+                            .Concat((load.Population.AllySprites ?? []).SelectMany(sprite => sprite.ReferencedSprites()))
                             .Concat(load.Population.Followers.Where(follower => follower.Character >= load.Population.AllyCount).Select(follower => (int?)follower.Sprite))
                             .Append(load.Population.PlayerSprite);
                         Require(sprites.All(sprite => sprite is null || visuals.Sprites.ContainsKey(sprite.Value)), "missing-sprite-visual", "presentation.sprites"); break;

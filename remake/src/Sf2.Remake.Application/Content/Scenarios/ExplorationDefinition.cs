@@ -8,9 +8,13 @@ public sealed record ExplorationEntityDefinition(EntityRef Entity, MapPosition P
     bool Visible = true, bool Obstruction = false, int? Sprite = null, EntityActionProgram? Actions = null);
 public sealed record ExplorationFollowerDefinition(int Flag, int Character, int Sprite);
 public sealed record ExplorationAllySprite(int Character, int Sprite, int? JoinedFlag, int? UnjoinedSprite,
-    byte? PromotionClass = null, int? PromotionSprite = null)
+    IReadOnlyDictionary<byte, int>? PromotionSprites = null)
 {
-    public int ForClass(byte? classId) => PromotionClass is not null && PromotionClass == classId ? PromotionSprite!.Value : Sprite;
+    public int? PromotedSprite(byte? classId) =>
+        classId is { } id && PromotionSprites?.TryGetValue(id, out int sprite) == true ? sprite : null;
+    public int ForClass(byte? classId) => PromotedSprite(classId) ?? Sprite;
+    internal IEnumerable<int?> ReferencedSprites() =>
+        new int?[] { Sprite, UnjoinedSprite }.Concat(PromotionSprites?.Values.Select(sprite => (int?)sprite) ?? []);
 }
 public sealed record ExplorationPopulation(int AllyCount, int NonAllyStart, int PlayerSprite,
     IReadOnlyList<ExplorationFollowerDefinition> Followers, IReadOnlyList<ExplorationAllySprite>? AllySprites = null);

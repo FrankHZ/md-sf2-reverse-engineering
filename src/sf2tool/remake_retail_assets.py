@@ -559,6 +559,7 @@ def main():
             *FAMILIES,
             "pldn-party",
             "pldn-eric",
+            "pgnt",
             "wiz",
             "melee",
             "ranged",
@@ -579,6 +580,7 @@ def main():
     parser.add_argument("--command", type=int, action="append", default=[])
     args = parser.parse_args()
     if {
+        "pgnt",
         "wiz",
         "melee",
         "ranged",

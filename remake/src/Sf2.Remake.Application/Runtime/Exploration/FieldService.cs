@@ -9,9 +9,9 @@ public enum ChurchAction { Raise, Cure, Promote }
 public enum ChurchEffect { Raise, Poison, Stun, Curse }
 public enum ChurchPhase { Menu, Offer, Result, Members, Consent, Regular, AnotherService, Special }
 public enum ChurchResultKind { NoApplicableMember, Declined, InsufficientGold, Paid, LowLevel, NoPromotion, Unavailable, SpecialUnavailable, Promoted }
-public sealed record ChurchResult(ChurchResultKind Kind, ChurchOffer? Treatment = null);
+public sealed record ChurchResult(ChurchResultKind Kind, ChurchOffer? Treatment = null, byte? PromotedClass = null);
 public sealed record HeldPromotionItem(ActorRef Holder, int Slot, ushort Word);
-public sealed record PromotionOffer(ActorRef Member, byte? Source, byte? Destination, byte Level, HeldPromotionItem? SpecialItem);
+public sealed record PromotionOffer(ActorRef Member, byte? Source, byte? Destination, byte Level, HeldPromotionItem? SpecialItem, byte? SpecialDestination = null);
 public sealed record ChurchOffer(ActorRef Member, ChurchEffect Effect, uint Cost, ushort Hp, ushort Status,
     int? Slot = null, ushort? Word = null);
 public sealed record ChurchWait(WaitToken Token, ChurchDefinition Definition, ChurchAction? Action = null,
@@ -76,10 +76,15 @@ internal static class FieldService
                         throw new BattleRuleException("stale-promotion", "service.offer");
                     if (wait.Phase == ChurchPhase.Special)
                     {
-                        next = answer.Accept
-                            ? next with { Result = new(ChurchResultKind.SpecialUnavailable) }
-                            : next with { DeclinedSpecial = true,
+                        if (!answer.Accept)
+                            next = next with { DeclinedSpecial = true,
                                 Result = candidate.Destination is null ? new(ChurchResultKind.Unavailable) : null };
+                        else if (candidate.SpecialDestination is { } special)
+                        {
+                            (field, party) = Promote(definition, current, field, candidate, special, candidate.SpecialItem);
+                            next = next with { Result = new(ChurchResultKind.Promoted, PromotedClass: special) };
+                        }
+                        else next = next with { Result = new(ChurchResultKind.SpecialUnavailable) };
                     }
                     else if (!answer.Accept) next = next with { Candidate = null, Consented = false, DeclinedSpecial = false };
                     else if (wait.Phase == ChurchPhase.Consent)
@@ -89,8 +94,9 @@ internal static class FieldService
                     }
                     else
                     {
-                        (field, party) = Promote(definition, current, field, candidate);
-                        next = next with { Result = new(ChurchResultKind.Promoted) };
+                        byte regular = candidate.Destination!.Value;
+                        (field, party) = Promote(definition, current, field, candidate, regular, null);
+                        next = next with { Result = new(ChurchResultKind.Promoted, PromotedClass: regular) };
                     }
                     kind = next.Result?.Kind == ChurchResultKind.Promoted ? "church-promoted" : "church-promotion-answer";
                     break;
@@ -169,26 +175,39 @@ internal static class FieldService
     }
 
     private static (ExplorationState, BattleStartInput) Promote(ScenarioDefinition definition, SessionSnapshot current,
-        ExplorationState field, PromotionOffer candidate)
+        ExplorationState field, PromotionOffer candidate, byte classId, HeldPromotionItem? item)
     {
-        var member = PartyDetailsQuery.Query(definition, current)!.Members.Single(m => m.Carried.Actor == candidate.Member);
-        var destination = member.Deployment!.ResolveClass(candidate.Destination).Definition;
+        var members = PartyDetailsQuery.Query(definition, current)!.Members;
+        var member = members.Single(m => m.Carried.Actor == candidate.Member);
+        var destination = member.Deployment!.ResolveClass(classId).Definition;
         var loadout = PromotionLoadout(member, destination);
+        List<BattleActorStartInput> updates = [];
+        if (item is not null)
+        {
+            var holder = members.Single(m => m.Carried.Actor == item.Holder);
+            var pack = FieldInventory.Loadout(holder);
+            if (pack.Items[item.Slot] != item.Word)
+                throw new BattleRuleException("stale-promotion", "service.offer");
+            var reduced = BattleInventory.Remove(pack, item.Slot);
+            if (holder.Carried.Actor == candidate.Member) loadout = reduced;
+            else updates.Add(FieldInventory.WithLoadout(holder, reduced));
+        }
         if (!PoisonTurnRules.SupportedPhysicalStatus(member.Carried.Status) || member.Carried.Progress is not { } progress)
             throw new BattleRuleException("promotion-refresh", "party.progress", true);
         BattleEquipment.ValidateLoadout(destination, loadout);
         var changed = member.Carried with { Exp = 0,
             SourceLoadout = member.Carried.SourceLoadout is null ? null : loadout, Progress = progress with
-            { ClassId = candidate.Destination, Level = 1, SourceLoadout = loadout, BaseMove = null, CurrentStats = null } };
-        var party = FieldInventory.Replace(field.Party, [changed]);
+            { ClassId = classId, Level = 1, SourceLoadout = loadout, BaseMove = null, CurrentStats = null } };
+        updates.Add(changed);
+        var party = FieldInventory.Replace(field.Party, updates);
         if (field.Population is { } population && member.Deployment.Initialization?.AllyPartyMember is { } memberIndex)
         {
             var sprite = population.AllySprites?.SingleOrDefault(s => s.Character == memberIndex);
-            if (sprite?.PromotionClass != candidate.Destination)
+            if (sprite?.PromotedSprite(classId) is not { } promotedSprite)
                 throw new BattleRuleException("promotion-appearance", "population.allySprites", true);
             var entity = field.AllEntities.FirstOrDefault(e => e.Entity.Value == $"entity-{memberIndex}");
             if (entity is not null && changed.Hp > 0)
-                field = field.WithEntity(entity with { Sprite = sprite!.ForClass(candidate.Destination),
+                field = field.WithEntity(entity with { Sprite = promotedSprite,
                     SpriteRequest = checked(entity.SpriteRequest + 1) });
         }
         return (field, party);
@@ -216,19 +235,29 @@ internal static class FieldService
             if (item.HasValue)
                 held = members.SelectMany(holder => FieldInventory.Loadout(holder).Items.Select((word, slot) =>
                     new HeldPromotionItem(holder.Carried.Actor, slot, word)).Reverse()).FirstOrDefault(slot => (byte)slot.Word == item);
-            var destination = m.Deployment?.RegularPromotion;
-            if (destination is not null && definition.PrivateDefinitions is not null)
-            {
-                var pack = PromotionLoadout(m, destination);
-                int slot = BattleEquipment.EquippedSlot(destination, pack);
-                int itemId = slot == 4 ? -1 : pack.Items[slot] & 127;
-                var key = (m.Carried.Actor, destination.ClassRule, itemId);
-                if (definition.EncounterScenes.Count == 0 || definition.EncounterScenes.Values.Any(scene => scene.AllyAppearances?.ContainsKey(key) != true))
-                    destination = null;
-            }
-            return new PromotionOffer(m.Carried.Actor, source, destination?.Growth?.ClassId,
-                m.Level ?? 0, held);
+            return new PromotionOffer(m.Carried.Actor, source,
+                BoundClass(definition, current.Exploration!, m, Sf2ClassRules.OrdinaryDestination(source)),
+                m.Level ?? 0, held, held is null ? null :
+                    BoundClass(definition, current.Exploration!, m, Sf2ClassRules.SpecialDestination(source)));
         }).ToArray());
+    }
+
+    private static byte? BoundClass(ScenarioDefinition definition, ExplorationState field, PartyMemberDetails member,
+        BattleClassRule? rule)
+    {
+        if (rule is null || Sf2ClassRules.SourceClass(rule.Value) is not { } id ||
+            member.Deployment is not { } deployment || !deployment.PromotionVariants.TryGetValue(id, out var destination))
+            return null;
+        if (field.Population is { } population && deployment.Initialization?.AllyPartyMember is { } index &&
+            population.AllySprites?.SingleOrDefault(sprite => sprite.Character == index)?.PromotedSprite(id) is null)
+            return null;
+        if (definition.PrivateDefinitions is null) return id;
+        var pack = PromotionLoadout(member, destination);
+        int slot = BattleEquipment.EquippedSlot(destination, pack);
+        int itemId = slot == BattleEquipment.UnarmedChoice ? -1 : pack.Items[slot] & 127;
+        var key = (member.Carried.Actor, destination.ClassRule, itemId);
+        return definition.EncounterScenes.Count > 0 &&
+            definition.EncounterScenes.Values.All(scene => scene.AllyAppearances?.ContainsKey(key) == true) ? id : null;
     }
 
     private static bool CurseUnavailable(ScenarioDefinition definition, SessionSnapshot current, ChurchAction action) =>

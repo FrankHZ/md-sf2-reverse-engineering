@@ -28,8 +28,8 @@ public sealed class BattleSaveProgressTests
         var definition = basis;
         foreach (var encounter in basis.Encounters.Values)
             definition = Replace(definition, encounter.WithDeployments(encounter.Deployments.Select(d =>
-                mixed && d.Actor == deployedActor ? d with { RegularPromotion = Paladin(d.Definition) } :
-                d.Actor == actor || mixed && d.Actor == retainedActor ? d with { RegularPromotion = Hero(d.Definition) } : d)));
+                mixed && d.Actor == deployedActor ? d with { PromotionVariants = new Dictionary<byte, BattleActorDefinition> { [13] = Paladin(d.Definition) } } :
+                d.Actor == actor || mixed && d.Actor == retainedActor ? d with { PromotionVariants = new Dictionary<byte, BattleActorDefinition> { [12] = Hero(d.Definition) } } : d)));
         BattleActorProgress HeroProgress(BattleActorProgress p) => p with { Level = 1, ClassId = 12,
             Spells = [new("bolt", 1)], SourceLoadout = new(p.SourceLoadout!.Items, [13, 63, 63, 63]) };
         var retained = saved.Story.Player.RetainedAllies.Select(a => a.Actor == actor || mixed

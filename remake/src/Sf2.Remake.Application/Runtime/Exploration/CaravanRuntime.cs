@@ -94,8 +94,9 @@ internal static class CaravanRuntime
         var identity = identities[0].ResolveClass(member.Progress?.ClassId);
         if (identity.Definition.ClassRule == appearance.Class) return appearance.Sprite;
         var promoted = definition.Exploration!.Maps.Values.SelectMany(map => map.Population?.AllySprites ?? [])
-            .FirstOrDefault(row => row.Character == identity.Initialization?.AllyPartyMember && row.PromotionClass == member.Progress?.ClassId);
-        return promoted?.PromotionSprite ?? throw new BattleRuleException("caravan-player-class", "party", true);
+            .Where(row => row.Character == identity.Initialization?.AllyPartyMember)
+            .Select(row => row.PromotedSprite(member.Progress?.ClassId)).FirstOrDefault(sprite => sprite is not null);
+        return promoted ?? throw new BattleRuleException("caravan-player-class", "party", true);
     }
 
     // Flag rows and consecutive action pointers are independent of the current physical list.

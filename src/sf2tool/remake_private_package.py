@@ -23,7 +23,11 @@ from sf2tool.remake_command_menu import world_dependencies
 from sf2tool.remake_exploration_content import _selected_growth, checked_canonical, map_compiler
 from sf2tool.remake_exploration_maps import compile_maps
 from sf2tool.remake_exploration_programs import OriginalPrograms
-from sf2tool.remake_exploration_scene import ally_sprites
+from sf2tool.remake_exploration_scene import (
+    ally_sprites,
+    promotion_sprite_fields,
+    promotion_sprites,
+)
 from sf2tool.texture_extract import md_palette_color, write_png_rgba
 
 OPENING_INPUTS = (
@@ -117,8 +121,8 @@ def installed_png(root, name):
     )
 
 
-def bind_ordinary_progression(package: dict, upstream: Path, promotions: dict[int, str]) -> None:
-    """Add gameplay metadata for the ordinary appearances selected for this package."""
+def bind_promotion_progression(package: dict, upstream: Path, promotions: dict[int, str]) -> None:
+    """Bind each freshly mounted appearance without replacing other class destinations."""
     commit = subprocess.check_output(
         ["git", "-C", str(upstream), "rev-parse", "HEAD"], text=True
     ).strip()
@@ -147,7 +151,10 @@ def bind_ordinary_progression(package: dict, upstream: Path, promotions: dict[in
 
     world = package["world"]
     sprites = {row["sprite"] for row in world["presentation"]["sprites"]}
-    if any(row["promotionSprite"] not in sprites for row in variants.values()):
+    selected_sprites = {
+        sprite for row in variants.values() for sprite in promotion_sprites(row).values()
+    }
+    if not selected_sprites <= sprites:
         raise ValueError("Promotion requires its mounted walking sprites")
     for row in additions:
         key = row["actor"], row["classId"]
@@ -165,9 +172,13 @@ def bind_ordinary_progression(package: dict, upstream: Path, promotions: dict[in
                 continue
             if appearance["sprite"] != variant["sprite"]:
                 raise ValueError("Promotion differs from the mounted base character")
-            for field in ("promotionClass", "promotionSprite"):
-                if appearance.setdefault(field, variant[field]) != variant[field]:
+            bindings = promotion_sprites(appearance)
+            for role, sprite in promotion_sprites(variant).items():
+                if bindings.setdefault(role, sprite) != sprite:
                     raise ValueError("conflicting promotion sprite")
+            for key in ("promotionClass", "promotionSprite", "promotionSprites"):
+                appearance.pop(key, None)
+            appearance.update(promotion_sprite_fields(bindings))
 
     for row in world["maps"]:
         bind_population(row.get("population"))
@@ -388,12 +399,13 @@ def ninja_weapon_layers(scene: dict) -> list[dict]:
     return layers
 
 
-def mount_ordinary_appearances(
+def mount_promotion_appearances(
     library: Path, world: dict, scene: dict, promotions: dict[int, str]
 ) -> None:
     # The selected independent weapon layers use body colors 1 and 2 ($0EEE
     # and $0000) shared by both class palettes. None selects an unarmed body.
     rules = {
+        "PGNT": (14, {72, 73, 74, 75, 77, 78}),
         "WIZ": (17, {85, 86, 87, 89}),
         "VICR": (19, {85, 86, 87, 89}),
         "GLDT": (15, {33, 34, 35, 36}),
@@ -470,7 +482,7 @@ def mount_ordinary_appearances(
                 row
                 for row in scene["actors"]
                 if row["side"] == "ally"
-                and row["sprite"] == base_sprites[member]
+                and row["sprite"] == (13 if class_code == "PGNT" else base_sprites[member])
                 and member in row.get("members", [])
                 and (row["item"] is None) == (None in base_items)
             ]
@@ -496,6 +508,9 @@ def mount_ordinary_appearances(
             attack = prepared_ally_sequence(sprite, animations[sprite], draw_weapon)
             dodge = prepared_ally_sequence(sprite + 40, animations[sprite + 40], draw_weapon)
             sequences = dict(idle=attack, attack=attack, dodge=dodge, item=attack)
+            if class_code == "PGNT" and row["sequences"]["attack"]["index"] == 81:
+                # The same spear/javelin selects throw 81 for PLDN and 82 for PGNT.
+                sequences["attack"] = prepared_ally_sequence(82, animations[82], draw_weapon)
             if class_code in {"WIZ", "VICR", "NINJ"}:
                 sequences["cast"] = attack
             if class_code == "MNST":
@@ -636,6 +651,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
     """Mount first-consumer operands into a new closed package; needs no production inputs."""
     permitted = {"walking", "icons", "sfx", "music", "pldn"}
     retained_families = {
+        "pgnt": {14: "PGNT"},
         "wiz": {4: "WIZ", 17: "WIZ"},
         "melee": {3: "GLDT", 16: "GLDT", 10: "BDBT"},
         "ranged": {13: "SNIP", 18: "SNIP", 8: "BWNT"},
@@ -653,6 +669,8 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         "blast-1",
     }
     selected = permitted | (set(families) & optional) if "all" in families else set(families)
+    if "pgnt" in selected and len(selected) != 1:
+        raise ValueError("mount the PGNT increment on a prepared ordinary promotion package")
     shrine = "south-shrine" in selected
     if shrine and (upstream is None or canonical_path is None):
         raise ValueError("south-shrine needs --canonical and --upstream")
@@ -717,7 +735,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
             target.parent.mkdir(parents=True, exist_ok=True)
             if (
                 (selected == {"south-shrine"} and rel not in scenes)
-                or (indra_only and rel != battle26_scene)
+                or ((indra_only or selected == {"pgnt"}) and rel != battle26_scene)
                 or (spell_only and rel not in spell_paths)
             ):
                 # Immutable external battle/audio/entry inputs. Rewritten scenes get private files.
@@ -775,7 +793,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
                 if actor not in scene["actors"]:
                     scene["actors"].append(actor)
         if retained_promotions:
-            mount_ordinary_appearances(root, world["world"], scene, retained_promotions)
+            mount_promotion_appearances(root, world["world"], scene, retained_promotions)
             promotions.update(retained_promotions)
         if "indra" in selected:
             mount_indra_staff(root, Path(temp), scene)
@@ -784,7 +802,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         if "phoenix-wave" in selected:
             mount_phoenix_waves(root / "effects", Path(temp), scene)
         if upstream is not None and promotions:
-            bind_ordinary_progression(world, upstream, promotions)
+            bind_promotion_progression(world, upstream, promotions)
         if "blast-1" in spell_families:
             mount_prepared_audio(root / "sfx/114", 114, dest, presentation)
         mounted_commands = list(commands or (25, 87, 99))

@@ -27,6 +27,7 @@ from sf2tool.remake_battle_scene_content import (
     compose,
     special_battle_sprite_frames,
 )
+from sf2tool.remake_exploration_scene import promotion_sprites
 from sf2tool.texture_extract import (
     decode_md_4bpp_tile,
     md_palette_color,
@@ -348,9 +349,9 @@ def prepare_visuals(
             )
             sprites.update(row["sprite"] for row in variant["population"]["allySprites"])
             sprites.update(
-                row["promotionSprite"]
+                sprite
                 for row in variant["population"]["allySprites"]
-                if "promotionSprite" in row
+                for sprite in promotion_sprites(row).values()
             )
             sprites.update(
                 row["unjoinedSprite"]

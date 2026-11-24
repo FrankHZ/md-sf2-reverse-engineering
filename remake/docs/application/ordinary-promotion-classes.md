@@ -19,7 +19,8 @@ compatibility. Frayja and later recruits are outside this boundary.
 `c834c652b6862bc5679fd7f69a38a7093206efc6`. Join status, base class and stored level ≥20 determine
 ordinary eligibility. A fallen or reserve member is eligible. The regular offer is free.
 A matching carried item can present an earlier special offer. Declining it reaches a separately
-confirmed regular offer with the same inventory. Success publishes level 1 and EXP 0 with the
+confirmed regular offer with the same inventory. Eric can instead accept the bound Wing
+for [PGNT](church-promotion-design.md#reproduce-erics-special-promotion). Success publishes level 1 and EXP 0 with the
 destination class, keeps earned stats, live HP/MP and the book, and loads class MOV, movement,
 resistance and prowess. Refresh status and equipment from these inputs. Only NINJ in this
 ordinary set invokes the explicit weapon unequip. The next earned level selects the local
@@ -216,9 +217,10 @@ cases cover Chester, Rick, Tyrin, Randolf, Slade and Kiwi alongside the ordinary
 ## Implementation order and ownership
 
 1. **PLDN and shared ordinary admission.** Extend the existing private selection
-   `promotionClasses` with finite mapped actor/destination rows. Reuse `RegularPromotion` and
-   existing class resolution. Generalize private reader, stat and presentation joins to the
-   admitted pair, preserving authored profiles and initial PLDN/BRGN. Include source AI target
+   `promotionClasses` with finite mapped actor/destination rows. Use immutable class-ID
+   variants through existing class resolution. The PGNT pilot preserves older scalar
+   field appearance pairs and keeps the ordinary PLDN destination available in the
+   same package. Preserve authored profiles and initial PLDN/BRGN. Include source AI target
    lookups, equipment masks, and field v1/v3 and battle v2/v4/v5 restore in the first consumer
    review. Exercise a v5 round trip at settled battle input with a promoted actor carrying
    divergent SLOW/BOOST counters, a retained promoted member, and valid packed books and

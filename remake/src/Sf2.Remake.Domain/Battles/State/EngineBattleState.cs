@@ -13,7 +13,7 @@ public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
 public enum BattleActionKind { Stay, Healing, Physical, Item, Retreat, PrismLaser, AttackSpell, SupportSpell }
 public readonly record struct BattleActionRef(BattleActionKind Kind, SpellRef? Spell = null, int? ItemSlot = null);
-public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight, UnpromotedMage, UnpromotedArcher, UnpromotedThief, UnpromotedTortoise, UnpromotedPhoenix, UnpromotedRanger, UnpromotedWolfman, UnpromotedBirdman, BrassGunner, Paladin, Hero, Wizard, Gladiator, BirdBattler, Sniper, BowKnight, Vicar, WolfBaron, Phoenix, Ninja, Monster }
+public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight, UnpromotedMage, UnpromotedArcher, UnpromotedThief, UnpromotedTortoise, UnpromotedPhoenix, UnpromotedRanger, UnpromotedWolfman, UnpromotedBirdman, BrassGunner, Paladin, Hero, Wizard, Gladiator, BirdBattler, Sniper, BowKnight, Vicar, WolfBaron, Phoenix, Ninja, Monster, PegasusKnight }
 public enum BattleControl { Player, Automatic }
 public enum BattleFaction { Ally, Enemy }
 
@@ -223,11 +223,12 @@ public sealed record BattleDeploymentDefinition(BattleActorDefinition Definition
     int ProcessingOrder, BattleControl Control, BattleStrategyRef? AiStrategy, MapPosition Position,
     BattleDeploymentInitialization? Initialization = null, bool SourceAllyControl = false)
 {
-    public BattleActorDefinition? RegularPromotion { get; internal init; }
+    public IReadOnlyDictionary<byte, BattleActorDefinition> PromotionVariants { get; internal init; } =
+        ReadOnlyDictionary<byte, BattleActorDefinition>.Empty;
     internal BattleDeploymentDefinition ResolveClass(byte? classId)
     {
         if (classId is null || Definition.Growth?.ClassId == classId) return this;
-        if (RegularPromotion?.Growth?.ClassId == classId) return this with { Definition = RegularPromotion };
+        if (PromotionVariants.TryGetValue(classId.Value, out var variant)) return this with { Definition = variant };
         throw new BattleRuleException("actor-class", "actor.progress.classId");
     }
 

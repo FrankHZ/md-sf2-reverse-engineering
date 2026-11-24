@@ -1,6 +1,6 @@
 # Church promotion
 
-**Ordinary church promotion.** Bowie can become HERO from SDMN at stored level 20 or higher. The current class travels with his earned progress through field play, combat, level-up, saves and return. The campaign retains High rigor because this change crosses growth, equipment, presentation and both save recipes. Other ordinary destinations and special-item transactions remain open. [Campaign agreement](remaining-campaign-risk-baseline.md) · [Design assignment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945)
+**Ordinary church promotion.** Bowie can become HERO from SDMN at stored level 20 or higher. The current class travels with his earned progress through field play, combat, level-up, saves and return. The campaign retains High rigor because this change crosses growth, equipment, presentation and both save recipes. The ordinary class pairs and Eric’s Pegasus Wing route are playable through first Pacalon. The other special families remain open. [Campaign agreement](remaining-campaign-risk-baseline.md) · [Design assignment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945)
 
 ## Playable HERO and reproduction
 
@@ -205,6 +205,85 @@ Copy-Item -LiteralPath $seed -Destination (Join-Path $slotDirectory 'slot1.json'
 ```
 
 Read the existing exploration/battle `ReadObservationJson`, scene projection, church wait, item words, save/entry observations and native errors. Use mapped controls; keep screenshots, frame capture, manually edited saves and public private-content attachments out of acceptance. Compare decoded progress before/after across all actors, flags, gold, depot, seeds and actual slot/class/book; check stale input after reentry and successful ordinary control return. Compare level-up outcomes against an uninterrupted run from the same state/RNG. Separate existing shutdown failures from new action/restore errors. Use the clean committed planner and record actual PR checks. [Engine/adapter verification](../development-and-verification.md) · [Native save and control](battle-save-and-continue.md) · [Known Pacalon shutdown evidence](pacalon-first-visit.md#reproduction)
+
+## PGNT pilot ownership and compatibility
+
+Use a finite class-ID lookup on the immutable deployment for the admitted ordinary and
+special destinations. The live word stays in `BattleActorProgress.ClassId`. Growth,
+equipment, movement, AI priorities, field and battle Continue, and both battle and field
+appearance resolve the same ID. Map populations normalize the previously published
+scalar promotion pair and the multi-destination rows into one lookup. The scene keeps its
+existing member/class/equipped-item key. An encounter-specific class swap or another
+persistent class field would make ordinary fallback and return depend on the entry route.
+
+The first package selects Eric alone for PGNT and retains KNTE and PLDN in the same
+selection. The existing packed Wing in a joined pack determines the offer. Verify both
+loadouts, target class and its mounted appearances before committing the existing church
+answer, then write the candidate and holder together. Same-holder promotion has one pack
+and one actor update. Restrict the pilot to the existing five-way selection's KNTE route.
+Other special offers retain their current unavailable response. The source priority order
+is 11, 23, 3 and 30 in the Regular, Flying, Archer and Mage tables respectively, counting
+from zero. [Source class ordering](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/aipriority.asm)
+
+**Confirmed in the remake.** Eric uses the Pegasus Knight class definition (14), its own
+growth, Flying MOV 7, walking sprite 35 and battle body 17/palette 2. The six retained
+lance and spear bindings use the actual equipped weapon. The ordinary body animation
+is 17, spear/javelin attack is 82 and dodge is 57. The starting, ordinary and special
+walking choices for Eric are 33, 34 and 35 in the same package. Chester and Rick retain
+their ordinary paths. Their PGNT variants have no content binding in this pilot.
+[Eric's source growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats14.asm) ·
+[Member battle sprites](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/allybattlesprites.asm)
+
+### Reproduce Eric's special promotion
+
+The opt-in `pgnt` mount starts from the registered `derived/issue2106/pre-voyage-spells-v2`
+and `derived/issue2001/retail-v1`. The world grows by 7,900 bytes and the Battle26 scene
+by 20,969. The closed package totals 314,302,949 bytes across 147 files. The 28,869-byte
+increment falls within the 100 KiB estimate. Both rewritten files reproduced byte for byte
+against the registered `derived/issue1957/pgnt-v1`. The producer reuses the other immutable
+dependencies. The companion catalog adds exactly `name.class/14` from the configured
+`names.zh-CN.jsonl` to the `names` list of the #2001 catalog. Select its
+`namespace`, `index` and `translation` (as `text`), keeping the source identity and 2,221
+message rows. The result has 190 names.
+
+```powershell
+. ./local/private-inputs.ps1
+$derived = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived'
+uv run --no-sync python -m sf2tool.remake_retail_assets --family pgnt `
+    --root (Join-Path $derived 'issue2001/retail-v1') `
+    --base (Join-Path $derived 'issue2106/pre-voyage-spells-v2') `
+    --upstream $pinnedSource --mount $freshAbsolutePackage
+```
+
+Build the Debug adapter in the isolated checkout. Choose a fresh external disposable
+save root and an unused journey. The published runner resolves the registered content,
+sets the locale and stages its input scripts under the supplied checkout's `local/`.
+Each command launches a separate headless process. Use fresh sample names for a retry.
+
+```powershell
+$run = Join-Path $derived 'issue1957/review/Boot.ps1'
+$seed = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue1927/pacalon/slots/castle-en.json'
+$sample = @{Repo = (Get-Location).Path; SaveRoot = $disposableSaveRoot; Journey = 'pgnt-en'}
+& $run @sample -Mode eric -Sample rite -Seed $seed
+& $run @sample -Mode raise -Sample restored-field
+& $run @sample -Mode road -Sample battle-ready
+& $run @sample -Mode steel -Sample restored-battle
+& $run -Repo $sample.Repo -SaveRoot $sample.SaveRoot -Journey pgnt-zh -Mode eric `
+    -Sample rite-zh -Language zh-CN -Seed $seed
+```
+
+| Boundary | Observed result |
+| --- | --- |
+| Church and custody | From the real English castle history, fallen Eric changed from KNTE 27/83 to PGNT 1/0. Kazin's pack changed from `[213,5,118,123]` to `[213,5,123,127]`. F175, 5,527 gold, Eric's 36/32/31 base ATT/DEF/AGI, equipped Steel Lance word 203 and empty book survived. Separate English and Chinese runs of the same history named Kazin, the Wing, Eric and the destination in the offer and confirmed his actual new class. |
+| Field Continue and Raise | A v3 legacy visit initially refused Save with `field-visit-actor-origin` before promotion. Ordinary exit and re-entry supplied the fresh castle visit. V6 Save sequence 5 and independent cold re-save 6 had equal complete decoded `data`. The runner held simulation time below one field tick for this comparison, then resumed normal time. Declining Raise retained the fallen member. Paying 210 restored 58 HP and left 5,317 gold. Eric was already deployed in this history. |
+| Flight and combat | Ordinary travel to Ketto entered the Battle26 repeat. The actor had Flying MOV 7, visible walking sprite 35, body `ally17-palette2/frame0` and his equipped weapon. The first Steel Lance attack missed and earned 1 EXP. The enemy continued, including the Dark Sniper's 14 damage to Bowie. Eric's second attack dealt 15 to that sniper and earned 19 EXP, returning to Movement at 20 EXP. V4 battle Save sequence 8 and fresh-process re-save 9 had equal complete decoded `data`. |
+| Limits | Same-holder compaction, stale high-byte refusal, independent ordinary consent, destination growth and target priorities have engine coverage. Natural Chinese Eric recruitment, further special families and original rite timing remain **Unknown**. Some successful headless exits reported ObjectDB leaks under #1716. |
+
+An early driver moved down from the revised system menu’s default selection and missed Save. The initial
+localized prompt also described an available Wing as unavailable. The final checks
+used the current Save selection and the corrected confirmation in both languages. A fresh local
+installation from the published runner repeated the Chinese rite and Save with the producer
+scratch held aside.
 
 ### Review boundary
 

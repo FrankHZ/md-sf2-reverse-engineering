@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Domain.Battles;
@@ -37,7 +38,8 @@ internal static class PrivateFieldPreparation
             var definition = row.Definition.WithEquipment(new((byte)(row.Definition.Attack - bonus), weapons,
                 allowChanges: allowBattleChanges, rings: rings));
             if (allowBattleChanges) BattleEquipment.ValidateLoadout(definition, definition.SourceLoadout);
-            return row with { Definition = definition, RegularPromotion = row.RegularPromotion?.WithEquipment(definition.Equipment!) };
+            return row with { Definition = definition, PromotionVariants = row.PromotionVariants
+                .ToFrozenDictionary(pair => pair.Key, pair => pair.Value.WithEquipment(definition.Equipment!)) };
         }));
     }
     internal static BattleWeaponDefinition[] Weapons(PrivateBattleDefinitions source)
