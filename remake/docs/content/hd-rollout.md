@@ -17,8 +17,9 @@ Reuse the admitted original for the selected palette and frame. Where a caller n
 original, join its prepared index to that caller and verify Original first. Use only authorized
 materials for derivation and keep the existing private publication and public-asset boundaries.
 The [static terrain selection](asset-inventory.md#pre-voyage-static-terrain-2175) carries the Map3
-companion and the other nineteen banks. The [UI raster extension](asset-inventory.md#pre-voyage-ui-rasters-2178) carries the closed
-battle, actor, portrait and terrain selections forward.
+companion and the other nineteen banks. The current complete [entry-layer selection](asset-inventory.md#pre-voyage-entry-layers-2179)
+carries six switchable title/Witch layers together with the #2178 UI, battle, actor, portrait
+and terrain selections.
 
 ## Coverage from the selected package
 
@@ -52,7 +53,7 @@ replacement, additional Map60 ascent, and later Map14 movement.
 | Battle ground and backdrops | Retail `terrain` contains the source variants. Scene defaults and `terrainScenes` select installed pairs. | Derive by distinct selected raster and its display semantics. Keep the existing horizon, ground footprint, wrapping, and encounter-specific selector. |
 | Battle effect and field death | Retail `effects/index.json` retains indexed operands. Mounted scenes include healing/fairy, field death and prepared BLAZE1/2 and BLAST1 in Battles04–07. | Cover only original-art consumers already bound in the selected encounter. Scale complete existing draw frames or indexed chunks at their own composition boundary. Keep timing, reaction, skip and Reduced Flash. Placeholder attacks stay with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104). [Current effect status](../godot/spell-presentation.md#coverage-by-family-and-rank) |
 | Original UI rasters | Retail `icons` and `ui` distinguish semantic keys and highlight states. The world has 204 identity states and 32 field/Item/Shop/Church command states. Battle render scenes have identity, command, inspection option and cursor keys. | [UI raster consumers](#ui-raster-consumers-2178) bind those keys through Original/HD. The existing selection, disabled behavior, anchors and input geometry still apply. Code-drawn feedback, panels, HUD, licensed text and device glyphs stay with the [UI design owners](presentation-assets.md#fonts-theme-and-input-glyphs). Source pixel glyphs and advances stay at their native grid. |
-| Title and Witch | Retail `entry/index.json` identifies preparation. `entry/entry.json` mounts six 256×224 named layers with title/numeral and Witch arrival/base/blink/mouth. | `EntryPresentationReader` and `EntryPresentationAssets` expect Original dimensions. `EntryBackdrop` chooses by the entry clock. Add one optional coherent alternate set and preserve the 256×224 logical box, numeral offset and expression cadence. Other decoded special screens require admitted callers. |
+| Title and Witch | Retail `entry/index.json` identifies preparation. `entry/entry.json` mounts six 256×224 named layers with title/numeral and Witch arrival/base/blink/mouth. | `EntryPresentationReader` and `EntryPresentationAssets` admit Original and optional 4× `hdResources`. `EntryBackdrop` chooses a complete six-layer bank through the shared preference and the existing entry clock, preserving the 256×224 logical box, numeral offset and expression cadence. Other decoded special screens require admitted callers. |
 
 **Confirmed** by the prepared index and admitted block words. Maps 3, 4, 14, 16, 41, 44, 66
 and 73 each have two animation entries. Of their declared banks, 37, 24, 24, 20, 9, 16, 160 and
@@ -642,3 +643,81 @@ no adapter errors.
 
 The observations cover real consumers from controlled preconditions. Subjective visual acceptance
 under ordinary play, GPU residency and later campaign UI coverage remain **Unknown**.
+
+## Entry layers (#2179)
+
+The entry slice retains High rigor and consumes the accepted #2178 complete package.
+Its boundary is the six optional entry layers, admission, existing settings consumption,
+closed-package copying and direct production-entry observation. Title geometry, numeral
+motion and the existing Witch clock remain the governing behavior.
+
+Owned paths are EntryPresentationReader, EntryPresentationAssets, EntryBackdrop,
+SessionEntryView, remake_private_package, remake_hd_entry, the entry observation and
+these content owners. All textures are prepared at mount before Settings can publish a
+mode. A complete six-layer alternate group uses HD. A partial group uses Original for
+all six layers, and every declared resource still undergoes admission and decoding.
+
+The measured base has 168 files and 359,189,445 bytes. Six source images are 256×224.
+Six 1024×896 RGBA images require 21 MiB decoded, in addition to Original. Generation
+is serial and linear in pixels plus closure bytes copied. Budget 512 MiB per complete
+candidate and 512 MiB process peak, with 1 GiB free after staging. Initial free disk was
+34,972,065,792 bytes. A title-only pilot precedes full conversion. Reassess on exceeded
+budgets, invalid alpha/black coverage or unexpected dimensions. No network/model cost.
+
+Acceptance uses the actual entry, ordinary Settings Apply and persisted reload, title
+and Witch frames, fixed projection geometry and decoded source pixels, Reduced Flash,
+missing/partial alternate fallback and malformed declaration rejection. Adapter build,
+closed-package comparison and the committed engine-scope gate plan complete the slice.
+
+### Production entry reproduction
+
+Use the registered `derived/issue2179/pre-voyage-entry-v1` complete package and the
+selection variables in [presentation-assets](presentation-assets.md#reuse-a-closed-private-package).
+Load `local/private-inputs.ps1` in the launching process. Build the Debug adapter with the
+locked SDK, `-p:UseSharedCompilation=false -nodeReuse:false`. Set worktree-local APPDATA,
+LOCALAPPDATA, TEMP and TMP and an external disposable `SF2_SAVE_ROOT`. Select a fresh
+`SF2_SAVE_NAMESPACE=issue2179-<unique-name>`, `SF2_HOST_UI_CASE=switch` and an ignored
+`SF2_HOST_UI_OUTPUT` JSON path. Launch from the repository root:
+
+```powershell
+& $env:GODOT_BIN --headless --audio-driver Dummy --rendering-method gl_compatibility `
+    --fixed-fps 60 --resolution 1920x1080 --path remake/game `
+    --log-file $nativeLog --script res://probes/entry_hd_observation.gd
+```
+
+The probe navigates ordinary entry and Settings inputs, applies Original → HD → Original
+→ HD, switches adjustable text to observe speaking, and applies Reduced Flash. Run `reopen`
+with the same namespace to check persisted HD and reduced-flash title projection. All six
+selected texture handles expose decoded RGBA hashes for comparison with the package PNGs.
+The title numeral offset/opacity comes from the draw call. Witch position is (160,92), title
+position is (448,92), and both draw 1024×896 within the 256×224 logical frame.
+
+For `legacy`, select the #2178 complete package with the persisted-HD namespace. For
+`partial`, copy the entry JSON/PNG siblings to fresh scratch, remove one `hdResources` row,
+and point only `SF2_PRIVATE_ENTRY_CONTENT` to that copy. Both select the full Original bank.
+For `invalid`, use a fresh copy with either an HD width of 256 or invalid PNG bytes in a declared
+HD sibling. The entry reports `entry-content-unavailable`; console diagnostics distinguish
+`entry-image-binding` and `entry-image-decode`. A declaration is checked even under Original.
+
+**Confirmed:** published-package switch passed 312 checks and persisted reopen passed 21.
+Legacy and partial groups each passed 20 checks before the final numeral observation addition.
+The shape and decode negative cases each passed their rejection check. All selected texture
+readbacks matched the prepared source/HD RGBA pixels. Producer pilot and candidate directories
+were moved aside before the published-package switch and reload. The six alpha and opaque-black
+masks equal nearest-expanded source masks. Original entry fields and 167 other dependencies
+compare byte for byte with #2178.
+
+Completed initial failures were `missing-field (entry-image)` from requiring `usedTiles` on
+HD rows and a probe using the wrong Reduced Flash ID. Optional admission and the `flash` control
+ID corrected those faults. A subsequent observation expected speaking under default instant
+text and inspected arrival before advancing its page. Ordinary page navigation and adjustable
+text now distinguish arrival, base, blink and mouth. These were completed failing observations.
+Native exit logs retain the existing two-ObjectDB shutdown warning. There were no final adapter
+errors in positive cases. Peak process/GPU memory and subjective visual acceptance remain
+**Unknown**; the 512 MiB process budget is an estimate, not a measured result.
+
+
+The entry producer consumes already prepared images and changes private remake presentation.
+Its path is registered in `REMAKE_PRODUCER_PATHS`. On a clean committed head, select checks
+with `uv run sf2 verify plan --base origin/main --head HEAD --scope engine` after reviewing
+the engine-only semantic boundary. The PR retains local and CI verification results.

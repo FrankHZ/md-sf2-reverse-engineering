@@ -827,3 +827,20 @@ current complete pack size and unchanged-world/dependency checks. Work is O(inpu
 dependencies), one world copy; retain the assumed<3GiB peak-process/1GiB scratch budget, not an
 independently measured peak. Small negative scene variants reuse the world/dependencies; no language
 copies, full-route collection or new asset platform. Replan if growth breaks these bounds.
+
+### Switchable entry layers
+
+The [entry producer](asset-inventory.md#pre-voyage-entry-layers-2179) adds optional
+`hdResources` beside the six required Original `resources`. Each alternate row contains
+`name`, `file`, `width`, and `height`; names match the Original six, filenames are
+`<name>.hd.png`, and dimensions are 1024×896. Unknown or duplicate names, extra/missing
+row fields, inconsistent dimensions, missing files and decode failures reject entry art
+through its existing content-error presentation. Original dimensions remain 256×224.
+
+EntryPresentationAssets decodes every declared texture at mount and owns both banks until
+unmount. EntryBackdrop reads the existing InputSettings.GraphicsMode reference after the
+SettingsHost prepare/write/publish transaction. Only a complete six-layer group selects HD.
+Missing or partial groups select Original together. No new preference or animation clock is
+introduced. Numeral offset, source-layer order, Witch arrival/base/blink/mouth selection and
+Reduced Flash are shared by both modes. The complete published package selection is
+`derived/issue2179/pre-voyage-entry-v1`. [Production observation](hd-rollout.md#production-entry-reproduction).

@@ -6,16 +6,24 @@ namespace Sf2.Remake.GodotAdapter.Entry;
 internal sealed partial class EntryBackdrop : Control
 {
     internal EntryPresentationAssets? Assets;
+    internal Sf2.Remake.GodotAdapter.Input.InputSettings? Preferences;
+    internal string Variant { get; private set; } = "original";
+    internal IReadOnlyDictionary<string, ImageTexture>? DrawnTextures { get; private set; }
     internal bool Witch, Arrival, Speaking, ReducedFlash;
     private double _elapsed;
     internal string Frame { get; private set; } = "title";
     internal Rect2 Art { get; private set; }
+    internal float NumeralOffset { get; private set; }
+    internal float NumeralOpacity { get; private set; }
     public override void _Ready() { MouseFilter = MouseFilterEnum.Ignore; TextureFilter = TextureFilterEnum.Nearest; }
     public override void _Process(double delta) { _elapsed += delta; QueueRedraw(); }
     public override void _Draw()
     {
         DrawRect(new(Vector2.Zero, GetViewportRect().Size), Colors.Black);
         if (Assets is null) return;
+        var textures = Assets.Select(Preferences?.GraphicsMode ?? "original");
+        DrawnTextures = textures;
+        Variant = ReferenceEquals(textures, Assets.HdTextures) ? "hd" : "original";
         float scale = Mathf.Max(1, Mathf.Floor(Mathf.Min(GetViewportRect().Size.Y / 224, 4)));
         Vector2 origin = Witch ? new(160, (1080 - 224 * scale) / 2) : new((1920 - 256 * scale) / 2, (1080 - 224 * scale) / 2);
         Art = new(origin, new(256 * scale, 224 * scale));
@@ -23,14 +31,16 @@ internal sealed partial class EntryBackdrop : Control
         {
             Frame = Arrival ? "witch-arrival" : !ReducedFlash && _elapsed % 3.4 < .12 ? "witch-blink" :
                 Speaking && !ReducedFlash && _elapsed % .22 < .11 ? "witch-mouth" : "witch";
-            DrawTextureRect(Assets.Textures[Frame], Art, false);
+            DrawTextureRect(textures[Frame], Art, false);
         }
         else
         {
             Frame = "title";
             float progress = ReducedFlash ? 1 : (float)Math.Min(1, _elapsed / .9);
-            DrawTextureRect(Assets.Textures["numeral"], new(Art.Position + new Vector2(0, Mathf.Round((1 - progress) * 24)), Art.Size), false, new Color(1, 1, 1, progress));
-            DrawTextureRect(Assets.Textures["title"], Art, false);
+            NumeralOffset = Mathf.Round((1 - progress) * 24);
+            NumeralOpacity = progress;
+            DrawTextureRect(textures["numeral"], new(Art.Position + new Vector2(0, NumeralOffset), Art.Size), false, new Color(1, 1, 1, progress));
+            DrawTextureRect(textures["title"], Art, false);
         }
     }
 }

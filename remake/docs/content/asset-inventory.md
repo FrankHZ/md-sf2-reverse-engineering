@@ -35,7 +35,8 @@ together. The active package is the set selected in the launch process.
 | **Pre-voyage static terrain** · `derived/issue2175/pre-voyage-terrain-v1` | Complete field and tactical selection with twenty L1 banks and the original Map3 companion. [Production and live checks](#pre-voyage-static-terrain-2175) |
 | **Pre-voyage actors and portraits** · `derived/issue2176/pre-voyage-actors-v1` | Complete terrain selection plus switchable shared actor/alternate and portrait banks. [Production and live checks](#pre-voyage-actors-and-portraits-2176) |
 | **Pre-voyage battle artwork** · `derived/issue2177/pre-voyage-battle-v1` | Complete actor/terrain selection with eight close-up banks and shared allied body/weapon donors. Source package for the UI variants. [Production](#derive-selected-battle-rasters) · [Actual consumers](hd-rollout.md#private-battle-artwork-acceptance) |
-| **Pre-voyage UI rasters** · `derived/issue2178/pre-voyage-ui-v1` | Complete battle artwork selection plus world and eight scene UI banks. [Production](#pre-voyage-ui-rasters-2178) · [Actual consumers](hd-rollout.md#ui-raster-consumers-2178) |
+| **Pre-voyage UI rasters** · `derived/issue2178/pre-voyage-ui-v1` | Complete battle artwork selection plus world and eight scene UI banks. Source package for the current entry selection. [Production](#pre-voyage-ui-rasters-2178) · [Actual consumers](hd-rollout.md#ui-raster-consumers-2178) |
+| **Pre-voyage entry layers** · `derived/issue2179/pre-voyage-entry-v1` | Current complete pre-voyage selection with six switchable title/Witch layers, carrying forward the #2178 UI, battle, actor, portrait and terrain banks. [Production](#pre-voyage-entry-layers-2179) · [Actual entry consumer](hd-rollout.md#production-entry-reproduction) |
 | **PGNT** · `derived/issue1957/pgnt-v3` | Separate registered later progression/Battle26 witness. Its older Map3 HD bank has no L1 contexts and its cue 12 is the defeat placeholder. Preserve that evidence selection. Check resource lineage when proposing a successor that combines later progression with pre-voyage corrections. [PGNT reproduction](../development-and-verification.md#high-rank-elemental-magic-observation) |
 | **Display catalogs** · `derived/issue1957/catalogs-v1`, `derived/issue2001/catalogs-v1` | Independent prepared Chinese name overlays for the owning reproductions. Match the catalog and entry locale to the named reproduction. A catalog supplies display names and does not select world, scene or media. [PGNT catalog selection](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Retail catalog selection](presentation-assets.md#sleep-display-name) |
 | **Retail base and library** · `derived/issue2001/issue1966-original`, private asset Git `runtime/retail-v1` | Base world/entry provenance and preparation outputs used to assemble packages. Some prepared candidates have no current package binding. [Retail preparation](#retail-original-preparation) |
@@ -807,3 +808,28 @@ selecting `$candidate` as the source of all four inputs and
 `derived/issue2178/pre-voyage-ui-v1` as the fresh shared destination. Verify with `--check`.
 Use the published world, scene, entry and six opening inputs together for the
 [consumer observation](hd-rollout.md#ui-raster-consumers-2178).
+
+## Pre-voyage entry layers (#2179)
+
+The six prepared `runtime/retail-v1` entry layers are consumed through the accepted #2178
+package. `sf2tool.remake_hd_entry` uses the same pinned graphics filter and actor frame
+conversion, preserving exact source alpha, opaque black and palette treatment. Each Original
+256×224 image has a 1024×896 sibling named `<name>.hd.png`. The title-only `--pilot` produces
+a complete package with a partial alternate group for fallback observation.
+
+```powershell
+. ./local/private-inputs.ps1
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2178/pre-voyage-ui-v1'
+$candidate = Join-Path $PWD 'local/issue2179/candidate'
+# $gfx selects the clean graphics checkout at 172662709b31cb296b55f51894754ce810c30f6c.
+uv run --locked --with pillow==11.3.0 python -B -m sf2tool.remake_hd_entry `
+    --base $base --out $candidate --gfx-root $gfx
+```
+
+Choose fresh output paths for pilot and full conversion. The pilot contains 169 files and
+359,212,273 bytes. The full package contains 174 files and 359,340,404 bytes, an increase of
+150,959 bytes over #2178. Publish with the existing `sf2tool.remake_private_package` command,
+selecting candidate `world.json`, `main-scenes.json`, `entry/entry.json` and `opening-inputs`.
+The registered destination is `derived/issue2179/pre-voyage-entry-v1`; its `--check` comparison
+passed. The publisher includes every declared `hdResources[].file` sibling in the closure.
+[Actual entry acceptance and limits](hd-rollout.md#entry-layers-2179).

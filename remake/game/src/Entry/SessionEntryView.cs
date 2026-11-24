@@ -95,7 +95,7 @@ public sealed partial class SessionEntryView : Control
     }
     internal void RefreshInputHints()
     {
-        if (_input is not { } input) return; _backdrop.ReducedFlash = input.Settings.ReducedFlash;
+        if (_input is not { } input) return; _backdrop.ReducedFlash = input.Settings.ReducedFlash; _backdrop.Preferences = input.Settings;
         for (int i = 0; i < _buttons.Count - 1; i++)
             _buttons[i].Text = GameText.Get(i == 0 ? "entry.new" : i == 1 ? "entry.continue" : "entry.quit");
         if (_buttons.Count > 0) _buttons[^1].Text = GameText.Get("ui.settings.entry");
@@ -287,6 +287,10 @@ public sealed partial class SessionEntryView : Control
         titleSelection = _selection, page = _page, message = _dialogue.Body.Text, visibleCharacters = _dialogue.Body.VisibleCharacters,
         totalCharacters = _dialogue.Body.GetTotalCharacterCount(), latched = _latched, activated = _activated, assetError = _assetError,
         artFrame = _backdrop.Frame, artRect = new { x = _backdrop.Art.Position.X, y = _backdrop.Art.Position.Y, width = _backdrop.Art.Size.X, height = _backdrop.Art.Size.Y },
+        numeralOffset = _backdrop.NumeralOffset, numeralOpacity = _backdrop.NumeralOpacity,
+        graphicsMode = _input?.Settings.GraphicsMode, variant = _backdrop.Variant,
+        drawnTextures = _backdrop.DrawnTextures?.Select(pair => new { name = pair.Key,
+            texture = pair.Value.GetInstanceId().ToString(), width = pair.Value.GetWidth(), height = pair.Value.GetHeight() }),
         textureCount = _assets?.Textures.Count ?? 0, sourceWidth = 256, sourceHeight = 224, integerScale = 4,
         textureIds = _assets?.Textures.Values.Select(texture => texture.GetInstanceId().ToString()).ToArray(),
         layers = _page == -1 ? new[] { "numeral", "title", "start" } : new[] { "witch", "menu", "dialogue" },

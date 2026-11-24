@@ -9,6 +9,9 @@ namespace Sf2.Remake.GodotAdapter.Entry;
 internal sealed class EntryPresentationAssets : IDisposable
 {
     internal readonly Dictionary<string, ImageTexture> Textures = [];
+    internal readonly Dictionary<string, ImageTexture> HdTextures = [];
+    internal IReadOnlyDictionary<string, ImageTexture> Select(string mode) =>
+        mode == "hd" && HdTextures.Count == Textures.Count ? HdTextures : Textures;
     internal readonly EntryPresentation Content;
     internal SessionAudio? Audio { get; private set; }
     private readonly DisplayCatalog? _display;
@@ -28,24 +31,30 @@ internal sealed class EntryPresentationAssets : IDisposable
         _display = display.Catalog; _displayError = display.Error;
         try
         {
-            foreach (var (name, bytes) in Content.Images)
+            Load(Content.Images, Textures, 1);
+            if (Content.HdImages is { } hd) Load(hd, HdTextures, 4);
+        }
+        catch { Dispose(); throw; }
+
+        static void Load(IReadOnlyDictionary<string, byte[]> source, Dictionary<string, ImageTexture> target, int scale)
+        {
+            foreach (var (name, bytes) in source)
             {
                 using var image = new Image();
                 var result = image.LoadPngFromBuffer(bytes);
                 if (result != Error.Ok)
                     throw new ArgumentException($"entry-image-decode ({name}): {result}");
-                if (image.GetWidth() != 256 || image.GetHeight() != 224)
-                    throw new ArgumentException($"entry-image-dimensions ({name}): {image.GetWidth()}x{image.GetHeight()}, expected 256x224");
-                Textures.Add(name, ImageTexture.CreateFromImage(image));
+                if (image.GetWidth() != 256 * scale || image.GetHeight() != 224 * scale)
+                    throw new ArgumentException($"entry-image-dimensions ({name}): {image.GetWidth()}x{image.GetHeight()}, expected {256 * scale}x{224 * scale}");
+                target.Add(name, ImageTexture.CreateFromImage(image));
             }
         }
-        catch { Dispose(); throw; }
     }
     internal void AttachAudio(Node owner) => Audio = new SessionAudio(owner, Content.Audio);
     public void Dispose()
     {
         Audio?.Dispose(); Audio = null;
-        foreach (var texture in Textures.Values) texture.Dispose();
-        Textures.Clear();
+        foreach (var texture in Textures.Values.Concat(HdTextures.Values)) texture.Dispose();
+        Textures.Clear(); HdTextures.Clear();
     }
 }
