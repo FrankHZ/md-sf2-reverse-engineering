@@ -363,41 +363,82 @@ The `asset-inventory.md` trace receives consumer status after observed admission
    in-game observations to state, input and projection with existing probes. Activation of the
    play checkout follows independent acceptance and its own authorization.
 
-## Actor consumer implementation boundary
+## Actor and portrait implementation (#2176)
 
-The current adapter resolves ordinary and alternate exploration directions from the saved
-GraphicsMode and the selected sprite identity. Optional `hdGraphics` uses the same keys as
-`graphics`, with three 4× strips per declared key. A missing key selects the complete Original
-direction group. A declared malformed group fails content admission. Shadow removal uses the
-Original frame's black-pixel word mask at the selected density before orientation/head effects.
-Story and Member portraits use their own optional atlas, including the existing tile replacement
-and mirror composition. Tactical world sprites use their own directions and preserve logical
-extent and special-pose registration across density changes. Tactical settings prepare decodes
-HD world directions and portraits before preferences are written.
+The [registered actor package](asset-inventory.md#pre-voyage-actors-and-portraits-2176) extends
+static terrain with the already admitted shared sprite/portrait bank. Preparing that modest bank
+as a whole avoids a second conditional story selector registry: it includes later-only resource
+IDs, but adds no gameplay admission or claim of later campaign reach. The package contains all
+163 sprite definitions, three named alternate groups and 46 portraits.
 
-**Confirmed** by the synthetic native `HdActorObservation` command below. Three directions,
-two halves, ordinary and 48px tactical textures preserve projected dimensions and registration
-through Original → HD → Original. Portrait crop dimensions and mirror composition execute with
-an authored solid-color atlas. An authored black-word mask exercises shadow removal at 4×.
-This observation invokes actual adapter consumers with synthetic immutable data through the
-existing reflection convention. It does not establish campaign reach or distinct eye/mouth pixels.
+The transparent-family profile preserves every source pixel's alpha and opaque-black mask.
+Within those masks it applies the pinned exact-RGBA edge-aware 2× filter, then nearest doubling.
+Each walking half is independent. Each portrait's 8×8 tile, including replacement columns, is
+independent before runtime composition. This keeps the native mask and replacement boundaries;
+it deliberately does not apply terrain palette expansion to faces or transparent sprites.
+A pilot on sprites 0, 59, 252 and portrait 5 confirmed unchanged masks and nontrivial interior
+smoothing. Full preparation fits the existing inline world limit, so no additional transport is
+needed. Human approval of every derivative remains **Unknown**.
+
+Ordinary and alternate exploration directions follow GraphicsMode and the selected sprite key.
+Optional `hdGraphics` uses the same keys as `graphics`, with three 4× strips per key. Missing
+coverage falls back to that complete Original direction group. A declared malformed group fails
+admission or preparation. Shadow removal uses the Original frame's black-word mask at the chosen
+density before orientation/head effects. Story and member portraits select their own optional
+atlas, then retain existing mouth/eye tile replacement and mirroring. Neither family requires
+HD terrain on the current map. Tactical sprites retain logical extent, animation selection and
+48px registration. The existing settings prepare → write → publish transaction owns switching.
+
+Scene-owned death/exit frames belong to the effects family in #2177. Kraken uses its existing
+scene-owned Original frames and remains outside this pre-voyage bank delivery. These are explicit
+coverage boundaries, not a claim that every presentation resource is now HD.
+
+### Focused observations
+
+The native `HdActorObservation` uses authored data in actual adapter consumers. It covers the
+Original → HD → Original tactical geometry, special size/registration, independent portrait
+selection and the actual exploration alternate/shadow path on a map without HD terrain.
+Distinct authored portrait tiles cover all mouth/eye combinations and mirrored composition; absent
+HD variants fall back to Original. Five malformed-resource cases reject in preparation and retain
+the applied mode, texture and geometry. Run after a locked Debug build:
 
 ```powershell
 . ./local/private-inputs.ps1
-$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
-New-Item -ItemType Directory -Path ./local/tmp -Force | Out-Null
-$env:TEMP = Join-Path (Get-Location) 'local/tmp'
-$env:TMP = $env:TEMP
-uv run sf2 verify adapter
-& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore
 & $env:GODOT_BIN --headless --path remake/game --script res://probes/engine_hd_actor_observation.gd
 ```
 
-**Unknown** pending #2176 acceptance. Scene-owned death/exit and Kraken frames still select their
-existing scene rasters. Full exploration alternate/shadow input projection, distinct mouth/eye
-replacement, malformed-HD settings rollback, old-package fallback, and long-lived texture release
-need focused observations. No private actor candidate has been generated or selected. Early selector
-closure, producer calibration, world-size/latency measurements, complete package promotion and real
-consumer observations remain open. The synthetic probe's first run reported one leaked CanvasItem
-owned by its standalone Sprite2D. Explicitly freeing that node corrected the probe; its repeat passed
-without warnings. The previous ticket's completed engine fixture failures remain separate evidence.
+For the private candidate use the closed package environment and writable, isolated settings from
+[terrain replay](asset-inventory.md#static-terrain-native-replay), with a fresh external disposable
+save root. `engine_hd_actor_campaign_observation.gd` extends that driver: `field` starts Map3 at
+(32,13), Right (0), speed32 and flags `[0,1,2,32,33,66,80,600,602,603,604,605]`; `battle6` uses the
+existing controlled Battle06 start. Set `SF2_HOST_UI_CASE`, `SF2_HOST_UI_START` and
+`SF2_HOST_UI_OUTPUT`; the reused driver expects namespace `issue2175` under the newly isolated
+root. This namespace does not select the previous ticket's save root. Both cases apply the three
+modes through ordinary Settings and read mounted texture pixels/geometry. All visible normal
+actors stay 96×96 logical pixels while source frames change 24 → 96 → 24. The battle driver also
+checks paused authoritative state and terrain projection.
+
+For `engine_hd_pose_observation.gd`, reuse the [prison controlled input and normal confirmations](../godot/presentation.md#special-pose-dialogue-portraits-2070),
+set `SF2_VIEWPORT_CASE=prison`, `SF2_VIEWPORT_OUTPUT`, and use an isolated input-settings JSON with
+`graphicsMode=hd`, English and instant text. The seven source-defined dialogue checks cover
+Slade's special/normal pose, Sarah, mirrored Slade, narration without a portrait and final control.
+Actual HD portraits are 192×256, with the same destination rectangle. Field actors remain HD.
+
+**Confirmed:** independent pixel comparison of 48 actual field, tactical and portrait samples.
+For each actor receipt, decode the selected Original/HD strip and take its square `half`/`frame`
+at `direction`. For each portrait receipt, decode `hdRaster`, copy the reported `tiles` from the
+immutable atlas at 32px per tile, crop the first six columns and mirror when requested. Compare
+SHA-256 of RGBA bytes with the receipt's `rgba`; this observes existing resource identity, not a
+new change-detection manifest. Inputs and save bytes are not edited by Apply.
+
+The initial field observer used a compact capture without enabling camera observations, producing
+null-camera script errors; its exit0 was not acceptance. A subsequent `check` return-value misuse
+caused parse failures before running. Enabling the full observation and using the parent's void
+check convention corrected both. The accepted field and Battle06 runs passed 36 and 89 checks.
+Prison passed all seven dialogue cases and returned to field control. Battle/prison exits retained
+four/two ObjectDB warnings tracked separately by #1716; no production errors were observed.
+A cold Battle06 run from the published package, with the producer directories unavailable,
+passed the same 89 checks without warnings after the prepare correction. The authored negative
+cases deliberately report native PNG decode errors and then assert rejection; these are not
+production-package errors. The first authored probe leaked its own Sprite2D; freeing it corrected
+that probe-owned warning.

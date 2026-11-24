@@ -33,6 +33,7 @@ together. The active package is the set selected in the launch process.
 | **Pre-voyage** · `derived/issue2156/pre-voyage-map3-l1-v1` | Complete inline pre-voyage selection and source for the companion candidate. Provides [Map3 Original and L1 terrain](#complete-private-package-and-rebuild-2156), original cue 12 and the mounted pre-voyage spell rasters. Gameplay reach belongs to the [pre-voyage campaign](../application/pre-voyage-campaign.md). |
 | **Pre-voyage companion candidate** · `derived/issue2174/pre-voyage-map3-companion-v1` | Complete selection for the HD rollout. Carries the same Map3 L1 centers and neighborhoods in one world-relative file. [Rebuild, admission and native comparison](#map3-terrain-companion-2174) |
 | **Pre-voyage static terrain** · `derived/issue2175/pre-voyage-terrain-v1` | Complete field and tactical selection with twenty L1 banks and the original Map3 companion. [Production and live checks](#pre-voyage-static-terrain-2175) |
+| **Pre-voyage actors and portraits** · `derived/issue2176/pre-voyage-actors-v1` | Complete terrain selection plus switchable shared actor/alternate and portrait banks. [Production and live checks](#pre-voyage-actors-and-portraits-2176) |
 | **PGNT** · `derived/issue1957/pgnt-v3` | Separate registered later progression/Battle26 witness. Its older Map3 HD bank has no L1 contexts and its cue 12 is the defeat placeholder. Preserve that evidence selection. Check resource lineage when proposing a successor that combines later progression with pre-voyage corrections. [PGNT reproduction](../development-and-verification.md#high-rank-elemental-magic-observation) |
 | **Display catalogs** · `derived/issue1957/catalogs-v1`, `derived/issue2001/catalogs-v1` | Independent prepared Chinese name overlays for the owning reproductions. Match the catalog and entry locale to the named reproduction. A catalog supplies display names and does not select world, scene or media. [PGNT catalog selection](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Retail catalog selection](presentation-assets.md#sleep-display-name) |
 | **Retail base and library** · `derived/issue2001/issue1966-original`, private asset Git `runtime/retail-v1` | Base world/entry provenance and preparation outputs used to assemble packages. Some prepared candidates have no current package binding. [Retail preparation](#retail-original-preparation) |
@@ -546,3 +547,48 @@ The local `review/` folder contains all three map plates, two interior compariso
 The selected HD world is about 121 MB (decimal), below the unchanged 128 MiB input limit. One release adds roughly 6.5 MB to the herb world. Preparation is bounded by the admitted cells, actor poses and portraits, and makes one set of complete field plates; it does not collect gameplay frames. Derived assets and slots remain private.
 
 For the actual host witness, give `engine_map_art_observation.gd` an isolated `issue1717-check-*` namespace containing a compatible Map3 slot near (32,13), the installed pack, writable settings initially in Original and an explicit report destination. It loads through Continue, changes Settings in both directions and reopens the member sheet. Compare the actual drawn block widths, pass geometry, portrait density and paused progress. Field time can legitimately advance the main RNG between menu visits. Human art-direction approval remains with the player.
+
+## Pre-voyage actors and portraits (#2176)
+
+`derived/issue2176/pre-voyage-actors-v1` extends the closed #2175 package. The original admitted
+rasters are the immutable source; their source IDs, palette bindings and private provenance remain
+with the walking/portrait indexes above. `sf2tool.remake_hd_actors` uses the same pinned graphics
+filter as terrain, with the [transparent-family profile](hd-rollout.md#actor-and-portrait-implementation-2176).
+It changes only optional `hdDirections`, `hdGraphics` and `hdRaster`. All Original fields and all
+167 other package files compare directly equal. This includes the twenty terrain banks, opening
+inputs, close-up scenes, audio and entry. Use the whole selection; do not mix its world with a
+previous package's sibling paths.
+
+```powershell
+. ./local/private-inputs.ps1
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2175/pre-voyage-terrain-v1'
+$gfx = '<configured independent graphics repository at 172662709b31cb296b55f51894754ce810c30f6c>'
+$candidate = Join-Path (Get-Location) 'local/actors-candidate'
+uv run --locked --with pillow==11.3.0 python -B -m sf2tool.remake_hd_actors `
+    --base $base --gfx-root $gfx --out $candidate
+```
+
+`--pilot` limits conversion to sprites 0/59/252 (including the three alternate groups) and
+portrait5 while retaining the complete package. Choose fresh output directories. Decode the
+source/candidate images to compare nearest-expanded alpha and opaque-black masks exactly; compare
+source frames separately and preserve portrait tile boundaries. The complete run produces 498
+direction bindings from 453 unique strips, 46 unique portrait atlases and a 97,658,510-byte world,
+under the existing 128MiB limit. The closed 168-file package is 341,169,451 bytes. The pilot and
+full producer plus direct pilot check took about four seconds on the review machine; this is not
+a hardware-independent latency guarantee or a peak-memory measurement. Preparation only retains
+the admitted world and small shared bank; it does not collect playthrough frames.
+
+Publish with the existing copier after the focused observations:
+
+```powershell
+$output = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2176/pre-voyage-actors-v1'
+uv run python -B -m sf2tool.remake_private_package `
+    --world "$candidate/world.json" --scene "$candidate/main-scenes.json" `
+    --entry "$candidate/entry/entry.json" --opening-inputs "$candidate/opening-inputs" `
+    --destination $output
+```
+
+For an existing publication add `--check` to compare every file directly. Make the producer
+scratch unavailable and repeat a normal consumer through the published package. The
+[actor observations](hd-rollout.md#focused-observations) name the entry points and bounded claims.
+Reproduction requires no historical ignored reports. Other HD families remain tracked by #2171.
