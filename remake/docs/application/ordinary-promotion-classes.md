@@ -136,13 +136,13 @@ A palette or sprite match from another member is insufficient class admission.
 ### Spell and attack boundaries
 
 - **WIZ.** The castle Kazin seeds have BLAZE 3, MUDDLE 2 and DISPEL 1. English has DESOUL 1,
-  Chinese DESOUL 2. The currently bound ranks include BLAZE 1–3, DISPEL 1,
+  Chinese DESOUL 2. Learned BLAZE 1–4, DISPEL 1,
   [DESOUL 1/2](../domain/hostile-spells-design.md#desoul-12-implementation-and-evidence)
-  and [MUDDLE 1](../domain/hostile-spells-design.md#muddle-1-implementation-and-evidence).
-  BLAZE 4 at effective level 35 and MUDDLE 2 still need action admission. Tyrin learns
-  FREEZE 1–2 and BLAZE 1–2 by recruitment at 24, with SLEEP at effective 25, BOLT 1 at 28
-  and later FREEZE/BOLT/BLAZE ranks. Preserve them per member and list unsupported ranks
-  explicitly. WIZ resolves the Black Ring class mask. The ordinary ring interfaces and item
+  and [MUDDLE 1/2](../domain/hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25)
+  bind in private Magic. Kazin learns BLAZE 4 at effective level 35. Tyrin knows FREEZE 1–2
+  and BLAZE 1–2 at recruitment level 24, with SLEEP at effective 25 and BOLT 1 at 28.
+  His later BLAZE, FREEZE and BOLT ranks bind from his own book.
+  [High-rank Magic](../domain/gameplay-rules.md#high-rank-elemental-magic) WIZ resolves the Black Ring class mask. The ordinary ring interfaces and item
   effects still depend on the supported item's own rules. Curse and BLAZE 2 from the ring
   remain with #1926. Indra's weapon layer and MP-absorption Use are mounted separately.
   Learned BLAZE spends MP. [Indra Staff](../domain/equipment-use-repair-design.md#indra-staff-reproduction)
@@ -757,9 +757,9 @@ actions are admitted. The linked action owners track the remaining boundaries.
   [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957).
 - The Black Ring's curse, Cure and item-origin BLAZE 2 remain with
   [#1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926).
-- Packed spell learning and retention have their own coverage. Unsupported attack
-  and healing ranks, including BLAZE 4, later FREEZE/BOLT ranks and higher campaign
-  AURA ranks, stay with the [spell actions](church-promotion-design.md#current-battle-spells).
+- Packed spell learning and retention have their own coverage. The
+  [spell actions](church-promotion-design.md#current-battle-spells) track admitted learned
+  ranks and the remaining higher AURA and DETOX ranks.
   MUDDLE 2 is admitted in private Magic and battle Continue. A rank-2 cast through
   unchanged campaign history and natural ally confusion remain **Unknown**.
   [Controlled Battle25 observation](../domain/hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25)

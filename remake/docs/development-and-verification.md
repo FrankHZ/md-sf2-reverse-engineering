@@ -386,6 +386,86 @@ Completed #1491's1801PASS/6FAIL/1SKIP, school03exit2/ObjectDBUnknown, #1523's437
 PrivateBattleOutcomeProgramTests failures and #1519's actual-save observer-lock-file failure remain
 in their handoffs. The focused passing checks do not erase or rerun those completed results.
 
+## High-rank elemental Magic observation
+
+**Confirmed in the remake** with Godot 4.7.2 .NET. Ordinary title Continue and Magic in Battle26
+used independent copies of the registered #1966 Chinese learned slot. The controlled setup
+joined and deployed Tyrin, modeled a legal MAGE 24 to WIZ 1 promotion and applied the mounted
+WIZ growth rows through stored level 40 with a separate zero RNG start. His bases at that point
+were 92 HP, 100 MP, 51 ATT, 80 DEF and 87 AGI. The equipped attack was 66 and the packed book
+was `[203,204,9,205]`. The active battle's seeds and current vitals were retained, including
+49 MP. The setup arranged positions and the current queue without walking or leveling
+through the story. Tyrin began at (9,23), and the radius-two edge recipient was at (12,25).
+[Source schedule](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats17.asm) ·
+[Mechanism and terms](domain/gameplay-rules.md#high-rank-elemental-magic)
+
+Each case selected the localized spell and a legal center at the outer cast distance, canceled
+at confirmation, then reselected and committed. Cancellation preserved position, vitals, books,
+inventory, status, round, queue cursor and both seeds. The adapter drew the target-area geometry
+and the elemental placeholder. Each commit published one payment and ordered HP mutations before
+Karna received Movement in round 6 at cursor 19.
+
+| Cast | Center | Area cells | MP | Ordered target HP before → after |
+| --- | --- | ---: | --- | --- |
+| BLAZE 4 | enemy-13 (11,23) | 1 | 49→39 | enemy-13 39→0 |
+| FREEZE 3 | enemy-12 (12,23) | 5 | 49→37 | enemy-12 40→18, enemy-13 39→19 |
+| FREEZE 4 | enemy-12 (12,23) | 1 | 49→37 | enemy-12 40→0 |
+| BOLT 3 | enemy-12 (12,23) | 13 | 49→29 | enemy-12 40→10, enemy-13 39→11, enemy-14 22→0 |
+| BOLT 4 | enemy-12 (12,23) | 1 | 49→29 | enemy-12 40→0 |
+
+One BOLT 3 fork saved through Options. Fresh Continue and immediate re-save preserved the
+complete decoded v4 battle data while the sequence advanced 8→9. The v4 case covers the affected
+book, recipient vitals and settled control through the existing save wire. Natural acquisition,
+original animation fidelity and original timing for these five casts remain **Unknown**.
+[#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104) owns original effects.
+
+The first unit run reported five failures from selecting directly after Cancel. The corrected
+test returns through Movement before choosing Magic again. The native pilots retained failures
+from comparing transient actor projection fields, reading an incorrect scene node, and selecting
+Quit instead of Save from Options. The settled casts and the corrected Save and Continue runs
+completed with exit 0. The cold process reported an ObjectDB shutdown warning of **Unknown** cause.
+
+### Reproduce the controlled Battle26 casts
+
+Use the registered `derived/issue2162/review-v1` launcher with the read-only
+`derived/issue1957/pgnt-v3` world, scenes, entry and opening inputs, the corresponding #1957
+display catalog, #1927 entry selections, and the #1955 and #1966 registered native drivers and
+seed. The launcher mounts the existing prepared assets in that world. The pre-voyage package
+has a separate owner. The launcher writes private runtime and receipts under the isolated
+checkout and copies the controlled slot only into the explicit disposable save namespace.
+Reserve about 15 MiB for six serial processes and their reports. The review package contains
+three scripts under 20 KiB, and the launcher stops an individual native child at 45 seconds.
+[Private input setup](../../docs/operations/local-private-inputs.md#fresh-worktree-setup)
+
+From the isolated checkout with its configured Debug adapter and existing Godot project:
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$env:MSBUILDDISABLENODEREUSE = '1'
+uv run sf2 verify adapter
+& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj --configuration Debug --no-restore `
+    -p:UseSharedCompilation=false -nodeReuse:false
+$repo = (Get-Location).Path
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2162/review-v1/Review.ps1'
+$tag = [guid]::NewGuid().ToString('N').Substring(0,8)
+# Set $disposableSaveRoot to an absolute disposable root selected for this review.
+foreach ($case in 'blaze4', 'freeze3', 'freeze4', 'bolt3', 'bolt4') {
+    & pwsh -NoProfile -File $review -Repo $repo -SaveRoot $disposableSaveRoot -Case $case -Sample "$case-$tag"
+    if ($LASTEXITCODE) { throw "Inspect the preserved $case receipts" }
+}
+& pwsh -NoProfile -File $review -Repo $repo -SaveRoot $disposableSaveRoot -Case bolt3 `
+    -Sample "cold-$tag" -ColdSample "bolt3-$tag"
+```
+
+The narrow engine filter is
+`FullyQualifiedName~AttackSpell|FullyQualifiedName~EnemySpell|FullyQualifiedName~AttackItemSessionTests`.
+Use the locked SDK workflow to run it on the Engine.Tests project. The [native reports](#high-rank-elemental-magic-observation)
+own the learned private binding boundary for this slice. The older conditional private tests
+require their own registered direct-start inputs. For the committed candidate, select the
+repository plan with `uv run sf2 verify plan --base origin/main --head HEAD` and confirm the actual
+CI conclusion on its Draft PR.
+
 ## Early ranged physical observation
 
 Use the [early-ranged authored package](../content/authored/early-ranged.json), with the existing
