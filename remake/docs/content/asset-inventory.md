@@ -28,9 +28,11 @@ the reviewed world/entry and asset manifest. Its 3,611 rows include distinct sou
 consumer bindings. The separate 7,040-row demo table above describes a different selection.
 `manifests/retail-v1-coverage.csv` in the private asset Git adds the preparation status and
 selector alongside each base row. Use its `retail_status` column. The reviewed commit
-`52435b04f49a84a6a9ed4444620055a070648001` has 3,375 prepared rows, 32 command-menu bindings
-already present, 204 inapplicable slots, and zero missing or partial rows. Each family index
-identifies the ROM and source revision. Aliased slots refer to shared physical art.
+`52435b04f49a84a6a9ed4444620055a070648001` records 3,375 prepared rows, 32 command-menu
+bindings already present and 204 inapplicable slots. These are CSV classification counts.
+The [audio exceptions](#base-audio-coverage-exceptions) qualify the entries inherited from the
+base world. Each family index identifies the ROM and source revision. Aliased slots refer to
+shared physical art.
 
 | Family | Prepared material and reuse |
 | --- | --- |
@@ -38,7 +40,26 @@ identifies the ROM and source revision. Aliased slots refer to shared physical a
 | Walking and portraits | 720 ordinary direction slots. 669 distinct physical strips carry both phases, with nine sentinel slots and the remaining aliases. 59 valid member/class bindings include ordinary and promoted field IDs, battle sprites and palettes. The six special/action streams retain native indexed tiles and the ten source pointers. The 56 portrait slots select 52 unique PNGs and retain eye/mouth tile mappings. Special-sprite dispatch, coordinate assembly and timed presentation still depend on the engine capability. |
 | Battle | Native-size transparent frames for 85 bodies with 163 palettes, plus the separate PLDN selection below. Both ally/enemy animation tables retain headers and frame/weapon operands. The 103 enemy species map to body/palette. 23 four-frame weapon tile banks, 42 two-color palettes and 84 item selectors retain the caller's body palette. All 30 ground and 30 backdrop pointers resolve to their physical variants. 23 spell containers, four invocation containers, status/transition graphics and Bolt sprite operands are available. Indexed effect tiles and control operands require the effect's original composition rule. No encounter matrix is generated. |
 | UI and entry | All 163 source icon slots have normal and highlighted art. The raw other-art slots keep their own identities. Only supported semantic keys are mounted. The nine UI tile groups and font have prepared images. Nine special-screen streams are decoded. Private title/witch resources include palette/layout/bubble operands and the six existing mounted entry rasters. |
-| Audio | The base world/entry and new WAV candidates jointly cover all 37 non-silent music commands and 56 SFX commands. The other 27 music slots select silent targets. New production supplied 18 music and 25 SFX candidates. Every new SFX records the controlled music timer context. The already admitted additional timer variants remain in the base package. Arbitrary caller/timer combinations and hardware waveform equality remain **Unknown**. |
+| Audio | The inventory includes 37 non-silent music commands and 56 SFX commands. The other 27 music slots select silent targets. New production supplied 18 music and 25 SFX candidates. Every new SFX records the controlled music timer context. The base supplies additional timer variants and the known authored entries below. Arbitrary caller/timer combinations and hardware waveform equality remain **Unknown**. |
+
+### Base audio coverage exceptions
+
+**Confirmed** in the private coverage CSV and the registered `issue1966-original` and
+`derived/issue2106/pre-voyage-spells-v2` worlds. Both rows are classified as prepared
+through inherited world/entry coverage. The pinned retail library has no separate
+prepared candidate for either command.
+
+| Command | Actual inherited asset |
+| --- | --- |
+| 12/C4 `MUSIC_SAD_THEME_2` | Authored two-second defeat chord, also selected during the Map3 invasion. [Audio boundary](../godot/audio.md#invasion-map3-music-gap) |
+| 109/C2 `SFX_BOOST` | Intentional authored 240 ms encounter notification. [Encounter capability](../capability-status.md#yeel-guide-through-battle03-implementation-agreement) |
+
+The retail audio preparation selects only rows marked `missing` in the base inventory.
+Requesting command 12 explicitly still skips its `present` row. Mount recognizes the inherited
+command when the library candidate is absent. Once a candidate is available, the existing
+publisher detects its differing music row and reports `conflicting audio binding 12`.
+A successor publication needs a targeted replacement of the known fallback, using the reviewed
+candidate and the full pre-voyage base.
 
 ### First consumers
 

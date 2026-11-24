@@ -109,6 +109,32 @@ resolution of every campaign warning. No whole-campaign replay, current native-w
 save/restore leak-free claim follows. See the
 [current evidence and reproduction](../verification/host.md#current-exit-attribution-1570).
 
+## Invasion Map3 music gap
+
+**Confirmed** in the registered `derived/issue2106/pre-voyage-spells-v2` world and its
+`issue1966-original` ancestor. `MUSIC_SAD_THEME_2` is command 12 with Timer B `C4`.
+The inline PCM has 44,100 mono sample frames at 22,050 Hz and loops over `[0, 44100)`.
+Its PCM matches the WAV from the registered `#1045` authored defeat candidate. To reproduce,
+read the unique command-12 row in `world.presentation.audio` and compare its PCM SHA-256
+with the decoded PCM of `handoffs/issue1045/authored-defeat-02/authored-defeat.wav` under
+the configured shared root. The
+[authored cue producer](../../../src/sf2tool/remake_authored_audio.py) records its origin.
+
+The pinned [sound inventory](../../../docs/research/presentation/sound-data-inventory.md)
+and [static fixture](../../../tests/fixtures/h2/sound-data-static-v1.json) identify the
+original bank 0 `music12` entry at ROM offset `0x1FD818` in SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. The verified USA ROM reads Timer B `C4`
+from that header. The #2158 play observation selected the authored cue with no adapter
+error. Its recent receipts contain one music start followed by a warp effect finish.
+The two-second repeat is consistent with the admitted loop range.
+
+The registered pre-voyage package still uses the authored loop. A complete private cue
+needs a reviewed runtime WAV, capture identity and loop bounds. The
+[asset inventory](../content/asset-inventory.md#base-audio-coverage-exceptions)
+records the current inventory and mount barriers. **Unknown** until a complete cue is
+available and admitted are its loop seam and native playback through same-cue requests,
+scene changes and restore on the successor package.
+
 ## Audio Boundary
 
 Music and sound effects follow the same explicit local-pack rule as graphics. Their source and accepted
