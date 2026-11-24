@@ -17,7 +17,8 @@ Reuse the admitted original for the selected palette and frame. Where a caller n
 original, join its prepared index to that caller and verify Original first. Use only authorized
 materials for derivation and keep the existing private publication and public-asset boundaries.
 The [static terrain selection](asset-inventory.md#pre-voyage-static-terrain-2175) carries the Map3
-companion and the other nineteen banks. Use this closed package as the input for later families.
+companion and the other nineteen banks. The [actor extension](asset-inventory.md#pre-voyage-actors-and-portraits-2176) is the current closed
+package for later families.
 
 ## Coverage from the selected package
 
@@ -45,8 +46,8 @@ replacement, additional Map60 ascent, and later Map14 movement.
 | --- | --- | --- |
 | Field and tactical terrain | Retail `maps/index.json` joins atlases, tiles, palettes, blocks, layouts and animation operands. The selected world admits original atlases and block words. All twenty selected maps mount L1 banks. | Field drawing, pickup occlusion and tactical terrain resolve the current block and neighborhood. Each tactical plane retains its encounter origin, priority and logical tile footprint. [Static terrain evidence](asset-inventory.md#pre-voyage-static-terrain-2175) |
 | Water and other animated tiles | The prepared map index and original [map animation contract](../../../docs/research/world/map-content.md) identify source tables. Map66's DMA witness is in [map-animation-vdp-v1](../../../tests/fixtures/h3/map-animation-vdp-v1.json). Current world maps carry working layout events and the presenter supports plane scroll and palette effects. | **Confirmed** the world visual has a static atlas and no tile-animation field or phase selector. Treat source tile substitution as a separate consumer slice. Static water, scrolling and palette changes each have their own observations. Eight selected maps have referenced animation targets. **Unknown** which phases are drawn during the accepted visits. |
-| Field and tactical sprites | Retail `walking/index.json` includes ordinary directions, class appearances and special streams. The current world has 163 sprite IDs, including 252/254/255, and three alternate graphics names on 252. | 85 IDs have installed `hdDirections`. Field selection is gated by HD terrain and excludes shadow-removed and alternate graphics. Tactical sprites currently select Original, including scene-owned death frames. Cover both consumers and their actual special dispatches. |
-| Portraits | Retail `portraits/index.json` supplies atlases and replacements. The world mounts 46 portraits, 38 with `hdRaster`. | Bound complete eye/mouth replacement, mirror and member/class identity together. Field story and both Member surfaces presently tie portrait HD to terrain coverage. Resolve the saved mode and the selected portrait's own variant, including special-pose dialogue. |
+| Field and tactical sprites | Retail `walking/index.json` includes ordinary directions, class appearances and special streams. The current world has 163 sprite IDs, including 252/254/255, and three alternate graphics names on 252. | All 163 IDs have complete `hdDirections`; all three alternate names have `hdGraphics`. Ordinary field selection uses the saved graphics mode and the sprite's own HD directions. Shadow-removed and alternate graphics use their selected identity and density. Tactical world sprites resolve HD directions; scene-owned death frames still select Original. [Focused observations](#focused-observations) cover actual field/tactical selection, alternate/shadow fallback and 48px registration; they do not establish every later special dispatch. |
+| Portraits | Retail `portraits/index.json` supplies atlases and replacements. The world mounts 46 portraits, all with `hdRaster`. | Field story and both Member surfaces select HD from the saved mode and the selected portrait's own variant independently of terrain coverage. [Focused observations](#focused-observations) cover complete bank production, distinct eye/mouth tiles, mirror and special-pose dialogue. Member/class identity rules are unchanged; this slice does not claim a new playthrough of every class/member menu. |
 | Battle close-up bodies and weapons | Retail `bodies` and `weapons` plus the mounted scene documents bind body/palette/weapon, frames and layer order. | Primary scene `rasters` are the current textures in `BattleSceneView`. There is no mode-specific lookup. Preserve idle/reaction/attack geometry, palette-dependent weapon colors, mirroring, offsets and front/back layer. |
 | Battle ground and backdrops | Retail `terrain` contains the source variants. Scene defaults and `terrainScenes` select installed pairs. | Derive by distinct selected raster and its display semantics. Keep the existing horizon, ground footprint, wrapping, and encounter-specific selector. |
 | Battle effect and field death | Retail `effects/index.json` retains indexed operands. Mounted scenes include healing/fairy, field death and prepared BLAZE1/2 and BLAST1 in Battles04–07. | Cover only original-art consumers already bound in the selected encounter. Scale complete existing draw frames or indexed chunks at their own composition boundary. Keep timing, reaction, skip and Reduced Flash. Placeholder attacks stay with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104). [Current effect status](../godot/spell-presentation.md#coverage-by-family-and-rank) |
@@ -362,3 +363,87 @@ The `asset-inventory.md` trace receives consumer status after observed admission
    Run the relevant direct probes and use human viewing for presentation acceptance. Keep
    in-game observations to state, input and projection with existing probes. Activation of the
    play checkout follows independent acceptance and its own authorization.
+
+## Actor and portrait implementation (#2176)
+
+The [registered actor package](asset-inventory.md#pre-voyage-actors-and-portraits-2176) extends
+static terrain with the already admitted shared sprite/portrait bank. Preparing that modest bank
+as a whole avoids a second conditional story selector registry: it includes later-only resource
+IDs, but adds no gameplay admission or claim of later campaign reach. The package contains all
+163 sprite definitions, three named alternate groups and 46 portraits.
+
+The transparent-family profile preserves every source pixel's alpha and opaque-black mask.
+Within those masks it applies the pinned exact-RGBA edge-aware 2× filter, then nearest doubling.
+Each walking half is independent. Each portrait's 8×8 tile, including replacement columns, is
+independent before runtime composition. This keeps the native mask and replacement boundaries;
+it deliberately does not apply terrain palette expansion to faces or transparent sprites.
+A pilot on sprites 0, 59, 252 and portrait 5 confirmed unchanged masks and nontrivial interior
+smoothing. Full preparation fits the existing inline world limit, so no additional transport is
+needed. Human approval of every derivative remains **Unknown**.
+
+Ordinary and alternate exploration directions follow GraphicsMode and the selected sprite key.
+Optional `hdGraphics` uses the same keys as `graphics`, with three 4× strips per key. Missing
+coverage falls back to that complete Original direction group. A declared malformed group fails
+admission or preparation. Shadow removal uses the Original frame's black-word mask at the chosen
+density before orientation/head effects. Story and member portraits select their own optional
+atlas, then retain existing mouth/eye tile replacement and mirroring. Neither family requires
+HD terrain on the current map. Tactical sprites retain logical extent, animation selection and
+48px registration. The existing settings prepare → write → publish transaction owns switching. Field and battle
+share target-mode actor preparation in `ExplorationRasterImages`; the field no longer skips
+Original or fallback preparation after one successful HD Apply.
+
+Scene-owned death/exit frames belong to the effects family in #2177. Kraken uses its existing
+scene-owned Original frames and remains outside this pre-voyage bank delivery. These are explicit
+coverage boundaries, not a claim that every presentation resource is now HD.
+
+### Focused observations
+
+The native `HdActorObservation` uses authored data in actual adapter consumers. It covers the
+Original → HD → Original tactical geometry, special size/registration, independent portrait
+selection and the actual exploration alternate/shadow path on a map without HD terrain.
+Distinct authored portrait tiles cover all mouth/eye combinations and mirrored composition; absent
+HD variants fall back to Original. Each of the field and battle entry points rejects five malformed-resource cases in preparation and retains
+the applied mode, texture and geometry. Run after a locked Debug build:
+
+```powershell
+. ./local/private-inputs.ps1
+& $env:GODOT_BIN --headless --path remake/game --script res://probes/engine_hd_actor_observation.gd
+```
+
+For the private candidate use the closed package environment and writable, isolated settings from
+[terrain replay](asset-inventory.md#static-terrain-native-replay), with a fresh external disposable
+save root. `engine_hd_actor_campaign_observation.gd` extends that driver: `field` starts Map3 at
+(32,13), Right (0), speed32 and flags `[0,1,2,32,33,66,80,600,602,603,604,605]`; `battle6` uses the
+existing controlled Battle06 start. Set `SF2_HOST_UI_CASE`, `SF2_HOST_UI_START` and
+`SF2_HOST_UI_OUTPUT`; the reused driver expects namespace `issue2175` under the newly isolated
+root. This namespace does not select the previous ticket's save root. Both cases apply the three
+modes through ordinary Settings and read mounted texture pixels/geometry. All visible normal
+actors stay 96×96 logical pixels while source frames change 24 → 96 → 24. The battle driver also
+checks paused authoritative state and terrain projection.
+
+For `engine_hd_pose_observation.gd`, reuse the [prison controlled input and normal confirmations](../godot/presentation.md#special-pose-dialogue-portraits-2070),
+set `SF2_VIEWPORT_CASE=prison`, `SF2_VIEWPORT_OUTPUT`, and use an isolated input-settings JSON with
+`graphicsMode=hd`, English and instant text. The seven source-defined dialogue checks cover
+Slade's special/normal pose, Sarah, mirrored Slade, narration without a portrait and final control.
+Actual HD portraits are 192×256, with the same destination rectangle. Field actors remain HD.
+
+**Confirmed:** independent pixel comparison of 48 actual field, tactical and portrait samples.
+For each actor receipt, decode the selected Original/HD strip and take its square `half`/`frame`
+at `direction`. For each portrait receipt, decode `hdRaster`, copy the reported `tiles` from the
+immutable atlas at 32px per tile, crop the first six columns and mirror when requested. Compare
+SHA-256 of RGBA bytes with the receipt's `rgba`; this observes existing resource identity, not a
+new change-detection manifest. Inputs and save bytes are not edited by Apply.
+
+The initial field observer used a compact capture without enabling camera observations, producing
+null-camera script errors; its exit0 was not acceptance. A subsequent `check` return-value misuse
+caused parse failures before running. Enabling the full observation and using the parent's void
+check convention corrected both. The accepted field and Battle06 runs passed 36 and 89 checks.
+Prison passed all seven dialogue cases and returned to field control. Battle/prison exits retained
+four/two ObjectDB warnings tracked separately by #1716; no production errors were observed.
+A cold Battle06 run from the published package, with the producer directories unavailable,
+passed the same 89 checks without warnings after the prepare correction. The authored negative
+cases deliberately report native PNG decode errors and then assert rejection; these are not
+production-package errors. The first authored probe leaked its own Sprite2D; freeing it corrected
+that probe-owned warning. The final shared-prepare field observation passed 36 checks: first
+HD Apply took 201ms and Original 51ms including input release, with two existing exit warnings.
+These are single-run measurements on the review machine, not cross-hardware guarantees.

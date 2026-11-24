@@ -6,12 +6,12 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 
 public sealed partial class ExplorationSessionView
 {
-    // Prepare both texture sets before preference publication; toggles retain borrowed handles.
+    // Prepare the selected texture set before preference publication; toggles retain borrowed handles.
     internal void PrepareGraphics(string mode)
     {
         if (_session is null) return;
         _partyStatus.PrepareGraphics(_session);
-        if (mode == "hd" && _session.Current.Exploration is { } field) _presentation?.PreparePaintedRasters(field.Map);
+        if (_session.Current.Exploration is { } field) _presentation?.PrepareGraphicsRasters(field.Map, mode);
     }
     internal void PublishGraphics()
     {
