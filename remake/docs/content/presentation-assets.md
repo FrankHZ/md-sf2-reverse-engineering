@@ -844,3 +844,15 @@ Missing or partial groups select Original together. No new preference or animati
 introduced. Numeral offset, source-layer order, Witch arrival/base/blink/mouth selection and
 Reduced Flash are shared by both modes. The complete published package selection is
 `derived/issue2179/pre-voyage-entry-v1`. [Production observation](hd-rollout.md#production-entry-reproduction).
+
+### Animated map tiles
+
+The current complete pre-voyage selection is `derived/issue2180/pre-voyage-tiles-v1`.
+A map visual may include `tileAnimation` with an absolute VDP tile target, a contiguous
+tile count, a cache capacity and ordered phases. Each phase records its source tile,
+enabled-tick duration, changed block pairs and HD neighborhood overrides. The renderer
+reads all geometry, flip and priority from the existing terrain words. Field pickup
+alpha uses the same selected block as the field draw. Legacy packages omit the table
+and continue to resolve their static banks. The mechanism, production and bounded
+native readbacks are recorded in the [rollout decision](hd-rollout.md#tile-substitutions-2180)
+and [resource trace](asset-inventory.md#pre-voyage-animated-terrain-2180).

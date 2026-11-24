@@ -23,7 +23,11 @@ internal sealed partial class BattlefieldTerrain : Node2D
     private readonly HashSet<(int X, int Y)> _openChests = [];
     internal Vector2 CameraShift { get; set; }
     private MapPosition _target = new(0, 0);
-    private int _draws;
+    private Node2D? _animated;
+    private readonly List<Vector2I> _movingCells = [];
+    private int _phase = -1;
+    private int _draws, _animatedDraws;
+    private object? _animatedFirst, _animatedContext;
     private long _drawSequence;
     private object? _first, _firstContext;
 
@@ -37,6 +41,13 @@ internal sealed partial class BattlefieldTerrain : Node2D
         ZIndex = high ? 2 : 0;
         TextureFilter = TextureFilterEnum.Nearest;
         _hd = hd;
+        textures.PrepareAnimation(visual.TileAnimation);
+        if (visual.TileAnimation is not null)
+        {
+            _animated = new Node2D { Name = "AnimatedTiles" };
+            _animated.Draw += DrawAnimated;
+            AddChild(_animated);
+        }
         Prepare(hd);
         QueueRedraw();
     }
@@ -58,9 +69,18 @@ internal sealed partial class BattlefieldTerrain : Node2D
 
     private ImageTexture TextureAt(int x, int y, int block, bool hd, out bool contextual)
     {
-        var bounds = new Rect2I(_sourceOrigin, _followsTarget ? new(19, 19) : new(_width, _height));
-        var variant = MapBlockTextures.Variant(_visual, hd, _layout, x, y, bounds, out contextual);
+        var variant = MapBlockTextures.Variant(_visual, hd, _layout, x, y, Bounds, _phase, out contextual);
         return _textures.Block(_visual, block, variant);
+    }
+
+    private Rect2I Bounds => new(_sourceOrigin, _followsTarget ? new(19, 19) : new(_width, _height));
+
+    internal void PresentTime(long tick)
+    {
+        int phase = _visual.TileAnimation?.PhaseAt(tick) ?? -1;
+        if (phase == _phase) return;
+        _phase = phase;
+        if (_movingCells.Count > 0) _animated!.QueueRedraw();
     }
 
     internal void SelectMode(bool hd)
@@ -105,34 +125,63 @@ internal sealed partial class BattlefieldTerrain : Node2D
     public override void _Draw()
     {
         _draws = 0; _first = _firstContext = null; _drawSequence++;
-        float scale = _cellSize / 24f;
+        _movingCells.Clear();
         for (int y = 0; y < _height; y++)
             for (int x = 0; x < _width; x++)
             {
-                var (sourceX, sourceY) = SourceCell(x, y);
-                if (sourceX is < 0 or >= 64 || sourceY is < 0 or >= 64) continue;
-                int block = _layout[sourceX, sourceY] & 0x3FF;
+                var (sx, sy) = SourceCell(x, y);
+                if (sx is < 0 or >= 64 || sy is < 0 or >= 64) continue;
+                int block = _layout[sx, sy] & 1023;
                 if (_overlay && block == 0) continue;
-                var texture = TextureAt(sourceX, sourceY, block, _hd, out bool contextual);
-                for (int tile = 0; tile < 9; tile++)
+                if (_visual.TileAnimation is { } table)
                 {
-                    int word = _visual.Blocks[block][tile];
-                    if (((word & 0x8000) != 0) != _high) continue;
-                    var tileOrigin = new Vector2(tile % 3 * 8, tile / 3 * 8);
-                    var destination = new Rect2(new Vector2(x, y) * _cellSize + tileOrigin * scale, Vector2.One * 8 * scale);
-                    var source = Exploration.ExplorationRasterImages.TextureRegion(new(tileOrigin, Vector2.One * 8), texture);
-                    DrawTextureRectRegion(texture, destination, source);
-                    _draws++;
-                    if (_first is null || contextual && _firstContext is null)
+                    var key = _hd ? MapBlockTextures.Neighborhood(_layout, sx, sy, Bounds) : default;
+                    if (table.Phases.Any(p => p.Blocks.ContainsKey(block) || _hd && p.Contexts.ContainsKey(key)))
                     {
-                        var sample = new { sourceX, sourceY, block, tile, word, texture = texture.GetInstanceId().ToString(),
-                            pixels = texture.GetWidth(), contextual, source = BattleMapViewport.Rectangle(source),
-                            rect = BattleMapViewport.Rectangle(destination) };
-                        _first ??= sample;
-                        if (contextual) _firstContext ??= sample;
+                        _movingCells.Add(new(x, y));
+                        continue;
                     }
                 }
+                DrawCell(this, x, y, sx, sy, block, ref _draws, ref _first, ref _firstContext);
             }
+        _animated?.QueueRedraw();
+    }
+
+    private void DrawAnimated()
+    {
+        _animatedDraws = 0;
+        _animatedFirst = _animatedContext = null;
+        foreach (var cell in _movingCells)
+        {
+            var (sx, sy) = SourceCell(cell.X, cell.Y);
+            DrawCell(_animated!, cell.X, cell.Y, sx, sy, _layout[sx, sy] & 1023,
+                ref _animatedDraws, ref _animatedFirst, ref _animatedContext);
+        }
+    }
+
+    private void DrawCell(Node2D canvas, int x, int y, int sourceX, int sourceY, int block,
+        ref int draws, ref object? first, ref object? firstContext)
+    {
+        float scale = _cellSize / 24f;
+        var texture = TextureAt(sourceX, sourceY, block, _hd, out bool contextual);
+        for (int tile = 0; tile < 9; tile++)
+        {
+            int word = _visual.Blocks[block][tile];
+            if (((word & 0x8000) != 0) != _high) continue;
+            var tileOrigin = new Vector2(tile % 3 * 8, tile / 3 * 8);
+            var destination = new Rect2(new Vector2(x, y) * _cellSize + tileOrigin * scale, Vector2.One * 8 * scale);
+            var source = Exploration.ExplorationRasterImages.TextureRegion(new(tileOrigin, Vector2.One * 8), texture);
+            canvas.DrawTextureRectRegion(texture, destination, source);
+            draws++;
+            if (first is null || contextual && firstContext is null)
+            {
+                var sample = new { sourceX, sourceY, block, tile, word, phase = _phase, texture = texture.GetInstanceId().ToString(),
+                    pixels = texture.GetWidth(), contextual, source = BattleMapViewport.Rectangle(source),
+                    rect = BattleMapViewport.Rectangle(destination) };
+                first ??= sample;
+                if (contextual) firstContext ??= sample;
+            }
+        }
     }
 
     internal object Observe() => new
@@ -140,7 +189,8 @@ internal sealed partial class BattlefieldTerrain : Node2D
         name = Name.ToString(), map = _map.Map.Value, origin = _region.Origin,
         openedChests = _openChests.Select(cell => new { cell.X, cell.Y, block = _map.Search!.OpenChest & 0x3FF }),
         width = _width, height = _height, offsetX = _sourceOrigin.X - _region.Origin.X, offsetY = _sourceOrigin.Y - _region.Origin.Y,
-        positionX = Position.X, positionY = Position.Y, target = _followsTarget ? _target : null, overlay = _overlay, highPriority = _high, z = ZIndex, draws = _draws, drawSequence = _drawSequence, first = _first, firstContext = _firstContext,
+        positionX = Position.X, positionY = Position.Y, target = _followsTarget ? _target : null, overlay = _overlay, highPriority = _high, z = ZIndex, draws = _draws + _animatedDraws, drawSequence = _drawSequence, first = _first ?? _animatedFirst, firstContext = _firstContext ?? _animatedContext,
+        animatedFirst = _animatedFirst, animatedDraws = _animatedDraws, phase = _phase,
         visualMap = _visual.Map.Value, atlasWidth = _visual.Atlas.Width, atlasHeight = _visual.Atlas.Height,
         atlasScale = _visual.Scale, blocks = _visual.Blocks.Count,
     };

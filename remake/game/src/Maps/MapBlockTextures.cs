@@ -9,11 +9,32 @@ internal sealed class MapBlockTextures : IDisposable
 {
     private readonly Dictionary<MapId, Image> _atlases = [];
     private readonly Dictionary<(MapId Map, int Block), ImageTexture> _blocks = [];
-    private readonly Dictionary<ExplorationRaster, ImageTexture> _hd = [];
+    private readonly Dictionary<ExplorationRaster, ImageTexture> _variants = [];
     private readonly Dictionary<(MapId Map, int Block, ExplorationRaster? Variant), Bitmap> _blockInk = [];
 
     private ExplorationMapVisual? _checkedBank;
-    internal IEnumerable<ImageTexture> Textures => _blocks.Values.Concat(_hd.Values);
+    private MapTileAnimation? _checkedAnimation;
+
+    internal void PrepareAnimation(MapTileAnimation? animation)
+    {
+        if (animation is null || animation == _checkedAnimation) return;
+        // A later transfer must not discover a corrupt PNG in a retained draw callback.
+        foreach (var phase in animation.Phases)
+        {
+            foreach (var pair in phase.Blocks.Values)
+            {
+                using var original = Exploration.ExplorationRasterImages.Open(pair.Original);
+                using var hd = Exploration.ExplorationRasterImages.Open(pair.Hd);
+            }
+            foreach (var edge in phase.Contexts.Values.Distinct())
+            {
+                using var image = Exploration.ExplorationRasterImages.Open(edge);
+            }
+        }
+        _checkedAnimation = animation;
+    }
+
+    internal IEnumerable<ImageTexture> Textures => _blocks.Values.Concat(_variants.Values);
 
     internal void PrepareHd(ExplorationMapVisual visual)
     {
@@ -25,27 +46,40 @@ internal sealed class MapBlockTextures : IDisposable
         _checkedBank = visual;
     }
 
-    internal static ExplorationRaster? Variant(ExplorationMapVisual visual, bool hd, WorkingMapLayout layout,
-        int x, int y, Rect2I bounds, out bool contextual)
+    internal static BlockNeighborhood Neighborhood(WorkingMapLayout layout, int x, int y, Rect2I bounds)
     {
-        contextual = false;
-        if (!hd || visual.HdBlocks is null) return null;
-        int block = layout[x, y] & 1023;
         // A detached secondary plane may scroll off the normal packed-room bounds.
         // Its source remains the same 64x64 working layout.
         if (!bounds.HasPoint(new(x, y))) bounds = new(0, 0, 64, 64);
         int At(int dx, int dy) => bounds.HasPoint(new(x + dx, y + dy)) &&
             x + dx is >= 0 and < 64 && y + dy is >= 0 and < 64 ? layout[x + dx, y + dy] & 1023 : -1;
-        if (visual.HdBlockContexts is { } variants && variants.TryGetValue(new(At(-1,-1), At(0,-1), At(1,-1),
-            At(-1,0), block, At(1,0), At(-1,1), At(0,1), At(1,1)), out var variant))
+        return new(At(-1,-1), At(0,-1), At(1,-1), At(-1,0), At(0,0), At(1,0), At(-1,1), At(0,1), At(1,1));
+    }
+
+    internal static ExplorationRaster? Variant(ExplorationMapVisual visual, bool hd, WorkingMapLayout layout,
+        int x, int y, Rect2I bounds, int phase, out bool contextual)
+    {
+        contextual = false;
+        var transfer = phase < 0 ? null : visual.TileAnimation!.Phases[phase];
+        int block = layout[x, y] & 1023;
+        var center = transfer?.Blocks.GetValueOrDefault(block);
+        if (!hd || visual.HdBlocks is null) return center?.Original;
+        var key = Neighborhood(layout, x, y, bounds);
+        if (transfer?.Contexts.TryGetValue(key, out var edge) == true)
+        {
+            contextual = true;
+            return edge;
+        }
+        if (center is not null) return center.Hd;
+        if (visual.HdBlockContexts is { } variants && variants.TryGetValue(key, out var variant))
         {
             contextual = true;
             return variant;
         }
-        return visual.HdBlocks[block];
+        return visual.HdBlocks[key.Center];
     }
 
-    internal int Count => _blocks.Count + _hd.Count;
+    internal int Count => _blocks.Count + _variants.Count;
 
     internal ImageTexture Block(ExplorationMapVisual visual, int block, ExplorationRaster? variant = null)
     {
@@ -53,9 +87,9 @@ internal sealed class MapBlockTextures : IDisposable
         if (block < 0 || block >= visual.Blocks.Count) throw new InvalidOperationException("map-block-binding");
         if (variant is not null)
         {
-            if (_hd.TryGetValue(variant, out var prepared)) return prepared;
+            if (_variants.TryGetValue(variant, out var prepared)) return prepared;
             using var pixels = Exploration.ExplorationRasterImages.Open(variant);
-            _hd.Add(variant, prepared = ImageTexture.CreateFromImage(pixels));
+            _variants.Add(variant, prepared = ImageTexture.CreateFromImage(pixels));
             return prepared;
         }
         if (_blocks.TryGetValue(key, out var texture)) return texture;
@@ -107,11 +141,11 @@ internal sealed class MapBlockTextures : IDisposable
 
     public void Dispose()
     {
-        _checkedBank = null;
+        _checkedBank = null; _checkedAnimation = null;
         foreach (var texture in _blocks.Values) texture.Dispose();
         foreach (var atlas in _atlases.Values) atlas.Dispose();
-        foreach (var texture in _hd.Values) texture.Dispose();
+        foreach (var texture in _variants.Values) texture.Dispose();
         foreach (var ink in _blockInk.Values) ink.Dispose();
-        _hd.Clear(); _blocks.Clear(); _atlases.Clear(); _blockInk.Clear();
+        _variants.Clear(); _blocks.Clear(); _atlases.Clear(); _blockInk.Clear();
     }
 }

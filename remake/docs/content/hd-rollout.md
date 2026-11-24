@@ -17,9 +17,8 @@ Reuse the admitted original for the selected palette and frame. Where a caller n
 original, join its prepared index to that caller and verify Original first. Use only authorized
 materials for derivation and keep the existing private publication and public-asset boundaries.
 The [static terrain selection](asset-inventory.md#pre-voyage-static-terrain-2175) carries the Map3
-companion and the other nineteen banks. The current complete [entry-layer selection](asset-inventory.md#pre-voyage-entry-layers-2179)
-carries six switchable title/Witch layers together with the #2178 UI, battle, actor, portrait
-and terrain selections.
+companion and the other nineteen banks. The [tile-animation selection](asset-inventory.md#pre-voyage-animated-terrain-2180) carries
+the six switchable title/Witch layers together with the UI, battle, actor, portrait and static terrain selections.
 
 ## Coverage from the selected package
 
@@ -46,7 +45,7 @@ replacement, additional Map60 ascent, and later Map14 movement.
 | Visual family | Prepared and installed | HD generation and actual consumer gap |
 | --- | --- | --- |
 | Field and tactical terrain | Retail `maps/index.json` joins atlases, tiles, palettes, blocks, layouts and animation operands. The selected world admits original atlases and block words. All twenty selected maps mount L1 banks. | Field drawing, pickup occlusion and tactical terrain resolve the current block and neighborhood. Each tactical plane retains its encounter origin, priority and logical tile footprint. [Static terrain evidence](asset-inventory.md#pre-voyage-static-terrain-2175) |
-| Water and other animated tiles | The prepared map index and original [map animation contract](../../../docs/research/world/map-content.md) identify source tables. Map66's DMA witness is in [map-animation-vdp-v1](../../../tests/fixtures/h3/map-animation-vdp-v1.json). Current world maps carry working layout events and the presenter supports plane scroll and palette effects. | **Confirmed** the world visual has a static atlas and no tile-animation field or phase selector. Treat source tile substitution as a separate consumer slice. Static water, scrolling and palette changes each have their own observations. Eight selected maps have referenced animation targets. **Unknown** which phases are drawn during the accepted visits. |
+| Water and other animated tiles | The prepared map index and original [map animation contract](../../../docs/research/world/map-content.md) identify source tables. Map66's DMA witness is in [map-animation-vdp-v1](../../../tests/fixtures/h3/map-animation-vdp-v1.json). Current world maps carry working layout events and the presenter supports plane scroll and palette effects. | **Confirmed** eight map visuals admit sparse Original/HD tile substitutions. Field and tactical projection share the phase and neighborhood selector. Map66 has a native two-phase water and shoreline witness in both modes. [Mechanism and evidence](#tile-substitutions-2180) |
 | Field and tactical sprites | Retail `walking/index.json` includes ordinary directions, class appearances and special streams. The current world has 163 sprite IDs, including 252/254/255, and three alternate graphics names on 252. | All 163 IDs have complete `hdDirections`; all three alternate names have `hdGraphics`. Ordinary field selection uses the saved graphics mode and the sprite's own HD directions. Shadow-removed and alternate graphics use their selected identity and density. Tactical world sprites resolve HD directions; the eight selected battle banks also provide complete HD scene-owned death strips under #2177. [Focused observations](#focused-observations) cover actual field/tactical selection, alternate/shadow fallback and 48px registration; they do not establish every later special dispatch. |
 | Portraits | Retail `portraits/index.json` supplies atlases and replacements. The world mounts 46 portraits, all with `hdRaster`. | Field story and both Member surfaces select HD from the saved mode and the selected portrait's own variant independently of terrain coverage. [Focused observations](#focused-observations) cover complete bank production, distinct eye/mouth tiles, mirror and special-pose dialogue. Member/class identity rules are unchanged; this slice does not claim a new playthrough of every class/member menu. |
 | Battle close-up bodies and weapons | Retail `bodies` and `weapons` plus the mounted scene documents bind body/palette/weapon, frames and layer order. | `BattleSceneView` selects optional `hdRasters` in complete frame groups with fixed logical dimensions. Campaign admission carries the paired Original/HD donor for shared appearances. [Actual checks](#private-battle-artwork-acceptance) preserve weapon layering, mirroring and geometry. |
@@ -316,11 +315,9 @@ The `asset-inventory.md` trace receives consumer status after observed admission
 
 1. **Static field and tactical terrain.** The [complete selection, calibration and replay](asset-inventory.md#pre-voyage-static-terrain-2175)
    cover the twenty named maps, selected working layouts, detached planes and tactical source rectangles.
-2. **Tile animation.** [#2180](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2180) owns the map presentation fields in
-   `ExplorationDefinition.cs` and `ExplorationAssetReader.cs` and the field/tactical map texture
-   owners. Derive only visible, selected tile slots and the admitted cadence. Compare one
-   representative full water cycle, a changed-neighbor seam and suspension/scene resume against
-   the mechanism owner. Record constant treatment as static coverage until that passes.
+2. **Tile animation.** The [shared projection](#tile-substitutions-2180) consumes the mounted transfer
+   table in field and tactical views. The [package and reproduction](asset-inventory.md#pre-voyage-animated-terrain-2180)
+   cover sparse substitution, a full cycle, the neighboring shoreline, pause and map return.
 3. **Actor and portrait consumers.** Own `src/sf2tool/remake_exploration_visuals.py` and the
    `ExplorationDefinition.cs` / `ExplorationAssetReader.cs` records and readers. Adapter owners
    are `ExplorationPresentation.cs`, `ExplorationRasterImages.cs` and `PartyStatusView.cs` in
@@ -721,3 +718,48 @@ The entry producer consumes already prepared images and changes private remake p
 Its path is registered in `REMAKE_PRODUCER_PATHS`. On a clean committed head, select checks
 with `uv run sf2 verify plan --base origin/main --head HEAD --scope engine` after reviewing
 the engine-only semantic boundary. The PR retains local and CI verification results.
+## Tile substitutions (#2180)
+
+The High-rigor scope is the existing twenty-map selection and its field and tactical consumers.
+The prepared map index identifies eight tables with two transfers to a common contiguous target
+per map. At pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, load seeds
+the counter to one. `VInt_UpdateMapAnimations` reads the cache at 32 bytes per replacement
+tile, queues 16 words per tile to the absolute target tile and wraps at the terminator.
+[The four-case fixture](../../../tests/fixtures/h3/map-animation-vdp-v1.json) confirms the
+next-VInt transfer boundary including Map66's second 48-tile entry. Those controlled cache
+bytes establish timing and addressing. The prepared retail stream supplies the artwork.
+Natural scanline timing and exact phase at each story visit remain **Unknown**.
+
+Select a phase by enabled ticks since map mount. Ticks zero and one use the mounted atlas.
+Tick two presents the first transfer, then each entry holds for its own counter. Reuse
+field simulation service and tactical board presentation time. Each owner suspends under
+the existing pause policy. A new board/map mount starts at the atlas. Resuming a retained
+view preserves its position. Settings selects density at the same phase. The phase is
+derived presentation state. Saves, plane motion, palettes, block words and collision keep
+their existing owners.
+
+Prepare sparse raster substitutions offline using the same pinned L1 filter and layout
+footprints as static terrain. The source is the prepared map palette and the selected
+4bpp cache range. Preserve tile flips, alpha, opaque black and priority. Resolve Original
+by center block, HD by the active 3×3 neighborhood then center. A static center next to
+water can receive a changed HD edge. Filter only the changed centers and their halo on
+observed layout footprints for the selected transfer. Share identical outputs and use the
+installed static bank elsewhere. This keeps the pinned graphics implementation offline and
+avoids a second filter in the game. Upload on demand within the current map. A tactical
+phase change updates only its affected retained drawing.
+
+Calibration is one Map66 cycle, shoreline and pause/resume at a controlled start before
+processing the other selected tables. The base world occupies 97,892,927 bytes, leaving
+over 34 MiB to its 128 MiB limit. Budget 1 GiB producer working set, 512 MiB per staged
+complete package and 1 GiB disk headroom. Keep a single worker. Cost scales with the
+selected source ranges, changed blocks and distinct affected layout neighborhoods.
+At 36 KiB per uploaded HD block, 500 distinct selected variants cost about 18 MiB plus
+driver overhead. Revise from the Map66 pilot before expanding. No network or model cost.
+
+The Map66 pilot added 957,829 bytes to the world. Its first transfer changed 160 centers
+and 375 distinct HD context rasters. Its second transfer exactly reproduced the mounted
+center pixels, so it needs no additional raster. Twenty enabled ticks divided the two
+states. The native field and Battle06 pilot readbacks matched 24 independent RGBA
+comparisons against the prepared atlas and replacement stream, including the static-center
+shoreline at (33,49). The return through the southern shrine mounted fresh terrain.
+The serial pilot bank took 2.43 seconds. Use the same limits for the eight-map run.

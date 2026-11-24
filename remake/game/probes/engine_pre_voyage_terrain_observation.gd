@@ -28,9 +28,17 @@ func mode(value: String) -> void:
     await select_setting("apply")
     var paused: Variant = persist().progress
     var battle_before := battle_progress()
+    var shore_before := water_read(find("ExplorationSessionView")) if case_name == "water" else {}
+    var board := find("BattleSessionView").get_node("MapViewport") if case_name == "tactical-water" else null
+    var board_before: Variant = observation(board,"ReadTerrainJson").layers[0].phase if board != null else null
     var start := Time.get_ticks_usec()
     await key(KEY_ENTER)
     check(find("SettingsView") == null and paused == persist().progress, "Apply preserves paused progress")
+    if not shore_before.is_empty():
+        var after := water_read(find("ExplorationSessionView"))
+        check(after.tick == shore_before.tick and after.phase == shore_before.phase, "Apply retains field phase")
+    if board != null:
+        check(observation(board,"ReadTerrainJson").layers[0].phase == board_before, "Apply retains board phase")
     check(battle_before == battle_progress(),"Apply preserves paused tactical state")
     samples.append({"apply":value, "ms":(Time.get_ticks_usec()-start)/1000.0})
     if find("SystemMenuView") != null: await key(KEY_ESCAPE)
@@ -283,9 +291,96 @@ func voyage_layers() -> void:
         seen.has("map-73-background-shifted") and (seen.has("map-73-foreground") or seen.has("map-73-blank-A")),
         "detached scene layers through landing " + str(seen))
 
+# Map66 southern shore. One adjacent cell has only an HD context change.
+func water_read(view: Node) -> Dictionary:
+    var d: Variant = view.call("ReadLayoutRegion",33,49,1,2).draw
+    if d == null or d.map != "map-66": return {}
+    var cells := {}
+    for row in d.uses:
+        if row.overlay or cells.has(str(row.sourceY)): continue
+        var tex := instance_from_id(int(row.resourceIdentity)) as Texture2D
+        cells[str(row.sourceY)] = {"rgba":pixel_digest(tex), "block":row.block, "pixels":tex.get_width(),
+            "handle":row.resourceIdentity, "context":row.selector.contextual}
+    return {"phase":d.phase, "tick":d.enabledTicks, "cells":cells}
+
+func water_cycle(view: Node, hd: bool) -> void:
+    var cycle := []
+    for i in 3:
+        var s := water_read(view)
+        if s.get("cells",{}).size() != 2:
+            check(false,"both shore cells drawn " + str(s)); return
+        cycle.append(s)
+        check(s.phase == (int(s.tick - 2) % 40) / 20, "source transfer cadence")
+        check(s.cells["49"].pixels == (96 if hd else 24), "active density")
+        if i < 2: await frames(20)
+    samples.append({"hd":hd,"cycle":cycle})
+    check(cycle[0].phase == cycle[2].phase and cycle[0].phase != cycle[1].phase, "complete cycle")
+    for cell in ["49","50"]:
+        check(cycle[0].cells[cell].rgba == cycle[2].cells[cell].rgba, "cycle wraps pixels")
+        check((cycle[0].cells[cell].rgba != cycle[1].cells[cell].rgba) == (hd or cell == "50"),
+            "changed water and contextual shore")
+
+func water() -> void:
+    await settle("Map66 shore")
+    var view := find("ExplorationSessionView")
+    view.call("ObserveLayoutRegion",33,49,1,2)
+    await frames(6)
+    await water_cycle(view,false)
+    if not failures.is_empty(): return
+    await key(KEY_F10)
+    var paused := water_read(view)
+    await frames(43)
+    check(paused == water_read(view), "system pause holds draw and phase")
+    await key(KEY_ESCAPE)
+    await frames(4)
+    check(int(water_read(view).tick) - int(paused.tick) in range(1,12), "resume services only enabled ticks")
+    await mode("hd")
+    await water_cycle(view,true)
+    if not failures.is_empty(): return
+    var handle: String = water_read(view).cells["50"].handle
+    view.call("StopLayoutObservation")
+    await walk(Vector2i(33,43),"southern shrine","map-41")
+    if issue != "": check(false,issue); return
+    check(state().map == "map-41" and not is_instance_id_valid(int(handle)), "departed terrain released")
+    await walk(Vector2i(23,15),"southern shore","map-66")
+    if issue != "": check(false,issue); return
+    await walk(Vector2i(33,47),"shore")
+    if issue != "": check(false,issue); return
+    view.call("ObserveLayoutRegion",33,49,1,2)
+    await frames(5)
+    await water_cycle(view,true)
+    check(state().failure == null and state().presentation.error == null, "returned field is healthy")
+    view.call("StopLayoutObservation")
+
+func tactical_water() -> void:
+    var board := find("BattleSessionView").get_node("MapViewport")
+    for style in ["original","hd"]:
+        if applied().GraphicsMode != style: await mode(style)
+        var cycle := []
+        for i in 3:
+            var data := observation(board,"ReadTerrainJson")
+            var chosen: Dictionary = {}
+            for layer in data.layers:
+                if layer.animatedFirst != null:
+                    chosen = layer
+                    break
+            if chosen.is_empty(): check(false,"actual animated board pass"); return
+            var row: Dictionary = chosen.animatedFirst
+            var tex := instance_from_id(int(row.texture)) as Texture2D
+            check(row.phase == chosen.phase and tex.get_width() == (24 if style == "original" else 96),
+                "tactical phase and selected density")
+            cycle.append({"row":row,"rgba":pixel_digest(tex),"staticDraw":chosen.drawSequence,"plane":chosen.name})
+            if i < 2: await frames(20)
+        samples.append({"mode":style,"tactical":cycle})
+        check(cycle[0].rgba == cycle[2].rgba and cycle[0].rgba != cycle[1].rgba, "tactical water cycle")
+        check(cycle[0].staticDraw == cycle[2].staticDraw, "static tactical commands retained")
+    var s: Dictionary = find("BattleSessionView").call("ReadCaptureState",false)
+    check(s.failure == null and s.scene.error == null,"tactical adapter healthy")
+
 func run() -> void:
-    if OS.get_environment("SF2_SAVE_NAMESPACE") != "issue2175":
-        push_error("select disposable issue2175 namespace"); quit(2); return
+    var save_namespace := OS.get_environment("SF2_SAVE_NAMESPACE")
+    if not (save_namespace.begins_with("issue2180-") if case_name in ["water","tactical-water","invalid-tiles"] else save_namespace == "issue2175"):
+        push_error("select a disposable terrain observation namespace"); quit(2); return
     root.size = Vector2i(1920,1080)
     host = load("res://Main.tscn").instantiate()
     root.add_child(host)
@@ -295,10 +390,15 @@ func run() -> void:
         await quake(case_name == "cold")
     else:
         var mounted: String = host.call("StartPreVoyageLocalizationObservation",OS.get_environment("SF2_HOST_UI_START"))
+        if case_name == "invalid-tiles":
+            check(mounted == "map-animation-block", "rejects a replacement outside the transfer range")
+            finish(); return
         check(mounted == "started","controlled mount " + mounted)
         if mounted != "started": finish(); return
         await frames(12)
-        if case_name.begins_with("battle"):
+        if case_name == "water": await water()
+        elif case_name == "tactical-water": await tactical_water()
+        elif case_name.begins_with("battle"):
             if applied().GraphicsMode != "original": await mode("original")
             var original := battle_sample(24)
             await mode("hd")
