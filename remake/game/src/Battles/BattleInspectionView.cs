@@ -60,6 +60,7 @@ internal sealed partial class BattleInspectionView : Control
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Ignore;
         Theme = StoryTheme.Create(); ZIndex = 90;
         AddChild(_details); AddChild(_overview); AddChild(_memberPage);
+        _memberPage.Refresh = Project;
         _memberPage.Back = Return; AddChild(_options); AddChild(_hover); AddChild(_terrainPanel);
         AddChild(_footer);
         var instructions = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
@@ -84,10 +85,11 @@ internal sealed partial class BattleInspectionView : Control
     }
     public override void _ExitTree()
     { GetWindow().MouseExited -= StopEdge; GetWindow().FocusExited -= StopEdge; SuspendPointer(); }
-    internal bool Open(GameSession session, GameInput input, BattleMapViewport map)
+    internal bool Open(GameSession session, GameInput input, BattleMapViewport map, Action<GameAction> requestAction)
     {
         var query = session.QueryBattleInspection();
         if (!query.Available) return false;
+        _memberPage.RequestAction = requestAction;
         _session = session; _input = input; _map = map; _snapshot = query;
         _cursor = query.Units.Single(u => u.Actor == query.ActiveActor).Position;
         _pointer.Suspend(); _page = "Cursor"; _unit = null; _land = null; _members = null; _optionIndex = 0; _memberPage.Reset(); Show(); Project(); return true;
@@ -178,15 +180,11 @@ internal sealed partial class BattleInspectionView : Control
         Project();
     }
 
+    internal MemberPageView? NativeMembers => Active && _page == "Members" && _memberPage.IsVisibleInTree() ? _memberPage : null;
+
     internal void HandlePointer(InputEvent input)
     {
         if (input is not InputEventMouse mouse) return;
-        if (_page == "Members")
-        {
-            _memberPage.HandlePointer(input);
-            Project();
-            return;
-        }
         if (mouse is InputEventMouseButton { ButtonIndex: MouseButton.Right } right)
         {
             StopEdge();

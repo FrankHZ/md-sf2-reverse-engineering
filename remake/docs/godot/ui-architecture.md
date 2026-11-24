@@ -3,8 +3,8 @@
 The current decision in [#2191](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2191)
 is how to migrate two production surfaces: the complete field/battle member page and Settings
 with its child pages. **High rigor** applies because moving input from the root to Godot controls
-can change which player action fires when a page opens, closes or remounts. The shared member layout and the Settings input migration are implemented.
-[Member input](#finite-implementation-slices) remains the next independent slice. The
+can change which player action fires when a page opens, closes or remounts. Both production surfaces
+now use native focus and GUI picking. The
 [campaign capability trace](../capability-status.md#campaign-feature-trace) records shipped behavior.
 
 Both callers already use the
@@ -153,30 +153,26 @@ and 4× icons. [Page](../../game/src/UI/MemberPageView.cs) ·
 [Member sheet composition](../../game/src/Exploration/PartyDetailsPanel.Member.cs) ·
 [Native and visual checks](battle-ui-composition.md#reproduce-the-native-member-layout)
 
-**Planned.** Native focus and GUI picking are a later input change. Today the shared roster retains
-the actor and scroll. Mapped actions and complete pointer gestures use the mounted controls' actual
-rectangles, clipped to the visible list for rows and slots. [Roster](../../game/src/UI/MemberRosterView.cs)
+**Confirmed.** The focused roster row, spell reader or slot receives mapped navigation. Up/Down
+follows explicit wrapping neighbours in the roster and pack, and scrolls text in Spells. Target
+cycles those three panes. Left/Right changes the sheet's actor from any pane. Focus-entered signals
+retain the pane and numbered slot for restoration. The roster reconciles the selected `ActorRef`
+against each new projection. Its nearest-survivor rule checks neighbours in the previous order,
+preferring the following member on a tie. Empty rosters use the header as a focus target.
 
-- Preserve one selected `ActorRef` as the identity of the sheet while the player reads another pane.
-  On open, place focus on that actor, the spell reader or the current item according to the entry.
-  Empty rosters still expose the empty message and Back. In the roster, focusable rows wrap in
-  member order. Target cycles the three panes, Left/Right switches actor from any pane, and Up/Down
-  in Spells scrolls while Up/Down in Items selects a numbered slot. A blank slot clears the prior
-  description. Derive pane/active marker from the focused control. Keep the actor and slot as
-  reading selections and restore by identity after refresh, including the existing nearest-survivor
-  rule. Use native focus following or the roster's existing deferred `EnsureControlVisible` when
-  a mapped selection changes. Restore the saved scroll on Back. Wheel reading changes only scroll.
-- Use GUI-picked rows for actor and slot clicks and buttons for arrows, selector and footer.
-  A mouse-down on a focusable button can take focus before release. For a row that changes the
-  sheet, put the pointer button inside the keyboard-focusable row, give the button no focus and
-  stop mouse propagation there. On validated release, focus its row and project the selection.
-  Dragging out leaves the previous actor/slot visible. Keep arrows and footer pointer targets
-  from stealing the pane's focus. An unavailable
-  member stays focusable for its condition or missing-detail message. The field caller supplies
-  records, gold and Prepare/Magic/Item and can submit only through the revision-bound preparation
-  flow. Battle Confirm on this sheet has no primary action. Back returns to Options and then Cursor.
-  Actor/slot browsing cannot advance either session. [Field caller](../../game/src/Exploration/PartyStatusView.cs) ·
-  [Battle caller](../../game/src/Battles/BattleInspectionView.cs) · [Four-slot contract](../capability-status.md#party-details-capacity)
+Godot picks a release-mode button over the visible row, reader, arrow or footer action. These
+buttons leave keyboard focus on its previous owner during a press. On a valid release they focus
+the chosen row or reader, switch actor in place, or invoke the caller's action. A gesture carries
+its button, clipped bounds, actor, pane and scroll context. Roster buttons also carry their row's
+actor identity. Motion outside the original bounds, a wheel, resize or window exit cancels capture.
+Scroll containers own wheel reading. The page pairs window subscriptions across tree entry and exit.
+
+Field Prepare retains the member, slot and roster scroll. Battle exposes Back and applies
+its inspection release barrier on the return to Options. The host consumes mapped and unmapped
+keyboard/pad edges on the open page and yields pointer events to its controls after higher-priority
+host handling. [Page](../../game/src/UI/MemberPageView.cs) ·
+[Pointer button](../../game/src/UI/MemberPageButton.cs) ·
+[Observed return and remount](battle-ui-composition.md#native-member-input)
 
 ### Settings and its children
 
@@ -258,11 +254,7 @@ Each PR replaces one production path with its consumers and can be reverted with
 | --- | --- | --- |
 | 1. Read a complete member sheet in field and battle. | Implemented with containers and the existing input route. [Layout, visual review and ordinary returns](battle-ui-composition.md#reproduce-the-native-member-layout) | Implemented |
 | 2. Edit a preference or binding and return to the same caller. | Implemented in Settings, its editor and Help. [Mapped input, release drain, refusals and caller return](../verification/host.md#native-settings-focus-and-gui-picking) | Implemented |
-| 3. Browse members and slots by any mapped device, then resume play. Consume slice 1's layout and slice 2's root handoff in the two member callers. Remove their old hit/selection routing at cutover. | Use the long and empty roster cases. Switch member from Items, wheel a different pane and cancel a drag over another row. Check Prepare Back, read-only Member → Options → Cursor and a held release over the board. After detaching/re-entering the same view, one window-exit gesture cancels once and one fresh click acts once. Check live focus/texture, session revision and errors. | 2–4 days |
-
-Allow **2–4 engineer-days** for member input, including debugging and independent review.
-Reuse the member layout, its two caller observations and the Settings host handoff. Reassess
-if implementation requires global focus state, a second input map or another consumer.
+| 3. Browse members and slots by mapped device or pointer, then resume play. | [Native focus, clipped picking, retained Prepare return, remount and neutral battle return](battle-ui-composition.md#native-member-input) | Implemented |
 
 Use the [production demo routes](../../game/probes/previews/README.md#scene-ownership) for actual
 appearance and reading comfort. F5's public sample can display the unsupported Prepare outcome.
@@ -271,7 +263,7 @@ Use the [host observation](../verification/host.md#battle-system-settings-observ
 [remap observation](input-remapping.md#reproduce-the-installed-controls) for input and state.
 [#2147](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2147) owns broader scene/subpage
 coverage. Necessary pictures belong only to the dedicated UI demo and stay ignored locally.
-Gameplay acceptance reads live input, state, projection and errors. **Unknown** until slice 3: native focus and gesture behavior on the member routes. Physical-device comfort retains its existing player-review boundary.
+Gameplay acceptance reads live input, state, projection and errors. Physical-device comfort remains **Unknown**.
 
 ## Findings and limits
 
@@ -380,10 +372,10 @@ binding](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleActionBindings.cs)
 
 P3. **Confirmed** lifetime assumptions. **Inferred** stale-borrow and partial-publication risk.
 
-Roster texture replacement updates the row handle then disposes the old one. The shared member page
-borrows the selected handle and rebinds it in `PresentRoster`. Preparation hides it and retains row focus. A
-projection failure partway through a multi-row update or use of such a borrow across a detach would
-challenge this synchronous assumption. `MemberRosterView._ExitTree` drops row textures.
+Roster texture replacement clears the sheet's borrow before disposing the old row handle.
+`PresentRoster` rebinds the selected live texture. Prepare hides the sheet and retains its reading
+selection. `MemberRosterView._ExitTree` drops row textures. The registered field remount observation
+checks the new borrow against its row after re-entry.
 `BattleMenuLayout` retains its icon set across reparent, `BattleMapViewport` releases on
 rebuild/predelete, and `BattleSceneView._ExitTree` clears its texture cache while retaining the mounted
 overlay. Current handoff retains only the permissible board during return. Tree exit is therefore an

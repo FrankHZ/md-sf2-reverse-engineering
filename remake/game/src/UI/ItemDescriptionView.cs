@@ -75,6 +75,8 @@ internal sealed partial class ItemDescriptionView : VBoxContainer
         if (IsVisibleInTree() && Maximum > 0) _scroll.ScrollVertical += step;
     }
 
+    internal void EnableGuiScroll() => _scroll.MouseFilter = MouseFilterEnum.Stop;
+
     internal bool Wheel(Vector2 point, int step)
     {
         if (!IsVisibleInTree() || !_scroll.GetGlobalRect().HasPoint(point)) return false;

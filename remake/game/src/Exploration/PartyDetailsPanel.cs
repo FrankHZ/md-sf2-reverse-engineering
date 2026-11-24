@@ -29,7 +29,10 @@ internal sealed partial class PartyDetailsPanel : Panel
     internal void ConfigureIcons(IdentityIcons icons, ScenarioDefinition definition) { _icons = icons; _definition = definition; }
     private string? _actor;
     private int _slotCount;
+    // Member focus-entered signals retain the reading pane across a cover. Direct Full
+    // uses the same detail projection with its own mapped reading pane.
     internal int FocusPane { get; set; }
+    internal Func<ScrollContainer?, Action, MemberPageButton>? ButtonFor { get; init; }
     internal CenterContainer? PortraitSlot { get; init; }
     private bool MemberLayout => PortraitSlot is not null;
 
@@ -47,7 +50,9 @@ internal sealed partial class PartyDetailsPanel : Panel
 
         _spells.SizeFlagsHorizontal = _inventory.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         _spells.AddThemeConstantOverride("separation", 12); _inventory.AddThemeConstantOverride("separation", 12);
-        _magic.AddChild(_spells); _items.AddChild(_inventory);
+        if (MemberLayout) ConfigureMemberReaders();
+        else _magic.AddChild(_spells);
+        _items.AddChild(_inventory);
         if (PortraitSlot is { } portrait) BuildMemberSheet(portrait);
         else
         {
@@ -107,11 +112,22 @@ internal sealed partial class PartyDetailsPanel : Panel
 
     private void PresentInventory(IReadOnlyList<PartyInventorySlot>? inventory)
     {
+        int previousCount = _slotCount;
         _slotCount = inventory?.Count ?? 0;
+        ItemSlot = Math.Min(ItemSlot, Math.Max(0, _slotCount - 1));
         Rows(_inventory, _itemRows, inventory?.Select(slot => $"{slot.Slot + 1}. " +
             (slot.Empty == true ? GameText.Get("party.empty") : slot.Empty is null ? GameText.Get("party.inventory-unavailable") : DisplayNames.Item(slot.ItemId, slot.Name ?? GameText.Get("party.item-unavailable"))) +
             (slot.Equipped ? " · " + GameText.Get("party.equipped") : "") + (slot.Broken ? " · " + GameText.Get("party.broken") : "")).ToArray() ?? [GameText.Get("party.inventory-unavailable")],
             inventory?.Select(slot => slot.ItemId is { } id ? IdentityIcons.Item(id) : null).ToArray() ?? []);
+        if (MemberLayout && previousCount != _slotCount)
+        {
+            for (int i = 0; i < _slotCount; i++)
+            {
+                var row = _itemRows[i].Row;
+                row.FocusNeighborTop = row.GetPathTo(_itemRows[(i + _slotCount - 1) % _slotCount].Row);
+                row.FocusNeighborBottom = row.GetPathTo(_itemRows[(i + 1) % _slotCount].Row);
+            }
+        }
     }
 
     private void PresentDescription(GameSession session, IReadOnlyList<PartyInventorySlot>? inventory,
@@ -146,12 +162,31 @@ internal sealed partial class PartyDetailsPanel : Panel
                 row.AddChild(marker);
             }
             iconCell.AddChild(icon); row.AddChild(iconCell); row.AddChild(label);
-            column.AddChild(row); labels.Add((row, label, icon, marker));
+            if (selectable)
+            {
+                int slot = labels.Count;
+                row.Name = "Slot" + (slot + 1);
+                row.FocusMode = FocusModeEnum.All;
+                row.FocusEntered += () =>
+                {
+                    FocusPane = 2;
+                    if (ItemSlot == slot) return;
+                    ItemSlot = slot;
+                    _items.EnsureControlVisible(row);
+                };
+                var frame = MemberPageButton.Stack(row);
+                frame.AddChild(ButtonFor!(_items, () => ReadingControl(2, slot).GrabFocus()));
+                column.AddChild(frame);
+            }
+            else column.AddChild(row);
+            labels.Add((row, label, icon, marker));
         }
         for (int i = 0; i < labels.Count; i++)
         {
-            labels[i].Row.Visible = i < rows.Length;
-            bool focused = selectable && i < _slotCount && FocusPane == 2 && i == ItemSlot;
+            var rowControl = labels[i].Row;
+            if (selectable) rowControl.GetParent<Control>().Visible = i < rows.Length;
+            rowControl.Visible = i < rows.Length;
+            bool focused = selectable && i < _slotCount && rowControl.HasFocus();
             labels[i].Icon.Present(_icons, i < identities.Length ? identities[i] : null, focused);
             if (labels[i].Marker is { } marker)
             {
@@ -200,23 +235,9 @@ internal sealed partial class PartyDetailsPanel : Panel
         _items.ScrollVertical = 0;
     }
 
-    internal void SelectItemSlot(int slot)
-    {
-        if (_slotCount == 0) return;
-        ItemSlot = (slot + _slotCount) % _slotCount;
-        _items.EnsureControlVisible(_itemRows[ItemSlot].Row);
-    }
-
-    internal (int Slot, Rect2 Rect) HitItem(Vector2 point)
-    {
-        if (!MemberLayout || _slotCount == 0 || !_items.GetGlobalRect().HasPoint(point)) return (-1, default);
-        int slot = _itemRows.FindIndex(row => row.Row.Visible && row.Row.GetGlobalRect().HasPoint(point));
-        return slot < 0 ? (-1, default) : (slot, _itemRows[slot].Row.GetGlobalRect().Intersection(_items.GetGlobalRect()));
-    }
     internal void ScrollFocused(int step) { if (FocusPane == 1) _magic.ScrollVertical += step; if (FocusPane == 2) _items.ScrollVertical += step; }
     internal void Wheel(Vector2 position, int step)
     {
-        if (MemberLayout && _description.Wheel(position, step)) return;
         if (_magic.GetGlobalRect().HasPoint(position)) _magic.ScrollVertical += step;
         if (_items.GetGlobalRect().HasPoint(position)) _items.ScrollVertical += step;
     }

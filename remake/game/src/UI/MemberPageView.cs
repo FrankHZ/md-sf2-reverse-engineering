@@ -23,11 +23,13 @@ internal sealed partial class MemberPageView : Control
     private readonly PanelContainer _footer = new() { Name = "PartyFooter", MouseFilter = MouseFilterEnum.Ignore };
     private readonly TextureRect _portrait = new() { Name = "MemberPortrait", ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
         StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, TextureFilter = TextureFilterEnum.Nearest, MouseFilter = MouseFilterEnum.Ignore };
-    private readonly MemberRosterView _roster = new() { Name = "Roster" };
+    private readonly MemberRosterView _roster;
     private readonly MenuPointer _pointer = new();
     private readonly Label _prepare = Text("Prepare", 28);
     internal Action? Primary { get; set; }
+    internal Action? Refresh { get; set; }
     internal Action? Back { get; set; }
+    internal Action<GameAction>? RequestAction { get; set; }
     internal ActorRef? Actor => _roster.Actor;
     internal int Index => _roster.Index;
     internal int Count { get; private set; }
@@ -44,12 +46,18 @@ internal sealed partial class MemberPageView : Control
         _portraitNote.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         portrait.AddChild(_portrait);
         portrait.AddChild(_portraitNote);
-        Details = new() { Name = "MemberDetails", PortraitSlot = portrait, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        Details = new() { Name = "MemberDetails", PortraitSlot = portrait, ButtonFor = ButtonFor, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        _roster = new()
+        {
+            Name = "Roster", ButtonFor = ButtonFor,
+            FocusMember = index => { Details.FocusPane = 0; Select(index); },
+            BeforePortraitChange = () => _portrait.Texture = null,
+        };
     }
 
     public override void _Ready()
     {
-        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Stop; Theme = StoryTheme.Create();
+        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Stop; MouseForcePassScrollEvents = false; Theme = StoryTheme.Create();
         // The shared sheet and footer inherit the same column spacing.
         Theme.SetConstant("separation", "HBoxContainer", 24);
         var shade = new ColorRect { Color = new(0, 0, 0, 0.7f), MouseFilter = MouseFilterEnum.Ignore };
@@ -75,6 +83,14 @@ internal sealed partial class MemberPageView : Control
         content.AddChild(BuildSummary());
         page.AddChild(_footer);
         BuildFooter();
+        _selector.FocusMode = FocusModeEnum.All;
+        _selector.FocusEntered += () => Details.FocusPane = 0;
+        Bind(_selector, () => FocusPane(0));
+        Bind(_previous, () => SwitchActor(-1));
+        Bind(_next, () => SwitchActor(1));
+        Bind(_prepare, () => RequestAction?.Invoke(GameAction.Confirm));
+        Bind(_close, () => RequestAction?.Invoke(GameAction.Cancel));
+        Resized += _pointer.Suspend;
     }
 
     private HBoxContainer BuildBody()
@@ -152,7 +168,34 @@ internal sealed partial class MemberPageView : Control
         return cell;
     }
 
-    public override void _ExitTree() => _portrait.Texture = null;
+    private MemberPageButton ButtonFor(ScrollContainer? clip, Action activate) =>
+        new(_pointer, clip, () => (Actor, Details.FocusPane, _roster.ScrollVertical, clip?.ScrollVertical), () =>
+        {
+            if (_requiresRelease || !IsVisibleInTree() || !CanProcess() || !GetWindow().HasFocus()) return;
+            activate();
+            Refresh?.Invoke();
+        });
+
+    private void Bind(Label target, Action activate)
+    {
+        var button = ButtonFor(null, activate);
+        target.AddChild(button);
+        button.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+    }
+
+    public override void _EnterTree()
+    {
+        GetWindow().MouseExited += _pointer.Suspend;
+        GetWindow().FocusExited += Suspend;
+    }
+
+    public override void _ExitTree()
+    {
+        GetWindow().MouseExited -= _pointer.Suspend;
+        GetWindow().FocusExited -= Suspend;
+        Suspend();
+        _portrait.Texture = null;
+    }
 
     internal void Reset(int focusPane = 0)
     {
@@ -168,8 +211,8 @@ internal sealed partial class MemberPageView : Control
         if (!input.GameplayHeld) _requiresRelease = false;
         var previous = _roster.Actor;
         Count = entries.Length;
-        _roster.Present(entries, focused: Details.FocusPane == 0);
-        if (previous != _roster.Actor) Details.ResetReading();
+        _roster.Present(entries);
+        if (previous != _roster.Actor) Details.ResetReading(keepItemSlot: Details.FocusPane == 2);
         _selector.Text = title + $"   {(Count == 0 ? 0 : Index + 1)} / {Count}";
         _portraitId = Count == 0 ? null : entries[Index].Portrait?.Id;
         _portrait.Texture = _roster.Portrait;
@@ -197,64 +240,75 @@ internal sealed partial class MemberPageView : Control
         _prepare.Text = primary ?? "";
     }
 
+    // The host may reproject the sheet while propagating its process mode to descendants.
+    // Restore focus on the first processing frame after that handoff.
+    public override void _Process(double delta)
+    {
+        if (IsVisibleInTree() && GetWindow().HasFocus()) FocusPane(Details.FocusPane);
+    }
+
     private void Select(int index)
     {
-        if (Count == 0) return;
+        if (Count == 0 || Index == index) return;
+        _pointer.Cancel();
         _roster.Select(index);
         Details.ResetReading(keepItemSlot: Details.FocusPane == 2);
     }
-    internal void Suspend() { _requiresRelease = true; _pointer.Suspend(); }
+    private void FocusPane(int pane)
+    {
+        var target = pane == 0 ? _roster.SelectedRow ?? _selector : Details.ReadingControl(pane);
+        if (!target.HasFocus()) target.GrabFocus();
+    }
+
+    private void SwitchActor(int step)
+    {
+        if (Count == 0) return;
+        Select((Index + step + Count) % Count);
+        FocusPane(Details.FocusPane);
+    }
+
+    internal void Suspend()
+    {
+        _requiresRelease = true;
+        _pointer.Suspend();
+        if (IsInsideTree() && GetViewport().GuiGetFocusOwner() is { } focus && IsAncestorOf(focus)) focus.ReleaseFocus();
+    }
 
     internal void Handle(GameAction action)
     {
         _pointer.Cancel();
         if (_requiresRelease) return;
-        if (action == GameAction.Cancel) { Back?.Invoke(); return; }
-        if (action == GameAction.Confirm) { Primary?.Invoke(); return; }
-        if (action == GameAction.Target) { Details.FocusPane = (Details.FocusPane + 1) % 3; }
-        int step = action is GameAction.Left or GameAction.Up ? -1 : action is GameAction.Right or GameAction.Down ? 1 : 0;
-        if (action is GameAction.Up or GameAction.Down && Details.FocusPane == 2)
-            Details.SelectItemSlot(Details.ItemSlot + step);
-        else if (action is GameAction.Up or GameAction.Down && Details.FocusPane == 1) Details.ScrollFocused(step * 112);
-        else if (step != 0) Select(Index + step);
+        switch (action)
+        {
+            case GameAction.Cancel: Back?.Invoke(); break;
+            case GameAction.Confirm: Primary?.Invoke(); break;
+            case GameAction.Target: FocusPane((Details.FocusPane + 1) % 3); break;
+            case GameAction.Left: case GameAction.Right: SwitchActor(action == GameAction.Left ? -1 : 1); break;
+            case GameAction.Up: case GameAction.Down:
+                int step = action == GameAction.Up ? -1 : 1;
+                if (Details.FocusPane == 0) _roster.MoveFocus(step);
+                else if (Details.FocusPane == 1) Details.ScrollFocused(step * 112);
+                else Details.MoveSlotFocus(step);
+                break;
+        }
     }
 
-    internal void HandlePointer(InputEvent @event)
+    // Root intercepts page-wide vetoes and right-click Back. Godot picks all left and wheel targets.
+    internal bool RoutePointer(InputEvent input)
     {
-        if (@event is not (InputEventMouseButton or InputEventMouseMotion)) return;
-        if (!GetWindow().HasFocus() || !CanProcess() || !IsVisibleInTree()) { Suspend(); return; }
-        if (@event is InputEventMouseMotion motion) { _pointer.Moved(motion); return; }
-        var button = (InputEventMouseButton)@event;
-        if (button.ButtonIndex is MouseButton.WheelUp or MouseButton.WheelDown)
+        if (_requiresRelease || !GetWindow().HasFocus() || !CanProcess()) { _pointer.Suspend(); return true; }
+        if (input is InputEventMouseMotion motion) _pointer.Moved(motion);
+        if (input is not InputEventMouseButton button) return false;
+        if (button.Pressed && button.ButtonMask.HasFlag(MouseButtonMask.Left | MouseButtonMask.Right)) _pointer.Suspend();
+        if (button.ButtonIndex == MouseButton.Right)
         {
-            int step = button.ButtonIndex == MouseButton.WheelUp ? -112 : 112;
-            if (button.Pressed && !_requiresRelease)
-            {
-                if (!_roster.Wheel(button.Position, step)) Details.Wheel(button.Position, step);
-            }
-            _pointer.Cancel(); return;
+            var bounds = GetGlobalRect();
+            if (_pointer.Read(button, bounds.HasPoint(button.Position) ? "back" : null, bounds, this) is not null)
+                RequestAction?.Invoke(GameAction.Cancel);
+            return true;
         }
-        string? id = null; Rect2 rect = default;
-        int memberIndex = -1;
-        if (button.ButtonIndex == MouseButton.Right) { id = "close"; rect = GetGlobalRect(); }
-        if (button.ButtonIndex == MouseButton.Left)
-        {
-            foreach (var (key, control) in new[] { ("close", _close), ("previous", _previous), ("next", _next), ("selector", _selector), ("prepare", _prepare) })
-                if (control.IsVisibleInTree() && control.GetGlobalRect().HasPoint(button.Position)) { id = key; rect = control.GetGlobalRect(); break; }
-            if (_roster.Hit(button.Position) is (>= 0 and var index, var rowId, var rowRect))
-            { memberIndex = index; id = rowId; rect = rowRect; }
-            if (id is null && Details.HitItem(button.Position) is { Slot: >= 0 } item)
-            { id = $"item:{item.Slot}"; rect = item.Rect; }
-        }
-        string? clicked = _pointer.Read(button, id, rect, (_roster.Actor, Details.FocusPane, _roster.ScrollVertical));
-        if (_requiresRelease || clicked is null) return;
-        if (clicked == "close") { Back?.Invoke(); return; }
-        if (clicked == "prepare") { Primary?.Invoke(); return; }
-        if (clicked == "selector") { Details.FocusPane = 0; }
-        else if (clicked is "previous" or "next") Select(Index + (clicked == "previous" ? -1 : 1));
-        else if (clicked.StartsWith("item:", StringComparison.Ordinal))
-        { Details.FocusPane = 2; Details.SelectItemSlot(int.Parse(clicked.AsSpan(5))); }
-        else if (memberIndex >= 0) { Select(memberIndex); Details.FocusPane = 0; }
+        if (button.ButtonIndex != MouseButton.Left) _pointer.Cancel();
+        return false;
     }
 
     internal object Observe(bool visible, object? preparation = null, object? projection = null, SessionFailure? failure = null) => new { visible, index = Index, count = Count, requiresRelease = _requiresRelease,

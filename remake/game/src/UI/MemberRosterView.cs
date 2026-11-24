@@ -21,13 +21,14 @@ internal sealed record MemberRosterEntry(ActorRef Actor, string Name, string Con
 // Local presentation state only. Callers decide membership and what opening a row can do.
 internal sealed partial class MemberRosterView : ScrollContainer
 {
-    private sealed record Row(HBoxContainer Control, Label Marker, Label Text, TextureRect Image)
+    private sealed record Row(MarginContainer Control, MemberPageButton Button, Label Marker, Label Text, TextureRect Image)
     {
         private MemberPortrait? _portrait;
 
-        internal void PresentPortrait(MemberPortrait? portrait)
+        internal void PresentPortrait(MemberPortrait? portrait, Action? clearBorrower)
         {
             if (_portrait == portrait) return;
+            clearBorrower?.Invoke();
             var previous = Image.Texture;
             Image.Texture = portrait is null ? null : ExplorationRasterImages.Portrait(portrait.Visual, hd: portrait.Hd);
             Image.Visible = Image.Texture is not null;
@@ -39,7 +40,10 @@ internal sealed partial class MemberRosterView : ScrollContainer
     private readonly VBoxContainer _column = new() { Name = "Members", SizeFlagsHorizontal = SizeFlags.ExpandFill };
     private readonly List<Row> _rows = [];
     private MemberRosterEntry[] _entries = [];
-    private bool _focused, _revealPending;
+    private bool _revealPending;
+    internal required Func<ScrollContainer, Action, MemberPageButton> ButtonFor { get; init; }
+    internal required Action<int> FocusMember { get; init; }
+    internal Action? BeforePortraitChange { get; set; }
     internal int Index { get; private set; }
     internal ActorRef? Actor => _entries.Length == 0 ? null : _entries[Index].Actor;
     internal Texture2D? Portrait => Actor is null ? null : _rows[Index].Image.Texture;
@@ -49,14 +53,14 @@ internal sealed partial class MemberRosterView : ScrollContainer
         HorizontalScrollMode = ScrollMode.Disabled;
         VerticalScrollMode = ScrollMode.Auto;
         FocusMode = FocusModeEnum.None;
-        MouseFilter = MouseFilterEnum.Ignore;
+        MouseFilter = MouseFilterEnum.Stop;
         GetVScrollBar().FocusMode = FocusModeEnum.None;
         AddChild(_column);
     }
 
     public override void _ExitTree()
     {
-        foreach (var row in _rows) row.PresentPortrait(null);
+        foreach (var row in _rows) row.PresentPortrait(null, BeforePortraitChange);
     }
 
     internal void Reset()
@@ -67,23 +71,33 @@ internal sealed partial class MemberRosterView : ScrollContainer
         ScrollVertical = 0;
     }
 
-    internal void Present(MemberRosterEntry[] entries, bool focused)
+    internal void Present(MemberRosterEntry[] entries)
     {
         var previous = Actor;
         int previousIndex = Index;
         int index = previous is { } actor ? Find(entries, actor) : 0;
         bool removed = index < 0;
         if (removed) index = NearestSurvivor(entries);
+        bool countChanged = entries.Length != _entries.Length;
         _entries = entries;
         Index = index;
-        _focused = focused;
         while (_rows.Count < entries.Length) AddRow();
+        if (countChanged)
+        {
+            for (int i = 0; i < entries.Length; i++)
+            {
+                var control = _rows[i].Control;
+                control.FocusNeighborTop = control.GetPathTo(_rows[(i + entries.Length - 1) % entries.Length].Control);
+                control.FocusNeighborBottom = control.GetPathTo(_rows[(i + 1) % entries.Length].Control);
+            }
+        }
         for (int i = 0; i < _rows.Count; i++)
         {
             var row = _rows[i];
             bool visible = i < entries.Length;
             row.Control.Visible = visible;
-            row.PresentPortrait(visible ? entries[i].Portrait : null);
+            row.Button.Subject = visible ? entries[i].Actor : null;
+            row.PresentPortrait(visible ? entries[i].Portrait : null, BeforePortraitChange);
             if (!visible) continue;
             var entry = entries[i];
             row.Text.Text = entry.Condition.Length == 0 ? entry.Name : entry.Name + " · " + entry.Condition;
@@ -106,31 +120,19 @@ internal sealed partial class MemberRosterView : ScrollContainer
 
     private static int Find(MemberRosterEntry[] entries, ActorRef actor) => Array.FindIndex(entries, entry => entry.Actor == actor);
 
-    internal void Select(int index, bool reveal = true)
+    internal void Select(int index)
     {
         if (_entries.Length == 0) return;
-        Index = (index + _entries.Length) % _entries.Length;
+        Index = index;
         ShowFocus();
-        if (reveal) Reveal();
+        Reveal();
     }
 
-    internal bool Wheel(Vector2 point, int step)
-    {
-        if (!GetGlobalRect().HasPoint(point)) return false;
-        ScrollVertical += step;
-        return true;
-    }
+    internal Control? SelectedRow => Actor is null ? null : _rows[Index].Control;
 
-    internal (int Index, string? Id, Rect2 Rect) Hit(Vector2 point)
+    internal void MoveFocus(int step)
     {
-        var viewport = GetGlobalRect();
-        if (!viewport.HasPoint(point)) return (-1, null, default);
-        for (int i = 0; i < _entries.Length; i++)
-        {
-            var rect = _rows[i].Control.GetGlobalRect().Intersection(viewport);
-            if (rect.HasPoint(point)) return (i, $"member:{_entries[i].Actor.Value}", rect);
-        }
-        return (-1, null, default);
+        SelectedRow?.FindValidFocusNeighbor(step < 0 ? Side.Top : Side.Bottom)?.GrabFocus();
     }
 
     private void Reveal()
@@ -150,7 +152,7 @@ internal sealed partial class MemberRosterView : ScrollContainer
     {
         for (int i = 0; i < _entries.Length; i++)
         {
-            bool selected = _focused && i == Index;
+            bool selected = _rows[i].Control.HasFocus();
             _rows[i].Marker.Text = selected ? "›" : "";
             _rows[i].Text.Modulate = !_entries[i].Available ? StoryTheme.Unavailable :
                 selected ? StoryTheme.Selected : Colors.White;
@@ -159,7 +161,7 @@ internal sealed partial class MemberRosterView : ScrollContainer
 
     private void AddRow()
     {
-        var row = new HBoxContainer { Name = "Member" + _rows.Count, CustomMinimumSize = new(0, 72),
+        var row = new HBoxContainer { CustomMinimumSize = new(0, 72),
             MouseFilter = MouseFilterEnum.Ignore };
         row.AddThemeConstantOverride("separation", 8);
         var marker = new Label { CustomMinimumSize = new(18, 0), MouseFilter = MouseFilterEnum.Ignore,
@@ -172,8 +174,15 @@ internal sealed partial class MemberRosterView : ScrollContainer
             VerticalAlignment = VerticalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
         label.AddThemeFontSizeOverride("font_size", 28);
         row.AddChild(marker); row.AddChild(image); row.AddChild(label);
-        _column.AddChild(row);
-        _rows.Add(new(row, marker, label, image));
+        int index = _rows.Count;
+        var frame = MemberPageButton.Stack(row);
+        frame.Name = "Member" + index;
+        frame.FocusMode = FocusModeEnum.All;
+        frame.FocusEntered += () => FocusMember(index);
+        var button = ButtonFor(this, () => frame.GrabFocus());
+        frame.AddChild(button);
+        _column.AddChild(frame);
+        _rows.Add(new(frame, button, marker, label, image));
     }
 
     internal IEnumerable<object> ObserveRows() => _entries.Select((entry, i) => new

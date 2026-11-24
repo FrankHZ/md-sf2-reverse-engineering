@@ -91,8 +91,12 @@ func inspect_party() -> void:
     motion.position = Vector2(4,4); motion.relative = Vector2(20,20)
     Input.parse_input_event(motion)
     await frames(2)
+    motion = InputEventMouseMotion.new()
+    motion.position = center(rect); motion.relative = Vector2(24, 24)
+    Input.parse_input_event(motion)
+    await frames(2)
     await mouse_button(center(rect), false)
-    if not check(state().partyStatus.index == s.partyStatus.index, "Drag-out release rejected"): return
+    if not check(state().partyStatus.index == s.partyStatus.index, "Drag out and back cannot rearm selection"): return
     await click(rect)
     if not check(state().partyStatus.index == target and state().partyStatus.selectorOpen, "Mouse selects the member without hiding its column"): return
     if case_name == "private" and not check_portrait(): return

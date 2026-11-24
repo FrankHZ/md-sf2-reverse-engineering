@@ -76,6 +76,14 @@ public sealed partial class GameRoot : Node
             else if (input is not InputEventMouse) GetViewport().SetInputAsHandled();
             return;
         }
+        var members = _entry is null && _slots is null && _systemMenu is null
+            ? _exploration?.NativeMembers ?? _battle?.NativeMembers : null;
+        if (members is not null && input is InputEventMouse)
+        {
+            _input?.DisarmMovement();
+            if (members.RoutePointer(input)) GetViewport().SetInputAsHandled();
+            return;
+        }
         if (input is InputEventMouse)
         {
             if ((_slots?.HandlePointerCancel(input) ?? _entry?.HandlePointerCancel(input)) == true)
@@ -90,7 +98,11 @@ public sealed partial class GameRoot : Node
         }
         bool freshTargetNavigation = _battle?.NeedsFreshDirection == true;
         var action = _input?.Resolve(input, freshTargetNavigation);
-        if (action is null) return;
+        if (action is null)
+        {
+            if (members is not null) GetViewport().SetInputAsHandled();
+            return;
+        }
         if (_exploration?.MenuEntryPending == true)
         {
             if (action is GameAction.Cancel or GameAction.Menu) _exploration.CancelMenuEntry();

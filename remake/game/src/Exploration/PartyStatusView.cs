@@ -19,13 +19,16 @@ internal sealed partial class PartyStatusView : Control
     private GameSession? _session;
     private GameInput? _input;
     private PartyDetails? _shown;
+    internal MemberPageView? NativeMembers => Open && !_actions.Open && _page.IsVisibleInTree() ? _page : null;
     internal bool Open => Visible;
 
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         AddChild(_page); AddChild(_actions);
+        _page.RequestAction = action => Handle(action, _session!, _input!);
         _page.Back = Hide;
+        _page.Refresh = () => { if (Open) Present(_session!, _input!); };
         _page.Primary = Prepare;
         Hide();
     }
@@ -113,6 +116,7 @@ internal sealed partial class PartyStatusView : Control
     {
         if (_shown is null || _page.Count == 0 || SubmitField is null) return;
         var member = _shown.Members[_page.Index];
+        _page.Suspend();
         _actions.Begin(_session!, _input!, member.Carried.Actor, MemberName(member, _session!), SubmitField, _icons, _entry);
     }
     internal void Handle(GameAction action, GameSession session, GameInput input)
@@ -124,9 +128,7 @@ internal sealed partial class PartyStatusView : Control
 
     internal void HandlePointer(InputEvent input)
     {
-        if (_actions.Open) { _actions.HandlePointer(input); _page.Suspend(); return; }
-        _page.HandlePointer(input);
-        if (Open) Present(_session!, _input!);
+        if (_actions.Open) { _actions.HandlePointer(input); _page.Suspend(); }
     }
 
     internal object Observe() => _page.Observe(IsVisibleInTree(), _actions.Observe(),

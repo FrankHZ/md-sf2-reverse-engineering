@@ -7,6 +7,7 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 
 public sealed partial class BattleSessionView
 {
+    internal UI.MemberPageView? NativeMembers => _inspection?.NativeMembers;
     internal bool Inspecting => _inspection?.Active == true;
     internal Action? RequestSpeed { get; set; }
     internal Action? RequestQuit { get; set; }
@@ -32,7 +33,7 @@ public sealed partial class BattleSessionView
 
     internal bool EnterInspection()
     {
-        if (!_inspection.Open(_session!, _input, _map)) return false;
+        if (!_inspection.Open(_session!, _input, _map, action => InspectionInput(action))) return false;
         InspectionBarrier(); _menu.Hide(); _hud.Hide(); _feedback.Hide(); return true;
     }
 
