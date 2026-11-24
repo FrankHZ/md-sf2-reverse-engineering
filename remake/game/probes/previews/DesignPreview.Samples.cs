@@ -10,13 +10,15 @@ namespace Sf2.Remake.GodotAdapter.Previews;
 
 public partial class DesignPreview
 {
-    private static IScenarioSource? Source(Tab tab, Outcome outcome) => tab switch
+    private static IScenarioSource? Source(Tab tab, Sample sample, Outcome outcome) => tab switch
     {
         Tab.Witch => null,
+        Tab.Dialogue when sample == Sample.DialogueChoice => new SampleSource("localization-pilot", AddInvitationChoice),
         Tab.Dialogue => Authored("localization-pilot"),
         Tab.Church => new SampleSource("localization-pilot", StartAtChurch),
         Tab.Inspect => InspectionSource(),
         Tab.Battle => Authored("practice-yard"),
+        Tab.Members when sample == Sample.Preparation => new SampleSource("localization-pilot", StartAtPreparation),
         Tab.Members or Tab.Shop or Tab.Field or Tab.System => new SampleSource("shop-supplies", AddFieldSign),
         Tab.Results when outcome == Outcome.Defeat => Authored("progression-outcome-defeat"),
         Tab.Results when outcome == Outcome.Retreat => new SampleSource("progression-outcome-victory", TeachEgress),
@@ -55,6 +57,30 @@ public partial class DesignPreview
 
     private static void StartAtChurch(JsonNode document) =>
         document["start"]!["program"] = new JsonObject { ["program"] = "practice-church", ["instruction"] = 0 };
+
+    private static void AddInvitationChoice(JsonNode document)
+    {
+        var world = document["world"]!;
+        var invitation = world["programs"]!.AsArray().Single(program => (string?)program!["id"] == "invitation")!;
+        var instructions = invitation["instructions"]!.AsArray();
+        var close = instructions.Single(instruction => (string?)instruction!["op"] == "close-text");
+        instructions.Insert(instructions.IndexOf(close), new JsonObject { ["op"] = "yes-no", ["flag"] = 10 });
+
+        // The choice window requests command 65 as it opens and closes. Reuse an authored clip.
+        var audio = world["presentation"]!["audio"]!.AsArray();
+        var choiceWindow = audio.Single(clip => (string?)clip!["cue"] == "pilot-confirm")!.DeepClone();
+        choiceWindow["cue"] = "pilot-choice-window";
+        choiceWindow["command"] = 65;
+        audio.Add(choiceWindow);
+    }
+
+    private static void StartAtPreparation(JsonNode document)
+    {
+        document["start"]!.AsObject().Remove("program");
+        var medic = document["battle"]!["actors"]!.AsArray().Single(actor => (string?)actor!["id"] == "medic-a")!;
+        // Supply the existing Practice Leaf so the first member can open Give's recipient page.
+        medic["items"]!.AsArray().Add(0);
+    }
 
     private static void AddFieldSign(JsonNode document)
     {

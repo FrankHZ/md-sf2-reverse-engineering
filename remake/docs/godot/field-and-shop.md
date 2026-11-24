@@ -116,6 +116,12 @@ returns to the shop menu. [Ordinary New Granseal Repair and Continue](../domain/
 
 ### Prepare command icons
 
+For dedicated preview review, use **F5 Members → Show Preparation** or pass `-- --prepare` to
+[DesignPreview](../../game/probes/previews/README.md). Confirm **Prepare…** on Medic A. The
+authored package shows text-only command rows and admits **Give / exchange → Practice Leaf →
+recipient**. Magic shows the production empty list. Use the connected Map 16 recipe below
+to exercise mounted command art, supported recovery and populated spell choices.
+
 The [#2071 adapter slice](ui-architecture.md#prepare-command-rows) uses the existing
 [field preparation rules](../application/opening-session-lifecycle.md#implemented-field-preparation).
 Build the [Debug adapter](../development-and-verification.md#locked-net-workflow), import once for a

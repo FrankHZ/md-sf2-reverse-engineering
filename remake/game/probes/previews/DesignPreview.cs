@@ -8,6 +8,7 @@ namespace Sf2.Remake.GodotAdapter.Previews;
 public partial class DesignPreview : Control
 {
     private enum Tab { Witch, Dialogue, Church, Battle, Members, Shop, Field, Inspect, Results, System }
+    private enum Sample { Default, DialogueChoice, Preparation }
     private enum Outcome { Victory, Defeat, Retreat }
     private const float ToolbarHeight = 72, DisplayScale = (1080 - ToolbarHeight) / 1080;
     private static readonly Rect2 PictureBounds = new(64, ToolbarHeight, 1792, 1008);
@@ -17,13 +18,14 @@ public partial class DesignPreview : Control
         RenderTargetUpdateMode = SubViewport.UpdateMode.Always };
     private readonly Button[] _tabs = new Button[10];
     private OptionButton _outcomes = null!;
-    private Button _motion = null!, _language = null!;
+    private Button _sampleSwitch = null!, _motion = null!, _language = null!;
     private GameRoot? _host;
     private PreviewEntry? _entry;
     private ulong _entryDeadline;
     private InputSettings _settings = new() { FormatVersion = 1, Language = "zh-CN" };
     private string _save = "";
     private Tab _tab;
+    private Sample _sample;
     private Outcome _outcome;
     private bool _menuOpen;
     private string _presentedLanguage = "";
@@ -45,35 +47,62 @@ public partial class DesignPreview : Control
         _outcome = args.Contains("--retreat") ? Outcome.Retreat :
             args.Contains("--defeat") ? Outcome.Defeat : Outcome.Victory;
         var tab = args.Contains("--battle") ? Tab.Battle : args.Contains("--inspect") ? Tab.Inspect :
-            args.Contains("--field") ? Tab.Field : args.Contains("--members") ? Tab.Members :
+            args.Contains("--field") ? Tab.Field : args.Any(arg => arg is "--members" or "--prepare") ? Tab.Members :
             args.Contains("--shop") ? Tab.Shop : args.Contains("--church") ? Tab.Church :
-            args.Contains("--dialogue") ? Tab.Dialogue : args.Contains("--system") ? Tab.System :
+            args.Any(arg => arg is "--dialogue" or "--dialogue-choice") ? Tab.Dialogue : args.Contains("--system") ? Tab.System :
             args.Any(arg => arg is "--results" or "--defeat" or "--retreat") ? Tab.Results : Tab.Witch;
-        SelectTab(tab);
+        var sample = tab switch
+        {
+            Tab.Dialogue when args.Contains("--dialogue-choice") => Sample.DialogueChoice,
+            Tab.Members when args.Contains("--prepare") => Sample.Preparation,
+            _ => Sample.Default,
+        };
+        SelectTab(tab, sample);
     }
 
     private void BuildToolbar()
     {
         var toolbar = Place(this, new Panel { Name = "PreviewToolbar", Theme = StoryTheme.CreateEntry(),
             MouseFilter = MouseFilterEnum.Ignore }, new(0, 0, 1920, ToolbarHeight));
+        var tabs = Place(toolbar, new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore }, new(16, 12, 1294, 48));
+        tabs.AddThemeConstantOverride("separation", 6);
         for (int i = 0; i < _tabs.Length; i++)
         {
             var tab = (Tab)i;
-            _tabs[i] = Place(toolbar, new Button { Name = tab.ToString(), FocusMode = FocusModeEnum.None },
-                new(16 + i * 130, 12, 124, 48));
+            _tabs[i] = new Button { Name = tab.ToString(), FocusMode = FocusModeEnum.None,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill };
             _tabs[i].AddThemeFontSizeOverride("font_size", 22);
             _tabs[i].Pressed += () => SelectTab(tab);
+            tabs.AddChild(_tabs[i]);
         }
-        _outcomes = Place(toolbar, new OptionButton { Name = "Outcome", FocusMode = FocusModeEnum.None }, new(1322, 12, 224, 48));
+        Rect2 sampleSlot = new(1322, 12, 224, 48);
+        _outcomes = Place(toolbar, new OptionButton { Name = "Outcome", FocusMode = FocusModeEnum.None }, sampleSlot);
+        _outcomes.AddThemeFontSizeOverride("font_size", 22);
         _outcomes.ItemSelected += index => { _outcome = (Outcome)index; SelectTab(Tab.Results); };
+        _sampleSwitch = Place(toolbar, new Button { Name = "SampleSwitch", FocusMode = FocusModeEnum.None }, sampleSlot);
+        _sampleSwitch.AddThemeFontSizeOverride("font_size", 22);
+        _sampleSwitch.Pressed += SwitchSample;
         _motion = Place(toolbar, new Button { Name = "Motion", FocusMode = FocusModeEnum.None }, new(1558, 12, 154, 48));
         _language = Place(toolbar, new Button { Name = "Language", FocusMode = FocusModeEnum.None }, new(1724, 12, 180, 48));
+        _motion.AddThemeFontSizeOverride("font_size", 22);
+        _language.AddThemeFontSizeOverride("font_size", 22);
         _motion.Pressed += () => _host?.SetPreviewAppearance(_settings.Language, !_settings.ReducedFlash);
         _language.Pressed += ToggleLanguage;
     }
 
     private void ToggleLanguage() =>
         _host?.SetPreviewAppearance(T("en", "zh-CN"), _settings.ReducedFlash);
+
+    private void SwitchSample()
+    {
+        var sample = (_tab, _sample) switch
+        {
+            (Tab.Dialogue, Sample.Default) => Sample.DialogueChoice,
+            (Tab.Members, Sample.Default) => Sample.Preparation,
+            _ => Sample.Default,
+        };
+        SelectTab(_tab, sample);
+    }
 
     private void PaintToolbar()
     {
@@ -94,6 +123,15 @@ public partial class DesignPreview : Control
         _outcomes.AddItem(T("撤退", "Retreat"));
         _outcomes.Select((int)_outcome);
         _outcomes.Visible = _tab == Tab.Results && !_menuOpen;
+        _sampleSwitch.Visible = _tab is (Tab.Dialogue or Tab.Members) && !_menuOpen;
+        _sampleSwitch.Text = (_tab, _sample) switch
+        {
+            (Tab.Dialogue, Sample.DialogueChoice) => T("切换至阅读", "Show Reading"),
+            (Tab.Dialogue, _) => T("切换至是／否", "Show Yes / No"),
+            (Tab.Members, Sample.Preparation) => T("切换至补给", "Show Supplies"),
+            (Tab.Members, _) => T("切换至整备", "Show Preparation"),
+            _ => "",
+        };
         _motion.Text = _settings.ReducedFlash ? T("动效：减弱", "Motion: low") : T("动效：开", "Motion: on");
         _language.Text = T("English / L", "中文 / L");
     }
@@ -108,7 +146,7 @@ public partial class DesignPreview : Control
 
     private static bool FieldTab(Tab tab) => tab is Tab.Members or Tab.Shop or Tab.Field;
 
-    private void SelectTab(Tab tab)
+    private void SelectTab(Tab tab, Sample? sample = null)
     {
         if (_host?.PreviewLoading == true) return;
         if (tab == Tab.System && _host is { PreviewHasSession: true } existing)
@@ -116,8 +154,11 @@ public partial class DesignPreview : Control
             if (existing.OpenPreviewSystemMenu()) PaintToolbar();
             return;
         }
-        bool reuse = tab != _tab && FieldTab(_tab) && FieldTab(tab) && _host?.PreviewFieldAvailable == true;
+        var nextSample = sample ?? (tab == _tab ? _sample : Sample.Default);
+        bool reuse = tab != _tab && FieldTab(_tab) && FieldTab(tab) && _host?.PreviewFieldAvailable == true &&
+            _sample == Sample.Default && nextSample == Sample.Default;
         _tab = tab;
+        _sample = nextSample;
         if (!reuse)
         {
             if (_host is not null)
@@ -127,7 +168,7 @@ public partial class DesignPreview : Control
                 _host.QueueFree();
             }
             var host = Main.Instantiate<GameRoot>();
-            host.ConfigurePreview(Source(tab, _outcome), _settings, _save,
+            host.ConfigurePreview(Source(tab, _sample, _outcome), _settings, _save,
                 () => Callable.From(() => SelectTab(Tab.Witch)).CallDeferred());
             _host = host;
             _game.AddChild(host);

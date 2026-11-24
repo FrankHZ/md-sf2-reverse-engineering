@@ -26,9 +26,9 @@ for world/UI layering and the [shared visual language](ui-design-language.md) fo
 | --- | --- | --- | --- |
 | Title → Witch greeting → choices | [Title and Witch](#1-title-and-the-witch) | Start the preview on F1 with the registered opening inputs. Start, read the greeting, then focus New Game or Continue. Open Settings from the Witch's own action. | Keep Witch art clear of the reading column; separate the paged greeting, focused action and hint. |
 | New Game → slot → name → final Start; Continue → slot | [Entry and naming](#2-new-game-name-and-slot-choice) | F1 → Start → New Game; select the one disposable slot, edit the name on a keyboard and back out or confirm Start. Return to F1 → Start → Continue after writing the preview slot. For history pages, protected writes and backup recovery, use the [disposable ordinary-host observations](host-ui.md#slot-recovery-and-overwrite-at-1080p). | Slot and destination remain explicit; name errors stay by the editor. Keep Cancel, overwrite consequences and failure details readable. |
-| Field speech → Yes/No → play | [Exploration and dialogue](#3-exploration-world-speech-choices-and-search) | F2 (`--dialogue`) begins at the authored invitation. Confirm through its two reading waits and return to walking. Use the [Map3 question](presentation.md#production-entry-and-field-dialogue-1606) for an actual portrait and Yes/No choice. | Reserve portrait, reading, choice and footer space; restore walking after acknowledgement. |
+| Field speech → Yes/No → play | [Exploration and dialogue](#3-exploration-world-speech-choices-and-search) | F2 → Show Yes / No (`--dialogue-choice`). Confirm through the practice invitation, then choose Yes or use Back for No. Walk after the question closes. F2 Reading (`--dialogue`) ends after the reading waits. Use the [Map3 question](presentation.md#production-entry-and-field-dialogue-1606) for a portrait. | Reserve portrait, reading, choice and footer space. Restore walking after acknowledgement. |
 | Field HUD → Adventure → Search reader | [Exploration and Search](#3-exploration-world-speech-choices-and-search) | F7 (`--field`) opens Adventure facing the sign. Select Search, read, dismiss and return to walking. | Keep the context cue and Adventure target inside the footer. Long Search text must leave a usable reading/return cue. |
-| Field Member → stats, spells and numbered Items; Prepare or direct Magic/Item | [Party and inventory](#4-party-inventory-and-preparation) · [Field composition](field-and-shop.md#current-composition) | F5 (`--members`) opens Member. Read the roster, change pane with Tab, and inspect a slot after a F6 purchase. The public package reaches the unavailable Prepare outcome. Use the [connected field member route](battle-ui-composition.md#reproduce-registered-portraits) for actual Prepare → Magic or Item, or open their direct Adventure entries there. | Compare selection, grouped stats, four slot identities, costs, the recipient/exchange and read-before-commit states. Check the fixed footer after Back. |
+| Field Member → stats, spells and numbered Items; Prepare or direct Magic/Item | [Party and inventory](#4-party-inventory-and-preparation) · [Field composition](field-and-shop.md#current-composition) | F5 → Show Preparation (`--prepare`). Confirm Prepare… on Medic A, then Give / exchange → Practice Leaf → recipient. Back out to the same member. F5 Supplies (`--members`) shares F6 purchases and shows the unavailable Prepare outcome. Use [connected Map 16](field-and-shop.md#prepare-command-icons) for command art, populated Magic and direct Adventure entries. | Compare selection, grouped stats, four slot identities, costs, the recipient/exchange and read-before-commit states. Check the fixed footer after Back. |
 | Church → service → quote/refusal/result; Record → Save | [Church](#5-church-services) | F3 (`--church`) opens the practice Church. Choose Raise for a quote, decline or pay and read the result; Promotion can show refusal. Use the [ordinary Church/Record route](#direct-reproduction) for Save and the [admitted promotion route](../application/church-promotion-design.md#playable-hero-and-reproduction) for an actual rite. | Keep priest and gold visible, then check member/condition/price and distinct choices. Record must hand off to one host page and return to the field. |
 | Shop → Buy, Sell, Repair or Deals → selection, quote and result | [Shop](#6-shop-stock-recipient-and-price-before-commitment) | F6 (`--shop`) talks to the faced merchant. Buy and switch directly to F5 to inspect the added item. Return to F6 and sell from its actual slot. For admitted [Repair](../domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction) and [Deals repurchase](field-and-shop.md#hassan-deals-and-cold-continue), use the connected inputs. | Keep the merchant and recipient pack readable. Compare exact price, gold, full-pack/funds refusals and the return from a canceled quote. |
 | Caravan → Join/Purge, Depot or Item | [Caravan pages](#caravan-service-pages) | The ordinary [Map22/26 service](../application/caravan-services-design.md#current-formation-implementation) and its [Depot](../application/caravan-services-design.md#current-depot-implementation) and [Item](../application/caravan-services-design.md#current-item-implementation) recipes reach these production pages. The preview has no service entry. | Distinguish active/reserve lists, numbered packs, ordered Depot rows and confirmation. Return from a subpage to its caller and from Leave to the field. |
@@ -44,21 +44,38 @@ opened Settings. Switching to F5, F6 and F7 reached Member, Shop and Adventure i
 field session. F3 mounted the practice Church wait. The deeper choices in the table are mapped
 from production owners and the linked observations.
 
+### F2 and F5 sample observation
+
+Use the [preview launcher](../../game/probes/previews/README.md#run-from-the-repository-root) with
+`--resolution 1600x900` and run `-- --dialogue-choice` or `-- --prepare`. Also enter each
+alternate from its default using the toolbar. For Chinese dialogue, set the authored display
+catalog as described in the launcher. Use ordinary keyboard or pointer input and read the
+mounted `ExplorationSessionView.ReadObservationJson` and native log.
+
+- **Confirmed, F2.** The two reading waits delivered a `ChoiceWait` with the retained question.
+  Confirm on Yes set the authored result flag 10. Esc returned No with the flag unset in the same
+  field session. After either response, Up moved the player. The English and Chinese stills
+  showed separate question, choice and help regions and a clear focus marker. The first
+  choice observation failed with `presentation-unavailable` at the choice window's open
+  sound. The sample now supplies command 65 using the existing authored clip.
+- **Confirmed, F5.** English Prepare mounted five commands, the numbered Practice Leaf
+  row and the recipient page. Back preserved the item slot, command focus, member, party
+  and gold. The empty Magic page also returned to its command. The item description
+  wrapped above the fixed footer, with the selected item legible against muted empty
+  slots. F6 opened a separate shop session. A purchase stayed in that session across
+  F5 Supplies and F7, and a repeated F5 reset to the original shop party.
+
+The reviewed toolbar keeps the English tab labels and the sample switch in separate controls.
+The final native runs reported no engine or adapter errors. F2 uses a portraitless authored
+speaker and F5 uses text-only commands. See the connected routes for portraits, command
+art and field recovery. Ordinary desktop and physical-device comfort remain **Unknown**.
+
 ### Preview gaps and targeted follow-ups
 
 The connected routes above already exercise production behavior. Actual appearance in a dedicated
 preview is **Unknown** for the uncovered branches below. Add an entry only for a subsequent review
 that needs it. Each proposal retains the real presenter, application admission and Back chain.
 
-- **Prepare.** F5 uses the authored shop party, which can show the sheet and its unavailable
-  Prepare outcome. A focused follow-up would let F5 stage the existing
-  [prepare-authored sample](field-and-shop.md#prepare-command-icons) to reach real action rows.
-  Use the registered connected inputs when the review needs original icons or portraits.
-  Retain F5–F7's shared default shop session.
-- **Dialogue choice.** The F2 invitation only exercises the reading waits. A focused follow-up
-  would stage the existing Map3 portrait-question approach or an authored portrait plus an
-  admitted choice instruction. Exercise selection and Back in the existing dialogue presenter.
-  [Prepare and dialogue sample follow-up](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2213)
 - **Caravan.** F1–F10 select no Caravan service. The smallest useful entry would stage one
   disposable registered Map22 or Map26 approach and use ordinary Talk to mount the current
   service root. Use the existing world/catalog and service-ready custody inputs to reach Join/Purge,
