@@ -46,7 +46,8 @@ public readonly record struct BlockNeighborhood(int NW, int N, int NE, int W, in
 public sealed record ExplorationMapVisual(MapId Map, ExplorationRaster Atlas, int Scale,
     IReadOnlyList<IReadOnlyList<ushort>> Blocks, IReadOnlyList<ExplorationMapMusic> Music,
     IReadOnlyList<ExplorationRaster>? HdBlocks = null,
-    IReadOnlyDictionary<BlockNeighborhood, ExplorationRaster>? HdBlockContexts = null);
+    IReadOnlyDictionary<BlockNeighborhood, ExplorationRaster>? HdBlockContexts = null,
+    MapTileAnimation? TileAnimation = null);
 public sealed record ExplorationSpriteVisual(int Sprite, IReadOnlyList<ExplorationRaster> Directions, int? Portrait, int Speech,
     IReadOnlyList<ExplorationRaster>? HdDirections = null,
     IReadOnlyDictionary<string, IReadOnlyList<ExplorationRaster>>? Graphics = null,

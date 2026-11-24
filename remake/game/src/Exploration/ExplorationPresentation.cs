@@ -15,6 +15,9 @@ internal sealed partial class ExplorationPresentation : IDisposable
     private readonly ExplorationPaletteView _palette;
     private IReadOnlyDictionary<int, string> _spriteGraphics = new Dictionary<int, string>();
     private MapId? _terrainMap;
+    private long _terrainStart;
+    private int _terrainPhase = -1;
+    internal void ResetTerrainPhase(long tick) => _terrainStart = tick;
     internal void PrepareGraphicsRasters(MapId map, string mode)
     {
         if (_visuals is null) return;
@@ -418,8 +421,10 @@ internal sealed partial class ExplorationPresentation : IDisposable
             {
                 foreach (var texture in _mapTextures.Textures) _resourceSelectors.Remove(texture);
                 _mapTextures.Dispose();
+                _mapTextures.PrepareAnimation(visual.TileAnimation);
                 _terrainMap = world.Map;
             }
+            _terrainPhase = visual.TileAnimation?.PhaseAt(story.SimulationTick - _terrainStart) ?? -1;
             if (Painted(world.Map)) _mapTextures.PrepareHd(visual);
             var viewport = _owner.GetViewportRect().Size;
             _scale = WorldViewportLayout.PixelScale;
@@ -677,6 +682,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     occlusionDraws!, drawnActors!, portraitIdentity, portraitExpected, portraitUse);
             if (_layoutRegion is { } region)
                 LayoutDrawObservation = new { request = _layoutRequest, drawSequence = ++_layoutDraw,
+                    phase = _terrainPhase, enabledTicks = story.SimulationTick - _terrainStart,
                     sessionId = current.SessionId, revision = current.Revision, observationSequence = current.ObservationSequence,
                     map = world.Map.Value, x = region.Position.X, y = region.Position.Y,
                     width = region.Size.X, height = region.Size.Y, overflow = _layoutOverflow, limit = LayoutUseLimit,
@@ -844,7 +850,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
 
     private ExplorationRaster? BlockVariant(ExplorationMapVisual visual, WorkingMapLayout layout,
         int x, int y, Rect2I bounds, out bool contextual) =>
-        MapBlockTextures.Variant(visual, Painted(visual.Map), layout, x, y, bounds, out contextual);
+        MapBlockTextures.Variant(visual, Painted(visual.Map), layout, x, y, bounds, _terrainPhase, out contextual);
 
     private static int AnimationHalf(ExplorationEntity entity) =>
         (sbyte)entity.Motion.AnimationCounter >= (entity.Sprite is 252 or 254 or 255 ? 16 : 15) ? 1 : 0;

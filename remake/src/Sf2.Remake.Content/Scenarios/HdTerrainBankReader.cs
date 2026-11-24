@@ -49,11 +49,10 @@ internal static class HdTerrainBankReader
             (ExplorationAssetReader.OptionalFrames(bank, "hdBlocks", count, 96, 96), BlockContexts(bank, count));
     }
 
-    private static IReadOnlyDictionary<BlockNeighborhood, ExplorationRaster>? BlockContexts(JsonElement map, int count)
+    internal static IReadOnlyDictionary<BlockNeighborhood, ExplorationRaster>? BlockContexts(JsonElement map, int count, string field = "hdBlockContexts")
     {
-        const string field = "hdBlockContexts";
         if (!map.TryGetProperty(field, out _)) return null;
-        Require(map.TryGetProperty("hdBlocks", out _), "hd-context-without-blocks", field);
+        Require(field != "hdBlockContexts" || map.TryGetProperty("hdBlocks", out _), "hd-context-without-blocks", field);
         var contexts = new Dictionary<BlockNeighborhood, ExplorationRaster>();
         foreach (var row in Array(map, field))
         {

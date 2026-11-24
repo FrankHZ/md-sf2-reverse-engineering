@@ -137,7 +137,7 @@ internal sealed partial class BattleMapViewport : Control
         foreach (var layer in _terrain) layer.SelectMode(mode == "hd");
         foreach (var (neutral, sprite) in _neutrals)
         {
-            int facing = neutral.WhirlsInWater ? (int)(_neutralTime * 6) : neutral.Facing;
+            int facing = neutral.WhirlsInWater ? NeutralFacing : neutral.Facing;
             SetSpriteTexture(sprite, neutral.Sprite, facing switch { 1 => 0, 3 => 2, _ => 1 });
         }
         foreach (var sprite in _sprites.Values.Where(sprite => sprite.Texture is not null))
@@ -151,7 +151,7 @@ internal sealed partial class BattleMapViewport : Control
         foreach (Node child in _board.GetChildren()) { _board.RemoveChild(child); child.QueueFree(); }
         _chests.Clear(); _markers.Clear(); _sprites.Clear(); _spriteIds.Clear(); _terrain.Clear(); _focus = [];
         _neutrals.Clear();
-        _neutralTime = 0;
+        _boardTime = 0;
         _specialSprite = null; _specialPoseTime = 0;
         _movement = null; _movementElapsed = _movementProgress = 0; _movementDelivered = false;
         ReleaseTextures();
@@ -308,11 +308,15 @@ internal sealed partial class BattleMapViewport : Control
         _focus = [battle.GetActor(actor).Position!]; Frame();
     }
 
-    private double _neutralTime;
+    private double _boardTime;
+    private int NeutralFacing => (int)((_boardTime % (40.0 / 60)) * 6);
     public override void _Process(double delta)
     {
-        _neutralTime = (_neutralTime + delta) % (40.0 / 60);
-        int facing = (int)(_neutralTime * 6);
+        if (!IsVisibleInTree() || !GetWindow().HasFocus()) return;
+        _boardTime += delta;
+        long tick = (long)Math.Floor(_boardTime * 60 + 1e-8);
+        foreach (var layer in _terrain) layer.PresentTime(tick);
+        int facing = NeutralFacing;
         foreach (var (neutral, sprite) in _neutrals)
             if (sprite.Visible && neutral.WhirlsInWater)
             {

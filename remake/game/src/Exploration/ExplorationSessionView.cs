@@ -210,6 +210,7 @@ public sealed partial class ExplorationSessionView : Control
             _dialogueView.Hide();
             QueueRedraw();
         }, audio, WorldViewport);
+        _presentation.ResetTerrainPhase(session.Current.Story.SimulationTick);
         _presentation.DialoguePanel = _dialogueView.Panel;
         TextureFilter = TextureFilterEnum.Nearest;
         Present();
@@ -485,9 +486,12 @@ public sealed partial class ExplorationSessionView : Control
         var submitted = _session.Submit(new(current.SessionId, revision ?? current.Revision, null, command));
         if (recoverable && submitted.Failure is not null && ReferenceEquals(current, submitted.Snapshot)) return submitted;
         _result = submitted;
+        bool loadedMap = submitted.Observations.Any(row => row.Kind == "map-transferred" || row.Kind == "program-instruction" && row.Detail == "LoadSceneMap");
+        if (loadedMap || current.Exploration?.Map != submitted.Snapshot.Exploration?.Map)
+            _presentation?.ResetTerrainPhase(submitted.Snapshot.Story.SimulationTick);
         if (current.SessionId != submitted.Snapshot.SessionId || current.Exploration?.Definition != submitted.Snapshot.Exploration?.Definition ||
             SessionPresentationOwner.IsBattle(submitted.Snapshot) || submitted.Failure is not null ||
-            submitted.Observations.Any(row => row.Kind == "map-transferred" || row.Kind == "program-instruction" && row.Detail == "LoadSceneMap"))
+            loadedMap)
             _input.DisarmAcceleration();
         _ = GameplayDelta(0);
         if (command is LeaveChurch { Save: true } && submitted.Failure is null) _churchSaveRequested = true;
@@ -513,8 +517,7 @@ public sealed partial class ExplorationSessionView : Control
         if (!skipping && _result.Failure is null)
             foreach (var window in _result.Observations.Where(row => row.Kind == "portrait-window-moving"))
                 _audio?.PlayEffect(65);
-        if (_releaseBattle is not null && _result.Observations.Any(row => row.Kind == "map-transferred" ||
-            row.Kind == "program-instruction" && row.Detail == "LoadSceneMap"))
+        if (_releaseBattle is not null && loadedMap)
         {
             _releaseBattle(); _releaseBattle = null; _battleMounted = false;
         }
