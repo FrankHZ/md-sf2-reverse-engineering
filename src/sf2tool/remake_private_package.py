@@ -72,14 +72,16 @@ def package_files(world: Path, scene: Path, entry: Path, opening_inputs: Path) -
         Path("main-scenes.json"): scene,
         Path("entry/entry.json"): entry,
     }
-    for resource in read_json(entry)["resources"]:
-        name = resource["file"]
-        if Path(name).name != name or name != resource["name"] + ".png":
-            raise ValueError("entry resource is not a named sibling PNG")
-        path = (entry.parent / name).resolve(strict=True)
-        if not path.is_relative_to(entry.parent.resolve()):
-            raise ValueError("entry resource escapes input directory")
-        extras[Path("entry") / name] = path
+    entry_document = read_json(entry)
+    for group, suffix in (("resources", ".png"), ("hdResources", ".hd.png")):
+        for resource in entry_document.get(group, []):
+            name = resource["file"]
+            if Path(name).name != name or name != resource["name"] + suffix:
+                raise ValueError("entry resource is not a named sibling PNG")
+            path = (entry.parent / name).resolve(strict=True)
+            if not path.is_relative_to(entry.parent.resolve()):
+                raise ValueError("entry resource escapes input directory")
+            extras[Path("entry") / name] = path
     extras.update(
         {
             Path("opening-inputs") / (name + ".json"): opening_inputs / (name + ".json")

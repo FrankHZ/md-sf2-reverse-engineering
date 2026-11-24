@@ -6,7 +6,8 @@ namespace Sf2.Remake.Content.Scenarios;
 // Private offline entry package, independent of gameplay/save definitions.
 public sealed record EntryPresentation(IReadOnlyDictionary<string, byte[]> Images,
     IReadOnlyDictionary<string, string> Dialogue, IReadOnlyDictionary<string, ExplorationAudio> Audio,
-    string Profile, string UpstreamCommit, string RomSha256);
+    string Profile, string UpstreamCommit, string RomSha256,
+    IReadOnlyDictionary<string, byte[]>? HdImages = null);
 
 public static class EntryPresentationReader
 {
@@ -24,26 +25,41 @@ public static class EntryPresentationReader
         if (new FileInfo(path).Length > 64 * 1024 * 1024) throw new ArgumentException("entry-content-size");
         using var document = JsonDocument.Parse(File.ReadAllText(path));
         var root = document.RootElement;
-        ScenarioJson.Object(root, "entry", "formatVersion", "profile", "upstreamCommit", "romSha256", "resources", "dialogue", "boundary", "presentation");
+        ScenarioJson.ObjectOptional(root, "entry", "hdResources", "formatVersion", "profile", "upstreamCommit", "romSha256", "resources", "dialogue", "boundary", "presentation");
         if (root.GetProperty("formatVersion").GetInt32() != 1 ||
             root.GetProperty("profile").GetString() != "private-local-entry" ||
             root.GetProperty("upstreamCommit").GetString() != "c834c652b6862bc5679fd7f69a38a7093206efc6" ||
             root.GetProperty("romSha256").GetString() != "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9")
             throw new ArgumentException("entry-content-identity");
         string[] names = ["title", "numeral", "witch-arrival", "witch", "witch-blink", "witch-mouth"];
-        var images = new Dictionary<string, byte[]>();
-        foreach (var resource in root.GetProperty("resources").EnumerateArray())
-        {
-            ScenarioJson.Object(resource, "entry-image", "name", "file", "width", "height", "usedTiles");
-            string name = resource.GetProperty("name").GetString()!;
-            if (!names.Contains(name) || resource.GetProperty("file").GetString() != name + ".png" ||
-                resource.GetProperty("width").GetInt32() != 256 || resource.GetProperty("height").GetInt32() != 224 || images.ContainsKey(name))
-                throw new ArgumentException("entry-image-binding");
-            string image = Path.Combine(Path.GetDirectoryName(path)!, name + ".png");
-            if (new FileInfo(image).Length > 256 * 1024) throw new ArgumentException("entry-image-size");
-            images.Add(name, File.ReadAllBytes(image));
-        }
+        var images = ReadImages(root.GetProperty("resources"), false);
         if (images.Count != names.Length) throw new ArgumentException("entry-image-required");
+        var hdImages = root.TryGetProperty("hdResources", out var hd)
+            ? ReadImages(hd, true) : new Dictionary<string, byte[]>();
+
+        Dictionary<string, byte[]> ReadImages(JsonElement resources, bool alternate)
+        {
+            var result = new Dictionary<string, byte[]>();
+            int scale = alternate ? 4 : 1;
+            foreach (var resource in resources.EnumerateArray())
+            {
+                if (alternate)
+                    ScenarioJson.Object(resource, "entry-image", "name", "file", "width", "height");
+                else
+                    ScenarioJson.Object(resource, "entry-image", "name", "file", "width", "height", "usedTiles");
+                string name = resource.GetProperty("name").GetString()!;
+                string file = name + (alternate ? ".hd.png" : ".png");
+                if (!names.Contains(name) || resource.GetProperty("file").GetString() != file ||
+                    resource.GetProperty("width").GetInt32() != 256 * scale ||
+                    resource.GetProperty("height").GetInt32() != 224 * scale || result.ContainsKey(name))
+                    throw new ArgumentException("entry-image-binding");
+                string image = Path.Combine(Path.GetDirectoryName(path)!, file);
+                if (new FileInfo(image).Length > 256 * 1024 * scale * scale)
+                    throw new ArgumentException("entry-image-size");
+                result.Add(name, File.ReadAllBytes(image));
+            }
+            return result;
+        }
         var dialogue = new Dictionary<string, string>();
         ScenarioJson.Object(root.GetProperty("dialogue"), "entry-dialogue", "216", "217", "218", "219", "220", "221");
         for (int id = 216; id <= 221; id++)
@@ -57,6 +73,6 @@ public static class EntryPresentationReader
             !audio.TryGetValue("MUSIC_WITCH", out var witch) || witch.Command != 10 || witch.LoopBegin is null)
             throw new ArgumentException("entry-music-required");
         return new(images, dialogue, audio, root.GetProperty("profile").GetString()!,
-            root.GetProperty("upstreamCommit").GetString()!, root.GetProperty("romSha256").GetString()!);
+            root.GetProperty("upstreamCommit").GetString()!, root.GetProperty("romSha256").GetString()!, hdImages);
     }
 }

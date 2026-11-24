@@ -807,3 +807,28 @@ selecting `$candidate` as the source of all four inputs and
 `derived/issue2178/pre-voyage-ui-v1` as the fresh shared destination. Verify with `--check`.
 Use the published world, scene, entry and six opening inputs together for the
 [consumer observation](hd-rollout.md#ui-raster-consumers-2178).
+
+## Pre-voyage entry layers (#2179)
+
+The six prepared `runtime/retail-v1` entry layers are consumed through the accepted #2178
+package. `sf2tool.remake_hd_entry` uses the same pinned graphics filter and actor frame
+conversion, preserving exact source alpha, opaque black and palette treatment. Each Original
+256×224 image has a 1024×896 sibling named `<name>.hd.png`. The title-only `--pilot` produces
+a complete package with a partial alternate group for fallback observation.
+
+```powershell
+. ./local/private-inputs.ps1
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2178/pre-voyage-ui-v1'
+$candidate = Join-Path $PWD 'local/issue2179/candidate'
+# $gfx selects the clean graphics checkout at 172662709b31cb296b55f51894754ce810c30f6c.
+uv run --locked --with pillow==11.3.0 python -B -m sf2tool.remake_hd_entry `
+    --base $base --out $candidate --gfx-root $gfx
+```
+
+Choose fresh output paths for pilot and full conversion. The pilot contains 169 files and
+359,212,273 bytes. The full package contains 174 files and 359,340,404 bytes, an increase of
+150,959 bytes over #2178. Publish with the existing `sf2tool.remake_private_package` command,
+selecting candidate `world.json`, `main-scenes.json`, `entry/entry.json` and `opening-inputs`.
+The registered destination is `derived/issue2179/pre-voyage-entry-v1`; its `--check` comparison
+passed. The publisher includes every declared `hdResources[].file` sibling in the closure.
+[Actual entry acceptance and limits](hd-rollout.md#entry-layers-2179).
