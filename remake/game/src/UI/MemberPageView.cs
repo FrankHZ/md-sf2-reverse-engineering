@@ -11,16 +11,15 @@ namespace Sf2.Remake.GodotAdapter.UI;
 // Shared browse surface. Only the field caller supplies a primary action.
 internal sealed partial class MemberPageView : Control
 {
-    private const float SummaryHeight = 72, SummaryColumnWidth = 392;
-    internal PartyDetailsPanel Details { get; } = new() { Name = "MemberDetails", MemberLayout = true };
+    private const int PageWidth = 1712, RosterWidth = 304, SummaryColumnWidth = 392;
+    internal PartyDetailsPanel Details { get; }
     private readonly Label _selector = Text("MemberSelector", 28), _hint = Text("PartyHint", StoryTheme.HintSize), _close = Text("Close", 26);
     private readonly Label _previous = Text("Previous", 32), _next = Text("Next", 32);
     private readonly Label _portraitNote = Text("PortraitNote", 24);
     private readonly Label _kills = Text("Kills", 30), _defeats = Text("Defeats", 30), _gold = Text("GoldLabel", 30);
     private readonly Label _killsValue = Text("KillsValue", 30), _defeatsValue = Text("DefeatsValue", 30), _goldValue = Text("Gold", 30);
-    private readonly Panel _rosterFrame = new();
-    private readonly Panel _recordFrame = new() { Name = "RecordFrame", MouseFilter = MouseFilterEnum.Ignore };
-    private readonly Panel _goldFrame = new() { Name = "GoldFrame", MouseFilter = MouseFilterEnum.Ignore };
+    private readonly PanelContainer _recordFrame = new() { Name = "RecordFrame", MouseFilter = MouseFilterEnum.Ignore };
+    private readonly PanelContainer _goldFrame = new() { Name = "GoldFrame", MouseFilter = MouseFilterEnum.Ignore };
     private readonly PanelContainer _footer = new() { Name = "PartyFooter", MouseFilter = MouseFilterEnum.Ignore };
     private readonly TextureRect _portrait = new() { Name = "MemberPortrait", ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
         StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, TextureFilter = TextureFilterEnum.Nearest, MouseFilter = MouseFilterEnum.Ignore };
@@ -36,24 +35,94 @@ internal sealed partial class MemberPageView : Control
     private int? _portraitId;
     private bool _requiresRelease;
 
+    internal MemberPageView()
+    {
+        var portrait = new CenterContainer();
+        _portrait.CustomMinimumSize = new(144, 192);
+        _portraitNote.CustomMinimumSize = new(160, 0);
+        _portraitNote.HorizontalAlignment = HorizontalAlignment.Center;
+        _portraitNote.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        portrait.AddChild(_portrait);
+        portrait.AddChild(_portraitNote);
+        Details = new() { Name = "MemberDetails", PortraitSlot = portrait, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+    }
+
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Stop; Theme = StoryTheme.Create();
+        // The shared sheet and footer inherit the same column spacing.
+        Theme.SetConstant("separation", "HBoxContainer", 24);
         var shade = new ColorRect { Color = new(0, 0, 0, 0.7f), MouseFilter = MouseFilterEnum.Ignore };
         shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(shade);
-        foreach (var node in new Control[] { _recordFrame, _goldFrame, Details,
-            _portrait, _portraitNote, _selector, _rosterFrame, _roster, _previous, _next, _footer }) AddChild(node);
-        foreach (var (frame, label, value) in new[]
+        // Anchor only the design canvas. Containers own every rectangle inside it.
+        var page = new VBoxContainer
         {
-            (_recordFrame, _kills, _killsValue), (_recordFrame, _defeats, _defeatsValue), (_goldFrame, _gold, _goldValue)
-        })
+            AnchorLeft = 0.5f, AnchorRight = 0.5f, AnchorTop = 0.5f, AnchorBottom = 1,
+            OffsetLeft = -PageWidth / 2, OffsetRight = PageWidth / 2,
+            OffsetTop = -492, OffsetBottom = -StoryTheme.GameplayInset
+        };
+        page.AddThemeConstantOverride("separation", 12);
+        AddChild(page);
+        var content = new VBoxContainer { SizeFlagsVertical = SizeFlags.ExpandFill };
+        content.AddThemeConstantOverride("separation", 12);
+        page.AddChild(content);
+        _selector.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        _selector.CustomMinimumSize = new(RosterWidth, 52);
+        _selector.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
+        content.AddChild(_selector);
+
+        content.AddChild(BuildBody());
+        content.AddChild(BuildSummary());
+        page.AddChild(_footer);
+        BuildFooter();
+    }
+
+    private HBoxContainer BuildBody()
+    {
+        var body = new HBoxContainer { SizeFlagsVertical = SizeFlags.ExpandFill, CustomMaximumSize = new(-1, 720) };
+        var rosterFrame = new PanelContainer { CustomMinimumSize = new(RosterWidth, 0) };
+        rosterFrame.AddThemeStyleboxOverride("panel", StoryTheme.PanelFrame(16, 16));
+        body.AddChild(rosterFrame);
+        var rosterColumn = new VBoxContainer();
+        rosterColumn.AddThemeConstantOverride("separation", 16);
+        rosterFrame.AddChild(rosterColumn);
+        _roster.SizeFlagsVertical = SizeFlags.ExpandFill;
+        rosterColumn.AddChild(_roster);
+        var arrows = new HBoxContainer();
+        rosterColumn.AddChild(arrows);
+        _previous.Text = "◀"; _next.Text = "▶";
+        _previous.CustomMinimumSize = _next.CustomMinimumSize = new(64, 48);
+        arrows.AddChild(_previous);
+        arrows.AddSpacer(false);
+        arrows.AddChild(_next);
+
+        body.AddChild(Details);
+        return body;
+    }
+
+    private HBoxContainer BuildSummary()
+    {
+        // Reserve the same reading area in battle when the field accounting frames are hidden.
+        var summary = new HBoxContainer { CustomMinimumSize = new(0, 72) };
+        foreach (var frame in new[] { _recordFrame, _goldFrame })
         {
-            label.VerticalAlignment = value.VerticalAlignment = VerticalAlignment.Center;
-            value.HorizontalAlignment = HorizontalAlignment.Right;
-            frame.AddChild(label); frame.AddChild(value);
+            frame.AddThemeStyleboxOverride("panel", StoryTheme.PanelFrame(0, 12));
+            summary.AddChild(frame);
         }
+        var records = new HBoxContainer();
+        records.AddThemeConstantOverride("separation", 0);
+        _recordFrame.AddChild(records);
+        records.AddChild(SummaryCell(_kills, _killsValue));
+        records.AddChild(SummaryCell(_defeats, _defeatsValue));
+        _goldFrame.AddChild(SummaryCell(_gold, _goldValue));
+        _recordFrame.Hide();
+        _goldFrame.Hide();
+        return summary;
+    }
+
+    private void BuildFooter()
+    {
         var footerRow = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-        footerRow.AddThemeConstantOverride("separation", 24);
         _footer.AddChild(footerRow);
         _hint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _hint.SizeFlagsHorizontal = SizeFlags.ExpandFill;
@@ -64,12 +133,23 @@ internal sealed partial class MemberPageView : Control
             action.HorizontalAlignment = HorizontalAlignment.Right;
             footerRow.AddChild(action);
         }
-        _recordFrame.Hide(); _goldFrame.Hide();
-        _selector.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _portraitNote.HorizontalAlignment = HorizontalAlignment.Center;
-        _portraitNote.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+    }
 
-        _previous.Text = "◀"; _next.Text = "▶";
+    private static MarginContainer SummaryCell(Label label, Label value)
+    {
+        var cell = new MarginContainer { CustomMinimumSize = new(SummaryColumnWidth, 48) };
+        cell.AddThemeConstantOverride("margin_left", 24);
+        cell.AddThemeConstantOverride("margin_right", 24);
+        var row = new HBoxContainer();
+        row.AddThemeConstantOverride("separation", 12);
+        cell.AddChild(row);
+        label.CustomMinimumSize = new(152, 48);
+        value.SizeFlagsVertical = SizeFlags.Fill;
+        value.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        value.HorizontalAlignment = HorizontalAlignment.Right;
+        row.AddChild(label);
+        row.AddChild(value);
+        return cell;
     }
 
     public override void _ExitTree() => _portrait.Texture = null;
@@ -115,40 +195,6 @@ internal sealed partial class MemberPageView : Control
         _close.Text = back;
         _prepare.Visible = primary is not null;
         _prepare.Text = primary ?? "";
-        Arrange();
-    }
-
-    private void Arrange()
-    {
-        float left = (Size.X - 1712) / 2, top = Math.Max(112, (Size.Y - 856) / 2);
-        _footer.Size = new(1712, _footer.GetCombinedMinimumSize().Y);
-        _footer.Position = new(left, Size.Y - StoryTheme.GameplayInset - _footer.Size.Y);
-        float summaryCenter = Math.Min(top + 776, _footer.Position.Y - 12 - SummaryHeight / 2);
-        float summaryTop = summaryCenter - SummaryHeight / 2;
-        float sheetHeight = Math.Min(720, summaryTop - 8 - top);
-        _selector.Position = new(left, top - 64); _selector.Size = new(304, 48);
-        _selector.HorizontalAlignment = HorizontalAlignment.Left;
-        _previous.Position = new(left + 16, top + sheetHeight - 56); _previous.Size = new(64, 48);
-        _next.Position = new(left + 224, top + sheetHeight - 56); _next.Size = new(64, 48);
-        _rosterFrame.Show(); _roster.Show();
-        _rosterFrame.Position = new(left, top); _rosterFrame.Size = new(304, sheetHeight);
-        _roster.Position = new(left + 16, top + 16); _roster.Size = new(272, sheetHeight - 96);
-        Details.Position = new(left + 328, top); Details.Size = new(1384, sheetHeight); Details.Arrange();
-        _portrait.Position = new(left + 360, top + 24); _portrait.Size = new(144, 192);
-        _portraitNote.Position = new(left + 352, top + 40); _portraitNote.Size = new(160, 160);
-        _recordFrame.Position = new(left, summaryTop); _recordFrame.Size = new(2 * SummaryColumnWidth, SummaryHeight);
-        _goldFrame.Position = new(left + 2 * SummaryColumnWidth + 24, summaryTop); _goldFrame.Size = new(SummaryColumnWidth, SummaryHeight);
-        ArrangeSummaryRow(_kills, _killsValue, 0);
-        ArrangeSummaryRow(_defeats, _defeatsValue, SummaryColumnWidth);
-        ArrangeSummaryRow(_gold, _goldValue, 0);
-    }
-
-    private static void ArrangeSummaryRow(Label label, Label value, float column)
-    {
-        const float inset = 24, labelWidth = 152, gap = 12, rowHeight = 48;
-        label.Position = new(column + inset, (SummaryHeight - rowHeight) / 2); label.Size = new(labelWidth, rowHeight);
-        value.Position = label.Position + new Vector2(labelWidth + gap, 0);
-        value.Size = new(SummaryColumnWidth - 2 * inset - labelWidth - gap, rowHeight);
     }
 
     private void Select(int index)

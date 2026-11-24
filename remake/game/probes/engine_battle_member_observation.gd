@@ -86,8 +86,8 @@ func authored_roster() -> bool:
                 and rows[1].condition == "Defeated" and rows[2].condition == "Absent",
                 "Long identity wraps and retained conditions differ"): return false
         var details := view.find_child("MemberDetails", true, false)
-        var name_label := details.get_node("MemberName") as Label
-        var class_label := details.get_node("Class") as Label
+        var name_label := details.find_child("MemberName", true, false) as Label
+        var class_label := details.find_child("Class", true, false) as Label
         if not check(name_label.text == rows[0].name and name_label.get_visible_line_count() == name_label.get_line_count()
                 and name_label.get_global_rect().end.y <= class_label.get_global_rect().position.y,
                 "The long name remains readable on the full sheet"): return false
@@ -181,12 +181,14 @@ func field_portraits() -> bool:
     await act("down")
     var second := field_portrait(1, "field-second")
     if not check(second != 0 and second != first, "Different member selects different art"): return false
+    var scroll_before: int = state().partyStatus.rosterScroll
     await act("confirm")
     var prepare: Dictionary = state().partyStatus.preparation
     if not check(prepare.visible and prepare.stage == "actions" and prepare.failure == null,
             "Prepare offers actions on the selected member"): return false
     await act("cancel")
-    if not check(field_portrait(1, "field-prepare-back") == second, "Prepare Back restores the live selected texture"): return false
+    if not check(field_portrait(1, "field-prepare-back") == second and state().partyStatus.rosterScroll == scroll_before,
+            "Prepare Back restores the live selected texture and roster scroll"): return false
     await act("cancel")
     if not check(not state().partyStatus.visible, "Field Party closes"): return false
     await tap(KEY_E)

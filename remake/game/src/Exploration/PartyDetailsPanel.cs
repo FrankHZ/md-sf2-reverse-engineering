@@ -30,24 +30,31 @@ internal sealed partial class PartyDetailsPanel : Panel
     private string? _actor;
     private int _slotCount;
     internal int FocusPane { get; set; }
-    internal bool MemberLayout { get; init; }
+    internal CenterContainer? PortraitSlot { get; init; }
+    private bool MemberLayout => PortraitSlot is not null;
 
     public override void _Ready()
     {
-        Theme = StoryTheme.Create(); MouseFilter = MouseFilterEnum.Ignore;
-        foreach (var control in new Control[] { _name, _class, _hp, _mp, _unknownHp, _unknownMp, _magicTitle, _itemsTitle, _magic, _items }) AddChild(control);
+        if (!MemberLayout) Theme = StoryTheme.Create();
+        MouseFilter = MouseFilterEnum.Ignore;
         foreach (string title in _titles)
         {
             var label = Text(title, 28); label.Text = title;
             var value = Text(title + "Value", 30); value.HorizontalAlignment = HorizontalAlignment.Right;
-            _stats.Add((label, value)); AddChild(label); AddChild(value);
+            _stats.Add((label, value));
         }
         _name.AutowrapMode = _class.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 
         _spells.SizeFlagsHorizontal = _inventory.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         _spells.AddThemeConstantOverride("separation", 12); _inventory.AddThemeConstantOverride("separation", 12);
         _magic.AddChild(_spells); _items.AddChild(_inventory);
-        AddChild(_description);
+        if (PortraitSlot is { } portrait) BuildMemberSheet(portrait);
+        else
+        {
+            foreach (var control in new Control[] { _name, _class, _hp, _mp, _unknownHp, _unknownMp,
+                _magicTitle, _itemsTitle, _magic, _items, _description }) AddChild(control);
+            foreach (var (title, value) in _stats) { AddChild(title); AddChild(value); }
+        }
     }
 
     internal void Present(PartyMemberDetails? member, string name, GameSession session)
@@ -70,7 +77,7 @@ internal sealed partial class PartyDetailsPanel : Panel
         Rows(_spells, _spellRows, spells, member?.Spells?.Select(spell => IdentityIcons.Spell(_definition, spell.Spell)).ToArray() ?? []);
         PresentInventory(member?.Inventory);
         PresentDescription(session, member?.Inventory, member?.Deployment?.Definition);
-        Arrange();
+        RefreshDetailPresentation();
     }
 
     // Same detail widgets, projected from live public scalars rather than a carried-party snapshot.
@@ -95,7 +102,7 @@ internal sealed partial class PartyDetailsPanel : Panel
         PresentInventory(unit.Inventory);
         if (memberSession is not null)
             PresentDescription(memberSession, unit.Inventory, memberSession.Current.Battle.GetActor(unit.Actor).Definition);
-        Arrange();
+        RefreshDetailPresentation();
     }
 
     private void PresentInventory(IReadOnlyList<PartyInventorySlot>? inventory)
@@ -155,31 +162,9 @@ internal sealed partial class PartyDetailsPanel : Panel
         }
     }
 
-    internal void Arrange()
+    private void RefreshDetailPresentation()
     {
-        if (!MemberLayout) { ArrangeInspection(); return; }
-        float width = Size.X;
-        float attributes = 280, magic = (width - 96 - attributes) * 0.43f, items = width - 96 - attributes - magic;
-        float magicX = 48 + attributes, itemsX = magicX + magic + 24;
-        _name.Position = new(208, 24); _name.Size = new(width - 752, 0);
-        _class.Position = new(208, 48 + _name.GetMinimumSize().Y); _class.Size = new(width - 752, 0);
-        foreach (var (control, y) in new[] { ((Control)_hp, 40), (_mp, 120), (_unknownHp, 40), (_unknownMp, 120) })
-        { control.Position = new(width - 504, y); control.Size = new(480, 56); }
-        // The list headings clear the vitals. Attributes also clear the portrait.
-        float top = Math.Max(232, _class.GetRect().End.Y + 54);
-        float statsTop = Math.Max(268, top);
-        for (int i = 0; i < _stats.Count; i++)
-        {
-            _stats[i].Title.Position = new(24, statsTop + 52 * i); _stats[i].Title.Size = new(176, 48);
-            _stats[i].Value.Position = new(200, statsTop + 52 * i); _stats[i].Value.Size = new(attributes - 176, 48);
-        }
-        _magicTitle.Position = new(magicX, top - 54); _magicTitle.Size = new(magic, 44);
-        _itemsTitle.Position = new(itemsX, top - 54); _itemsTitle.Size = new(items, 44);
-        // Reserve the reader beside the pack so wrapped item rows can use the full column.
-        float descriptionTop = Size.Y - 24 - _description.ReadingHeight;
-        _magic.Position = new(magicX, top); _magic.Size = new(magic, Math.Max(0, descriptionTop - 12 - top));
-        _items.Position = new(itemsX, top); _items.Size = new(items, Math.Max(0, Size.Y - top - 24));
-        _description.Position = new(magicX, descriptionTop); _description.Size = new(magic, _description.ReadingHeight);
+        if (!MemberLayout) ArrangeInspection();
         _magicTitle.Modulate = FocusPane == 1 ? StoryTheme.Selected : Colors.White;
         _itemsTitle.Modulate = FocusPane == 2 ? StoryTheme.Selected : Colors.White;
     }
@@ -205,8 +190,6 @@ internal sealed partial class PartyDetailsPanel : Panel
         _itemsTitle.Position = new(48 + half, 442 + headerExtra); _itemsTitle.Size = new(half, 44);
         _magic.Position = new(24, 498 + headerExtra); _magic.Size = new(half, Size.Y - 522 - headerExtra);
         _items.Position = new(48 + half, 498 + headerExtra); _items.Size = new(half, Size.Y - 522 - headerExtra);
-        _magicTitle.Modulate = FocusPane == 1 ? StoryTheme.Selected : Colors.White;
-        _itemsTitle.Modulate = FocusPane == 2 ? StoryTheme.Selected : Colors.White;
     }
 
     internal void ResetReading(bool keepItemSlot = false)

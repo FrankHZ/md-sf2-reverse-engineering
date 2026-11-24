@@ -3,12 +3,11 @@
 The current decision in [#2191](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2191)
 is how to migrate two production surfaces: the complete field/battle member page and Settings
 with its child pages. **High rigor** applies because moving input from the root to Godot controls
-can change which player action fires when a page opens, closes or remounts. This milestone delivers
-a design and [three bounded implementation slices](#finite-implementation-slices). Each needs a
-separate dispatch. The [campaign capability trace](../capability-status.md#campaign-feature-trace)
-records shipped behavior.
+can change which player action fires when a page opens, closes or remounts. The shared member layout is implemented. The two
+remaining [input slices](#finite-implementation-slices) need separate dispatch. The
+[campaign capability trace](../capability-status.md#campaign-feature-trace) records shipped behavior.
 
-The baseline for these two surfaces is `22e52720`. Both callers already use the
+Both callers already use the
 [complete member page](battle-ui-composition.md#shared-member-page-2154). Battle Main already
 uses the [vertical command list](battle-ui-composition.md#vertical-battle-main-2090), with
 the accepted blue rows and mapped Up/Down. The [visual language](ui-design-language.md),
@@ -143,23 +142,21 @@ There is no uncovered control requirement in these two pages that justifies adop
 
 ### Member page from either caller
 
-**Confirmed** in the shared page: the roster already has a `ScrollContainer`, wrapped labels and a
-`VBoxContainer`. The footer already measures its hint in an `HBoxContainer`. Yet every footer
-projection calls `MemberPageView.Arrange`, which places the roster, arrows, sheet, borrowed portrait
-and summary by coordinates. `PartyDetailsPanel.Arrange` positions attributes and reading panes a
-second time. `HandlePointer`, `Hit` and `HitItem` walk labels and intersect rectangles to rediscover
-the visible actor or slot. [Member page](../../game/src/UI/MemberPageView.cs) ·
-[Roster](../../game/src/UI/MemberRosterView.cs) · [Sheet](../../game/src/Exploration/PartyDetailsPanel.cs)
+**Confirmed.** Both callers mount the same capped 1712px column on the fitted game canvas.
+Native box containers stack its header, expanding body, summary row and measured footer. The framed
+roster gives spare height to its scroll viewport and reserves a separate arrow row. The member
+sheet puts the borrowed portrait above the attribute grid. The adjacent name and class wrap beside
+the vitals. The spell column reserves 196px for the reader while the four 88px-minimum pack rows
+use their own scrolling column. Field accounting uses equal-width cells. Battle hides the frames
+and retains the same reading height. The direct board Full sheet still uses `ArrangeInspection`
+and 4× icons. [Page](../../game/src/UI/MemberPageView.cs) ·
+[Member sheet composition](../../game/src/Exploration/PartyDetailsPanel.Member.cs) ·
+[Native and visual checks](battle-ui-composition.md#reproduce-the-native-member-layout)
 
-- Keep the fitted design canvas and cap the page width. Inside a margin, stack header, expanding
-  body, optional field summary and measured footer. In the body, place the framed roster beside
-  the expanding sheet. Keep its arrows in their own row. Group portrait/name/class and the two
-  gauges above an attribute grid, a spell column with its fixed 196px reader beneath, and an
-  independent full-height pack. Give the four numbered rows their 88px minimum, wrapped text and
-  reserved icon/marker space. Scroll excess inside its own pane. Collapsing a missing field summary
-  must still preserve the page's reading measure. Inherit panel insets, column gaps, fonts and
-  focus styles from the page theme. This replaces both member layout formulas and
-  `ArrangeSummaryRow`. The direct board Full sheet has its own `ArrangeInspection` and 4× icons.
+**Planned.** Native focus and GUI picking are a later input change. Today the shared roster retains
+the actor and scroll. Mapped actions and complete pointer gestures use the mounted controls' actual
+rectangles, clipped to the visible list for rows and slots. [Roster](../../game/src/UI/MemberRosterView.cs)
+
 - Preserve one selected `ActorRef` as the identity of the sheet while the player reads another pane.
   On open, place focus on that actor, the spell reader or the current item according to the entry.
   Empty rosters still expose the empty message and Back. In the roster, focusable rows wrap in
@@ -272,14 +269,16 @@ Each PR replaces one production path with its consumers and can be reverted with
 
 | Player outcome, in delivery order | Main risk and acceptance before proceeding | Estimate |
 | --- | --- | --- |
-| 1. Read a complete member sheet in field and battle. Replace the shared page's body, summary and member-only detail layout with containers. Keep current input during this layout change. | In F5 and F8 compare EN/zh-CN at 1600×900 and 1920×1080. Read the long member name, absent/defeated condition, fourth slot and description together. Check that the arrows, records, Prepare and fixed footer clear the text. Select slot four, then an empty slot. Return from actual Prepare with the same actor and scroll. Check the adjacent direct Full sheet. | 2–3 days |
+| 1. Read a complete member sheet in field and battle. | Implemented with containers and the existing input route. [Layout, visual review and ordinary returns](battle-ui-composition.md#reproduce-the-native-member-layout) | Implemented |
 | 2. Edit a preference or binding and return to the same caller. Switch Settings, nested choices and Help to native focus and GUI picking together. Use the existing entry, draft, capture and store owners. This establishes the mapped-event handoff in the host. | In F10 open Display and read a long detail. Switch keyboard → pad → mouse, edit, Back and Cancel. Follow Controls into capture/review, Apply with the old Confirm held, and try both the old and new bindings after release. Check a refused Apply and a read-only page. Cover a field caller and a retained battle target. Resize or lose focus mid-press, then resume with the same phase and candidate and no extra command. Check direct Battle Speed return. | 3–5 days |
 | 3. Browse members and slots by any mapped device, then resume play. Consume slice 1's layout and slice 2's root handoff in the two member callers. Remove their old hit/selection routing at cutover. | Use the long and empty roster cases. Switch member from Items, wheel a different pane and cancel a drag over another row. Check Prepare Back, read-only Member → Options → Cursor and a held release over the board. After detaching/re-entering the same view, one window-exit gesture cancels once and one fresh click acts once. Check live focus/texture, session revision and errors. | 2–4 days |
 
-The three slices have a preliminary effort estimate of **7–12 engineer-days**. It comes from static
-inspection without an implementation pilot. Agent elapsed time remains unscheduled. Re-estimate the
-remaining work after slice 1 using its actual implementation and review effort. The main uncertainty is how GUI focus
-on mouse-down interacts with release cancellation and host remapping. Witness that boundary in slice 2
+Budget **5–9 engineer-days for the two remaining input slices**, including debugging and independent
+review. Slice 1 reused both input owners, the existing observers and the registered package. Its
+debugging concerned the container width cap and summary label height, both caught by the existing
+probes. The visual and real-return routes are now reusable. Keep the larger allowance for Settings
+because it introduces the root mapped-event handoff. Slice 1 did not exercise native focus on
+mouse-down or binding changes across release. Witness that boundary in slice 2
 before sharing its handoff. Reassess if a slice needs global focus state, a second input map or a
 consumer outside these two entries. The design itself required only static inspection.
 
@@ -291,7 +290,7 @@ Use the [host observation](../verification/host.md#battle-system-settings-observ
 [#2147](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2147) owns broader scene/subpage
 coverage. Necessary pictures belong only to the dedicated UI demo and stay ignored locally.
 Gameplay acceptance reads live input, state, projection and errors. **Unknown** until implementation:
-the new focus/gesture behavior and actual appearance on those routes. Existing witnesses describe
+the future focus/gesture behavior and its appearance on the Settings and member routes. Existing witnesses describe
 the shipped controls. Physical-device comfort retains its existing player-review boundary.
 
 ## Findings and limits

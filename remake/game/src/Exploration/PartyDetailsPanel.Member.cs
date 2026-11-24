@@ -1,0 +1,71 @@
+using Godot;
+
+namespace Sf2.Remake.GodotAdapter.Exploration;
+
+internal sealed partial class PartyDetailsPanel
+{
+    private void BuildMemberSheet(CenterContainer portrait)
+    {
+        var inset = new MarginContainer();
+        foreach (var edge in new[] { "left", "top", "right", "bottom" })
+            inset.AddThemeConstantOverride("margin_" + edge, 24);
+        AddChild(inset);
+        inset.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+
+        var columns = new HBoxContainer();
+        inset.AddChild(columns);
+        var attributes = new VBoxContainer { CustomMinimumSize = new(280, 0) };
+        attributes.AddThemeConstantOverride("separation", 52);
+        columns.AddChild(attributes);
+        portrait.CustomMinimumSize = new(160, 192);
+        portrait.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
+        attributes.AddChild(portrait);
+        var stats = new GridContainer { Columns = 2 };
+        stats.AddThemeConstantOverride("h_separation", 8);
+        stats.AddThemeConstantOverride("v_separation", 4);
+        attributes.AddChild(stats);
+        foreach (var (title, value) in _stats)
+        {
+            title.CustomMinimumSize = new(0, 48);
+            title.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            stats.AddChild(title);
+            stats.AddChild(value);
+        }
+
+        var reading = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        reading.AddThemeConstantOverride("separation", 12);
+        columns.AddChild(reading);
+        var header = new HBoxContainer { CustomMinimumSize = new(0, 144) };
+        reading.AddChild(header);
+        var identity = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        identity.AddThemeConstantOverride("separation", 12);
+        header.AddChild(identity);
+        identity.AddChild(_name);
+        identity.AddChild(_class);
+        var vitals = new VBoxContainer { CustomMinimumSize = new(480, 0), Alignment = BoxContainer.AlignmentMode.Center };
+        vitals.AddThemeConstantOverride("separation", 16);
+        header.AddChild(vitals);
+        foreach (var control in new Control[] { _hp, _unknownHp, _mp, _unknownMp })
+        {
+            control.CustomMinimumSize = new(0, 56);
+            vitals.AddChild(control);
+        }
+
+        var lists = new HBoxContainer { SizeFlagsVertical = SizeFlags.ExpandFill };
+        reading.AddChild(lists);
+        var spells = ReadingColumn(lists, _magicTitle, _magic, 0.43f);
+        spells.AddChild(_description);
+        ReadingColumn(lists, _itemsTitle, _items, 0.57f);
+    }
+
+    private static VBoxContainer ReadingColumn(HBoxContainer parent, Label title, ScrollContainer scroll, float share)
+    {
+        var column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsStretchRatio = share };
+        column.AddThemeConstantOverride("separation", 12);
+        parent.AddChild(column);
+        column.AddChild(title);
+        scroll.SizeFlagsVertical = SizeFlags.ExpandFill;
+        column.AddChild(scroll);
+        return column;
+    }
+}
