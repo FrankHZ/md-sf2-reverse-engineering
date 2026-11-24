@@ -7,8 +7,8 @@
 battles through Battle26 and the named authored cases. Keep the existing High-rigor transaction
 and save agreements where the review crosses them. Dispatch each slice separately after its
 prerequisites are dispositioned. The cases below are review questions, with retained evidence
-identified where available. The identity, control and target relation review and the movement
-review are complete. The four subsequent slices remain pending.
+identified where available. The identity, movement and action transaction reviews are complete.
+Casualties, status lifetime and save/restore remain pending.
 [Campaign boundary](../capability-status.md#campaign-feature-trace)
 
 **Shared boundary.** Content admits definitions, deployments and bindings. The session owns the
@@ -33,21 +33,12 @@ the admitted settled state through the same rules.
    cases agree on weighted reach, occupied cells and the committed stop. The review corrected
    inactive standby delivery to validate against the grid that selected its route.
    [Review and reproduction](#movement-terrain-and-occupancy-review)
-3. **Action admission, construction and payment.** Once the stop and target operands agree,
-   trace ordinary Attack, one learned spell and one carried item from choice and target queries
-   through Confirm, prepared resolution and playback. At the provisional stop, compare backing
-   out of Magic with confirming an affordable silenced HEAL. The former keeps resources intact;
-   the latter can pay once with no healing. Use a zero-MP offensive consumable and duplicate item
-   IDs in different slots to test which slot is spent. Stop after one accepted and one
-   cancelled or rejected path at the shared boundary, with one narrow control per payment kind.
-   Compare the main and thinking seeds at query, prepare and commit. Use Search, equipment,
-   Give and discard owners only if a concrete issue crosses their distinct commit boundaries.
-   [Original action construction](../../../docs/design/contracts/battle/battle-action-construction.md) ·
+3. **Action admission, construction and payment — reviewed.** Manual Attack now excludes
+   neutral targets at preview and confirmation. The controlled HEAL and offensive item cases
+   verify free Back, a paid silenced cast and exact-slot consumption through scene settlement.
+   [Review and reproduction](#action-admission-construction-and-payment-review) ·
    [Remake transaction contract](#implementable-api-and-transaction-boundary) ·
-   [Offensive item contract](offensive-items-design.md#remake-item-action) ·
-   [Dispatch](../../src/Sf2.Remake.Application/Runtime/Battles/BattleCommandDispatcher.cs) ·
-   [Admission](../../src/Sf2.Remake.Application/Runtime/Battles/BattleChoices.cs) ·
-   [Scene settlement](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs)
+   [Offensive item contract](offensive-items-design.md#remake-item-action)
 4. **Casualties, rewards, custody and outcome.** Check the irreversible battle and campaign
    effects before auditing which queue entries can still tick. Start with the controlled confused
    enemy cast that targets its leader and hits the caster in protected slot 128 as collateral.
@@ -1388,6 +1379,56 @@ failure. Godot consumes options/targets/semantic inventory and scene requests; i
 cycle options, and select an existing presenter by effect kind, but cannot decode source inventory
 bits, choose factions/ranges, calculate effects, or branch on strategy/module names. That is the #438
 interface handoff; it specifies no layout, artwork or new input-device requirement.
+
+### Action admission, construction and payment review
+
+**Confirmed (original static).** The player menu builds the attack grid before showing or
+accepting a physical target. Its target array skips living occupants with the neutral bit set.
+Magic Back returns to a selection menu before a cast is committed. HEAL 1 has the Silence
+property and costs 3 MP. The separately accepted BLAZE 1 replay confirms the common cast
+sequence pays before the Silence branch. The offensive consumables enter by held slot and
+retain Item origin throughout the effect. [Player action branches](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/battlefunctions_2.asm#L123-L287) ·
+[Attack grid](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefield/buildactionrangegrids.asm#L25-L57) ·
+[Neutral gate](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefield/buildtargetsarray.asm#L60-L90) ·
+[HEAL row](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm#L24-L30) ·
+[Cast order](../../../docs/design/contracts/battle/spell-resolution.md#confirmed-silence-cast-gate-and-cost-order) ·
+[Action construction](../../../docs/design/contracts/battle/battle-action-construction.md#top-level-action-pipeline) ·
+[Item routing](offensive-items-design.md#original-rules)
+
+**Confirmed (remake engine).** The manual Attack regression initially offered a living, in-range
+neutral opponent as enabled. The default Domain physical rule now applies the manual grid's
+neutral gate to both its target list and target validation. Selection rejects the neutral
+opponent with `physical-target` and keeps the same snapshot. A distinct ordinary opponent
+remains eligible and takes its single prepared hit during scene delivery. The neutral gate
+belongs to the manual Attack path. Automatic selection keeps its own roster and admission.
+[Physical rule](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2PhysicalAction.cs) ·
+[Physical regression](../../tests/Sf2.Remake.Engine.Tests/BattleActionChoiceTests.cs)
+
+**Confirmed (remake engine).** Query, selection, Back and target rejection preserve the live
+battle, including both RNG streams and inventory. HEAL 1 stays enabled under Silence when
+affordable. Back retains the provisional stop, and confirming the cast prepares a scene with
+no reaction or construction draws. The action message acknowledgement moves MP from 20 to 17.
+Repeating that acknowledgement is rejected, and settlement keeps the wounded ally at 9 HP.
+The later Silence lifecycle owns its own main RNG draw. The normal HEAL control retains the
+staged MP and HP effects. [Silenced and canceled HEAL](../../tests/Sf2.Remake.Engine.Tests/SilenceSessionTests.cs) ·
+[Ordinary HEAL scene](../../tests/Sf2.Remake.Engine.Tests/BattleSceneTests.cs)
+
+For a zero-MP holder, the chosen offensive consumable at slot 2 leaves its duplicate in slot 0.
+Confirm publishes the exact slot consumption and the construction main seed, keeping target HP
+unchanged until the scene reaction. Repeated Confirm is rejected during the active scene.
+Completing the scene produces one damage event, preserves the compacted pack and leaves the
+thinking seed and MP intact. [Offensive item checks](offensive-items-design.md#engine-behavior-checks) ·
+[Choice](../../src/Sf2.Remake.Application/Runtime/Battles/BattleChoices.cs) ·
+[Confirm](../../src/Sf2.Remake.Application/Runtime/Battles/BattleCommandDispatcher.cs) ·
+[Resolution](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) ·
+[Scene delivery](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs)
+
+Reproduce with `uv run sf2 verify engine` after the
+[locked SDK setup](../development-and-verification.md#locked-net-workflow). For the focused
+selection filter the engine project to `BattleActionChoiceTests`, `SilenceSessionTests`,
+`AttackItemSessionTests`, `BattleSceneTests` and `EngineSessionTests`. The original natural reach
+of these controlled states and original animation/input timing remain **Unknown** in this review.
+The next slices own casualties, rewards and status lifetime.
 
 ### Rule author workflow and diagnostics
 
