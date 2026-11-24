@@ -132,19 +132,37 @@ the expected planes and logged a script error while trying to snapshot the retir
 The final observer follows the guard-to-battle handoff before reading terrain. These bounded
 remake observations leave original hardware timing and player visual approval **Unknown**.
 
-The isolated review handoff retains a narrow extension of that observer under
-`local/issue2143`. Build the locked Debug adapter and run the cases serially with
-fresh labels. The runner selects the registered package and uses a disposable external
-save namespace with checkout-local logs. It never saves during the observation.
+Use the launch command in the [south-gate recipe](../application/pre-voyage-campaign.md#reproduce-the-south-gate-entry)
+with the tracked [battle entry probe](../../game/probes/engine_battle_entry_coordinates_observation.gd)
+and `SF2_HOST_UI_CASE=recovery`. Set `SF2_PRIVATE_EXPLORATION_CONTENT` to `world.json`,
+`SF2_PRIVATE_ENTRY_CONTENT` to `entry/entry.json`, and `SF2_PRIVATE_BATTLE_SCENE_CONTENT`
+to `main-scenes.json` in the registered v2 bundle above. Select the six files under
+`opening-inputs` through their matching `SF2_PRIVATE_*` variables. In `SF2_HOST_UI_OUTPUT`,
+find the sample labeled `first-battle-control` and inspect `terrain.layers`.
+Both layers must report zero offsets from (21,2). The low pass must report (21,2)
+for its first tile, 5,760 draws and z0. The high pass must report zero draws and z2.
+Check that the probe passes its first-turn Confirm and Back assertions, stderr is empty,
+and the copied slot still matches its seed byte-for-byte.
 
-~~~powershell
-./local/issue2143/Run.ps1 -Case battle06 -Label review
-./local/issue2143/Run.ps1 -Case battle02 -Label review
-./local/issue2143/Run.ps1 -Case battle21 -Label review
-./local/issue2143/Run.ps1 -Case battle22 -Label review
-./local/issue2143/Run.ps1 -Case castle -Label review
-uv run sf2 verify adapter
-~~~
+Use the same bundle, input settings and fresh isolated runtime paths for the controls.
+
+- **Battle02 and Battle21.** Substitute the tracked
+  [battle selection probe](../../game/probes/engine_battle_selection_observation.gd)
+  in the Godot command. Set `SF2_SELECTION_PRIVATE=1`, `SF2_VIEWPORT_OUTPUT` to a fresh
+  checkout-local report path and `SF2_SELECTION_START` to the absolute checkout-local
+  start JSON. For Battle02 use
+  `{"start":{"battle":"battle-2","activeAllies":["ally-0","ally-1","ally-2"]}}`.
+  For Battle21 use the Map67 JSON in the south-gate recipe. Read `board` in the `initial`
+  sample at Movement. The coordinates probe's `battle21` case checks the earlier
+  layout copy and stops at the first dialogue.
+- **Battle22 and Battle05.** Launch the ordinary host with `--input-settings` and a
+  fresh disposable namespace. For Battle22 seed slot 1 from the registered battle
+  save in the table and choose Continue. For Battle05 seed slot 2 from the
+  authorized castle backup and follow the [rally and guard route](#castle-battle-projection).
+  At the visible Movement turn, pause the isolated Debug host in `BattleSessionView._Process`
+  with a managed debugger. Read `ReadObservationJson()` for the active actor and stage,
+  and `_map.ReadTerrainJson()` for the mounted draw passes. Compare their origins,
+  priority, draw counts and layer positions with the table, then verify the slot bytes.
 
 ### Castle battle projection
 
