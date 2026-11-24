@@ -104,6 +104,41 @@ used as evidence of lifecycle correctness. The runs preserve shutdown warnings: 
 instances on the field/bedroom cases, four at the pending next-scene dialogue. Clean native exit is
 not established; no audio lifecycle repair or complete campaign rerun belongs to this correction.
 
+## Invaded Granseal house stairs
+
+**Confirmed static.** Map3 F506 init checks F6 and calls `cs_51374` to hide the recruited
+resident. The house's two `MAP_CURRENT` stairs preserve the population between (3,3) and
+(54,3). F6 and F38 govern membership independently of this visit's actor. [F506 init](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map03/mapsetups/s6_initfunction_506.asm)
+· [Map3 warp table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map03/6-warp-events.asm#L38-L47)
+
+**Confirmed in the remake.** On accepted base `9562d98f`, continue a disposable copy of the
+stable v6 Map3 F506 post-recruitment slot at (32,13), with F6/F38 set and F507 clear. Ordinary
+input reaches the ground-floor stair at (3,3). On the first arrival at (54,3), slot16 remains
+at $7000 with its old follow link. Step Right then Left to go back down. The old arrival moves
+slot16 to (3,3) and init stops at `cs-51374` instruction 0 with `program-entity`. The
+[retirement contract](session-and-programs.md#field-entity-retirement) makes both input paths use
+the current exploration list and keeps the retired slot parked.
+
+Reproduce with registered `derived/issue2106/pre-voyage-spells-v2`, the Debug adapter and the
+[bounded Godot input and observation route](../verification/map3-commission-save.md).
+Use a fresh external save namespace and copy the selected seed at its original slot number.
+From (54,3), step Right then Left to go downstairs. From (3,3), step Right down the diagonal
+to (4,4), then Left to go back upstairs. Read `ReadCaptureState` for control, coordinates,
+follow links and errors. Enable the existing camera witness to check actual actor projection.
+Inspect the v6 visit's aliases and current list alongside the slot. Repeat the pair, then save
+at (4,4) and Continue in a fresh process. A separate controlled pre-recruitment start on
+Map3 (55,3) uses F506/F605/F609 with F6/F38/F507 clear and the six active recruits before
+Kiwi. This covers the resident-preserving branch with ordinary stairs input.
+
+The corrected post-recruitment visit returns to `PlayerInput` on both floors on first and
+repeat trips. The retired physical actor remains parked, unaliased and outside the current list
+and actor projection. A new v6 Save at (4,4) cold-continues without restoring the link and passes
+another two trips. The controlled pre-recruitment case retains the resident on both landings.
+`FollowerTransferTests` covers a live alternate follower, an old parked link, retained identity,
+temporary off-map placement and reuse. `MapEntityLifecycleTests` covers rebuilding the source
+table on fresh entry. The observation uses the production host and mounted private package.
+Original timing is **Unknown**.
+
 ## Same-map walking-party arrival
 
 **Standard rigor; bounded rule correction:** current-map stairs retain a live scene, so arrival must
@@ -124,17 +159,14 @@ enumerates `EXPLORATION_ENTITIES`, assigning each listed slot's current X/Y and 
 the entrance, except for its raft/caravan paths. This is a source-list operation; the four writes
 alone do not establish every story separation, natural reach or hardware service schedule.
 
-The admitted remake walking rule places the player and installed, script-free followers connected
-to that player at the entrance, including members already moving. It clears their previous velocity,
-travel, motion wait and timer; it retains follower links/offsets, speeds, flags, sprite state and each
-follower's facing. The selected entrance sets player facing. Physical slots determine connectivity,
-including changed membership/order; character identities and allocation order do not select legality.
-`SceneEntities.Build` and follower-install commands establish these links. `CurrentEntities` also
-retains slots after scripts take over, so it cannot by itself identify current following. An actor
-with a script, a detached actor, and a chain rooted in another actor retain their state. This is an
-explicit bounded mapping of source party placement to the admitted follow model, not a claim that
-filtering the original list by `Actions` reproduces all original cutscenes. Raft/caravan transfer
-support and broader separation semantics remain outside this correction.
+The admitted remake walking rule places the player and listed, script-free followers connected to
+that player at the entrance, including members already moving. It clears previous velocity, travel,
+motion wait and timer and retains follow offsets, speeds, flags, sprite state and follower facing.
+The selected entrance sets player facing. Physical links and `CurrentEntities` jointly determine
+the arriving party. A listed slot can be script-owned or detached. A removed slot can retain
+dormant work, including an old saved follow link. These actors and chains rooted in another actor
+retain their physical state on arrival. [Field entity retirement](session-and-programs.md#field-entity-retirement)
+owns hiding and later reallocation.
 
 Acceptance uses `FollowerTransferTests` through `uv run sf2 verify engine`: varied zero/one/three
 followers and reversed physical links, moving player/followers, multiple landings and return,

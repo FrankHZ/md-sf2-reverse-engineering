@@ -326,18 +326,25 @@ public sealed class ExplorationState
         // Safe remake representation of a repeated source hide after FF removal.
         // Only a retained, already hidden physical record proves this lifecycle state.
         // Never resolve an arbitrary absent/removed identity to the player or a reused slot.
-        if (Population is not null && AllEntities.Any(row => row.Entity == reference &&
+        if (removeAliases && Population is not null && AllEntities.FirstOrDefault(row => row.Entity == reference &&
             !row.Visible && row.Motion.X == 0x7000 && row.Motion.Y == 0x7000 &&
             row.Motion.XDestination == 0x7000 && row.Motion.YDestination == 0x7000 &&
-            !Aliases.Values.Contains(row.Slot))) return this;
+            !CurrentEntities.Contains(row.Slot) && !Aliases.Values.Contains(row.Slot)) is { } retired)
+            return Hide(retired, removeAliases: true);
         throw new BattleRuleException("program-entity", "program.entity", true);
     }
     internal ExplorationState Hide(ExplorationEntity entity, bool removeAliases)
     {
-        var hidden = entity with { Visible = false, WaitingForSprite = false,
-            Motion = entity.Motion with { X = 0x7000, Y = 0x7000, XDestination = 0x7000, YDestination = 0x7000 } };
+        var hidden = entity with
+        {
+            Visible = false, WaitingForSprite = false,
+            Follower = removeAliases ? null : entity.Follower,
+            Motion = entity.Motion with { X = 0x7000, Y = 0x7000, XDestination = 0x7000, YDestination = 0x7000 },
+        };
+        var entities = AllEntities.Select(row => row.Slot == hidden.Slot ? hidden :
+            removeAliases && row.Follower?.LeaderSlot == hidden.Slot ? row with { Follower = null } : row);
         // For source populations an absent reference represents FF, distinct from a fresh zero mapping.
-        return new(Definition, Layout, Player, AllEntities.Select(row => row.Slot == hidden.Slot ? hidden : row), Party, SpriteSize,
+        return new(Definition, Layout, Player, entities, Party, SpriteSize,
             Aliases.Where(pair => !removeAliases || pair.Value != hidden.Slot).ToDictionary(pair => pair.Key, pair => pair.Value), RoofState, Population, Quake, TravelMode, CurrentEntities.Where(slot => slot != hidden.Slot).ToArray(), GraphicBindings, PopulationSource);
     }
     internal ExplorationState WithEntity(ExplorationEntity entity) =>

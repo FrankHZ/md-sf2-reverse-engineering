@@ -5,8 +5,8 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 internal static class FollowerMotion
 {
     // Current-map entry retains the scene but places the walking party at its new entrance.
-    // Follow physical links, not character IDs/flag order. A script-owned or detached member
-    // is a separate scene actor until content installs following again.
+    // Follow physical links within the current exploration list. A parked slot can still hold
+    // a dormant link, and a listed slot can be script-owned or detached.
     internal static ExplorationState Arrive(ExplorationState world, MapPosition position, byte facing)
     {
         var party = new HashSet<int> { world.PlayerEntity.Slot };
@@ -15,7 +15,8 @@ internal static class FollowerMotion
         {
             added = false;
             foreach (var entity in world.AllEntities)
-                if (entity is { Follower: { } follow, Actions: null } && party.Contains(follow.LeaderSlot))
+                if (entity is { Follower: { } follow, Actions: null } &&
+                    world.CurrentEntities.Contains(entity.Slot) && party.Contains(follow.LeaderSlot))
                     added |= party.Add(entity.Slot);
         } while (added);
         return world.WithEntities(world.AllEntities.Select(entity => !party.Contains(entity.Slot) ? entity : entity with
@@ -43,7 +44,10 @@ internal static class FollowerMotion
         ExplorationState world, bool inBattle = false)
     {
         if (entity.Follower is not { } follow || entity.Actions is not null || (follow.WaitForDestination && entity.Motion.IsMoving)) return entity;
-        var leader = slots[follow.LeaderSlot].Motion;
+        var target = slots[follow.LeaderSlot];
+        // Older settled visits can still link to a slot parked by Hide.
+        if (!target.Visible && target.Motion.X >= 0x7000) return entity;
+        var leader = target.Motion;
         return entity with { Motion = EntityMotion.Follow(entity.Motion, leader, follow.OffsetX, follow.OffsetY,
             (x, y) => FieldLayout.Word(world, leader, x, y, inBattle) is < 0xC000) };
     }

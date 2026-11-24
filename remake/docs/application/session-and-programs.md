@@ -1384,19 +1384,59 @@ obstructable bit and both current/reserved positions; scripted motion keeps its 
 check. Source populations start with all 64 identity entries mapped to physical slot0, then overlay
 allocated ally/non-ally references. Numeric selectors use the source low-byte/signed encoding;
 32–63 share entries with128–159. These are references to `AllEntities`, never duplicate entity state.
-Hiding removes every reference to the hidden slot and its follower behavior while retaining the
-physical record. Missing source-table keys represent FF tombstones and survive state copies and
-same-map preservation; only rebuilding population initializes fresh zero entries. Out-of-table
-selectors and references outside the 49 normal records stop as Unsupported. Authored maps without
-source population keep strict named-ID resolution. The accepted
+Missing source-table keys represent FF tombstones and survive state copies and same-map
+preservation. Rebuilding population initializes fresh zero entries. Out-of-table selectors and
+references outside the 49 normal records stop as Unsupported. Authored maps without source
+population keep strict named-ID resolution. The accepted
 [lookup contract](../../../docs/design/contracts/world/map-exploration.md) owns the source boundary.
+The [retirement rules](#field-entity-retirement) govern the retained physical record.
 
 Ordered door copies run before traversal; flag copies run at rebuild; roof activation/restoration
 uses the shared layout reducers and signed area overlays. Source map255 same-map reload preserves
-entities and the working layout, updates player position/facing, performs roof-on-load and reruns
-selected initialization. The original setup selector still refuses an unimplemented alternative
-instead of publishing default entities. This group uses Map3's default setup; broader initialization,
-healing/temp reset, dynamically promoted/dead allies and other setups are outside its start boundary.
+the actor table and working layout, places the player and eligible followers at the entrance,
+applies the entrance facing to the player and runs roof-on-load and the selected initialization.
+The setup selector rejects an unimplemented alternative. This group uses Map3's default setup.
+Initialization of other setups, healing, temporary resets and promoted or defeated allies have
+separate acceptance boundaries.
+
+### Field entity retirement
+
+Standard rigor covers the shared entity lifecycle used by [#2157](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2157).
+The scope is retirement and walking arrival on preserved populations, including restored visits and
+physical slot reuse. Title compatibility, party membership and content selection use their existing contracts.
+
+- Alias-removing Hide parks current and destination coordinates at $7000, removes every mapping to
+  the slot and takes it out of `CurrentEntities`. The physical record and its dormant action script
+  remain. The remake clears its `Follower` link and any links targeting that slot. A former dependent
+  keeps its place in the current list and can receive a new following command. No replacement leader
+  is assigned automatically.
+- Hide with aliases retained parks the record and removes it from the active placement list. Its
+  script identity and installed behavior remain available for explicit scene work. Setting
+  visibility alone changes presentation. Moving an actor off map without hiding it preserves the
+  list entry and the actor can still arrive with the party.
+- Ordinary and scripted Preserve transfers and retained-population scroll share `FollowerMotion.Arrive`.
+  A follower needs current-list membership and a script-free physical chain back to the player.
+  Loading only the scene layout preserves the actor table. Fresh map entry and `LoadSceneEntities`
+  rebuild it from destination declarations and live flags. Explicit vehicle programs use their own
+  list or physical operands.
+- Settled v6 and older admitted physical scene records keep the saved slots, list and bindings.
+  A parked link from an older record cannot cause arrival or give a live follower a parked target.
+  A repeat alias-removing Hide can retire that exact hidden, unlisted and unaliased record again.
+  Physical reallocation clears prior inbound following before publishing the replacement occupant.
+  Missing identities, invalid selectors and attempts to hide an old identity after slot reuse still
+  fail through the existing lookup boundary.
+
+**Confirmed static** at pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`.
+`HideEntity` writes both coordinate pairs, sets matching index entries to FF and compacts
+`EXPLORATION_ENTITIES`. It retains the physical action pointer. `DeclareRaftEntity` uses the
+compacted list for walking-party placement. The remake follows that exclusion and explicitly
+invalidates its typed edges. [HideEntity](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/scripting/entity/entityfunctions_2.asm#L209-L245)
+· [DeclareRaftEntity](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/scripting/map/mapfunctions.asm#L116-L141)
+
+The [house stair observation](pre-voyage-campaign.md#invaded-granseal-house-stairs) and
+`FollowerTransferTests` exercise the affected arrival, follow and slot reuse behavior.
+Original timing and the behavior of a live source actscript still targeting a retired slot are
+**Unknown**.
 
 ## Castle, palace, Astral and tower
 

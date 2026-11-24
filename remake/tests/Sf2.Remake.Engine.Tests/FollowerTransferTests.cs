@@ -3,6 +3,7 @@ using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
 using Sf2.Remake.Application.Runtime.Persistence;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
 
@@ -64,6 +65,91 @@ public sealed class FollowerTransferTests
             Assert.Equal(before.Aliases, after.Aliases);
             Assert.Equal(before.CurrentEntities, after.CurrentEntities);
         }
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void PreservingArrivalKeepsHiddenFollowersParkedAndLeavesOtherFollowersActive(bool removeAliases, bool legacyLink)
+    {
+        var (definition, initial) = Start();
+        var world = initial.Exploration!;
+        var follower = world.Entities[new("entity-1")];
+        var live = FollowerMotion.Install(world.Entities[new("entity-2")], world.PlayerEntity.Slot, -24, 0);
+        world = world.WithFollower(live).Hide(follower.Entity, removeAliases);
+        if (legacyLink)
+        {
+            // A settled visit produced before this correction can still carry the parked slot's link.
+            var parked = Assert.Single(world.AllEntities, row => row.Slot == follower.Slot);
+            world = world.WithEntity(parked with { Follower = follower.Follower });
+        }
+
+        var current = Snapshot(initial, world);
+        foreach (var landing in new[] { new MapPosition(54, 3), new(3, 3), new(54, 3), new(3, 3) })
+        {
+            current = MapTransfer.Apply(definition, current, world.Map, landing, 0,
+                MapLoadMode.Preserve, current.Story, [], RuleCompositions.Sf2());
+            var after = current.Exploration!;
+            var parked = Assert.Single(after.AllEntities, row => row.Slot == follower.Slot);
+            Assert.False(parked.Visible);
+            Assert.Equal((short)0x7000, parked.Motion.X);
+            Assert.Equal((short)0x7000, parked.Motion.Y);
+            Assert.Equal((short)0x7000, parked.Motion.XDestination);
+            Assert.Equal((short)0x7000, parked.Motion.YDestination);
+            Assert.DoesNotContain(parked.Slot, after.CurrentEntities);
+            Assert.Equal(!removeAliases, after.TryResolveEntity(follower.Entity, out _));
+            AssertSettled(after.PlayerEntity, landing);
+            AssertSettled(after.Entities[live.Entity], landing);
+
+            // The destination's init repeats the hide before returning control.
+            after = after.Hide(follower.Entity, removeAliases);
+            if (removeAliases) Assert.Null(after.AllEntities.Single(row => row.Slot == follower.Slot).Follower);
+            else Assert.Equal(follower.Follower, after.Entities[follower.Entity].Follower);
+            current = Snapshot(current, after);
+        }
+    }
+
+    [Fact]
+    public void MovingAListedFollowerOffMapStillAllowsPartyArrival()
+    {
+        var (definition, initial) = Start();
+        var follower = initial.Exploration!.Entities[new("entity-1")];
+        var world = initial.Exploration.MoveOffMap(follower.Entity);
+        Assert.True(world.Entities[follower.Entity].Visible);
+        Assert.Contains(follower.Slot, world.CurrentEntities);
+
+        var result = MapTransfer.Apply(definition, Snapshot(initial, world), world.Map, new(32, 13), 1,
+            MapLoadMode.Preserve, initial.Story, [], RuleCompositions.Sf2());
+        var arrived = result.Exploration!.Entities[follower.Entity];
+        AssertSettled(arrived, new(32, 13));
+        Assert.Equal(follower.Follower, arrived.Follower);
+    }
+
+    [Fact]
+    public void RetiringALeaderDoesNotLetItsFollowersTrackAReusedSlot()
+    {
+        var (_, initial) = Start();
+        var world = initial.Exploration!;
+        var leader = world.Entities[new("entity-2")];
+        var follower = world.Entities[new("entity-1")];
+        world = world.WithFollower(FollowerMotion.Install(follower, leader.Slot, -24, 0));
+        var retired = world.Hide(leader.Entity, removeAliases: true);
+        Assert.Null(retired.Entities[follower.Entity].Follower);
+
+        // Model the stale link a legacy restore can carry to the old physical slot.
+        retired = retired.WithFollower(world.Entities[follower.Entity]);
+        var tick = EntityActionRunner.Tick(retired);
+        Assert.Equal(retired.Entities[follower.Entity].Motion, tick.World.Entities[follower.Entity].Motion);
+
+        var other = new EntityRef("entity-130"); // Fresh source-zero mapping, valid allocation operand.
+        var reused = SceneEntities.Add(retired, new AddMapEntity(other, new(16, 16), 0, 30, new([new StopEntityActions()])), 1);
+        Assert.Equal(leader.Slot, reused.Entities[other].Slot);
+        Assert.Null(reused.Entities[follower.Entity].Follower);
+        Assert.Equal("program-entity", Assert.Throws<BattleRuleException>(() =>
+            reused.Hide(leader.Entity, removeAliases: true)).Code);
+        Assert.Equal("program-entity", Assert.Throws<BattleRuleException>(() =>
+            reused.Hide(new EntityRef("entity-200"), removeAliases: true)).Code);
     }
 
     [Fact]
