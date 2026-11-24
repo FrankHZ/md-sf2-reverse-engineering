@@ -136,6 +136,17 @@ owners, accepted observations and remaining work. Resolve missing decisions at t
 The current work organizes existing design and evidence, with Chinese and Wiki migration handled
 by their respective Issues.
 
+### Reader calibration for the Wiki entry
+
+[Issue #2129](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2129) applies the
+Standard agreement to three English pages and their existing Chinese design excerpts. A reader
+coming from the Wiki should be able to retell a journey from the [vision](game-vision.md), explain
+a position and healing decision from the [overview](synthesis/gameplay-overview.md), and say what
+changes if the party leaves Polca early in [Map Design Principles](synthesis/themes/map-design-principles.md).
+Review each answer against its conditions in both languages. The existing Wiki mappings continue
+to select the Chinese pages. Wider revisions and publication await separate decisions after
+independent reading of the sample.
+
 ### Campaign lifecycle indexes
 
 [Epic #1931](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1931) uses **Standard**
@@ -440,27 +451,23 @@ do not impose line, word or page caps, split documents solely for length, or rem
 explanation to meet a brevity target. The handwritten-source line limit does not apply to design
 Markdown. Effort budgets bound work expansion, not document length.
 
-1. **Audience and judgment boundary.** Identify the reader—researcher, fidelity implementer, or
-   player-facing explainer—and the supported and unsupported judgments. Original-game claims retain
-   **Confirmed**, **Inferred**, or **Unknown** at the source-owner layer.
-2. **Player verbs and action-goal alignment.** Begin with evidenced inputs, state changes, and
-   outcomes. Keep original source labels separate from neutral player-action phrases. A player goal
-   or meaning without local evidence is **Inferred** or **Unknown**.
-3. **Loops, state flow, and system dynamics.** Diagram only ordered transitions, resources, and
-   feedback relationships with evidence owners. Retain unobserved branches and do not present a
-   control-flow graph as engine architecture.
-4. **Evidence matrix.** Every substantive entry includes its label, bounded claim, source/research
-   owner, contract, fixture ID/path when applicable, and remaining question. Local links such as
-   [runtime RNG and battle math](../research/battle/runtime-rng-and-battle-math.md),
-   [combat fixture](../../tests/fixtures/h3/physical-damage-v1.json), and
-   [combat contract](contracts/battle/combat-resolution.md) are the canonical trace; do not copy another evidence
-   ledger.
-5. **Original fidelity and modernization.** State the original-fidelity rule first, then mark a
-   deliberate deviation as a future decision with a separate expected-deviation fixture. In the
-   absence of a decision, do not imply modernization.
-6. **H4 acceptance, expansion, and stop conditions.** List adapter-visible parity facts, fixture
-   consumers, and the evidence required for expansion. Stop when a gap is a runtime, reachability,
-   presentation, or product question rather than silently expanding the contract.
+Choose the opening to match the question. At L0, give a reader a sense of travelling with this
+party and what the remake preserves. At L1, follow an outing far enough to see how preparation,
+a turn and its aftermath affect one another. At L2, explain a choice in its setting, including a
+condition under which another answer changes the result. At L3, retain the values, order,
+exceptions, cancellation and failure rules needed to decide a case.
+
+For example, a reader can understand Jaha's choice of terrain once they know what the second
+hit does and when Sarah can act. The [first-contact analysis](synthesis/analyses/battle02-first-contact.md)
+owns the coordinates, arithmetic and ordering assumptions. Include the assumptions that could
+change the answer alongside the example. Use similar judgment when writing a chapter where the
+choice turns on a conversation or a return visit instead of a number.
+
+Keep original rules, conditional interpretations and accepted or proposed remake choices
+identifiable. Put proof details in a supporting passage or link the evidence owner. Preserve
+the [evidence review](#pre-synthesis-evidence-review), including completed failures and remaining
+**Unknown** questions. Adapter results and fixture inventories belong with their acceptance owners.
+They need enter the reader's account only where they change what the reader can conclude.
 
 ## External Reference Provenance and Selective Adoption
 
