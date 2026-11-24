@@ -392,10 +392,10 @@ public sealed class ProgressionPolicyTests
             return Fault == "finish-party" ? result with { Returned = new(party.Encounter, party.Actors,
                 party.MainSeed + 1, party.ThinkingSeed, party.Gold) } : result;
         }
-        public BattleStartInput Heal(ScenarioDefinition definition, BattleStartInput party, bool all, bool returningFromBattle)
+        public BattleStartInput Heal(ScenarioDefinition definition, BattleStartInput party, bool all, bool sourceEntry)
         {
             if (Fault == "heal") throw new InvalidOperationException("private detail");
-            return _source.Heal(definition, party, all, returningFromBattle);
+            return _source.Heal(definition, party, all, sourceEntry);
         }
     }
 

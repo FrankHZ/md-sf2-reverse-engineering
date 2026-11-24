@@ -190,7 +190,9 @@ internal static class ProgramRunner
                         current = SourceRandomBattleRunner.Check(current, random, cursor, observations);
                         continue;
                     case ResetPartyBattleStats reset:
-                        active = new ActiveExploration(current.Exploration!.WithParty(OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, current.Exploration.Party, all: !reset.LivingOnly)));
+                        var recovered = OutcomeReturnRules.Heal(rules.OutcomeReturn, definition, current.Exploration!.Party,
+                            all: !reset.LivingOnly, sourceEntry: reset.SourceEntry);
+                        active = new ActiveExploration(current.Exploration.WithParty(recovered));
                         break;
                     case ReturnBattleMap:
                         // alt_MainLoopEntry returns through SwitchMap without CheckBattle.

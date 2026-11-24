@@ -2,6 +2,7 @@ using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Exploration;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
 
@@ -86,6 +87,33 @@ public sealed class RaftTravelTests
         Assert.Equal(story.StepCounter, result.Story.StepCounter);
         Assert.Equal(story.Flags, result.Story.Flags);
         Assert.Null(result.Story.EnteringBattle);
+    }
+
+    [Fact]
+    public void RidingRebuildClearsMuddleFromALivingMemberAndKeepsTheRaft()
+    {
+        var battle = EngineTestContent.Admitted();
+        var layout = new WorkingMapLayout(new ushort[4096]);
+        var area = new OriginalMapTraversal([new(0, 0, 63, 63)]);
+        var source = new ExplorationMapDefinition(new("reach"), layout, area, [], []);
+        var target = new ExplorationMapDefinition(new("river"), layout, area, [], []);
+        var definition = new ScenarioDefinition("river-entry", battle.Definition.Encounters.Values,
+            exploration: new([source, target], []));
+        var actor = battle.Definition.Encounters.Values.Single().Deployments.First(row => row.Faction == BattleFaction.Ally).Actor;
+        var party = battle.Start.WithResources(battle.Start.Actors.Select(row => row.Actor == actor
+            ? row with { Status = 0x3A } : row), battle.Start.Gold);
+        var player = new EntityRef("leader");
+        var field = new ExplorationState(source, layout, player, [new(player, EntityMotionState.At(new(18, 7), 0, 32), true)],
+            party, travelMode: FieldTravelMode.Raft);
+        var story = new StoryState([64], raft: new(source.Map, new(18, 7)));
+        var current = new SessionSnapshot(Guid.NewGuid(), 0, 0, new ActiveExploration(field), story, SessionStopReason.PlayerInput);
+
+        var arrived = MapTransfer.Apply(definition, current, target.Map, new(1, 7), 0, MapLoadMode.Rebuild,
+            story, [], RuleCompositions.Sf2()).Exploration!;
+        Assert.Equal(target.Map, arrived.Map);
+        Assert.Equal(FieldTravelMode.Raft, arrived.TravelMode);
+        Assert.Equal(2, arrived.Party.Actors.Single(row => row.Actor == actor).Status);
+        Assert.Equal(party.MainSeed, arrived.Party.MainSeed);
     }
 
     [Fact]

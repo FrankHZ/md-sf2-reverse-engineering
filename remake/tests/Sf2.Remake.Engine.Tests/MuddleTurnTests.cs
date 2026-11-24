@@ -180,6 +180,27 @@ public sealed class MuddleTurnTests
         Assert.Equal("actor-status", failure.Code);
     }
 
+    [Theory]
+    [InlineData("enemy-spells", 1, 3)]
+    [InlineData("silence-watch", 0, 1)]
+    public void StartRefusesConfusionWhenAnOwnSideSourceTargetHasNoPhysicalOperand(
+        string scenario, int confusedIndex, int targetIndex)
+    {
+        var document = EngineTestContent.Document(scenario);
+        document["actors"]![targetIndex]!.AsObject().Remove("physical");
+        var admitted = Assert.IsType<ScenarioReadAccepted>(EngineTestContent.Reader(document).Read());
+        var ordinary = Assert.IsType<SessionStarted>(GameSession.Start(admitted.Definition, admitted.Start));
+        Assert.NotNull(ordinary.Session.Current.Selection);
+
+        var confused = admitted.Start.Actors[confusedIndex].Actor;
+        var typed = admitted.Start.WithResources(admitted.Start.Actors.Select(row => row.Actor == confused
+            ? row with { Status = 0x38 } : row), admitted.Start.Gold);
+        Assert.Equal("actor-status", Assert.IsType<SessionStartFailed>(GameSession.Start(admitted.Definition, typed)).Failure.Code);
+
+        document["start"]!["actors"]![confusedIndex]!["status"] = "confusion3";
+        Assert.Equal("actor-status", Assert.IsType<ScenarioReadRejected>(EngineTestContent.Reader(document).Read()).Failure.Code);
+    }
+
     [Fact]
     public void ConfusionFlagWithoutACounterRemainsOutsidePublicSaveAndRestore()
     {
@@ -275,8 +296,10 @@ public sealed class MuddleTurnTests
             Assert.IsType<SessionStartFailed>(GameSession.RestoreBattle(definition, invalid, rules)).Failure.Code);
     }
 
-    [Fact]
-    public void OrdinaryMuddleTwoUpgradesOneRecipientAndAnImmuneAreaRecipientKeepsItsWord()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void OrdinaryMuddleTwoAdmitsMixedAreaAndRefusesAnUnsupportedAutomaticTurnBeforePayment(bool targetCanAct)
     {
         var document = EngineTestContent.Document("enemy-spells");
         var actors = document["actors"]!;
@@ -287,6 +310,7 @@ public sealed class MuddleTurnTests
         start["actors"]![1]!["status"] = "muddle1";
         start["mainSeed"] = 4010u << 16;
         actors[3]!["resistance"] = 3 << 14;
+        if (!targetCanAct) actors[3]!.AsObject().Remove("physical");
         var placements = document["encounters"]![0]!["placements"]!;
         placements[1]!["x"] = 4;
         placements[3]!["x"] = 4;
@@ -303,8 +327,25 @@ public sealed class MuddleTurnTests
         var current = BattleSaveFixture.At(battle, new StoryState());
         var rules = RuleCompositions.Sf2();
         List<SessionObservation> events = [];
-        foreach (SessionCommand command in new SessionCommand[] { new Confirm(), new SelectSpell(new("muddle", 2)),
-            new SelectTarget(mage), new Confirm() })
+        foreach (SessionCommand command in new SessionCommand[] { new Confirm(), new SelectSpell(new("muddle", 2)) })
+        {
+            var result = BattleCommandDispatcher.Submit(current, command, rules);
+            Assert.True(result.Failure is null, result.Failure?.ToString());
+            events.AddRange(result.Observations);
+            current = result.Snapshot;
+        }
+
+        if (!targetCanAct)
+        {
+            var refused = BattleCommandDispatcher.Submit(current, new SelectTarget(mage), rules);
+            Assert.Equal("muddle-target-turn", refused.Failure?.Code);
+            Assert.Same(current.Battle, refused.Snapshot.Battle);
+            Assert.Empty(refused.Observations);
+            Assert.Equal(20, current.Battle.GetActor(scout).Mp);
+            return;
+        }
+
+        foreach (SessionCommand command in new SessionCommand[] { new SelectTarget(mage), new Confirm() })
         {
             var result = BattleCommandDispatcher.Submit(current, command, rules);
             Assert.True(result.Failure is null, result.Failure?.ToString());

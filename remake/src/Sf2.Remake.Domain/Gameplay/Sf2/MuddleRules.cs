@@ -32,19 +32,22 @@ internal static class MuddleRules
 
     private static bool CanConfusedTurn(EngineBattleState battle, BattleActorState actor)
     {
-        var slots = battle.Definition.Initialization?.SourceCombatants;
-        if (slots is null || actor.ActivationWord is null || actor.SourceLoadout is null ||
-            actor.Definition.Physical is null || battle.Definition.Rewards is null ||
-            BattleOffense.FixedPursuitTarget(battle, actor) is null ||
-            !BattleOffense.OrderedRoster(battle, actor, OffensiveTargetSide.OwnSide).Any(unit => unit.Actor == actor.Actor))
+        if (actor.ActivationWord is null || actor.SourceLoadout is null || battle.Definition.Rewards is null ||
+            BattleOffense.FixedPursuitTarget(battle, actor) is null)
+            return false;
+
+        // The physical scorer estimates every reachable candidate before protection or
+        // self-guard is tested. Movement can make other source teammates reachable later.
+        var ownSide = BattleOffense.OrderedRoster(battle, actor, OffensiveTargetSide.OwnSide)
+            .Where(unit => BattleOffense.Matches(actor, unit, OffensiveTargetSide.OwnSide)).ToArray();
+        if (!ownSide.Any(unit => unit.Actor == actor.Actor) || ownSide.Any(unit => unit.Definition.Physical is null))
             return false;
 
         if (actor.IsAlly)
             return (actor.Control == BattleControl.Player ||
                 actor is { Control: BattleControl.Automatic, Deployment.SourceAllyControl: true } &&
                 actor.AiStrategy == SourceAllyAi.Strategy && SourceAllyAi.PhysicalOnly(actor, actor.SourceLoadout)) &&
-                BattleOffense.OrderedRoster(battle, actor, OffensiveTargetSide.OwnSide)
-                    .All(SourceAllyAi.SupportsOpponentOccupancy);
+                ownSide.All(SourceAllyAi.SupportsOpponentOccupancy);
 
         return actor.Control == BattleControl.Automatic && actor.AiStrategy == SourceEnemyAi.Strategy &&
             actor.Deployment.Initialization is { } source && SourceEnemyAi.SupportsCommandset(source.AiCommandset) &&

@@ -573,16 +573,21 @@ affected. A failed roll leaves the target's current word intact. A successful ro
 or refreshes the count to three with the confusion flag.
 
 Battle Start and battle Save/Continue check the current word with the same turn-admission
-rule. This rule uses the existing source strategy, slots, loadout and live occupancy
-operands. The authored reader parses `muddle1`–`muddle3` for rank-1 counts and
+rule. It uses the existing source strategy, slots, loadout and live occupancy.
+Both factions require the physical definition of potential source teammates before
+admitting a confused turn. Scoring can reach those teammates after movement and
+estimates damage before checking a protected center or the self guard.
+The authored reader parses `muddle1`–`muddle3` for rank-1 counts and
 `confusion1`–`confusion3` for rank-2 counts, then uses that same Start check.
 Content and Godot reuse already admitted spell identity icons across campaign scenes.
 Both ranks use the spell-7 pair; a later learned book can carry it into an earlier battle.
 
 The existing offensive relation and source commandsets own execution. Their fixed-slot
-MOVE distinguishes a placed combatant, an initialized and cleaned casualty, and an
-unavailable slot. A cleaned slot yields the empty movement already used by the
-commandsets, with the same failed-search RNG and after-turn chain. The accepted
+MOVE distinguishes a placed combatant, a cleaned casualty, and an unavailable slot.
+The battle snapshot represents a cleaned slot with `Initialized = true`, HP 0, no
+position and status 0. This yields empty movement through the existing commandsets,
+with the same failed-search RNG and after-turn chain. An unmapped slot or a dormant
+slot with `Initialized = false` remains unavailable. The accepted
 Battle25 route can clear slot 128 while the battle continues. The engine case actually
 kills slot 128 before the next confused enemy consumes its empty MOVE and countdown.
 [Battle25 death and cold Continue](../application/battle25-north-cave.md) ·
@@ -595,6 +600,15 @@ retain the current word, decision seeds and fixed-slot casualty state without re
 a decision. Field Save/Continue and Raise retain the word of a controlled already-fallen
 ally. Fresh battle recovery clears it from the raised ally. Casualties processed by the
 battle death batch have already had their word cleared.
+
+Field EGRESS and a riding map rebuild use the source ExplorationLoop recovery. EGRESS
+preflights the same recovery that its bound program applies after the completed flash.
+A controlled fallen caster retains either rank through field Save/Continue and Raise,
+pays EGRESS once, then recovers HP/MP and clears the temporary word before arriving at
+the refuge. The ordinary authored reset keeps its existing status check.
+[MainLoop](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/mainloop.asm#L19-L35) ·
+[ExplorationLoop](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/exploration/explorationfunctions_2.asm#L8-L19) ·
+[Source recovery][heal]
 
 ### Controlled MUDDLE 2 and cold Continue in Battle25
 

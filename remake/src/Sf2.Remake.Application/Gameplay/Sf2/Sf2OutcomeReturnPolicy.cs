@@ -60,7 +60,7 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
         bool skip = kind == BattleOutcomeKind.Victory && selected.CompletedFlag is { } flag && story.Flags.Contains(flag);
         return new(kind == BattleOutcomeKind.Victory ? skip ? null : route.AfterProgram : route.DefeatProgram,
             destination, projected,
-            kind == BattleOutcomeKind.Victory ? Heal(definition, party, all: false, returningFromBattle: true) : party, resetRaft);
+            kind == BattleOutcomeKind.Victory ? Heal(definition, party, all: false, sourceEntry: true) : party, resetRaft);
     }
 
     private static FieldReturnAnchor EgressDestination(ScenarioDefinition definition, StoryState story,
@@ -98,7 +98,7 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
                 { Hp = input.Progress?.MaxHp ?? encounter.Deployments.Single(row => row.Actor == leader).Definition.MaxHp } : input),
                 DefeatGold(party.Gold ?? throw new BattleRuleException("unspecified-gold", "party.gold", true)));
         }
-        return new(party, Heal(definition, party, all: false, returningFromBattle: true), victory ? route.JoinMember : null,
+        return new(party, Heal(definition, party, all: false, sourceEntry: true), victory ? route.JoinMember : null,
             victory || route.CompletedDefeatMap is not null || selected.CompletedFlag is { } completed && story.Flags.Contains(completed),
             victory || route.CompletedDefeatMap is not null, route.ReturnProgram);
     }
@@ -108,7 +108,7 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
         deployment.Faction == BattleFaction.Ally &&
         (all || actor.Hp > 0 || deployment.Initialization?.AllyPartyMember is 7 or 28);
 
-    public BattleStartInput Heal(ScenarioDefinition definition, BattleStartInput party, bool all, bool returningFromBattle)
+    public BattleStartInput Heal(ScenarioDefinition definition, BattleStartInput party, bool all, bool sourceEntry)
     {
         var encounter = definition.Encounters[party.Encounter];
         var actors = party.Actors.Select(input =>
@@ -117,7 +117,7 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
                 definition.Encounters.Values.SelectMany(value => value.Deployments)
                     .First(row => row.Faction == BattleFaction.Ally && row.Actor == input.Actor);
             if (!CanRecover(deployment, input, all)) return input;
-            bool supported = returningFromBattle
+            bool supported = sourceEntry
                 ? SilenceRules.SupportedInBattle(input.Status)
                 : SilenceRules.Supported(input.Status);
             if (!supported) throw new BattleRuleException("return-status-refresh", "party.status", true);
