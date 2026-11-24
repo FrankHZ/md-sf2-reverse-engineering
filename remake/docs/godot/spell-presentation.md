@@ -62,6 +62,15 @@ placeholder attack Magic hides the scene actors and scenery and draws element-sp
 Ordinary support Magic and suppressed casts use cards and messages on black. Item gestures, number
 of recipients and actual reaction results follow the committed action.
 
+## Graphics variants
+
+Prepared BLAZE1, BLAZE2, BLAST1, breath and wave rasters can select a complete optional HD
+frame group from the battle scene. The light fairy uses a single group for body, wings and
+dust. Partial groups use the complete Original art. Effect positions, mirroring, opacity
+and Reduced Flash read the existing playback state. Higher density keeps the Original
+draw extents and does not change cast or result delivery. Placeholder effects remain as
+listed by rank below. [Binding contract](../content/asset-inventory.md#battle-raster-variant-binding-2177)
+
 ## Coverage by family and rank
 
 ### Recovery, support and retreat

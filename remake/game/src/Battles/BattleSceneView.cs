@@ -16,7 +16,7 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 // wait token; it never computes damage, rewards, RNG or the next combatant.
 internal sealed partial class BattleSceneView : Control
 {
-    private readonly Dictionary<(string Encounter, string Resource), ImageTexture> _textures = [];
+    private static readonly string[] BreathResources = ["kiwi-breath/tile-1", "kiwi-breath/tile-9"];
     private PrismLaserView _laser = null!;
     private AuraRecoveryView _aura = null!;
     private AttackSpellView _attackSpell = null!;
@@ -105,7 +105,13 @@ internal sealed partial class BattleSceneView : Control
     {
         var state = _session.Current.BattleScene;
         ArrangeCanvas();
-        if (state is null) { _messagePanel.Present(false, false, false, default, "", false); Hide(); _laser.Hide(); _aura.Hide(); _attackSpell.Reset(); _phoenixWave.Reset(); _state = null; return; }
+        if (state is null)
+        {
+            _messagePanel.Present(false, false, false, default, "", false);
+            Hide(); _laser.Hide(); _aura.Hide(); ResetRasterEffects();
+            RetireRasters(); _state = null;
+            return;
+        }
         if (state.IsFieldDeath) Hide(); else Show();
         PresentStatus(state);
         if (_state?.Token != state.Token) _messagePanel.ResetReading();
@@ -113,7 +119,7 @@ internal sealed partial class BattleSceneView : Control
         _state = state; _elapsed = _revealed = 0; _frameIndex = _logicalReaction = -1; _completed = _sceneMusicStarted = false; _frames = []; _animationIndex = null;
         try
         {
-            _laser.Hide(); _aura.Hide(); _attackSpell.Reset(); _phoenixWave.Reset();
+            _laser.Hide(); _aura.Hide(); ResetRasterEffects();
             var preparedResources = state.AttackSpell switch
             {
                 { Spell.Value: "blaze", Spell.Level: 1, SourceAnimationSelector: 1 } => AttackSpellView.BlazeResources,
@@ -222,13 +228,13 @@ internal sealed partial class BattleSceneView : Control
                     if (_preparedAttackSpell)
                     {
                         _attackSpellStart = _frames.Take(Math.Max(0, animation.Trigger - 1 - skippedFrames)).Sum(frame => frame.Ticks) / 60.0;
-                        _attackSpell.PrepareAttackSpell(state, preparedResources!.Select(Texture).ToArray(), target.IsAlly, _settings.ReducedFlash);
+                        _attackSpell.PrepareAttackSpell(state, Frames(preparedResources!), target.IsAlly, _settings.ReducedFlash);
                     }
                     if (state.IsMonsterBreath)
-                        _attackSpell.Present(state, [Texture("kiwi-breath/tile-1"), Texture("kiwi-breath/tile-9")]);
+                        _attackSpell.Present(state, Frames(BreathResources));
                     if (_frames.Length != 0 && sequence == "attack" && animation.Spell == PhoenixWaveView.Selector &&
                         PhoenixWaveView.Resources.All(Content!.Rasters.ContainsKey))
-                        _phoenixWave.Begin(PhoenixWaveView.Resources.Select(Texture).ToArray(), actor.IsAlly);
+                        _phoenixWave.Begin(Frames(PhoenixWaveView.Resources), actor.IsAlly);
                 }
                 if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Dodge")
                     _frames = (target.IsAlly ? _allyVisual! : _enemyVisual!).Sequences["dodge"].Frames.Skip(target.IsAlly ? 1 : 0).ToArray();
@@ -254,6 +260,13 @@ internal sealed partial class BattleSceneView : Control
         ArrangeCanvas();
         _messagePanel.Arrange();
         ArrangeStatus(state);
+    }
+
+    private void ResetRasterEffects()
+    {
+        _attackSpell.Reset();
+        _phoenixWave.Reset();
+        _effectBindings.Clear();
     }
 
     private void ArrangeCanvas()
@@ -481,9 +494,10 @@ internal sealed partial class BattleSceneView : Control
             if (ally) { _ground.Position = new(x, 140); Weapon(_allyVisual?.Sequences["idle"].IdleWeapon, new(x - 136, 0)); }
         }
         if (Content?.Healing is not { } visual || healing.Fairy is not { Control: not 0 } fairy) return;
+        bool groupHasHd = BattleSceneRaster.HasHdGroup(Content, visual.Bodies.Concat(visual.Wings).Concat(visual.Dust));
         void Put(Sprite2D sprite, string resource, ushort x, ushort y, bool mirror = false)
         {
-            Bind(sprite, resource); sprite.FlipH = mirror;
+            Bind(sprite, resource, groupHasHd); sprite.FlipH = mirror;
             sprite.Position = new Vector2(ally ? x - 128 : 256 - (x - 128), y - 128) - sprite.GetRect().Position * sprite.Scale;
             sprite.Show();
         }
@@ -736,40 +750,25 @@ internal sealed partial class BattleSceneView : Control
         var visual = ally ? _allyVisual! : _enemyVisual!;
         var resource = visual.Frames[frame];
         var body = ally ? _ally : _enemy;
-        Bind(body, resource);
-        // Prepared bodies can be supplied at native size. The scene uses logical pixels.
-        if (ally && body.Texture.GetWidth() == 96 && body.Texture.GetHeight() == 96) body.Scale = Vector2.One;
+        // The installed allies also include native 96x96 originals. Use that
+        // Original footprint to lay out both densities.
+        var original = Content!.Rasters[resource];
+        float scale = ally && original.Width == 96 && original.Height == 96 ? 1 : 0.5f;
+        Bind(body, resource, BattleSceneRaster.HasHdGroup(Content, visual.Frames), scale);
         if (ally) { _allyFrame = frame; _allyResource = resource; } else { _enemyFrame = frame; _enemyResource = resource; }
     }
     private void Weapon(BattleSceneWeaponFrame? frame, Vector2 offset)
     {
         _weapon.Visible = _hasWeapon && frame is not null && _allyVisual!.WeaponFrames.Count > 0;
         if (!_weapon.Visible) return;
-        _weaponResource = _allyVisual!.WeaponFrames[frame!.Frame & 7]; Bind(_weapon, _weaponResource);
+        var frames = _allyVisual!.WeaponFrames;
+        _weaponResource = frames[frame!.Frame & 7];
+        Bind(_weapon, _weaponResource, BattleSceneRaster.HasHdGroup(Content!, frames));
         _weapon.FlipH = (frame.Frame & 16) != 0; _weapon.FlipV = (frame.Frame & 32) != 0;
         _weapon.Position = new Vector2(136 + frame.X,64 + frame.Y) + offset;
         // Source layer 1 follows the ally in the VDP sprite chain (behind);
         // layer 2 precedes it (in front). Keep that per-frame distinction.
         _weapon.ZIndex = frame.Layer == 2 ? 3 : 1;
-    }
-    private Texture2D Texture(string resource)
-    {
-        var key = (Content!.Encounter, resource);
-        if (!_textures.TryGetValue(key, out var texture))
-        {
-            if (!Content!.Rasters.TryGetValue(resource, out var raster))
-                throw new InvalidOperationException("battle-scene-texture-unavailable");
-            using var image = new Image();
-            if (image.LoadPngFromBuffer(raster.CopyBytes()) != Godot.Error.Ok || image.GetWidth() != raster.Width || image.GetHeight() != raster.Height)
-                throw new InvalidOperationException("battle-scene-texture-invalid");
-            texture = ImageTexture.CreateFromImage(image); _textures.Add(key, texture);
-        }
-        return texture;
-    }
-    private void Bind(Sprite2D node, string resource)
-    {
-        node.Texture = Texture(resource); node.Scale = new(0.5f,0.5f);
-        node.SetMeta("bound_resource", resource);
     }
     private Sprite2D Sprite(string name, Vector2 position)
     { var node = new Sprite2D { Name = name, Position = position, Centered = false }; _canvas.AddChild(node); return node; }
@@ -829,6 +828,7 @@ internal sealed partial class BattleSceneView : Control
                 binding = BoundResource(sprite),
                 width = sprite.GetRect().Size.X, height = sprite.GetRect().Size.Y }).ToArray(),
         allyFrame = _allyFrame, enemyFrame = _enemyFrame, allyResource = _allyResource, enemyResource = _enemyResource,
+        ally = BoundResource(_ally), enemy = BoundResource(_enemy), weapon = BoundResource(_weapon),
         weaponResource = _weaponResource, weaponVisible = _weapon.Visible, weaponFlipH = _weapon.FlipH, weaponFlipV = _weapon.FlipV,
         weaponZ = _weapon.ZIndex, allyZ = _ally.ZIndex, weaponY = _weapon.Position.Y,
         weaponRect = new { x = _weapon.GetRect().Position.X, y = _weapon.GetRect().Position.Y,
@@ -859,15 +859,16 @@ internal sealed partial class BattleSceneView : Control
             }).ToArray(),
         };
     }
-    private static object BoundResource(Sprite2D node) => new
-    {
-        resource = node.HasMeta("bound_resource") ? node.GetMeta("bound_resource").AsString() : null,
-        texturePresent = node.Texture is not null, visible = node.IsVisibleInTree(),
-    };
     public override void _ExitTree()
     {
         VisibilityChanged -= SyncOverlay;
         // The overlay shares BattleSessionView lifetime; reparenting a battle exits/re-enters
         // this tree without retiring its presenters or their reading state.
-        GetWindow().FocusExited -= Suspend; GetWindow().FocusEntered -= Resume; foreach (var texture in _textures.Values) texture.Dispose(); _textures.Clear(); }
+        GetWindow().FocusExited -= Suspend; GetWindow().FocusEntered -= Resume;
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationPredelete) DisposeTextures();
+    }
 }

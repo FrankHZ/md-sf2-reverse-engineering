@@ -2060,7 +2060,7 @@ msgid "ui.settings.graphics-coverage"
 msgstr "HD uses installed artwork for supported scenes and items. Other artwork uses Original."
 
 msgid "ui.settings.battle-graphics"
-msgstr "HD applies to supported artwork in exploration. Battle artwork stays Original."
+msgstr "Battle uses HD artwork where installed. Other artwork uses Original."
 
 msgid "ui.settings.battle-language"
 msgstr "Menus update now. Some open result messages keep their language until they close."

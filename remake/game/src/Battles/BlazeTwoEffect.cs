@@ -3,7 +3,7 @@ using Godot;
 namespace Sf2.Remake.GodotAdapter.Battles;
 
 // Rank 2 keeps the retail composition and uses the adapter's presentation clock.
-internal sealed class BlazeTwoEffect(Texture2D[] textures, bool targetIsAlly, bool reducedFlash)
+internal sealed class BlazeTwoEffect(Func<int, BattleSceneRaster> frames, bool targetIsAlly, bool reducedFlash)
 {
     internal static readonly string[] Resources =
     [
@@ -58,11 +58,11 @@ internal sealed class BlazeTwoEffect(Texture2D[] textures, bool targetIsAlly, bo
         bool drawn = false;
         foreach (var sprite in Sprites(age))
         {
-            var texture = textures[sprite.Texture];
+            var raster = frames(sprite.Texture);
             var position = sprite.Position.Round();
-            if (sprite.Flip) position.X += texture.GetWidth();
+            if (sprite.Flip) position.X += raster.Size.X;
             node.DrawSetTransform(position, scale: new(sprite.Flip ? -1 : 1, 1));
-            node.DrawTexture(texture, Vector2.Zero, new Color(1, 1, 1, sprite.Opacity));
+            raster.Draw(node, Vector2.Zero, new Color(1, 1, 1, sprite.Opacity));
             drawn = true;
         }
         if (drawn) node.DrawSetTransform(Vector2.Zero);
@@ -72,11 +72,16 @@ internal sealed class BlazeTwoEffect(Texture2D[] textures, bool targetIsAlly, bo
     internal object Observe(double age) => new
     {
         duration = Duration, targetIsAlly, reducedFlash,
-        sprites = Sprites(age).Select(sprite => new
+        sprites = Sprites(age).Select(sprite =>
         {
-            resource = Resources[sprite.Texture], x = MathF.Round(sprite.Position.X), y = MathF.Round(sprite.Position.Y),
-            width = textures[sprite.Texture].GetWidth(), height = textures[sprite.Texture].GetHeight(),
-            opacity = sprite.Opacity, flip = sprite.Flip, meteor = sprite.Meteor,
+            var raster = frames(sprite.Texture);
+            return new
+            {
+                resource = Resources[sprite.Texture], x = MathF.Round(sprite.Position.X), y = MathF.Round(sprite.Position.Y),
+                width = raster.Size.X, height = raster.Size.Y, hd = raster.Hd,
+                textureWidth = raster.Texture.GetWidth(), textureHeight = raster.Texture.GetHeight(),
+                opacity = sprite.Opacity, flip = sprite.Flip, meteor = sprite.Meteor,
+            };
         }).ToArray(),
     };
 }

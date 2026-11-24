@@ -12,8 +12,8 @@ internal sealed partial class AttackSpellView : Node2D
     private BattleSceneState? _scene;
     private double _elapsed;
     private int _drawCount;
-    private IReadOnlyList<Texture2D>? _breath;
-    private Texture2D[]? _blaze;
+    private Func<int, BattleSceneRaster>? _breath;
+    private Func<int, BattleSceneRaster>? _blaze;
     private BlazeTwoEffect? _blazeTwo;
     private BlastOneEffect? _blast;
     private Vector2 _blazePosition;
@@ -29,10 +29,10 @@ internal sealed partial class AttackSpellView : Node2D
         _blast = null;
     }
 
-    internal void Present(BattleSceneState scene, IReadOnlyList<Texture2D>? breath = null)
+    internal void Present(BattleSceneState scene, Func<int, BattleSceneRaster>? breath = null)
     { _scene = scene; _breath = breath; _elapsed = 0; Show(); QueueRedraw(); }
 
-    internal void PrepareAttackSpell(BattleSceneState scene, Texture2D[] frames, bool targetIsAlly, bool reducedFlash)
+    internal void PrepareAttackSpell(BattleSceneState scene, Func<int, BattleSceneRaster> frames, bool targetIsAlly, bool reducedFlash)
     {
         _scene = scene;
         if (scene.AttackSpell!.Spell.Value == "blast")
@@ -86,7 +86,7 @@ internal sealed partial class AttackSpellView : Node2D
         if (_blaze is not null)
         {
             if (BlazeFrame is not { } frame) return;
-            DrawTexture(_blaze[frame], _blazePosition, new Color(1, 1, 1, BlazeOpacity));
+            _blaze(frame).Draw(this, _blazePosition, new Color(1, 1, 1, BlazeOpacity));
             _drawCount++;
             return;
         }
@@ -98,7 +98,7 @@ internal sealed partial class AttackSpellView : Node2D
                 float travel = (float)(_elapsed - particle * 0.04) / 0.32f;
                 if (travel is < 0 or > 1) continue;
                 var position = new Vector2(156 - 112 * travel, 94 + (particle % 3 - 1) * travel * 10);
-                DrawTexture(particles[(int)(travel * 8) % particles.Count], position);
+                particles((int)(travel * 8) % 2).Draw(this, position);
             }
             return;
         }
@@ -145,10 +145,19 @@ internal sealed partial class AttackSpellView : Node2D
         target = _scene?.Target?.Value, amount = _scene?.Amount, modern = true, preparedBreath = _breath is not null,
         preparedBlast = _blast?.Observe(_elapsed),
         preparedBlazeTwo = _blazeTwo?.Observe(_elapsed),
-        preparedBlaze = _blaze is null ? null : new
-        {
-            frame = BlazeFrame is { } frame ? BlazeResources[frame] : null,
-            x = _blazePosition.X, y = _blazePosition.Y, reducedFlash = _reducedFlash, opacity = BlazeOpacity,
-        }
+        preparedBlaze = _blaze is null ? null : ObserveBlaze(),
     };
+
+    private object ObserveBlaze()
+    {
+        int? frame = BlazeFrame;
+        BattleSceneRaster? raster = frame is { } index ? _blaze!(index) : null;
+        return new
+        {
+            frame = frame is { } slot ? BlazeResources[slot] : null,
+            x = _blazePosition.X, y = _blazePosition.Y, reducedFlash = _reducedFlash, opacity = BlazeOpacity,
+            width = raster?.Size.X, height = raster?.Size.Y, hd = raster?.Hd,
+            textureWidth = raster?.Texture.GetWidth(), textureHeight = raster?.Texture.GetHeight(),
+        };
+    }
 }

@@ -24,7 +24,8 @@ public sealed record BattleSceneDefinition(string Encounter, string Background, 
     IReadOnlyDictionary<ActorRef, string>? EnemyNames = null,
     IReadOnlyDictionary<(BattleClassRule Class, int Item), BattleSceneActorVisual>? Equipment = null,
     IReadOnlyDictionary<ActorRef, byte>? EnemyNameIds = null, IReadOnlyDictionary<byte, EnemyAppearance>? Species = null,
-    IReadOnlyDictionary<(ActorRef Actor, BattleClassRule Class, int Item), BattleSceneActorVisual>? AllyAppearances = null)
+    IReadOnlyDictionary<(ActorRef Actor, BattleClassRule Class, int Item), BattleSceneActorVisual>? AllyAppearances = null,
+    IReadOnlyDictionary<string, ExplorationRaster>? HdRasters = null)
 {
     public bool TryAllyVisual(BattleActorState actor, out BattleSceneActorVisual visual)
     {

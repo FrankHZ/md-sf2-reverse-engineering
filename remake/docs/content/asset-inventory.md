@@ -592,3 +592,39 @@ For an existing publication add `--check` to compare every file directly. Make t
 scratch unavailable and repeat a normal consumer through the published package. The
 [actor observations](hd-rollout.md#focused-observations) name the entry points and bounded claims.
 Reproduction requires no historical ignored reports. Other HD families remain tracked by #2171.
+
+## Battle raster variant binding (#2177)
+
+The optional `hdRasters` scene object binds independently prepared PNGs to exact keys in the
+scene's `rasters` object. The existing actor, palette, weapon and terrain selectors continue to
+select those keys. The same bank can contain the effect keys already selected by the spell,
+recovery or field-exit presenters. The package keeps the scene files and all existing dependencies
+at their registered relative paths. [Battle graphics consumer](../godot/battle-scenes.md#graphics-variants)
+· [Prepared spell groups](../godot/spell-presentation.md#graphics-variants)
+
+Pass a directory of authored variant PNGs for each scene to extend. A key such as `body/front`
+uses `body/front.png` relative to that directory. Each variant has equal-axis 2× or 4× original
+raster dimensions and preserves the exact nearest-expanded alpha and opaque-black masks.
+The producer checks the original raster identity before using it for this comparison. The
+existing 4 MiB bound applies to each full scene JSON after embedding the variants.
+
+```powershell
+. ./local/private-inputs.ps1
+uv sync --locked
+uv run --locked --with pillow==11.3.0 python -B -m sf2tool.remake_hd_battle_rasters `
+    --base $base --out $candidate --scene main-scenes.json $authoredPngs
+```
+
+Use an absolute fresh candidate destination under the worktree's `local/`. Repeat `--scene`
+for an admitted encounter sibling or for `opening-inputs/SF2_PRIVATE_BATTLE01_SCENE.json` when
+that independent opening selection also needs variants. The command prints per-scene variant
+counts, input and output sizes, and the total closed-package size. An invalid declaration aborts
+staging before publication. Use the existing package copier to publish a verified candidate.
+[Closed package publication](#pre-voyage-actors-and-portraits-2176)
+
+**Confirmed** on original synthetic art and an authored scenario. The packager retained a main
+scene, an encounter scene, and the full declared closure, which was reopened after removing the
+input scratch. Wrong density and changed masks aborted staging. The [native observation](hd-rollout.md#battle-raster-observation)
+checks the runtime bindings independently. **Unknown** for pre-voyage source-art variants,
+scene-size headroom across the live retail selection and their native playback. The registered
+selection remains the [actor and portrait package](#pre-voyage-actors-and-portraits-2176).

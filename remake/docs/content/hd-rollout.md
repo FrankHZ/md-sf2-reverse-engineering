@@ -447,3 +447,41 @@ production-package errors. The first authored probe leaked its own Sprite2D; fre
 that probe-owned warning. The final shared-prepare field observation passed 36 checks: first
 HD Apply took 201ms and Original 51ms including input release, with two existing exit warnings.
 These are single-run measurements on the review machine, not cross-hardware guarantees.
+
+## Battle raster observation
+
+The battle raster binding and packager form the first #2177 slice. They use the existing
+scene resource keys, the 4 MiB scene document bound and the Settings prepare/write/publish
+transaction. Packager input is independently prepared art at 2× or 4× raster dimensions.
+Installed scene banks and the working package retain their existing selection.
+[Producer and package scope](asset-inventory.md#battle-raster-variant-binding-2177)
+
+Build the Debug adapter after its locked restore, then run the short synthetic observation
+with the owned Godot installation.
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$project = 'remake/game/Sf2.Remake.Godot.csproj'
+& $env:DOTNET_BIN restore $project --locked-mode -p:UseSharedCompilation=false -nodeReuse:false
+& $env:DOTNET_BIN build $project --configuration Debug --no-restore `
+    -p:UseSharedCompilation=false -nodeReuse:false
+& $env:GODOT_BIN --headless --path remake/game `
+    --script res://probes/engine_hd_battle_raster_observation.gd --quit-after 300
+```
+
+**Confirmed** in the battle adapter with the authored `early-ranged` action and generated
+textures. The probe presents the actual physical scene, publishes Original → HD → Original
+on the same wait token, and observes both native and already doubled ally inputs, a partial
+enemy frame group, front and rear weapon layers, both weapon flips, ground and backdrop wrap.
+It checks a reparent while textures are borrowed, their release on return, and the scene-owned
+tactical exit strip crop with transparent and opaque-black pixels. BLAZE2 and BLAST1 compare
+the prepared presenter projections with synthetic textures. The deliberate truncated PNG
+should report native decode errors and preserve the current binding. A successful observation
+prints `BATTLE-RASTER-OBSERVATION PASS` and exits 0.
+
+**Unknown** for the installed pre-voyage raster census and production package headroom,
+the ordinary Settings screen with a closed HD battle package, and a representative full
+cast, heal and death replay with that art. The authored probe changes preference projection
+directly and covers a physical scene and focused effect samples. #2177 retains the content
+delivery and private native acceptance boundary.

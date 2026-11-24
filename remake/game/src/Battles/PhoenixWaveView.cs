@@ -13,10 +13,11 @@ internal partial class PhoenixWaveView : Node2D
         ["phoenix-wave/frame-0", "phoenix-wave/frame-1", "phoenix-wave/frame-2", "phoenix-wave/frame-3"];
 
     private readonly Sprite2D[] _waves = new Sprite2D[WaveCount];
-    private Texture2D[] _frames = [];
+    private Func<int, BattleSceneRaster>? _frames;
     private bool _fromAlly;
+    private double _elapsed;
 
-    internal bool Active => _frames.Length != 0;
+    internal bool Active => _frames is not null;
 
     public override void _Ready()
     {
@@ -27,43 +28,57 @@ internal partial class PhoenixWaveView : Node2D
         }
     }
 
-    internal void Begin(Texture2D[] frames, bool fromAlly)
+    internal void Begin(Func<int, BattleSceneRaster> frames, bool fromAlly)
     {
         _frames = frames;
         _fromAlly = fromAlly;
+        _elapsed = -1;
     }
 
     internal void Reset()
     {
-        _frames = [];
-        foreach (var wave in _waves) wave.Hide();
+        _frames = null;
+        foreach (var wave in _waves)
+        {
+            wave.Hide();
+            wave.Texture = null;
+        }
     }
 
     internal void Advance(double elapsed)
     {
+        _elapsed = elapsed;
+        RefreshTextures();
+    }
+
+    internal void RefreshTextures()
+    {
+        if (_frames is null) return;
         for (int i = 0; i < _waves.Length; i++)
         {
             var wave = _waves[i];
-            double age = elapsed * 60 - i * IntervalTicks;
+            double age = Age(i);
             wave.Visible = age >= 0 && age < WaveTicks;
             if (!wave.Visible) continue;
 
             int tick = (int)age;
             int x = 156 - 3 * tick;
-            wave.Texture = _frames[tick / 6];
+            _frames(tick / 6).Bind(wave);
             wave.FlipH = !_fromAlly;
             wave.Position = new(_fromAlly ? x : 256 - 32 - x, 84);
         }
     }
 
+    private double Age(int wave) => _elapsed * 60 - wave * IntervalTicks;
+
     internal object? Observe() => Active ? new
     {
         selector = Selector,
-        waves = _waves.Where(wave => wave.Visible).Select(wave => new
+        waves = _waves.Select((wave, index) => (wave, index)).Where(entry => entry.wave.Visible).Select(entry => new
         {
-            x = wave.Position.X,
-            y = wave.Position.Y,
-            frame = Array.IndexOf(_frames, wave.Texture),
+            x = entry.wave.Position.X,
+            y = entry.wave.Position.Y,
+            frame = (int)Age(entry.index) / 6,
         }).ToArray(),
     } : null;
 }
