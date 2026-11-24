@@ -231,7 +231,7 @@ def build(world_path, scene, entry_path, master, out):
     data = json.loads(world_path.read_text(encoding="utf-8-sig"))
     world = data["world"]
     visual = next(v for v in world["presentation"]["maps"] if v["map"] == "map-3")
-    if "hdBlocks" in visual:
+    if "hdBlocks" in visual or "hdTerrainFile" in visual:
         raise ValueError("already contains painted Map3 blocks")
     with Image.open(master) as sheet:
         material = brushes(sheet)

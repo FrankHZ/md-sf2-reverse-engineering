@@ -30,7 +30,8 @@ together. The active package is the set selected in the launch process.
 
 | Selection | Purpose and resource boundary |
 | --- | --- |
-| **Pre-voyage** · `derived/issue2156/pre-voyage-map3-l1-v1` | The current complete pre-voyage selection and base for its successors. Provides [Map3 Original and L1 terrain](#complete-private-package-and-rebuild-2156), original cue 12 and the mounted pre-voyage spell rasters. Gameplay reach belongs to the [pre-voyage campaign](../application/pre-voyage-campaign.md). |
+| **Pre-voyage** · `derived/issue2156/pre-voyage-map3-l1-v1` | Complete inline pre-voyage selection and source for the companion candidate. Provides [Map3 Original and L1 terrain](#complete-private-package-and-rebuild-2156), original cue 12 and the mounted pre-voyage spell rasters. Gameplay reach belongs to the [pre-voyage campaign](../application/pre-voyage-campaign.md). |
+| **Pre-voyage companion candidate** · `derived/issue2174/pre-voyage-map3-companion-v1` | Complete selection for the HD rollout. Carries the same Map3 L1 centers and neighborhoods in one world-relative file. [Rebuild, admission and native comparison](#map3-terrain-companion-2174) |
 | **PGNT** · `derived/issue1957/pgnt-v3` | Separate registered later progression/Battle26 witness. Its older Map3 HD bank has no L1 contexts and its cue 12 is the defeat placeholder. Preserve that evidence selection. Check resource lineage when proposing a successor that combines later progression with pre-voyage corrections. [PGNT reproduction](../development-and-verification.md#high-rank-elemental-magic-observation) |
 | **Display catalogs** · `derived/issue1957/catalogs-v1`, `derived/issue2001/catalogs-v1` | Independent prepared Chinese name overlays for the owning reproductions. Match the catalog and entry locale to the named reproduction. A catalog supplies display names and does not select world, scene or media. [PGNT catalog selection](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Retail catalog selection](presentation-assets.md#sleep-display-name) |
 | **Retail base and library** · `derived/issue2001/issue1966-original`, private asset Git `runtime/retail-v1` | Base world/entry provenance and preparation outputs used to assemble packages. Some prepared candidates have no current package binding. [Retail preparation](#retail-original-preparation) |
@@ -241,8 +242,8 @@ in private asset Git.
 The registered selection is `derived/issue2156/pre-voyage-map3-l1-v1`. It derives from
 `derived/issue2158/pre-voyage-sad-theme-v1` and includes the original command-12 cue from that
 package. It has 148 files and 324,058,227 bytes. Of those files, 147 are byte-identical to #2158.
-In the parsed world, only Map3's `hdBlocks` and `hdBlockContexts` differ. Future mounts use this
-complete selection as their base. The optional plates go to checkout-local scratch.
+In the parsed world, only Map3's `hdBlocks` and `hdBlockContexts` differ. This complete
+selection supplies the original inline bank for [transport](#map3-terrain-companion-2174). The optional plates go to checkout-local scratch.
 
 Allow one full output package and 1 GiB disk headroom. This run started with about 35 GB free,
 and produced a 100,937,361-byte world under the 128 MiB limit. I/O scales with the package bytes.
@@ -291,6 +292,106 @@ input changed the church door at (32,15) from block 143 to copied block 14, both
 neighborhood selection. At (32,16) the roof restored its saved words and resumed contextual
 96 px foreground draws in pass 3. Both observations exited 0 with the known two-ObjectDB
 cleanup warning. Player review of this rebuilt package remains **Unknown**.
+
+## Map3 terrain companion (#2174)
+
+**Confirmed** against the complete #2156 package. The candidate has 149 files and 324,032,107
+bytes. Its 99,392,754-byte world selects `hd/terrain/map-3.json` (1,518,487 bytes, 18.1% of
+the 8 MiB bound). The 447 centers and 767 context rasters retain 973,959 encoded payload bytes
+and 1,389 neighborhood keys. All 147 other files match byte for byte. Reinserting both bank
+fields into the world restores the #2156 world bytes. No new art payload entered the prepared
+library. The staged conversion and closure discovery took 1.96 s and peaked at 261.31 MiB on the
+calibration host. Budget one 310 MiB output plus one relocated copy and 103 MiB for the authored
+controls. Keep at least 1 GiB of free disk beyond these allocations.
+
+From the repository root, set `$output` to a fresh absolute destination under registered
+`derived/` or checkout-local `local/`. The producer publishes only after staging. To reproduce
+the comparison, use the following with the same-process private configuration:
+
+```powershell
+. ./local/private-inputs.ps1
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2156/pre-voyage-map3-l1-v1'
+function PackageInputs($pack) {
+    '--world', "$pack/world.json", '--scene', "$pack/main-scenes.json",
+    '--entry', "$pack/entry/entry.json", '--opening-inputs', "$pack/opening-inputs"
+}
+$inputs = PackageInputs $base
+uv run --locked python -m sf2tool.remake_private_package @inputs --externalize-hd-terrain map-3 --destination $output
+if ($LASTEXITCODE) { throw 'Publication failed' }
+$inputs = PackageInputs $output
+$copy = Join-Path $PWD 'local/hd-admission-copy'
+uv run --locked python -m sf2tool.remake_private_package @inputs --destination $copy
+if ($LASTEXITCODE) { throw 'Relocation failed' }
+uv run --locked python -m sf2tool.remake_private_package @inputs --destination $copy --check
+if ($LASTEXITCODE) { throw 'Copy differs' }
+```
+
+For direct comparison, run the following Python body with `uv run --locked python -X utf8 - $base $output`
+on stdin. It checks the full file set, all unchanged siblings and the original serialization.
+
+```python
+import filecmp, json, sys
+from pathlib import Path
+from sf2tool.remake_private_package import read_json
+
+base, candidate = map(Path, sys.argv[1:])
+def names(p):
+    return {f.relative_to(p) for f in p.rglob("*") if f.is_file()}
+world = read_json(candidate / "world.json")
+visual = next(v for v in world["world"]["presentation"]["maps"] if v["map"] == "map-3")
+name = Path(visual.pop("hdTerrainFile"))
+bank = read_json(candidate / name)
+assert bank.pop("map") == visual["map"]
+visual.update(bank)
+assert names(candidate) == names(base) | {name}
+assert all(filecmp.cmp(base / n, candidate / n, shallow=False) for n in names(base) - {Path("world.json")})
+assert json.dumps(world, ensure_ascii=False).encode() == (base / "world.json").read_bytes()
+```
+
+Use the [locked .NET environment and PrivateAdmission build](../development-and-verification.md#direct-reproduction).
+From `remake/`, pass `--repository .. --hd-terrain local/hd-admission-copy` to the Release tool. Paths after `--hd-terrain` resolve from
+the checkout root. The tool adds two fresh control files to that disposable copy; choose a fresh copy for each run. It admits an
+uncovered map and checks the actual centers and neighborhood bytes of an authored bank through
+`OpeningRestoreReader` in both forms. It also exercises center-only, mixed declarations, map
+identity, duplicate fields and context keys, raster identity, syntax, missing file, escape and
+oversize outcomes. Each invalid declaration must return its expected ContentError.
+
+**Confirmed native.** Use slot 1, v6 sequence 2 from the registered Map3 pre-recovery backup
+(`map3-house-fault-20261124-031746/saved-before-recovery`, at 32,13). Copy only
+`sf2-opening/slot1.json` to a fresh external `issue2174/sf2-opening/` under the disposable save
+root. Start in Original with writable preferences. Build the Debug adapter and use the
+[ordinary package environment](presentation-assets.md#reuse-a-closed-private-package) for each
+of the two closed selections, first #2156 then #2174. Run from the checkout with an absolute
+private output for each observation, the shared SDK on process PATH and worktree-local writable
+runtime directories:
+
+```powershell
+$env:SF2_SAVE_ROOT = $disposableSaveRoot
+$env:SF2_SAVE_NAMESPACE = 'issue2174'
+$env:SF2_HOST_UI_OUTPUT = Join-Path $runRoot 'map-art.json'
+& $env:GODOT_BIN --headless --path remake/game --resolution 1920x1080 --audio-driver Dummy --max-fps 60 `
+  --log-file (Join-Path $runRoot 'map-art.log') --script res://probes/engine_map_art_observation.gd
+```
+
+Ordinary Continue mounted the candidate with producer staging gone. The probe holds the field
+simulation delta at zero after attach, keeping actor ink at the same phase while servicing
+normal keyboard input, Settings and draw callbacks. Compare the six `selectedDrawsSha256` rows
+between receipts. They include actual RGBA texture readback, neighborhood selection, tile words,
+source/destination rectangles, subject and ordered pass. All six matched. Each ground sample
+had 1,669 draws over 180 cells, including actor occlusion. Foreground had 99 draws over 11
+cells. HD reached 114 ground and all 11 foreground neighborhoods. Density went 24 → 96 → 24,
+portrait width 48 → 192 → 48, with equal paused progress and identical slot bytes.
+
+| Closed selection | Slot confirmation through mounted view | Apply HD / return to Original |
+| --- | ---: | ---: |
+| #2156 inline | 311 ms | 333 / 226 ms |
+| #2174 companion | 310 ms | 363 / 232 ms |
+
+Apply includes input press through release. Both selections restored the original texture IDs
+and retained all 119 sampled HD handles in the visit cache after switching back. Both processes
+exited 0 with the existing two-ObjectDB cleanup warning. **Unknown** GPU memory, residency over
+a multi-map route and first Apply with additional maps. The renderer still prepares all admitted
+HD field rasters on first Apply. Recheck the one-second target as coverage expands.
 
 ## Earlier painted package
 
