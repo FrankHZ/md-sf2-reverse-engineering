@@ -101,7 +101,7 @@ internal static class OutcomeReturnRules
             bool canRecover = healing && deployment.Faction == BattleFaction.Ally && rule.CanRecover(deployment, a, all);
             Require(!healing || canRecover || b == a);
             ushort cleared = 0xC0 | SilenceRules.Mask | BattleStatCounters.Mask;
-            if (returningFromBattle && !MuddleRules.Confused(a.Status)) cleared |= MuddleRules.CounterMask;
+            if (returningFromBattle) cleared |= MuddleRules.Mask;
             Require(b.Status == a.Status || (canRecover && b.Status == (a.Status & ~cleared)));
             Require(b with { Hp = a.Hp, Mp = a.Mp, Status = a.Status } == a);
             Require(deployment.Faction == BattleFaction.Ally || b == a);

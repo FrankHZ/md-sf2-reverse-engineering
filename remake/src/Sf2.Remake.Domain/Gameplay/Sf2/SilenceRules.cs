@@ -14,7 +14,7 @@ internal static class SilenceRules
     internal static bool Supported(ushort status, bool poison = true) =>
         (status & ~(Mask | BattleStatCounters.Mask | CurseRules.Mask | 0xC0 | 1 | (poison ? 2 : 0))) == 0;
     // Reaction consumers can inspect either source word. Public battle entry
-    // and the rank-1 consumers use MuddleRules.SupportedRankOne.
+    // and caster-only rules can still disallow confusion.
     internal static bool SupportedInBattle(ushort status, bool poison = true) =>
         MuddleRules.Valid(status) && Supported((ushort)(status & ~MuddleRules.Mask), poison);
 

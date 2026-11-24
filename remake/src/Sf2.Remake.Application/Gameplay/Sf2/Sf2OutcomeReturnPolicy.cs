@@ -118,7 +118,7 @@ internal class Sf2OutcomeReturnPolicy : IOutcomeReturnPolicy
                     .First(row => row.Faction == BattleFaction.Ally && row.Actor == input.Actor);
             if (!CanRecover(deployment, input, all)) return input;
             bool supported = returningFromBattle
-                ? SilenceRules.SupportedInBattle(input.Status) && !MuddleRules.Confused(input.Status)
+                ? SilenceRules.SupportedInBattle(input.Status)
                 : SilenceRules.Supported(input.Status);
             if (!supported) throw new BattleRuleException("return-status-refresh", "party.status", true);
             const ushort retained = PoisonCureRules.PoisonAndStun | CurseRules.Mask;

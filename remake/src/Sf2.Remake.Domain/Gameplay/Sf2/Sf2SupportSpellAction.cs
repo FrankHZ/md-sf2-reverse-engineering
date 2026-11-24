@@ -53,11 +53,15 @@ internal sealed class Sf2SupportSpellAction : IBattleActionRule
             throw new BattleRuleException("target-range", "target");
         var targets = battle.Actors.Where(a => Eligible(caster, a, spell) && BattleRange.Contains(Position(target), Position(a), 0, spell.Radius))
             .OrderBy(a => a.ProcessingOrder).ToArray();
-        if (targets.Any(a => !MuddleRules.SupportedRankOne(a.Status, battle.Definition.Poison)))
+        if (targets.Any(a => !SilenceRules.SupportedInBattle(a.Status, battle.Definition.Poison)))
             throw new BattleRuleException("support-spell-target-status", "actors.status", true);
-        if (spell.Effect == SupportSpellEffect.Muddle &&
-            targets.Any(a => !MuddleRules.CanTurn(battle, a)))
-            throw new BattleRuleException("muddle-target-turn", "actors.control", true);
+        if (spell.Effect == SupportSpellEffect.Muddle)
+            foreach (var recipient in targets)
+            {
+                var (threshold, word) = spell.MuddleEffect(recipient);
+                if (threshold < 8 && !MuddleRules.CanTurn(battle, recipient, word))
+                    throw new BattleRuleException("muddle-target-turn", "actors.control", true);
+            }
         return targets;
     }
     public BattleActionResolution Prepare(EngineBattleState battle, ActorRef actor, MapPosition destination,

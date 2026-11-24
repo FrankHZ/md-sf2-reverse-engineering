@@ -323,6 +323,55 @@ public sealed class MuddleConfusedTurnTests
         Assert.DoesNotContain(events, e => e.Kind is "physical-first" or "rng-muddle-self-guard" or "muddle-inaction");
     }
 
+    [Fact]
+    public void ConfusedEnemyStaysAndTicksAfterTheFixedSlotIsKilledAndCleaned()
+    {
+        var battle = EnemyParty.Battle(d =>
+        {
+            d["encounters"]![0]!["placements"]![1]!["x"] = 3;
+            d["encounters"]![0]!["placements"]![2]!["initialization"]!["commandset"] = 6;
+            d["start"]!["actors"]![1]!["hp"] = 1;
+        });
+        var cleric = EnemyParty.Cleric;
+        var scout = EnemyParty.Scout;
+        battle = Stationary(battle, cleric).With(mainSeed: 4500u << 16,
+            queue: [new(scout, 30), new(cleric, 25), new(scout, 20), new(null, 255)], cursor: 0);
+        var fixedSlot = battle.GetActor(EnemyParty.Mage);
+        Assert.True(fixedSlot.Initialized);
+        Assert.NotNull(fixedSlot.Position);
+        battle = Status(battle, cleric, 0x38);
+        var current = BattleSaveFixture.At(battle, new StoryState());
+        var rules = RuleCompositions.Sf2();
+        List<SessionObservation> events = [];
+        foreach (SessionCommand input in new SessionCommand[] { new Confirm(), new ChooseAction(SessionAction.PhysicalAttack),
+            new SelectTarget(fixedSlot.Actor), new Confirm() })
+        {
+            var result = BattleCommandDispatcher.Submit(current, input, rules);
+            Assert.Null(result.Failure);
+            events.AddRange(result.Observations);
+            current = result.Snapshot;
+        }
+        while (current.BattleScene is { } scene)
+        {
+            var result = BattleSceneContinuation.Submit(current, AttackSpellSessionTests.Next(current), rules);
+            Assert.True(result.Failure is null, result.Failure?.ToString());
+            events.AddRange(result.Observations);
+            current = result.Snapshot;
+        }
+
+        var dead = current.Battle.GetActor(fixedSlot.Actor);
+        Assert.Equal(0, dead.Hp);
+        Assert.Equal(0, dead.Status);
+        Assert.Null(dead.Position);
+        Assert.True(dead.Initialized);
+        Assert.True(current.Battle.GetActor(EnemyParty.Wounded).Hp > 0);
+        Assert.Equal(scout, current.Selection!.Actor);
+        Assert.Equal(2, current.Battle.Cursor);
+        Assert.Contains(events, e => e.Kind == "ai-stay" && e.Actor == cleric);
+        Assert.Single(events, e => e.Kind == "rng-muddle-expiry" && e.Actor == cleric);
+        Assert.Equal(battle.GetActor(cleric).Position, current.Battle.GetActor(cleric).Position);
+    }
+
     internal static EngineBattleState Stationary(EngineBattleState before, ActorRef actorRef,
         bool enhanced = false, BattleOutcomeDefinition? outcome = null)
     {

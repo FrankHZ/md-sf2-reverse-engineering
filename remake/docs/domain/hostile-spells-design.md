@@ -555,17 +555,79 @@ feedback. Its targetless presentation accepts a fresh Confirm and continues to t
 and after-turn. The same-side close-up shows one card for the displayed combatant, including
 self, spell and MNST reactions. Opposing close-ups retain separate cards. A controlled
 headless presenter observation exercised these paths with authored inputs and placeholder
-MNST rasters. Original effect animation and prose variants remain outside this slice. An absent
-or unplaced fixed pursuit slot rejects that internal continuation before the decision is
-published. Its original behavior remains **Unknown**. MUDDLE 2 is still learned-only.
-Public Start and battle Save/Continue still reject confused status words. The next slice
-owns spell binding and public admission.
+MNST rasters. Original effect animation and prose variants remain with
+[issue #2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
 
 With the registered worktree SDK environment loaded, run the engine project with
 `--filter 'FullyQualifiedName~Muddle|FullyQualifiedName~EnemySpellDecisionTests'`.
 [Actual turn cases](../../tests/Sf2.Remake.Engine.Tests/MuddleConfusedTurnTests.cs) ·
 [Estimate and execution cases](../../tests/Sf2.Remake.Engine.Tests/EnemySpellDecisionTests.cs) ·
-[Closed public entry cases](../../tests/Sf2.Remake.Engine.Tests/MuddleTurnTests.cs)
+[Public entry cases](../../tests/Sf2.Remake.Engine.Tests/MuddleTurnTests.cs)
+
+### Public rank-2 admission
+
+The private binding takes source entry `MUDDLE|LV2` from the existing learned book.
+Support owns 11 MP, range 1–2, radius 2, one STATUS draw per recipient, the current
+word and the existing EXP award. It tests the prospective word when the target can be
+affected. A failed roll leaves the target's current word intact. A successful roll sets
+or refreshes the count to three with the confusion flag.
+
+Battle Start and battle Save/Continue check the current word with the same turn-admission
+rule. This rule uses the existing source strategy, slots, loadout and live occupancy
+operands. The authored reader parses `muddle1`–`muddle3` for rank-1 counts and
+`confusion1`–`confusion3` for rank-2 counts, then uses that same Start check.
+Content and Godot reuse already admitted spell identity icons across campaign scenes.
+Both ranks use the spell-7 pair; a later learned book can carry it into an earlier battle.
+
+The existing offensive relation and source commandsets own execution. Their fixed-slot
+MOVE distinguishes a placed combatant, an initialized and cleaned casualty, and an
+unavailable slot. A cleaned slot yields the empty movement already used by the
+commandsets, with the same failed-search RNG and after-turn chain. The accepted
+Battle25 route can clear slot 128 while the battle continues. The engine case actually
+kills slot 128 before the next confused enemy consumes its empty MOVE and countdown.
+[Battle25 death and cold Continue](../application/battle25-north-cave.md) ·
+[Fixed-source analysis](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1967#issuecomment-7117627470)
+Out-of-grid RAM side effects and unmapped or never-placed slot behavior remain **Unknown**.
+Slot-0 defeat continues through the existing outcome check.
+
+Field recovery owns clearing temporary status on living returnees. Battle Save/Continue
+retain the current word, decision seeds and fixed-slot casualty state without rerunning
+a decision. Field Save/Continue and Raise retain the word of a controlled already-fallen
+ally. Fresh battle recovery clears it from the raised ally. Casualties processed by the
+battle death batch have already had their word cleared.
+
+### Controlled MUDDLE 2 and cold Continue in Battle25
+
+**Confirmed** in the remake. Use the registered #1918 cave02 Chinese `battlecold01` slot
+at round 25 cursor 1. Dark Soldier slot 128 has already died and Dark Bishop still has
+39 HP. Kazin already has MAGE 28 and the learned rank, with packed book
+`[139, 71, 6, 8]`. In a disposable copy set Kazin's current HP to his stored max of 35
+and place him on free tile (18,12), one tile from the Bishop. Keep Kazin's stored
+14 MP, 67 EXP and growth/equipment. Set zero-based queue identities 1, 3, 4, 5 and 6
+to Kazin, Gerhalt, Dark Bishop, Bowie and Karna, respectively. Keep the stored agility
+scores and the dead slot at entry 2. Use controlled main RNG high word 4010, retaining
+the low word and the thinking seed. Preserve the record's UTC timestamp when writing the
+existing envelope. The prepared slot is about 39 KiB.
+
+Mount the registered #2001 priority-v1 world, scenes, entry and opening-inputs, the
+#2001 and #1941 Chinese catalogs, and the #1955 Chinese instant-text settings. Build the
+normal game Debug adapter. Title Continue loads Kazin's Movement. Confirm and enter
+ordinary Magic, select 混乱 2 (11 MP) with the spell-7 icon and confirm the Dark Bishop.
+Acknowledge the result. Kazin pays 14→3 MP and gains 67→72 EXP. The Bishop's word
+becomes 56 and Gerhalt gets Movement at cursor 3. Open Options with F10, Up and Confirm,
+save over slot 1, then keep playing.
+
+Start an independent Godot process, Continue the slot and save again without taking a
+turn. Complete decoded gameplay data is equal across the two saves. From Gerhalt's
+Movement confirm Stay, acknowledge the Bishop's guarded self action, then wait for
+Bowie's Movement. The Bishop keeps 39 HP, completes its own turn and decrements its
+word 56→40 from the range-48 roll of 24. Slot 128 stays unplaced. Bowie's ordinary
+EGRESS pays 8 MP and returns usable field input on Map9. The actual cleaned-slot MOVE
+case is covered separately by the engine test. The final two observation processes
+exited 0. Earlier runs emitted ObjectDB exit warnings. The observation driver uses
+its own exit, so normal menu shutdown is outside this evidence. These inputs
+establish remake behavior with a controlled caster and queue. A rank-2 cast through unchanged campaign history and natural ally
+confusion remain **Unknown**.
 
 ### Delivery sequence
 
@@ -593,8 +655,8 @@ With the registered worktree SDK environment loaded, run the engine project with
 
 ## Implementation order and ownership
 
-Learned SLEEP 1, DESOUL 1/2 and MUDDLE 1 have player bindings. MUDDLE 2 can remain in the
-learned book until its automatic targeting and accounting consumers are complete.
+Learned SLEEP 1, DESOUL 1/2 and MUDDLE 1/2 have player bindings at the admitted current
+campaign boundaries.
 
 Use the finite effects on the existing learned-spell entries. Putting all three families on
 the damage path would conflate status EXP and instant death with modified damage. A parallel

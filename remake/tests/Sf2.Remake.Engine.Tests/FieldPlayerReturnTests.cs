@@ -17,9 +17,11 @@ public sealed class FieldPlayerReturnTests
     [InlineData("traveler", 96, false)]
     [InlineData("scout", 192, true)]
     [InlineData("entity-0", 128, false)]
-    [InlineData("entity-0", 128, true, true)]
-    public void OutcomesRetainLivePlayerAcrossProgramsAndLaterTransfer(string id, ushort speed, bool direct, bool muddled = false)
+    [InlineData("entity-0", 128, true, 0x30)]
+    [InlineData("entity-0", 128, true, 0x38)]
+    public void OutcomesRetainLivePlayerAcrossProgramsAndLaterTransfer(string id, ushort speed, bool direct, ushort muddle = 0)
     {
+        bool muddled = muddle != 0;
         foreach (var kind in new[] { BattleOutcomeKind.Victory, BattleOutcomeKind.Defeat, BattleOutcomeKind.Retreat })
         {
             var session = StartField(id, speed, direct);
@@ -38,7 +40,7 @@ public sealed class FieldPlayerReturnTests
                     _ => muddled && actor.IsAlly && actor.Actor != leader,
                 };
                 return actor.With(hp: dead ? (ushort)0 : actor.Hp,
-                    status: muddled && actor.IsAlly ? (ushort)0x30 : actor.Status);
+                    status: muddled && actor.IsAlly ? muddle : actor.Status);
             }));
             var snapshot = new SessionSnapshot(entered.SessionId, entered.Revision, entered.ObservationSequence,
                 new ActiveBattle(terminal, null), entered.Story, SessionStopReason.SimulationWait);

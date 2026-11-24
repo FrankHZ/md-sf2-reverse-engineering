@@ -86,9 +86,12 @@ internal static class PrivateWorldEncounterReader
             .DistinctBy(row => row.Key).ToArray();
         var appearances = scenes.SelectMany(scene => (scene.AllyAppearances ?? new Dictionary<(ActorRef Actor, BattleClassRule Class, int Item), BattleSceneActorVisual>())
             .Select(pair => (pair.Key, pair.Value, scene.Rasters))).DistinctBy(row => row.Key).ToArray();
-        var attackEffects = scenes.SelectMany(scene => scene.Rasters)
+        // Spell icons have one source identity at every rank and can travel with
+        // a learned book to earlier encounters just as its battle body can.
+        var sharedRasters = scenes.SelectMany(scene => scene.Rasters)
             .Where(pair => pair.Key.StartsWith("kiwi-breath/", StringComparison.Ordinal) ||
-                pair.Key.StartsWith("phoenix-wave/", StringComparison.Ordinal))
+                pair.Key.StartsWith("phoenix-wave/", StringComparison.Ordinal) ||
+                pair.Key.StartsWith("identity-icon.spell.", StringComparison.Ordinal))
             .DistinctBy(pair => pair.Key).ToArray();
         var sprites = scenes.SelectMany(scene => scene.FieldDeath?.AllySprites ?? new Dictionary<int, int>())
             .Where(pair => source.Allies.ContainsKey((byte)pair.Key)).DistinctBy(pair => pair.Key)
@@ -96,7 +99,7 @@ internal static class PrivateWorldEncounterReader
         return scenes.Select(scene =>
         {
             var rasters = scene.Rasters.ToDictionary();
-            foreach (var pair in attackEffects) rasters.TryAdd(pair.Key, pair.Value);
+            foreach (var pair in sharedRasters) rasters.TryAdd(pair.Key, pair.Value);
             var allies = scene.Allies.ToDictionary();
             var weapons = scene.Equipment!.ToDictionary();
             var actorVisuals = (scene.AllyAppearances ?? new Dictionary<(ActorRef Actor, BattleClassRule Class, int Item), BattleSceneActorVisual>()).ToDictionary();

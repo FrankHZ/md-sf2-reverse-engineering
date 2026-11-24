@@ -34,7 +34,8 @@ internal static class BattleContinuationRestore
             data.Cursor, data.Gold, policy, data.Regions is null ? null : new(data.Regions.Flags, data.Regions.Tested),
             itemCustody: new(data.Custody.OnceFlags, data.Custody.Deals, data.Custody.Depot), deathCredit: data.DeathCredit is null ? null : data.DeathCredit with { }, visuals: visuals);
         Require(actors.Where(actor => MuddleRules.Present(actor.Status) && actor.Hp > 0 && actor.Position is not null)
-            .All(actor => MuddleRules.SupportedRankOne(actor.Status, definition.Poison) && MuddleRules.CanTurn(battle, actor)),
+            .All(actor => SilenceRules.SupportedInBattle(actor.Status, definition.Poison) &&
+                MuddleRules.CanTurn(battle, actor, actor.Status)),
             "muddle-control");
         return battle;
     }
@@ -93,7 +94,7 @@ internal static class BattleContinuationRestore
         var progress = saved.Progress;
         Require(saved.Facing <= 3 && saved.Hp <= (progress?.MaxHp ?? definition.MaxHp) &&
             saved.Mp <= (progress?.MaxMp ?? definition.MaxMp) && saved.Exp is null or <= 200 &&
-            saved.Kills is null or <= 9999 && saved.Defeats is null or <= 9999 && MuddleRules.SupportedRankOne(saved.Status), "actor-range");
+            saved.Kills is null or <= 9999 && saved.Defeats is null or <= 9999 && SilenceRules.SupportedInBattle(saved.Status), "actor-range");
         if (progress is not null)
             Require(definition.Growth is not null && progress.Level is >= 1 and <= 99 && progress.MaxHp is > 0 and <= 200 &&
                 progress.MaxMp <= 200 && progress.BaseAttack <= 200 && progress.Defense <= 200 && progress.Agility <= 100 &&

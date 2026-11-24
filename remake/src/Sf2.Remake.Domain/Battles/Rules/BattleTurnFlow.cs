@@ -28,8 +28,7 @@ internal static class BattleTurnFlow
         var initial = new EngineBattleState(definition, actors, start.MainSeed, start.ThinkingSeed, 0, [], 0, start.Gold, start.NewBattle,
             regions: definition.Initialization is null ? null : new(new bool[16], 0), itemCustody: start.ItemCustody, visuals: start.Visuals, deathCredit: start.DeathCredit);
         if (start.NewBattle is not null) initial = BattleInitializationRules.Initialize(initial, start);
-        Require(initial.Actors.Where(actor => MuddleRules.Present(actor.Status) && actor.Hp > 0 && actor.Position is not null)
-            .All(actor => MuddleRules.CanTurn(initial, actor)), "actor-status", "start.actors.status", true);
+        Require(initial.Actors.All(actor => MuddleRules.CanTurn(initial, actor, actor.Status)), "actor-status", "start.actors.status", true);
         return initial.Visuals is { } visuals ? initial.With(visuals: visuals.ProjectStart(initial.Actors)) : initial;
     }
 
@@ -80,7 +79,7 @@ internal static class BattleTurnFlow
             Require(start.DeathCredit is not null, "poison-death-context", "start.firstAlly", true);
             Require(start.DeathCredit!.Ally is not { } first || definition.Deployments.Any(d => d.Actor == first && d.Faction == BattleFaction.Ally),
                 "death-first-ally-context", "start.firstAlly", true);
-            Require(start.Actors.All(a => MuddleRules.SupportedRankOne(a.Status)), "poison-status", "start.actors.status", true);
+            Require(start.Actors.All(a => SilenceRules.SupportedInBattle(a.Status)), "poison-status", "start.actors.status", true);
         }
         Sf2.Remake.Domain.Gameplay.Sf2.HealingTargetRules.ValidateAura(definition);
         BattleInitializationRules.Validate(definition, start);
@@ -96,7 +95,7 @@ internal static class BattleTurnFlow
             var loadout = input.SourceLoadout ?? input.Progress?.SourceLoadout ?? actor.SourceLoadout;
             bool hasMuddle = (input.Status & MuddleRules.Mask) != 0;
             bool supportedStatus = hasMuddle
-                ? MuddleRules.SupportedRankOne(input.Status, definition.Poison || start.NewBattle is not null)
+                ? SilenceRules.SupportedInBattle(input.Status, definition.Poison || start.NewBattle is not null)
                 : SilenceRules.Supported(input.Status, definition.Poison);
             if (actor.Equipment is not null)
             {

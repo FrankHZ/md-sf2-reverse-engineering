@@ -57,7 +57,7 @@ internal static class BattleInitializationRules
         {
             bool ally = definition.Deployments.Any(row => row.Actor == input.Actor && row.Faction == BattleFaction.Ally);
             bool sleepingCasualty = ally && input.Hp == 0 && (input.Status & ~0xC0) == 0;
-            bool muddledCarry = ally && MuddleRules.Present(input.Status) && MuddleRules.SupportedRankOne(input.Status);
+            bool muddledCarry = ally && MuddleRules.Present(input.Status) && SilenceRules.SupportedInBattle(input.Status);
             Require((input.Status & ~7) == 0 || sleepingCasualty || muddledCarry,
                 "new-battle-status-refresh", "start.actors.status", true);
             Require(input.PositionOverride is null, "initialization-placement-override", "start.actors.positionOverride", true);
