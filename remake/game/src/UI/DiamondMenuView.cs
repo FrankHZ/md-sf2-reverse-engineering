@@ -37,7 +37,7 @@ internal sealed partial class DiamondMenuView : Control
     {
         DiamondMenuGeometry.Arrange(_diamond, _commands);
         for (int i = 0; i < _commands.Length; i++)
-        { _commands[i].Available = available is null || available[i]; _commands[i].RefreshCaption(); _commands[i].SetSelection(i == index, input.Settings.ReducedFlash); }
+        { _commands[i].Available = available is null || available[i]; _commands[i].RefreshCaption(); _commands[i].SetSelection(i == index, input.Settings); }
         _title.Text = title; _selection.Text = _commands[index].Caption; _hint.Text = hint;
         _back.Text = input.CompactHint(GameAction.Cancel) + " · " + GameText.Get(backKey);
         float y = 24;

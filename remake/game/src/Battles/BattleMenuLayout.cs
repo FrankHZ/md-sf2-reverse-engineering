@@ -58,8 +58,8 @@ internal sealed partial class BattleMenuLayout : Control
 
     internal void ConfigureAssets(BattleSceneDefinition? content)
     {
-        Icons.Configure(content?.Rasters);
-        UI.MenuRasterTextures.Configure(Commands, content?.Rasters, "command-menu.", "command-menu");
+        Icons.Configure(content?.Rasters, content?.HdRasters);
+        UI.MenuRasterTextures.Configure(Commands, content?.Rasters, "command-menu.", "command-menu", content?.HdRasters);
     }
 
     public override void _Ready()

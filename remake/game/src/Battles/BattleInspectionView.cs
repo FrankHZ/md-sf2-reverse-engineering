@@ -35,7 +35,7 @@ internal sealed partial class BattleInspectionView : Control
     internal void ConfigureOptions(Sf2.Remake.Application.Content.Scenarios.BattleSceneDefinition? scene)
     {
         _optionsError = null;
-        try { _options.Configure(scene?.Rasters, "battlefield-menu."); }
+        try { _options.Configure(scene); }
         catch (InvalidOperationException error) { _optionsError = error.Message; }
     }
     private int _optionIndex;

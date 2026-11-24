@@ -34,7 +34,8 @@ together. The active package is the set selected in the launch process.
 | **Pre-voyage companion candidate** · `derived/issue2174/pre-voyage-map3-companion-v1` | Complete selection for the HD rollout. Carries the same Map3 L1 centers and neighborhoods in one world-relative file. [Rebuild, admission and native comparison](#map3-terrain-companion-2174) |
 | **Pre-voyage static terrain** · `derived/issue2175/pre-voyage-terrain-v1` | Complete field and tactical selection with twenty L1 banks and the original Map3 companion. [Production and live checks](#pre-voyage-static-terrain-2175) |
 | **Pre-voyage actors and portraits** · `derived/issue2176/pre-voyage-actors-v1` | Complete terrain selection plus switchable shared actor/alternate and portrait banks. [Production and live checks](#pre-voyage-actors-and-portraits-2176) |
-| **Pre-voyage battle artwork** · `derived/issue2177/pre-voyage-battle-v1` | Current complete HD selection: preserves the actor/terrain package and adds eight close-up banks plus shared allied body/weapon donors. UI/entry and map tile animation retain their previous coverage. [Production](#derive-selected-battle-rasters) · [Actual consumers](hd-rollout.md#private-battle-artwork-acceptance) |
+| **Pre-voyage battle artwork** · `derived/issue2177/pre-voyage-battle-v1` | Complete actor/terrain selection with eight close-up banks and shared allied body/weapon donors. Source package for the UI variants. [Production](#derive-selected-battle-rasters) · [Actual consumers](hd-rollout.md#private-battle-artwork-acceptance) |
+| **Pre-voyage UI rasters** · `derived/issue2178/pre-voyage-ui-v1` | Complete battle artwork selection plus world and eight scene UI banks. [Production](#pre-voyage-ui-rasters-2178) · [Actual consumers](hd-rollout.md#ui-raster-consumers-2178) |
 | **PGNT** · `derived/issue1957/pgnt-v3` | Separate registered later progression/Battle26 witness. Its older Map3 HD bank has no L1 contexts and its cue 12 is the defeat placeholder. Preserve that evidence selection. Check resource lineage when proposing a successor that combines later progression with pre-voyage corrections. [PGNT reproduction](../development-and-verification.md#high-rank-elemental-magic-observation) |
 | **Display catalogs** · `derived/issue1957/catalogs-v1`, `derived/issue2001/catalogs-v1` | Independent prepared Chinese name overlays for the owning reproductions. Match the catalog and entry locale to the named reproduction. A catalog supplies display names and does not select world, scene or media. [PGNT catalog selection](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Retail catalog selection](presentation-assets.md#sleep-display-name) |
 | **Retail base and library** · `derived/issue2001/issue1966-original`, private asset Git `runtime/retail-v1` | Base world/entry provenance and preparation outputs used to assemble packages. Some prepared candidates have no current package binding. [Retail preparation](#retail-original-preparation) |
@@ -748,3 +749,61 @@ then `--check` for an existing publication. Both copies contain the same relativ
 After making all producer package directories unavailable, the published selection independently
 passed BLAST1/death and HEAL/Settings observations. No producer scratch is a runtime dependency.
 The [native reproduction](hd-rollout.md#private-battle-artwork-acceptance) names the exact short inputs.
+
+
+## Pre-voyage UI rasters (#2178)
+
+The `runtime/retail-v1` prepared `icons` and `ui` indexes resolve the semantic IDs, palette and
+normal/selected source slots. [Original mounting](presentation-assets.md#bounded-source-to-consumer-inventory)
+owns the exact joins. The UI producer uses the already admitted Original payloads from
+`derived/issue2177/pre-voyage-battle-v1`, including each scene's own selected raster. That
+closed package supplies every input raster. All new banks use the same Original resource names.
+
+The world admits 204 identity states (including the mounted Unarmed pair) and four eight-state
+command families. The eight pre-voyage render documents each admit 211 UI raster bindings. The
+other 18 render scenes remain outside this production selection. The bounded producer uses the
+pinned graphics filter at the native grid, preserves source alpha and opaque-black masks and
+nearest doubles the result to four pixels per source pixel. The single-cell cursor uses nearest
+4× to retain the tiny marks and overhang. Each family uses one treatment for both states. The
+existing two world herb variants are carried byte for byte from the accepted base.
+
+From the owning worktree, set `$gfx` to the clean graphics checkout at
+`172662709b31cb296b55f51894754ce810c30f6c` and run:
+
+```powershell
+. ./local/private-inputs.ps1
+uv sync --locked
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2177/pre-voyage-battle-v1'
+$candidate = Join-Path $PWD 'local/issue2178/pre-voyage-ui-v1'
+$scenes = @('main-scenes.json',
+    'inputs/scene02-field-01/shrine-mounted-scenes.json',
+    'inputs/scene03-field-03/shrine-mounted-scenes.json',
+    'inputs/scene04/shrine-mounted-scenes.json', 'inputs/scene05/shrine-mounted-scenes.json',
+    'inputs/scene06-cast/shrine-mounted-scenes.json',
+    'inputs/scene07-cast/shrine-mounted-scenes.json', 'inputs/scene08/shrine-mounted-scenes.json')
+$sceneArgs = foreach ($scene in $scenes) { '--scene'; $scene }
+uv run --locked --with pillow==11.3.0 python -B -m sf2tool.remake_hd_identity_icons `
+    --base $base --gfx-root $gfx @sceneArgs --out-dir $candidate
+```
+
+Production is serial: one parsed world and scene at a time, with shared source envelopes reused
+across the selected banks. Work scales with unique pixels processed and bytes copied. Use the
+existing 512 MiB staged-output allowance, a fresh worktree-local directory and 1 GiB of disk
+headroom after staging. Existing limits are 120 MiB planned world output (128 MiB admission) and
+4 MiB per scene. Decode residency for each complete bank is bounded by its dimensions, about
+5.91 MiB for the world and 5.17 MiB for one tactical bank before driver allocation. Separate
+views own their textures; these figures are per bank.
+
+**Confirmed:** the main-scene pilot added 440,772 bytes. Full production took approximately
+2.55 seconds and emitted a 359,189,445-byte closure, including a 97,892,927-byte world. The largest
+selected scene was 1,891,742 bytes and the largest scene in the full closure remained 3,224,271
+bytes. The original selects and previously installed variants are equal after removing the
+1,922 new declarations. All 159 other files are byte-identical to the base. Direct decoding
+confirmed dimensions, exact alpha and opaque-black masks, and source-palette containment for
+each new declaration. Peak offline working set and GPU residency remain **Unknown**.
+
+Publish through the [closed-package copier](presentation-assets.md#reuse-a-closed-private-package),
+selecting `$candidate` as the source of all four inputs and
+`derived/issue2178/pre-voyage-ui-v1` as the fresh shared destination. Verify with `--check`.
+Use the published world, scene, entry and six opening inputs together for the
+[consumer observation](hd-rollout.md#ui-raster-consumers-2178).

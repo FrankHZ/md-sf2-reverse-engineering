@@ -277,8 +277,13 @@ internal static class BattleSceneContentReader
             Require(originals.TryGetValue(row.Name, out var original), "scene-hd-original", field);
             var variant = ExplorationAssetReader.Raster(row.Value);
             int factor = variant.Width / original!.Width;
-            Require(factor is 2 or 4 && variant.Width == original.Width * factor &&
-                variant.Height == original.Height * factor, "scene-hd-raster-shape", field);
+            bool ui = row.Name.StartsWith("identity-icon.", StringComparison.Ordinal) ||
+                row.Name.StartsWith("command-menu.", StringComparison.Ordinal) ||
+                row.Name.StartsWith("battlefield-menu.", StringComparison.Ordinal) ||
+                row.Name.StartsWith("battle-cursor.", StringComparison.Ordinal);
+            Require(ui ? IdentityIconReader.IsHdShape(original, variant) :
+                factor is 2 or 4 && variant.Width == original.Width * factor && variant.Height == original.Height * factor,
+                "scene-hd-raster-shape", field);
             Require(variants.TryAdd(row.Name, variant), "scene-duplicate-resource", field);
         }
         return variants.AsReadOnly();

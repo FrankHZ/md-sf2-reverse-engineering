@@ -1,5 +1,6 @@
 using Godot;
 using Sf2.Remake.GodotAdapter.Localization;
+using Sf2.Remake.GodotAdapter.Input;
 
 namespace Sf2.Remake.GodotAdapter.UI;
 
@@ -33,7 +34,10 @@ internal sealed partial class DiamondCommandButton : Control
     internal bool Selected { get; private set; }
     internal bool Available { get; set; }
     private readonly Label _label;
-    private ImageTexture? _normal, _selected;
+    private ImageTexture? _normal, _selected, _hdNormal, _hdSelected;
+    private ImageTexture? _drawnTexture;
+    private bool _hd;
+    private bool UseHd => _hd && _hdNormal is not null;
     private int _pixelScale = 1;
     private string? _drawnResource;
     private bool _drawnExtraFrame;
@@ -42,8 +46,10 @@ internal sealed partial class DiamondCommandButton : Control
     private int _drawnOffsetY;
     private int FocusOffsetY => _focusRemaining > 0.12 ? -4 : _focusRemaining > 0.06 ? -2 : _focusRemaining > 0 ? -1 : 0;
 
-    internal void SetSelection(bool selected, bool reducedFlash)
+    internal void SetSelection(bool selected, InputSettings settings)
     {
+        bool reducedFlash = settings.ReducedFlash;
+        _hd = settings.GraphicsMode == "hd";
         // Only a new focus starts the short modern emphasis; refresh/idle never restarts it.
         if (selected != Selected) { _frameTime = 0; _focusRemaining = selected && !reducedFlash && !IconOnly ? 0.18 : 0; }
         _reducedFlash = reducedFlash;
@@ -79,14 +85,20 @@ internal sealed partial class DiamondCommandButton : Control
     public override void _Ready() => AddChild(_label);
     protected override void Dispose(bool disposing)
     {
-        if (disposing) { _normal?.Dispose(); _selected?.Dispose(); }
+        if (disposing) ReleaseArt();
         base.Dispose(disposing);
     }
-    internal void SetArt(ImageTexture? normal, ImageTexture? selected)
+    private void ReleaseArt()
     {
-        _normal?.Dispose(); _selected?.Dispose();
-        _normal = normal; _selected = selected; _drawnResource = null;
-        _label.Visible = !IconOnly && !CaptionBeside && (normal is null || CaptionOverride is not null); QueueRedraw();
+        _normal?.Dispose(); _selected?.Dispose(); _hdNormal?.Dispose(); _hdSelected?.Dispose();
+    }
+
+    internal void SetArt(ImageTexture? normal, ImageTexture? selected, ImageTexture? hdNormal, ImageTexture? hdSelected)
+    {
+        ReleaseArt();
+        _normal = normal; _selected = selected; _hdNormal = hdNormal; _hdSelected = hdSelected;
+        _drawnResource = null; _drawnTexture = null;
+        RefreshCaption();
     }
     internal void Arrange()
     {
@@ -95,7 +107,11 @@ internal sealed partial class DiamondCommandButton : Control
     }
     internal object ObserveArt() => new { shape = "square", mounted = _normal is not null,
         resource = _drawnResource,
-        width = _normal?.GetWidth(), height = _normal?.GetHeight(), scale = _pixelScale,
+        width = (UseHd ? _hdNormal : _normal)?.GetWidth(), height = (UseHd ? _hdNormal : _normal)?.GetHeight(),
+        texture = _drawnTexture is { } texture
+            ? unchecked((long)texture.GetInstanceId()).ToString(System.Globalization.CultureInfo.InvariantCulture) : null,
+        variant = UseHd ? "hd" : _normal is null ? "text" : "original",
+        scale = _pixelScale,
         captionRect = new { x = _label.GetGlobalRect().Position.X, y = _label.GetGlobalRect().Position.Y,
             width = _label.GetGlobalRect().Size.X, height = _label.GetGlobalRect().Size.Y },
         captionMinimumWidth = _label.GetMinimumSize().X, captionMinimumHeight = _label.GetMinimumSize().Y,
@@ -108,7 +124,9 @@ internal sealed partial class DiamondCommandButton : Control
         var offset = new Vector2(0, _drawnOffsetY);
         _label.Position = offset;
         bool selectedFrame = Selected && (!IconOnly || _reducedFlash || _frameTime < 0.25);
-        var texture = CaptionOverride is not null ? null : selectedFrame ? _selected : _normal;
+        var texture = selectedFrame ? (UseHd ? _hdSelected : _selected) : (UseHd ? _hdNormal : _normal);
+        if (CaptionOverride is not null) texture = null;
+        _drawnTexture = texture;
         _drawnExtraFrame = texture is null && !IconOnly;
         _drawnResource = null;
         if (texture is not null)

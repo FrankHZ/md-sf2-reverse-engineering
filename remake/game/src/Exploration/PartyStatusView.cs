@@ -57,7 +57,7 @@ internal sealed partial class PartyStatusView : Control
 
     internal void Present(GameSession session, GameInput input)
     {
-        _icons.Mode = input.Settings.GraphicsMode;
+        _icons.Preferences = input.Settings;
         if (!Open) return;
         _page.Visible = !_actions.Open;
         if (_actions.Open) { _actions.Present(); return; }

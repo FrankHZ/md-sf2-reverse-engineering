@@ -1,6 +1,8 @@
 using Godot;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
+using Sf2.Remake.GodotAdapter.Exploration;
+using Sf2.Remake.GodotAdapter.Input;
 
 namespace Sf2.Remake.GodotAdapter.UI;
 
@@ -10,7 +12,8 @@ internal sealed class IdentityIcons : IDisposable
     private readonly Dictionary<string, ImageTexture> _textures = new(StringComparer.Ordinal);
     private readonly Dictionary<string, ImageTexture> _hd = new(StringComparer.Ordinal);
     private bool _required;
-    internal string Mode { get; set; } = "original";
+    internal InputSettings? Preferences { private get; set; }
+    internal string Mode => Preferences?.GraphicsMode ?? "original";
     internal bool Mounted => _required;
     internal string? Error(string? identity) => identity is not null && _required &&
         (!_textures.ContainsKey(identity + ".normal") || !_textures.ContainsKey(identity + ".selected")) ? "identity-icon-binding-required" : null;
@@ -44,22 +47,22 @@ internal sealed class IdentityIcons : IDisposable
         foreach (var (key, raster) in rasters ?? new Dictionary<string, ExplorationRaster>())
         {
             if (!key.StartsWith("identity-icon.", StringComparison.Ordinal)) continue;
-            using var image = raster.Format == "rgba8"
-                ? Image.CreateFromData(raster.Width, raster.Height, false, Image.Format.Rgba8, raster.CopyBytes()) : new Image();
-            if (raster.Format != "rgba8" && image.LoadPngFromBuffer(raster.CopyBytes()) != Godot.Error.Ok ||
-                image.GetWidth() != width || image.GetHeight() != height)
+            if (raster.Width != width || raster.Height != height)
                 throw new InvalidOperationException("identity-icon-invalid");
+            using var image = ExplorationRasterImages.Open(raster, "identity-icon-invalid");
             output.Add(key, ImageTexture.CreateFromImage(image));
         }
     }
+    private bool UseHd(string identity) =>
+        Mode == "hd" && _hd.ContainsKey(identity + ".normal") && _hd.ContainsKey(identity + ".selected");
     internal string Variant(string? identity) => identity is null ? "text" :
-        Mode == "hd" && _hd.ContainsKey(identity + ".normal") ? "hd" :
+        UseHd(identity) ? "hd" :
         _textures.ContainsKey(identity + ".normal") ? "original" : "text";
     internal ImageTexture? Get(string? identity, bool selected)
     {
         if (identity is null) return null;
         string key = identity + (selected ? ".selected" : ".normal");
-        if (Mode == "hd" && _hd.TryGetValue(key, out var hd)) return hd;
+        if (UseHd(identity)) return _hd[key];
         return _textures.GetValueOrDefault(key);
     }
     public void Dispose()

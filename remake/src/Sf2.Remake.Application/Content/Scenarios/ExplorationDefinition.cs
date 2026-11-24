@@ -101,7 +101,11 @@ public sealed record ExplorationVisuals(IReadOnlyDictionary<MapId, ExplorationMa
     IReadOnlyDictionary<string, ExplorationRaster>? IdentityIcons = null,
     IReadOnlyDictionary<string, ExplorationRaster>? ItemMenu = null,
     IReadOnlyDictionary<string, ExplorationRaster>? ShopMenu = null,
-    IReadOnlyDictionary<string, ExplorationRaster>? HdIdentityIcons = null);
+    IReadOnlyDictionary<string, ExplorationRaster>? HdIdentityIcons = null,
+    IReadOnlyDictionary<string, ExplorationRaster>? HdChurchMenu = null,
+    IReadOnlyDictionary<string, ExplorationRaster>? HdFieldMenu = null,
+    IReadOnlyDictionary<string, ExplorationRaster>? HdItemMenu = null,
+    IReadOnlyDictionary<string, ExplorationRaster>? HdShopMenu = null);
 public enum ExplorationEventKind { Step, Interact, Warp, SourceZone, UseItem }
 public sealed record ExplorationEvent(ExplorationEventKind Kind, int? X, int? Y,
     EntityRef? Entity, ProgramLocation? Program, MapId? DestinationMap = null,

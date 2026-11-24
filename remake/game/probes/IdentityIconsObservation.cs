@@ -33,7 +33,7 @@ public sealed partial class IdentityIconsObservation : Control
         GameText.Bind(_session.Definition, System.Environment.GetEnvironmentVariable("SF2_DISPLAY_CATALOG"));
         AddChild(_menu);
         _menu.Arrange(new(1920, 1080));
-        _menu.ConfigureAssets(_session.ActiveBattleScenes, _session.Definition);
+        _menu.ConfigureAssets(_session.ActiveBattleScenes, _session.Definition, _input.Settings);
         return _session.Current.Selection?.Stage.ToString() ?? "no-player-selection";
     }
 

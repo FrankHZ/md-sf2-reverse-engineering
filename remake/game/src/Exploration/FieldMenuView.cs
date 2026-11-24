@@ -43,7 +43,7 @@ internal sealed partial class FieldMenuView : Control
         if (!_configured || !ReferenceEquals(_visuals, visuals))
         {
             _configured = true; _visuals = visuals; AssetError = null;
-            try { _menu.Configure(visuals?.FieldMenu); }
+            try { _menu.Configure(visuals?.FieldMenu, visuals?.HdFieldMenu); }
             catch (Exception error) when (error is InvalidOperationException or ArgumentException) { AssetError = error.Message; }
         }
         Entry.Visible = entry && !Open && AssetError is null;

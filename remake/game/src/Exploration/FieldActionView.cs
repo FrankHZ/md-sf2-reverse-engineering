@@ -85,11 +85,11 @@ internal sealed partial class FieldActionView : Control
         string field = "presentation.itemMenu";
         try
         {
-            menu.Configure("item-menu", visuals?.ItemMenu);
+            menu.Configure("item-menu", visuals?.ItemMenu, visuals?.HdItemMenu);
             if (menu == _prepare)
             {
                 field = "presentation.fieldMenu";
-                menu.Configure("field-menu", visuals?.FieldMenu);
+                menu.Configure("field-menu", visuals?.FieldMenu, visuals?.HdFieldMenu);
             }
         }
         catch (InvalidOperationException error)

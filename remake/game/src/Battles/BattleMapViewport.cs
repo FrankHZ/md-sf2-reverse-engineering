@@ -133,6 +133,7 @@ internal sealed partial class BattleMapViewport : Control
     internal void SelectTerrain(string mode)
     {
         _hd = mode == "hd";
+        _cursor?.SelectGraphics(_hd);
         foreach (var layer in _terrain) layer.SelectMode(mode == "hd");
         foreach (var (neutral, sprite) in _neutrals)
         {
@@ -184,8 +185,9 @@ internal sealed partial class BattleMapViewport : Control
         _inspectionFocus = null; _inspectionPan = null;
         _cursorRole = CursorRole.None;
         _cursor = new BattleInspectionCursor { Name = "CellCursor", Size = Vector2.One * CellSize, ZIndex = 3, Visible = false };
-        _cursor.Configure(_sceneContent?.Rasters);
         _board.AddChild(_cursor);
+        _cursor.Configure(_sceneContent);
+        _cursor.SelectGraphics(_hd);
         foreach (var neutral in _visuals is not null ? _sceneContent?.FieldDeath?.Neutrals ?? [] : [])
         {
             int direction = neutral.Facing switch { 1 => 0, 3 => 2, _ => 1 };

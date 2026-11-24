@@ -50,16 +50,24 @@ internal static class IdentityIconReader
         return new System.Collections.ObjectModel.ReadOnlyDictionary<string, ExplorationRaster>(rasters);
     }
 
-    // The first admitted HD family is one field item, separate from battle/base rasters.
-    internal static IReadOnlyDictionary<string, ExplorationRaster>? ReadHd(JsonElement presentation,
+    internal static IReadOnlyDictionary<string, ExplorationRaster>? ReadHd(JsonElement presentation, string property,
         IReadOnlyDictionary<string, ExplorationRaster>? originals)
     {
-        if (!presentation.TryGetProperty("hdIdentityIcons", out var value)) return null;
-        string[] keys = ["identity-icon.item.0.normal", "identity-icon.item.0.selected"];
-        Object(value, "presentation.hdIdentityIcons", keys);
-        var rasters = keys.ToDictionary(key => key, key => ExplorationAssetReader.Raster(value.GetProperty(key)), StringComparer.Ordinal);
-        Require(rasters.Values.All(raster => raster.Width == 64 && raster.Height == 96), "hd-identity-icon-shape", "presentation.hdIdentityIcons");
-        Require(originals is not null && keys.All(originals.ContainsKey), "hd-identity-icon-baseline", "presentation.hdIdentityIcons");
-        return new System.Collections.ObjectModel.ReadOnlyDictionary<string, ExplorationRaster>(rasters);
+        if (!presentation.TryGetProperty(property, out var value)) return null;
+        string field = "presentation." + property;
+        Require(value.ValueKind == JsonValueKind.Object, "object-required", field);
+        var variants = new Dictionary<string, ExplorationRaster>(StringComparer.Ordinal);
+        foreach (var row in value.EnumerateObject())
+        {
+            var original = originals?.GetValueOrDefault(row.Name);
+            Require(original is not null, "ui-hd-original", field);
+            var variant = ExplorationAssetReader.Raster(row.Value);
+            Require(IsHdShape(original!, variant), "ui-hd-raster-shape", field);
+            Require(variants.TryAdd(row.Name, variant), "ui-hd-duplicate-resource", field);
+        }
+        return variants.AsReadOnly();
     }
+
+    internal static bool IsHdShape(ExplorationRaster original, ExplorationRaster variant) =>
+        variant.Width == original.Width * 4 && variant.Height == original.Height * 4;
 }
