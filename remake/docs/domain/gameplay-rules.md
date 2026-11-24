@@ -8,7 +8,7 @@ battles through Battle26 and the named authored cases. Keep the existing High-ri
 and save agreements where the review crosses them. Dispatch each slice separately after its
 prerequisites are dispositioned. The cases below are review questions, with retained evidence
 identified where available. The identity, movement, action transaction and casualty reviews are
-complete. Status lifetime and save/restore remain pending.
+complete. Status lifetime and recovery are reviewed. Save/restore remains pending.
 [Campaign boundary](../capability-status.md#campaign-feature-trace)
 
 **Shared boundary.** Content admits definitions, deployments and bindings. The session owns the
@@ -44,20 +44,12 @@ the admitted settled state through the same rules.
    exploration. The review corrected death cleanup for casualties already hidden by the scene
    return table. The ordinary carrier, ally half-EXP and leader-loss controls cover the adjacent
    settlement rules. [Review and reproduction](#casualty-reward-custody-and-outcome-review)
-5. **Status lifetime and recovery.** Use the surviving queue owner from settlement to trace
-   effect application, refresh, skip, decrement, expiry and renewed control. A living ally with
-   SLEEP, MUDDLE and SILENCE on consecutive entries in the same round can skip the first,
-   expire MUDDLE between the other two checks and accept manual input on the second. A
-   per-round tick or a counter owned by the view would produce a different turn. Compare the
-   packed word and last-applied stat operands with one stat refresh witness. Stop after the
-   mixed-status entry pair and one recovery boundary distinguish processed casualties, living
-   returnees and the existing controlled fallen-ally Raise and fresh-entry case. Use the
-   same state authority for admitted spell, item and physical effects.
-   [Original after-turn order](../../../docs/design/contracts/battle/battle-control-lifecycle.md#post-action-and-after-turn-order) ·
-   [Status and stat refresh contract](support-spell-status-design.md#when-the-stats-change) ·
-   [After-turn continuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAfterTurnContinuation.cs) ·
-   [Mixed-status cases](../../tests/Sf2.Remake.Engine.Tests/MuddleTurnTests.cs) ·
-   [Fresh entry and recovery evidence](hostile-spells-design.md#public-rank-2-admission)
+5. **Status lifetime and recovery — reviewed.** A sleeping ally skips its first entry, clears
+   MUDDLE during recovery and takes manual control of its second entry in the same round.
+   SILENCE processes at both entry boundaries. A failed BOOST recast on a teammate leaves
+   the last-applied stats in use until the teammate finishes its own entry. Fresh battle
+   recovery now rebuilds ATT for eligible allies after clearing the temporary status word.
+   [Review and reproduction](support-spell-status-design.md#status-lifetime-and-recovery-review)
 6. **Save, restore and first consumer.** Close the review with one settled player Movement
    save carrying a partly consumed queue, another actor's active rank-2 word, a cleaned slot
    and both RNG words. Reuse the controlled Battle25 cold Continue. Compare with a busy
