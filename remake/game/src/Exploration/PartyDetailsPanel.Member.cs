@@ -1,9 +1,37 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.UI;
 
 namespace Sf2.Remake.GodotAdapter.Exploration;
 
 internal sealed partial class PartyDetailsPanel
 {
+    private void ConfigureMemberReaders()
+    {
+        _magicTitle.FocusMode = _itemsTitle.FocusMode = FocusModeEnum.All;
+        _magicTitle.FocusEntered += () => FocusPane = 1;
+        _itemsTitle.FocusEntered += () => FocusPane = 2;
+        foreach (var (title, pane) in new[] { (_magicTitle, 1), (_itemsTitle, 2) })
+        {
+            var button = ButtonFor!(null, () => ReadingControl(pane).GrabFocus());
+            title.AddChild(button);
+            button.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        }
+        var reader = MemberPageButton.Stack(_spells);
+        reader.SizeFlagsVertical = SizeFlags.ExpandFill;
+        reader.AddChild(ButtonFor!(_magic, () => _magicTitle.GrabFocus()));
+        _magic.AddChild(reader);
+        _description.EnableGuiScroll();
+    }
+
+    internal Control ReadingControl(int pane, int? slot = null) => pane == 1 ? _magicTitle :
+        _slotCount > 0 ? _itemRows[slot ?? ItemSlot].Row : _itemsTitle;
+
+    internal void MoveSlotFocus(int step)
+    {
+        if (_slotCount > 0)
+            ReadingControl(2).FindValidFocusNeighbor(step < 0 ? Side.Top : Side.Bottom)?.GrabFocus();
+    }
+
     private void BuildMemberSheet(CenterContainer portrait)
     {
         var inset = new MarginContainer();

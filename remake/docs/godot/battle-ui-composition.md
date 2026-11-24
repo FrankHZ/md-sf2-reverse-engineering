@@ -372,6 +372,49 @@ shutdown. Verbose output identified `AudioStreamWAV` and `AudioStreamPlaybackWAV
 [Audio lifetime boundary](../verification/host.md#audio-resource-lifetime-observation).
 Physical-device and human comfort remain **Unknown**.
 
+#### Native member input
+
+Use the [shared roster commands](#reproduce-the-shared-roster) with the locked Debug adapter.
+For `member-large` select `SF2_INSPECTION_ROUTE=pad` and select the following English
+version-1 settings. This exercises the installed mapping and an unmapped default UI key.
+
+```json
+{"formatVersion":1,"language":"en","textMode":"instant","bindings":{
+  "up":   {"keys":["F7"], "buttons":["DpadDown"], "axes":[]},
+  "down": {"keys":["F6"], "buttons":["DpadUp"],   "axes":[]}
+}}
+```
+
+**Confirmed.** In the 14-member battle, Down on the unmapped keyboard arrow leaves focus on the
+first row. Pressing a different row retains the current actor until release. Slot four regains actual
+viewport focus after host Menu Back and retains it while the roster wheel scrolls and a mapped Right wraps to the first actor. The
+previous arrow returns to the last actor with slot focus intact. Clicking Spells transfers focus
+to its reader. The held-direction footer return stays on Options, and releasing an older member
+press over the returned board leaves Cursor in place. The observer compares revision, turn,
+positions, inventories and both seeds with the initial battle signature. The registered empty
+roster can cycle panes and return to Options.
+
+Use [Map66](#reproduce-registered-portraits) with the Chinese catalog and pad selection above.
+After real Prepare Back, the observer detaches and reattaches the same member layer. It reads
+the actual focused row and the summary texture borrowed from that row, and checks the window
+subscription count. Window exit during an arrow press cancels it. One fresh click switches to
+the next member, and a complete right-click over that arrow closes the sheet.
+
+For appearance, use the [production preview command](#reproduce-the-native-member-layout).
+At 1600×900, English and Chinese F8 show the long name, retained conditions, all four slots and
+the fourth slot's effect. The second empty slot clears that text. F5 shows the selected row,
+accounting and separate Prepare and Close actions. Ordinary gameplay checks use input and state.
+
+The pilot rejected an invalid input-settings field. A clean scratch
+needed locked restore before the Debug build. The corridor fixture requires the actor's top-level
+`move` and nested `physical.movementType`. An extended member observation initially expected
+slot four after changing actors in Spells. Re-enter Items and select slot four before testing the
+wrap to an empty slot. Host Menu Back initially restored slot focus but logged a Godot `_can_process` error while the
+host propagated its process mode. The page now restores focus on its next processing frame.
+These corrected cases passed. The registered empty roster and Map66 can
+report the known two-object audio shutdown warning. [Audio boundary](../verification/host.md#audio-resource-lifetime-observation).
+Live membership removal during a paused read and physical-device comfort remain **Unknown**.
+
 #### Reproduce registered portraits
 
 Use the same Debug adapter, disposable saves, original graphics mode, and fresh output/settings

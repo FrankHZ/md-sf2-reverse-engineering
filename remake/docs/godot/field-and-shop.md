@@ -334,6 +334,12 @@ observed 500 → 490 → 497 in both languages. The existing battle Member obser
 and returned to the retained roster. Larger content and physical device or human visual review
 remain **Unknown**.
 
+**Confirmed with native member input.** The 14-member `member-field` route uses a mapped pad and
+the keyboard, rejects a row drag out and back in, and opens Prepare from the last visible row.
+Back restores that actor at the retained nonzero roster scroll. The capacity route reads all four
+slots, including the long equipped/damaged item, then returns from Prepare to the same slot.
+For real Prepare and a same-instance remount, use the [Map66 input observation](battle-ui-composition.md#native-member-input).
+
 ### Hassan Deals and cold Continue
 
 **Confirmed, bounded native.** Continue a disposable copy of the registered #1941 Hassan

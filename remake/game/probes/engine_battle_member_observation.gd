@@ -47,6 +47,10 @@ func detail(actor: String) -> bool:
     await act("target")
     return true
 
+func has_focus(control_name: StringName) -> bool:
+    var owner := root.gui_get_focus_owner()
+    return owner != null and owner.name == control_name
+
 func roster_pointer(rect: Dictionary, button: MouseButton, pressed: bool) -> void:
     var event := InputEventMouseButton.new()
     event.position = root.get_stretch_transform() * Vector2(rect.x + rect.width / 2, rect.y + rect.height / 2)
@@ -82,6 +86,10 @@ func authored_roster() -> bool:
             and rows.all(func(row): return not row.portrait and row.available),
             "Shared rows preserve battle order, focus and optional portrait space"): return false
     if large:
+        if not InputMap.action_get_events("sf2_down").any(func(event): return event is InputEventKey and event.keycode == KEY_DOWN):
+            await tap(KEY_DOWN)
+            if not check(state().inspection.memberIndex == 0 and has_focus("Member0"),
+                    "Default UI Down cannot bypass the installed binding"): return false
         if not check(rows[0].lines > 1 and rows[0].name.length() >= 60
                 and rows[1].condition == "Defeated" and rows[2].condition == "Absent",
                 "Long identity wraps and retained conditions differ"): return false
@@ -96,7 +104,10 @@ func authored_roster() -> bool:
             var previous: int = state().inspection.memberIndex
             await roster_pointer(rect, MOUSE_BUTTON_LEFT, false)
             if not check(state().inspection.memberIndex == previous, "Orphan release cannot switch member"): return false
+            var focus_before := root.gui_get_focus_owner()
             await roster_pointer(rect, MOUSE_BUTTON_LEFT, true)
+            if not check(root.gui_get_focus_owner() == focus_before and state().inspection.memberIndex == previous,
+                    "Mouse press retains actual focus and detail identity"): return false
             await roster_pointer(rect, MOUSE_BUTTON_LEFT, false)
             if not await inspect_page("Members"): return false
             var selected: Dictionary = sample("retained-detail-" + str(index)).inspection
@@ -104,7 +115,7 @@ func authored_roster() -> bool:
                     and (selected.unit.Hp == 0) == (index == 1) and selected.roster.layout.items.entries.size() == 4
                     and not selected.roster.prepareVisible and selected.roster.preparation == null,
                     "Defeated and absent members open ordinary read-only details"): return false
-            if not check(selected.roster.rows[index].focused, "Pointer focuses the selected row"): return false
+            if not check(selected.roster.rows[index].focused and has_focus("Member" + str(index)), "Pointer focuses the selected row"): return false
         await roster_pointer(roster.rosterRect, MOUSE_BUTTON_WHEEL_DOWN, true)
         await roster_pointer(roster.rosterRect, MOUSE_BUTTON_WHEEL_DOWN, false)
         if not check(state().inspection.roster.rosterScroll > 0 and state().inspection.roster.rows[2].focused,
@@ -128,16 +139,59 @@ func authored_roster() -> bool:
     if not check(reading.layout.itemSlot == 3 and reading.index == roster.index and reading.rosterScroll == roster.rosterScroll
             and not reading.prepareVisible and reading.preparation == null, "Slot four can be read without entering a command"): return false
     if large:
-        if not check(not reading.layout.description.text.is_empty(), "Filled fourth slot describes its effect"): return false
+        var slot_focus := root.gui_get_focus_owner()
+        if not check(slot_focus != null and slot_focus.name == "Slot4", "Slot four owns native focus"): return false
+        await act("menu"); await act("cancel")
+        if not await inspect_page("Members"): return false
+        if not check(root.gui_get_focus_owner() == slot_focus and state().inspection.memberIndex == roster.index,
+                "Host cover returns to the same slot focus and actor"): return false
+        await roster_pointer(roster.rosterRect, MOUSE_BUTTON_WHEEL_UP, true)
+        await roster_pointer(roster.rosterRect, MOUSE_BUTTON_WHEEL_UP, false)
+        if not check(state().inspection.roster.rosterScroll < roster.rosterScroll and state().inspection.memberIndex == roster.index
+                and root.gui_get_focus_owner() == slot_focus, "Wheel reads the other pane and retains slot focus"): return false
+        await act("right")
+        if not check(state().inspection.memberIndex == 0 and root.gui_get_focus_owner() == slot_focus,
+                "Mapped Right changes actor and retains the focused slot"): return false
+        var arrow: Dictionary = state().inspection.roster.previousRect
+        await roster_pointer(arrow, MOUSE_BUTTON_LEFT, true)
+        await roster_pointer(arrow, MOUSE_BUTTON_LEFT, false)
+        if not check(state().inspection.memberIndex == roster.index and root.gui_get_focus_owner() == slot_focus,
+                "Previous arrow switches actor once without taking reading focus"): return false
+        var magic: Dictionary = state().inspection.roster.layout.magic.rect
+        await roster_pointer(magic, MOUSE_BUTTON_LEFT, true)
+        await roster_pointer(magic, MOUSE_BUTTON_LEFT, false)
+        var reader := root.gui_get_focus_owner()
+        if not check(reader != null and reader.name == "MagicTitle", "Clicking the spell reader moves actual focus to Spells"): return false
+        await act("left"); await act("right")
+        if not check(root.gui_get_focus_owner() == reader and state().inspection.memberIndex == roster.index,
+                "Actor navigation preserves the spell reader"): return false
+        await act("target")
+        await act("up")
+        reading = state().inspection.roster
+        if not check(reading.layout.itemSlot == 3 and not reading.layout.description.text.is_empty(),
+                "Filled fourth slot describes its effect"): return false
         await act("down"); await act("down")
         if not check(state().inspection.roster.layout.itemSlot == 1 and state().inspection.roster.layout.description.text.is_empty(),
                 "Empty slot clears the preceding item's description"): return false
     if not check(not board().movementRange.visible, "Member pages clear inspected movement"): return false
+    await send_action("left", true)
     await roster_pointer(roster.closeRect, MOUSE_BUTTON_LEFT, true)
     await roster_pointer(roster.closeRect, MOUSE_BUTTON_LEFT, false)
     if not await inspect_page("Options"): return false
+    await frames(12)
+    if not check(state().inspectionRelease and state().inspection.optionIndex == 0, "Pointer close drains the held mapped direction"): return false
+    await send_action("left", false)
+    await act("confirm")
+    if not await inspect_page("Members"): return false
+    await roster_pointer(state().inspection.roster.rows[0].rect, MOUSE_BUTTON_LEFT, true)
+    await act("cancel")
+    if not await inspect_page("Options"): return false
     await act("cancel")
     if not await inspect_page("Cursor"): return false
+    var cursor: Dictionary = state().inspection.cursor
+    await roster_pointer(roster.closeRect, MOUSE_BUTTON_LEFT, false)
+    if not check(state().inspection.page == "Cursor" and state().inspection.cursor == cursor,
+            "Release from the retired member page cannot select a board cell"): return false
     await act("cancel")
     return check(not state().inspection.active and state().failure == null and state().scene.error == null
         and board().cursorRole == "Movement", "Back returns healthy ordinary Movement") and purity(baseline, "authored members")
@@ -152,9 +206,7 @@ func portrait_texture(image: TextureRect, label: String) -> Texture2D:
 
 func roster_portrait(index: int, label: String) -> Texture2D:
     var row := view.find_child("Roster", true, false).get_node("Members/Member" + str(index))
-    var image: TextureRect
-    for child in row.get_children():
-        if child is TextureRect: image = child
+    var image := row.find_children("*", "TextureRect", true, false)[0] as TextureRect
     if not check(is_instance_valid(image) and image.size.x == 48 and image.size.y >= 64, label + ": portrait row geometry"):
         return null
     return portrait_texture(image, label)
@@ -193,8 +245,26 @@ func field_portraits() -> bool:
     if not check(not state().partyStatus.visible, "Field Party closes"): return false
     await tap(KEY_E)
     if not check(field_portrait(0, "field-reopen") == first, "Reopened field Party uses live first-row art"): return false
-    await act("cancel")
-    return check(not state().partyStatus.visible and state().failure == null, "Field Party closes cleanly again")
+    var page := view.find_child("MemberLayer", true, false)
+    var parent := page.get_parent()
+    var connections := root.mouse_exited.get_connections().size()
+    parent.remove_child(page)
+    parent.add_child(page)
+    await frames(5)
+    if not check(root.mouse_exited.get_connections().size() == connections and field_portrait(0, "remounted") != 0
+            and has_focus("Member0"), "Remount restores live focus, art and window subscription"): return false
+    var next: Dictionary = state().partyStatus.nextRect
+    await roster_pointer(next, MOUSE_BUTTON_LEFT, true)
+    root.mouse_exited.emit()
+    await roster_pointer(next, MOUSE_BUTTON_LEFT, false)
+    if not check(state().partyStatus.index == 0, "Window exit vetoes the remounted press"): return false
+    await roster_pointer(next, MOUSE_BUTTON_LEFT, true)
+    await roster_pointer(next, MOUSE_BUTTON_LEFT, false)
+    if not check(field_portrait(1, "remounted-fresh") != 0 and has_focus("Member1"),
+            "One fresh click switches once"): return false
+    await roster_pointer(next, MOUSE_BUTTON_RIGHT, true)
+    await roster_pointer(next, MOUSE_BUTTON_RIGHT, false)
+    return check(not state().partyStatus.visible and state().failure == null, "Matched right click closes over a child")
 
 func battle_portraits() -> bool:
     if not await enter_battle(): return false
