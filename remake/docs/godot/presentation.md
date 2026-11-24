@@ -3100,9 +3100,10 @@ open boundary; neither #1456 nor #1616 is signed off by these engineering observ
 
 ## Held exploration acceleration (#1619 A)
 
-**High rigor at the accepted timing boundary; exploration consumer.** Hold Shift for focused
-exploration at 1.5×; release the last acceleration binding to restore 1×. Both Shift locations and
-an optional mapped pad input share a transient hold. The
+**High rigor at the accepted timing boundary; exploration consumer.** Hold the installed Accelerate
+binding for focused exploration at the applied [Hold speed](host-ui.md#implemented-composition-and-return).
+The default is 1.5×. Both default Shift locations and optional mapped pad inputs share a
+transient hold. Releasing the last acceleration binding restores 1×. The
 [battle consumer below](#held-battle-acceleration-1619-bc) implements the other domain of
 [the accepted design](modernization-design.md#held-15-acceleration-1619).
 
@@ -3133,12 +3134,14 @@ settles at 1× with its existing 120-step guard. Rate/debt are not saved.
 
 Text cps, Speed's existing 0–3 labels/presets, suppression preferences, sample pitch/rate and music
 completion are unchanged. Fade envelopes may follow visual cues; finite sound/music still requires
-actual completion. Existing entry skip disarms this separate hold. EN/zh-CN Controls help describes
-both exploration and battle; there is no persistent speed setting or engine/content rule change.
+actual completion. Existing entry skip disarms this separate hold. English and Simplified Chinese
+Controls Help reads the applied rate from the same preferences as the clocks.
 
 The [native recipe and retained failures](../verification/field-programs.md#held-exploration-rate-1619-a)
-own observed scope. Matched logical opportunities/actions preserve state/RNG; equal real hold
-durations intentionally advance more NPC time and can change later collisions/seeds. Native window
+own the original 1.5× observations. The [Hold speed observation](../verification/host.md#hold-speed-preference-2168)
+exercises the added preference through the same consumers. Matched logical opportunities/actions
+preserve state/RNG. Equal real hold durations intentionally advance more NPC time and can change
+later collisions/seeds. Native window
 focus with injected mapped events is observed; human physical input, all devices, comfort, original
 natural timing remain **Unknown**. Existing ObjectDB shutdown warnings remain explicit.
 The sprite anchor and #1614 viewport/resize owners are unchanged by this implementation.

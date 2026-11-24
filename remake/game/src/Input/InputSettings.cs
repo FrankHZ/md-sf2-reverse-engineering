@@ -8,12 +8,15 @@ internal sealed record ActionBinding(string[] Keys, string[] Buttons, string[] A
 // Product settings only; gameplay never reads device bindings or reveal timing.
 internal sealed class InputSettings
 {
+    private static readonly double[] AccelerationMultipliers = [1.5, 2, 2.5, 3];
+
     public required int FormatVersion { get; set; }
     public string ConfirmCancel { get; set; } = "standard";
     public bool ReducedFlash { get; set; }
     public string Language { get; set; } = "en";
     public string GraphicsMode { get; set; } = "original";
     public bool ModernGuidance { get; set; } = true;
+    public double AccelerationMultiplier { get; set; } = AccelerationMultipliers[0];
     public bool ShowDebugDiagnostics { get; set; }
     public bool DebugAutoVictory { get; set; }
     public string TextMode { get; set; } = "instant";
@@ -51,6 +54,8 @@ internal sealed class InputSettings
             throw new ArgumentException("textMode must be instant or adjustable.");
         if (!double.IsFinite(settings.CharactersPerSecond) || settings.CharactersPerSecond is < 1 or > 240)
             throw new ArgumentException("charactersPerSecond must be between 1 and 240.");
+        if (!AccelerationMultipliers.Contains(settings.AccelerationMultiplier))
+            throw new ArgumentException("accelerationMultiplier must be 1.5, 2, 2.5, or 3.");
         if (settings.Bindings is null) throw new ArgumentException("bindings must be an object.");
     }
 
@@ -60,7 +65,7 @@ internal sealed class InputSettings
         {
             FormatVersion = FormatVersion, ConfirmCancel = ConfirmCancel, ReducedFlash = ReducedFlash,
             Language = Language, GraphicsMode = GraphicsMode, TextMode = TextMode, CharactersPerSecond = CharactersPerSecond,
-            ModernGuidance = ModernGuidance,
+            ModernGuidance = ModernGuidance, AccelerationMultiplier = AccelerationMultiplier,
             ShowDebugDiagnostics = ShowDebugDiagnostics, DebugAutoVictory = DebugAutoVictory,
             SuppressBattleHitCoinMessages = SuppressBattleHitCoinMessages,
         };
@@ -75,9 +80,17 @@ internal sealed class InputSettings
         Language = candidate.Language; TextMode = candidate.TextMode; CharactersPerSecond = candidate.CharactersPerSecond;
         GraphicsMode = candidate.GraphicsMode;
         ModernGuidance = candidate.ModernGuidance;
+        AccelerationMultiplier = candidate.AccelerationMultiplier;
         ShowDebugDiagnostics = candidate.ShowDebugDiagnostics; DebugAutoVictory = candidate.DebugAutoVictory;
         Bindings = candidate.Bindings;
         SuppressBattleHitCoinMessages = candidate.SuppressBattleHitCoinMessages;
+    }
+
+    internal void ChangeAccelerationMultiplier(int direction)
+    {
+        int index = Array.IndexOf(AccelerationMultipliers, AccelerationMultiplier);
+        int count = AccelerationMultipliers.Length;
+        AccelerationMultiplier = AccelerationMultipliers[(index + direction + count) % count];
     }
 
     // Modern reveal presets, not original VInt timing. Merely opening retains custom cps.

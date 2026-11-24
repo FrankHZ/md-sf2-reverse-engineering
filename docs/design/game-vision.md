@@ -34,9 +34,9 @@ choices and consequences legible:
   [Battle-entry skip](../../remake/docs/application/session-and-programs.md#battle-entry-skip-agreement) ·
   [Battle Speed](../../remake/docs/godot/presentation.md#battle-speed-and-selective-messages-1650)
 - **Optional help and acceleration.** Pre-voyage guidance offers a disclosed objective and, when
-  known, a destination. Players can turn it off. Holding Shift temporarily accelerates admitted
-  exploration and battle to 1.5×, and releasing it restores normal speed. Mandatory work and
-  player choices retain their own timing boundaries.
+  known, a destination. Players can turn it off. Holding Accelerate (Shift by default) speeds up
+  eligible exploration and battle at the configured multiplier, 1.5× by default and up to 3×.
+  Releasing it restores normal speed. Mandatory work and player choices retain their timing boundaries.
   [Guidance design and scope](../../remake/docs/godot/objective-guidance.md) ·
   [Held acceleration](../../remake/docs/godot/modernization-design.md#held-15-acceleration-1619)
 - **Explicit time and waiting.** Finite music distinguishes logical completion from actual playback

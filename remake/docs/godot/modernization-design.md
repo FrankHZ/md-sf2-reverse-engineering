@@ -2,7 +2,7 @@
 
 This page owns separate proposals: local services/battle overview under #1543 below,
 [optional objective and destination guidance](#optional-objective-and-destination-guidance-1578)
-under #1578, and [held 1.5× exploration and battle acceleration](#held-15-acceleration-1619) under #1619.
+under #1578, and [held exploration and battle acceleration](#held-15-acceleration-1619) under #1619.
 Their implementation and acceptance decisions remain separate. The
 [UI language](ui-design-language.md) and [scene review](ui-scene-review.md) own #1616's visual design.
 
@@ -317,7 +317,9 @@ requires hold Shift for temporary 1.5× in both exploration and battle; release 
 Stage A implements the shared hold and exploration domain under the
 [current presentation contract](presentation.md#held-exploration-acceleration-1619-a) and
 [bounded native acceptance](../verification/field-programs.md#held-exploration-rate-1619-a).
-Battle now uses the shared hold through one bounded 60 Hz parent budget. The
+Battle uses the shared hold through one bounded 60 Hz parent budget. Settings → Gameplay aids
+selects the held rate for both domains in #2168. The
+[preferences contract](host-ui.md#implemented-composition-and-return) owns the presets and transaction. The
 [battle presentation contract](presentation.md#held-battle-acceleration-1619-bc) and
 [finite native acceptance](../verification/host.md#held-battle-rate-1619-bc) own the actual B/C
 consumer and observation boundaries. Independent integration acceptance remains with main-gate.
@@ -361,7 +363,8 @@ No new original-game fidelity claim follows from acceleration.
 Recommend one transient held-rate decision in `GameInput`, sampled by the active view, with each
 view retaining its existing elapsed/debt responsibility. The inactive/prepared/retiring view gets
 no budget. Do not use `Engine.TimeScale`, multiply actor speeds, alter movement costs, change RNG,
-or inject key/Confirm/Wait events. No save field, new persistent setting or second simulation clock.
+or inject key/Confirm/Wait events. The applied multiplier is a host preference. Held state and
+timing debt are transient, with a single simulation clock in each active domain.
 
 | Domain | Proposed budget and boundary |
 | --- | --- |
@@ -414,15 +417,15 @@ since current defaults already occupy every named pad button. Optional user-prov
 signed-axis bindings use the same uniqueness, 32-event limit and release/neutral guards. No default
 button is stolen and no Controls editor expansion is required. Exclude Accelerate from
 `GameplayHeld`, choice-entry raw-held input and entry-skip admission, while observing its own
-aggregate held/release state. Multiple bindings retain 1.5× until all are released.
+aggregate held/release state. Multiple bindings retain the applied rate until all are released.
 
 | Transition | Rate, input and debt disposition |
 | --- | --- |
-| Fresh Shift press in eligible focused gameplay | Arm 1.5×; preserve the in-flight move/phase's progress and token. Change only future elapsed budget; clear fractional host debt at the edge. Echo/repeated pad packets cannot re-arm or submit actions. |
-| Last acceleration binding released | Restore 1× immediately for subsequent service, discard debt; finish current motion/phase naturally. Another still-held Shift/pad binding retains1.5×. Direction can remain held and continue at 1×. |
+| Fresh Accelerate press in eligible focused gameplay | Arm the applied multiplier and preserve the in-flight move/phase's progress and token. Change only future elapsed budget and clear fractional host debt at the edge. Echo/repeated pad packets cannot re-arm or submit actions. |
+| Last acceleration binding released | Restore 1× immediately for subsequent service, discard debt and finish current motion/phase naturally. Another still-held binding retains the applied rate. Direction can remain held and continue at 1×. |
 | Automatic wait/phase change within the same sequence | Keep a valid held request; discard old-consumer time. Preserve mandatory completion order, and do not credit the new consumer with old elapsed time. |
 | Dialogue/choice/result acknowledgement, service, Party, field Menu or battle inspection | Disarm acceleration and discard debt when the actual input boundary is reached. Mandatory autonomous work before that boundary still uses the active rate even if text is already visible; reveal stays 1×. After leaving require release/neutral and a new Shift edge. A battle command menu is an ordinary player selection, not a paused host modal: Shift may be armed there, but cannot speed its navigation or commit an action. |
-| Host Menu/Settings/Speed/Save/Quit, menu-entry settling | Disarm before pausing or settling; settling uses ordinary 1× and its existing 120-step budget. Cancel/return preserves reached gameplay state, clears debt and requires fresh activation. Do not restart Save settlement at 1.5×. |
+| Host Menu/Settings/Speed/Save/Quit, menu-entry settling | Disarm before pausing or settling. Settling uses ordinary 1× and its existing 120-step budget. Cancel/return preserves reached gameplay state, clears debt and requires fresh activation. |
 | Focus loss, hide, window recovery, pause/unpause, device removal or remap Apply | Disarm synchronously through existing host/local hooks; clear debt and held activation. Observe aggregate release/neutral before a new non-echo edge; regain-focus polling must not re-arm a still-held key or count elapsed background time. |
 | Map transfer, field↔battle ownership handoff, New Game/Continue, stopped failure or detach | Disarm old and new owner; no carried budget or held action. Ordinary actor progress and real completion tokens survive where their own contract permits. Failures stay stopped with the reached committed prefix. |
 
@@ -439,7 +442,7 @@ implements source selector 0–3 with modern reveal presets 15/30/60 cps and ins
 sometimes called “Speed 1–4” are currently labelled 0–3 by `SettingsView` and both locale catalogs;
 this feature does not rename them. Custom cps, selective ordinary hit/coin suppression and Apply/Back
 persistence remain owned there. Those presets are not simulation multipliers and their mapping is not original VInt
-equivalence. Held 1.5× neither edits nor multiplies them: the first level (label 0) at 15 cps still
+equivalence. Holding Accelerate keeps the chosen reveal rate. The first level (label 0) at 15 cps still
 reveals at 15 cps; the fourth (label 3) remains instant and still waits for any required fresh
 acknowledgement. Source textSettings and mandatory script/HEAL work are not rewritten to a different messageSpeed to accelerate them.
 Both system Menu → Settings and inspection → Options → Speed pause battle and disarm acceleration.

@@ -1792,10 +1792,10 @@ msgid "battle.speed.hint"
 msgstr "{0}/{1}：修改   {2}/{3}：接受并保存   {4}：放弃两项修改"
 
 msgid "controls.acceleration.note"
-msgstr "按住时以 1.5 倍速探索和战斗，松开恢复 1 倍速。NPC 和自动演出同步加速，阅读、菜单操作与音乐保持正常速度。菜单、消息、地图切换或失焦后，需要松开并重新按住。"
+msgstr "按住时，探索、战斗和自动演出以 {0}× 运行。松开恢复 1×。阅读、菜单操作与音乐保持正常速度。菜单、消息、地图切换或失焦后，请松开再按。"
 
 msgid "controls.acceleration.hold"
-msgstr "按住：临时 1.5 倍速"
+msgstr "按住加速"
 
 # Host menu, preferences, controls help and window recovery.
 
@@ -2103,6 +2103,12 @@ msgstr "{0}：阅读 · {1}：返回指令"
 
 msgid "ui.settings.guidance"
 msgstr "现代引导：{0}"
+
+msgid "ui.settings.acceleration"
+msgstr "按住加速：{0}×"
+
+msgid "ui.settings.acceleration-detail"
+msgstr "按住 {0} 加快探索和战斗。"
 
 msgid "host.setting-description-10"
 msgstr "显示当前目标、已知入口和未领取道具的闪光提示。"

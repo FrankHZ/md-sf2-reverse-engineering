@@ -41,6 +41,13 @@ appear on the Debug page when enabled. Controls → Change controls and Controls
 installed bindings; only Apply publishes edits. See [changing controls](input-remapping.md)
 for capture, review, reset and refusal behavior. Battle Speed remains a separate two-row caller.
 
+Gameplay aids → Hold speed cycles through 1.5×, 2×, 2.5× and 3×. The row shows the draft
+multiplier and its details show the installed Accelerate binding. Apply installs and saves the
+selected multiplier, Cancel discards the draft, and Restore defaults stages 1.5×. Existing
+format 1 preferences with no `accelerationMultiplier` load as 1.5×. Controls Help shows the
+installed multiplier and bindings. The same preference applies to eligible exploration and battle.
+[Hold semantics and verification](presentation.md#held-exploration-acceleration-1619-a)
+
 The shared slots use the same square theme for both Witch entry and gameplay callers. Gameplay
 Save/Quit has a 1040px capped panel and bounded reading, with its hint outside the scrolling region.
 Full actual name, date, destination, backup and failure information remains available. Slots support
@@ -96,6 +103,7 @@ Options → Speed shortcut keeps its own return to Options.
 
 | Setting | Effect after Apply during battle |
 | --- | --- |
+| Hold speed | The shared hold uses the selected multiplier after play resumes and a fresh Accelerate press is admitted. |
 | Language | Refreshes the Menu, command and inspection projections and the current close-up message. Result lines already opened by Give, Discard, Search or Retreat keep their text until that line closes. Subsequent lines use the applied language where translated content exists. |
 | Text mode and speed | The display mode is chosen when a line opens. The new rate applies when gradual text resumes. Existing acknowledgement and presentation tokens stay in place. |
 | Reduced flash | Current battle presenters read the applied preference when projecting the selection or delivering cues. |

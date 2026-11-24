@@ -1,6 +1,6 @@
 # Battle Presentation
 
-The [held-rate contract](presentation.md#held-battle-acceleration-1619-bc) owns modern 1×/1.5×
+The [held-rate contract](presentation.md#held-battle-acceleration-1619-bc) owns normal and held-rate
 scheduling: one parent 60 Hz budget, mandatory work retained, real-time reading and normal-pitch
 audio. Its [finite observations](../verification/host.md#held-battle-rate-1619-bc) cover HEAL,
 story, appearance, death and EGRESS; they do not expand the original-scene claims below.

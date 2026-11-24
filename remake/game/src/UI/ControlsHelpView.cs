@@ -84,7 +84,9 @@ internal sealed partial class ControlsHelpView : Control
     {
         var page = Pages[_page];
         _title.Text = GameText.Get("host.help-title", Text(page.Group), _page + 1, Pages.Length);
-        _body.Text = Text(page.Note) + string.Concat(page.Rows.Select(row => $"\n\n{Text(row.Meaning)}\n{Input.Hint(row.Action)}"));
+        string note = page.Note == "controls.acceleration.note"
+            ? GameText.Get(page.Note, Input.Settings.AccelerationMultiplier) : Text(page.Note);
+        _body.Text = note + string.Concat(page.Rows.Select(row => $"\n\n{Text(row.Meaning)}\n{Input.Hint(row.Action)}"));
         _hint.Text = GameText.Get("host.help-hint", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right),
             Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Up), Input.CompactHint(GameAction.Down), Input.CompactHint(GameAction.Cancel));
         string[] keys = ["host.help-previous", "host.help-next"];

@@ -8,7 +8,7 @@ internal sealed partial class GameInput
     // device-specific. A release of one binding cannot release another binding.
     private readonly HashSet<(int Device, int Kind, long Code, int Location)> _accelerationSources = [];
     private bool _accelerationAllowed, _accelerationArmed, _accelerationRequiresRelease;
-    internal double AccelerationRate => _accelerationArmed ? 1.5 : 1;
+    internal double AccelerationRate => _accelerationArmed ? Settings.AccelerationMultiplier : 1;
     internal long AccelerationGeneration { get; private set; }
     internal object ObserveAccelerationState() => new
     {
