@@ -1025,6 +1025,9 @@ full-game parity and public distribution remain outside the accepted boundary.
 
 ## Common Authored Battle
 
+The [battle mechanism review order](domain/gameplay-rules.md#battle-mechanism-review-order) also
+routes checks for the private campaign through the applicable rules and consumers.
+
 | Capability | Status and boundary |
 | --- | --- |
 | Configurable start | **Implemented:** the format-v7 authored packages use the same Content/session path; immutable definitions/deployments are separate from explicit start resources/accounting/seeds and optional placement overrides. One definition can support independent starts with validated references/bounds and fresh runtime actors. The separately selected private initializer is bounded below. |

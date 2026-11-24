@@ -1,5 +1,131 @@
 # Gameplay Rules and Composition
 
+## Battle mechanism review order
+
+**Standard rigor.** This order coordinates the Domain, Application, Content and host owners for
+[#2141](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2141) against the playable
+battles through Battle26 and the named authored cases. Keep the existing High-rigor transaction
+and save agreements where the review crosses them. Dispatch each slice separately after its
+prerequisites are dispositioned. The cases below are review questions, with retained evidence
+identified where available. The planning pass checked documentation and selected production code.
+[Campaign boundary](../capability-status.md#campaign-feature-trace)
+
+**Shared boundary.** Content admits definitions, deployments and bindings. The session owns the
+live battle and story snapshots. Godot submits revision-bound commands and consumes choices,
+state and presentation waits. Domain rules evaluate movement, action operands and state changes.
+Application runs movement, settlement, turn and outcome continuations against the live state.
+Keep actor identity, actual faction, source slot, turn owner and selected target relation distinct.
+Queries and preflight leave live resources and both RNG streams intact. At delivery, each accepted
+effect and queue transition belongs to its designated commit point. The save record reconstructs
+the admitted settled state through the same rules.
+[Architecture](../architecture.md#state-and-command-flow) ·
+[GameSession](../../src/Sf2.Remake.Application/Runtime/GameSession.cs) ·
+[Adapter input and projection](../../game/src/Battles/BattleSessionView.cs)
+
+1. **Identity, control and target relation.** Start here because a legal MUDDLE 2 turn crosses
+   both source commandsets and every offensive builder. Compare an ally whose temporary turn
+   retains ordinary targets at rank 1 with an admitted rank-2 turn scoring its own side. Use
+   slot 128 as the selected center of an enemy attack, then as collateral beside a legal center.
+   A blanket protection filter would discard the collateral. Check that the center guard runs
+   after selection, the self draw runs once when applicable, and the actor keeps its real faction
+   and permanent control. Stop when the two ranks, ordinary opposition and the guarded and
+   collateral controls agree from turn dispatch through reaction admission. The authored Jaro
+   conversion owns the separate case of a scripted faction change. Carry any placement or
+   settlement question to the relevant slice below.
+   [Original target and guard operands](hostile-spells-design.md#sleep-muddle-and-turn-ownership) ·
+   [Accepted relation](hostile-spells-design.md#muddle-2-automatic-action-design) ·
+   [Scripted conversion](#jaro-conversion-and-source-ally-commandset6) ·
+   [Turn dispatch](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAdvancer.cs) ·
+   [Relation and guard](../../src/Sf2.Remake.Domain/Battles/Rules/BattleOffense.cs) ·
+   [Controlled cases](../../tests/Sf2.Remake.Engine.Tests/MuddleConfusedTurnTests.cs)
+2. **Movement, terrain and occupancy.** Check the first slice's relation at the movement
+   boundary before using a provisional destination for action range. In a weighted corridor, a
+   living teammate can be traversable but cannot be a stop. A living opponent blocks the path
+   even when a confused actor searches its own side for targets. Compare reachable cells and
+   legal stops, Main Back at a legal preview, and automatic path delivery with the real
+   occupancy. Stop after one paired manual/automatic route agrees on terrain costs, occupancy
+   and the committed stop. For fixed-slot pursuit, use the existing living/cleaned slot pair.
+   Unmapped or never-placed slots stay outside the admitted rank-2 profile.
+   [Original navigation](../../../docs/design/contracts/battle/battlefield-navigation.md) ·
+   [Remake movement and selection](../capability-status.md#common-authored-battle) ·
+   [Movement rules](../../src/Sf2.Remake.Domain/Battles/Rules/BattleMovement.cs) ·
+   [Movement delivery](../../src/Sf2.Remake.Application/Runtime/Battles/BattleMovementContinuation.cs) ·
+   [Main Back and corridor cases](../../tests/Sf2.Remake.Engine.Tests/BattleMovementQueryTests.cs)
+3. **Action admission, construction and payment.** Once the stop and target operands agree,
+   trace ordinary Attack, one learned spell and one carried item from choice and target queries
+   through Confirm, prepared resolution and playback. At the provisional stop, compare backing
+   out of Magic with confirming an affordable silenced HEAL. The former keeps resources intact;
+   the latter can pay once with no healing. Use a zero-MP offensive consumable and duplicate item
+   IDs in different slots to test which slot is spent. Stop after one accepted and one
+   cancelled or rejected path at the shared boundary, with one narrow control per payment kind.
+   Compare the main and thinking seeds at query, prepare and commit. Use Search, equipment,
+   Give and discard owners only if a concrete issue crosses their distinct commit boundaries.
+   [Original action construction](../../../docs/design/contracts/battle/battle-action-construction.md) ·
+   [Remake transaction contract](#implementable-api-and-transaction-boundary) ·
+   [Offensive item contract](offensive-items-design.md#remake-item-action) ·
+   [Dispatch](../../src/Sf2.Remake.Application/Runtime/Battles/BattleCommandDispatcher.cs) ·
+   [Admission](../../src/Sf2.Remake.Application/Runtime/Battles/BattleChoices.cs) ·
+   [Scene settlement](../../src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs)
+4. **Casualties, rewards, custody and outcome.** Check the irreversible battle and campaign
+   effects before auditing which queue entries can still tick. Start with the controlled confused
+   enemy cast that targets its leader and hits the caster in protected slot 128 as collateral.
+   Trace the ordered reactions through both removals and terminal outcome. Check that each
+   casualty is processed once and that enemy-on-enemy deaths award no player kill credit or
+   drop. Use an ordinary lethal carrier hit as a positive custody control and an admitted ally
+   same-side hit in a half-EXP encounter as a reward control. Check
+   leader-loss precedence if both terminal conditions are reachable, and that a terminal action
+   leaves no next playable turn. Stop at one outcome and usable return, with a directed batch or
+   award check where the paired control needs it. Keep EXP credit, growth, pack/Deals receipts,
+   defeat counters and completed flags attributable to their own stages.
+   [Original cleanup and outcome](../../../docs/design/contracts/battle/battle-control-lifecycle.md#death-worklists-and-combatant-cleanup) ·
+   [Remake progression and outcome](#implemented-progression-and-outcome-policies) ·
+   [Death batch](../../src/Sf2.Remake.Domain/Battles/Rules/BattleDeathBatch.cs) ·
+   [Action publication](../../src/Sf2.Remake.Application/Runtime/Battles/BattleActionCommitter.cs) ·
+   [Directed reward and casualty cases](../../tests/Sf2.Remake.Engine.Tests/MuddleConfusedTurnTests.cs) ·
+   [Field return](../../src/Sf2.Remake.Application/Runtime/Exploration/BattleOutcome.cs)
+5. **Status lifetime and recovery.** Use the surviving queue owner from settlement to trace
+   effect application, refresh, skip, decrement, expiry and renewed control. A living ally with
+   SLEEP, MUDDLE and SILENCE on consecutive entries in the same round can skip the first,
+   expire MUDDLE between the other two checks and accept manual input on the second. A
+   per-round tick or a counter owned by the view would produce a different turn. Compare the
+   packed word and last-applied stat operands with one stat refresh witness. Stop after the
+   mixed-status entry pair and one recovery boundary distinguish processed casualties, living
+   returnees and the existing controlled fallen-ally Raise and fresh-entry case. Use the
+   same state authority for admitted spell, item and physical effects.
+   [Original after-turn order](../../../docs/design/contracts/battle/battle-control-lifecycle.md#post-action-and-after-turn-order) ·
+   [Status and stat refresh contract](support-spell-status-design.md#when-the-stats-change) ·
+   [After-turn continuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAfterTurnContinuation.cs) ·
+   [Mixed-status cases](../../tests/Sf2.Remake.Engine.Tests/MuddleTurnTests.cs) ·
+   [Fresh entry and recovery evidence](hostile-spells-design.md#public-rank-2-admission)
+6. **Save, restore and first consumer.** Close the review with one settled player Movement
+   save carrying a partly consumed queue, another actor's active rank-2 word, a cleaned slot
+   and both RNG words. Reuse the controlled Battle25 cold Continue. Compare with a busy
+   movement or scene save refusal. A slot can decode and still fail on the next automatic turn
+   if the packed word, queue cursor or fixed-slot casualty was reconstructed incorrectly.
+   Stop after comparing complete decoded play state before the first input and following a
+   real resumed input through automatic action, projection and the next stable decision or
+   usable field return. Use the existing engine case for the cleaned-slot MOVE branch and
+   retain the controlled native witness for the guarded action. The host owns Save/Continue
+   and presentation delivery; its displayed actor or animation progress does not authorize a
+   rule change or enter the battle save.
+   [Remake save agreement](../application/battle-save-and-continue.md#implemented-domainapplication-boundary-a) ·
+   [Capture](../../src/Sf2.Remake.Application/Runtime/Persistence/BattleSave.cs) ·
+   [Detached restore](../../src/Sf2.Remake.Application/Runtime/Persistence/BattleRestore.cs) ·
+   [Wire](../../src/Sf2.Remake.Content/Persistence/BattleSaveWire.cs) ·
+   [Title and slot host](../../game/src/Entry/OpeningPersistenceHost.cs) ·
+   [Battle25 controlled input](hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25)
+
+Start each follow-up with the named original contract, the accepted remake rule and the current
+consumer. Reuse retained evidence for matching boundaries. When static inspection leaves a
+gameplay question, run the smallest actual engine case that distinguishes the outcomes. Use a
+short native input, state, projection and error observation only for an unresolved host seam.
+Record trigger, effect, evidence, owner, smallest correction and remaining **Unknown** with the
+mechanism owner. Keep controlled remake observations distinct from original evidence and from
+**Inferred** risk. A bounded check may close without a defect. Escalate concrete cross-layer
+redesign separately. Game-wide parity, unadmitted combinations and full spell presentation have
+their own scope. Main-gate owns follow-up dispatch and acceptance.
+[Spell presentation #2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104)
+
 ## Finite purchased supplies and DETOX1
 
 **Standard finite pre-voyage agreement; existing payment/custody High retained.** Source is pinned

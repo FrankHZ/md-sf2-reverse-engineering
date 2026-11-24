@@ -403,10 +403,11 @@ catalog has its name.
 [Source heal command](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/heal.asm#L18-L120) ·
 [Source attack category](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/ai/command/attack/determinebattleaction.asm#L69-L141)
 
-Battle start and settled battle Save/Continue admit rank-1 counters with their applicable
-turn consumers. Flag-only and confused words still reject. Restoring a Movement decision
-requires that its current player can act. Other units keep their pending counter, queue
-entries and both RNG words. The current battle and field wire formats already carry the word.
+Battle Start and settled battle Save/Continue admit rank-1 counters with their applicable
+turn consumers and live confusion counters under the [finite rank-2 profile](#public-rank-2-admission).
+A confusion flag without a live MUDDLE counter still rejects. Restoring a Movement decision
+requires a current actor eligible for manual control. Other units keep their pending counters
+and queue entries, and both RNG words survive. The battle and field wire formats carry the packed word.
 Both temporary and activation-driven automatic allies use the shared battle growth and refresh
 path. Level-up preserves the current rank-1 word until the after-turn tick. The ally commandset
 requires physical operands for its actor and opposing source slots, and an encounter reward
@@ -645,6 +646,9 @@ confusion remain **Unknown**.
 
 ### Delivery sequence
 
+The internal automatic turns preceded the [current public binding](#public-rank-2-admission).
+The two stages had these acceptance boundaries.
+
 1. Complete the internal automatic turn for both factions, with physical, admitted spell/item,
    fixed-slot MOVE and guarded inaction. Keep public rank-2 status and spell entry closed. Use small
    actual engine turns for no-target movement, protected-center and self pass/fail, same-side
@@ -707,8 +711,8 @@ required consumers are admitted.
    [The observations above](#desoul-12-implementation-and-evidence) cover both ranks.
 3. **MUDDLE 1 then 2.** The [turn prerequisites](#muddle-turn-prerequisites) and
    [rank-1 evidence](#muddle-1-implementation-and-evidence) record the accepted first rank.
-   Follow the [automatic action design](#muddle-2-automatic-action-design) and its
-   [delivery sequence](#delivery-sequence) for rank 2.
+   The [automatic action design](#muddle-2-automatic-action-design) and its
+   [public admission](#public-rank-2-admission) record the accepted rank-2 profile.
 
 Keep one packed status word. The existing last-refresh operand remains scoped to stat-affecting
 counters. Reaction and after-turn refresh recompute stats using the existing support rules.
