@@ -2645,6 +2645,9 @@ msgstr "丢弃"
 msgid "depot.donor"
 msgstr "选择要存入物品的队员。"
 
+msgid "depot.recipient"
+msgstr "由谁领取这件物品？"
+
 msgid "depot.exchange"
 msgstr "背包已满。选择一件物品放回仓库。"
 
@@ -2788,6 +2791,9 @@ msgstr "物品已丢弃。"
 
 msgid "depot.result.unsellable"
 msgstr "这件物品不能丢弃。"
+
+msgid "caravan.items.choose-pack"
+msgstr "选择队员的背包。"
 
 msgid "caravan.items.not-usable"
 msgstr "这个道具不能在此使用，已保留。"

@@ -432,13 +432,15 @@ or exits the root. Pointer rows/footer and controller actions use the same comma
   and a readable Bowie refusal.
 - [Depot](../application/caravan-services-design.md#current-depot-implementation) opens Look,
   Deposit, Derive (retrieve) and Drop. Stored indices and numbered pack slots remain explicit
-  when choosing an item, recipient or return slot.
+  when choosing an item, recipient or return slot. The Retrieve prompt asks who should receive the
+  stored item. For a full pack, the exchange prompt asks which item to return to the Depot.
 - [Item](../application/caravan-services-design.md#current-item-implementation) opens Use, Give,
-  Equip and Drop. Admitted actions reuse Field pack choices and return to the owning service page.
-  Unsupported effects keep their refusal.
+  Equip and Drop. Choose a member's pack, then an item. Give and Use reuse the corresponding field
+  target prompts. Give uses the field exchange prompt when the recipient's pack is full. Admitted
+  actions return to the owning service page. Unsupported effects keep their refusal.
 
 Application owns phases and member validation. Each token requires release before another
 confirmation. Service input excludes movement and ordinary field menus. The greeting and exit
 dialogue bracket the service before field input and Save resume. The linked ordinary observations
-cover the current pages. Physical hardware and dedicated preview appearance remain **Unknown**.
-[Scene review and preview gap](ui-scene-review.md#caravan-service-pages)
+cover the current pages. Physical hardware remains **Unknown**.
+[Dedicated preview routes and observations](ui-scene-review.md#caravan-service-pages)

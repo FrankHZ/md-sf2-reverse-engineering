@@ -31,7 +31,7 @@ for world/UI layering and the [shared visual language](ui-design-language.md) fo
 | Field Member → stats, spells and numbered Items; Prepare or direct Magic/Item | [Party and inventory](#4-party-inventory-and-preparation) · [Field composition](field-and-shop.md#current-composition) | F5 → Show Preparation (`--prepare`). Confirm Prepare… on Medic A, then Give / exchange → Practice Leaf → recipient. Back out to the same member. F5 Supplies (`--members`) shares F6 purchases and shows the unavailable Prepare outcome. Use [connected Map 16](field-and-shop.md#prepare-command-icons) for command art, populated Magic and direct Adventure entries. | Compare selection, grouped stats, four slot identities, costs, the recipient/exchange and read-before-commit states. Check the fixed footer after Back. |
 | Church → service → quote/refusal/result; Record → Save | [Church](#5-church-services) | F3 (`--church`) opens the practice Church. Choose Raise for a quote, decline or pay and read the result; Promotion can show refusal. Use the [ordinary Church/Record route](#direct-reproduction) for Save and the [admitted promotion route](../application/church-promotion-design.md#playable-hero-and-reproduction) for an actual rite. | Keep priest and gold visible, then check member/condition/price and distinct choices. Record must hand off to one host page and return to the field. |
 | Shop → Buy, Sell, Repair or Deals → selection, quote and result | [Shop](#6-shop-stock-recipient-and-price-before-commitment) | F6 (`--shop`) talks to the faced merchant. Buy and switch directly to F5 to inspect the added item. Return to F6 and sell from its actual slot. For admitted [Repair](../domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction) and [Deals repurchase](field-and-shop.md#hassan-deals-and-cold-continue), use the connected inputs. | Keep the merchant and recipient pack readable. Compare exact price, gold, full-pack/funds refusals and the return from a canceled quote. |
-| Caravan → Join/Purge, Depot or Item | [Caravan pages](#caravan-service-pages) | F7 → Show Caravan (`--caravan`) restores the [registered Map26 approach](../../game/probes/previews/README.md#caravan-sample). Confirm to Talk. Join opens Peter's reserve entry, Depot → Deposit opens a numbered donor pack and Item → Give opens the recipient picker. | Distinguish active/reserve lists, numbered packs, ordered Depot rows and confirmation. Return from a subpage to its caller and from the root through the service dialogue to the field. |
+| Caravan → Join/Purge, Depot or Item | [Caravan pages](#caravan-service-pages) | F7 → Show Caravan (`--caravan`) restores the [registered Map26 approach](../../game/probes/previews/README.md#caravan-sample). Confirm to Talk. Join opens Peter's reserve entry. Item → Give and Depot → Retrieve open their own recipient pickers. | Distinguish active/reserve lists, numbered packs, ordered Depot rows and confirmation. Compare the transfer prompts with F6 Buy. Return from a subpage to its caller and from the root through the service dialogue to the field. |
 | Battle move → Main → Magic/Item → Target or confirmation | [Battle decision and target](#from-entry-to-committed-action) · [Target layout](#showing-range-and-choosing-a-target) | F4 (`--battle`): move Down, wait for delivery, Confirm Main, then H → MEND → GUARD A. Back from Target returns to the spell; execute for a production recovery scene. Main also exposes Attack, Item and Stay; connected action families have their own [decision evidence](battle-interaction-baseline.md#production-f4f8f9-contract). | Check cyan move vs warm target marks, acting vs recipient card, unavailable reasons, selected row and fixed footer. On Back, preserve the preview stop and the relevant row. |
 | Inspection cursor → unit details or empty ground → Options → Member, Map, Speed or Quit | [Viewing the battlefield](#viewing-the-battlefield) | F8 (`--inspect`) starts on the acting unit; Confirm an occupied cell for details or an empty cell for Options. For Member, switch panes and inspect a slot, then Back twice to the cursor. The [large package](battle-ui-composition.md#reproduce-the-native-member-layout) adds long names and roster pressure. Options Save eligibility remains [host-owned](host-ui.md#access-through-the-finite-demo). | Compare world and detail cards, movement field, Map legend, member conditions, all four slot rows and retained cursor after cover or Back. |
 | Playback → result or outcome → next input | [Presentation and outcome](#presentation-outcome-and-usable-return) | F4 MEND covers recovery playback. F9 outcome picker or `--results` / `--defeat` / `--retreat`: advance the before-battle message, confirm a stop, then Attack / Stay / Magic → EGRESS respectively. Read through actual results and resume field movement. [Connected playback and outcome evidence](battle-scenes.md#production-playback-and-result-layout) covers different content. | Keep action cards, artwork and current message distinct; read reward/defeat/retreat text before control changes. |
@@ -492,16 +492,24 @@ eleven active members, Peter in reserve and an empty Depot.
   result. Back returns through the selection to the root.
 - **Depot.** Choose Depot → Deposit → Bowie → Wooden Sword in slot 1. The pack loses the item and
   the Depot gains it. Continue through the receipt and back to Depot. Retrieve opens its stored
-  row and recipient picker. Back through both pages to the root.
-- **Item.** Choose Item → Give → Bowie → an occupied slot. Return from the recipient picker with
-  Esc or right-click and back out to the root. Esc opens the exit dialogue. Confirm through it to walk.
+  row and asks “Who should receive this item?” / “由谁领取这件物品？”. Choose a full recipient such
+  as Sarah to read the return-to-Depot prompt. Back through the picker and stored row to the root.
+- **Item.** Choose Item → Give → Bowie → Wooden Sword. The picker asks “Give to whom?” / “交给谁？”.
+  Choose Sarah to read the full-pack exchange prompt. Esc returns to the picker and then to the owner
+  selection. Back out to the root. Esc opens the exit dialogue. Confirm through it to walk.
+- **Use.** Choose Item → Use → Sarah → Brave Apple in slot 2. The target page shows
+  “Use on whom?” / “对谁使用？”. Esc returns to the member-pack picker before the item is used.
+- **Shop comparison.** In F6, choose Buy → Medical Herb. The recipient page keeps
+  “Who receives the purchase?” / “由谁收下物品？” and shows the stock price. Esc returns to stock.
 
 Press F7 again to restore the initial formation, packs and Depot.
 
-**Confirmed at 1600×900 in the English preview.** The root and child headings, gold focus, numbered
-packs and wrapped input footer were legible. The Give recipient list scrolled without covering the
-footer. Its heading uses the Shop prompt “Who receives the purchase?” while the real Caravan Give
-caller is active.
+**Confirmed at 1600×900 in the dedicated preview.** On the Give, Retrieve and Use target pages, the
+English and Chinese headings were readable above the focused rows. The pack slots stayed visible beside
+the list, and the scroll area cleared the wrapped footer. Use L to compare languages on the same page.
+The live projection also confirmed the member-pack and both full-pack exchange headings. Back from Give
+exchange kept the donor pack, and Back from Depot exchange kept the stored row.
+[Prompt and service ownership](field-and-shop.md#caravan-formation)
 
 The Map26 run observed Peter's Join, leader protection on Purge, the Wooden Sword moving to
 Depot, Give cancellation without a transfer, retained root focus and walking after exit text 10.

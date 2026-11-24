@@ -2645,6 +2645,9 @@ msgstr "Drop"
 msgid "depot.donor"
 msgstr "Choose a member to deposit an item."
 
+msgid "depot.recipient"
+msgstr "Who should receive this item?"
+
 msgid "depot.exchange"
 msgstr "Pack full. Choose an item to return to the depot."
 
@@ -2788,6 +2791,9 @@ msgstr "Item dropped."
 
 msgid "depot.result.unsellable"
 msgstr "This item cannot be dropped."
+
+msgid "caravan.items.choose-pack"
+msgstr "Choose a member's pack."
 
 msgid "caravan.items.not-usable"
 msgstr "This item cannot be used here. It was kept."
