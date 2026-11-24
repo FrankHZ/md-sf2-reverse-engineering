@@ -23,7 +23,7 @@ cross-Issue planning and independent integration; Issues and repository owners h
 | Responsibility | Default model / reasoning |
 | --- | --- |
 | Main-gate | `gpt-6.2-astra` / `high` |
-| Bounded implementation, research, documentation and audit workers | `gpt-6.2-sol` / `high` |
+| Bounded design, implementation, research, documentation and audit workers | `gpt-6.2-sol` / `high` |
 | Large redesign or cross-layer architectural refactoring | `gpt-6.2-astra` / `high` |
 
 Select the model at dispatch from the actual engineering responsibility. Work that substantially
