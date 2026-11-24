@@ -51,10 +51,10 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/battle/battlefield-navigation.md",
-      "sourceSha256": "3a3f6b18630a01a103b06f10cc2e1d23d91f86bd6a90aae32bcbb1550789cb97",
-      "mirrorSha256": "681500b4e40454cef16f3f2978fcef39d84a5b5c6b57789ca1e6e48701757b92",
+      "sourceSha256": "a368733227cde089ffc6bba25a4168934cd7238e382e99da1d0be82a98800a46",
+      "mirrorSha256": "e4fd11e1537318a440ddca1796416bac245779f60bc2b1d52068fd9bfaf5d139",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
-      "translatedDate": "2026-11-20"
+      "translatedDate": "2026-11-24"
     },
     {
       "source": "docs/design/contracts/battle/combat-resolution.md",
@@ -81,10 +81,10 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/interface/dialogue-system.md",
-      "sourceSha256": "957ecf931840f3eaff1435d1b9b128d98c7967c4975a00602ef70bcfbf254ab0",
-      "mirrorSha256": "5bb0bde87733f7d81cb6aabd77c3555c4c30f3c9c3cd5994c1c4eb49c4ac68f5",
+      "sourceSha256": "11a4707e060a0c97bba64eaf89790c1e47f466488349db38bc2244ae5ccc8606",
+      "mirrorSha256": "00fa2453387eb46aa88261c90d87117bd9ade87861a25725e6bd7a1de96eac06",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
-      "translatedDate": "2026-11-20"
+      "translatedDate": "2026-11-24"
     },
     {
       "source": "docs/design/contracts/interface/input-system.md",
@@ -101,10 +101,10 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/contracts/interface/music-wait-service.md",
-      "sourceSha256": "1f8a16b320e405b5333246ee3f3e99cff5c8ed862ecfbec1e357b797100eb623",
-      "mirrorSha256": "e6eac43b1270be02b26f7c87a1796567ee54b8cd940c3ded91d913f7308918ec",
+      "sourceSha256": "539cf83fc404254de7c995d7f3750e69c4c622ad114b2af028ecfaffd1985963",
+      "mirrorSha256": "28d08fc282c17ccb559309df91312f5d976108feb1cbdf00c9353bda684e0342",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
-      "translatedDate": "2026-11-20"
+      "translatedDate": "2026-11-24"
     },
     {
       "source": "docs/design/contracts/party/caravan-and-deals-state.md",
@@ -181,10 +181,10 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/design-map.md",
-      "sourceSha256": "ce23c1558927da2e204935b185824ab2426fb8e6a284ccfd1c48316ee85aacf5",
-      "mirrorSha256": "59e67f976b2642f5590b1db806572af79a37454c4e1077bccfeaf7467420ad34",
+      "sourceSha256": "f25a35e4dbb7223cb610c3ffc34ee02a9d72288df494bee2514bdd0904de353a",
+      "mirrorSha256": "3c3b22a53ff396b1a038ac65e920cc17e0fddbacd5842d6e1b95b5387cf565c7",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
-      "translatedDate": "2026-11-20"
+      "translatedDate": "2026-11-24"
     },
     {
       "source": "docs/design/game-vision.md",
@@ -1141,10 +1141,10 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/tactical-battle-loop.md",
-      "sourceSha256": "50ef5a2b07601295b2a5ab8b500098fd0ee1182f98adcf98459a117c2985d316",
-      "mirrorSha256": "0e044cd172e78513c32d182c34de043bb16384148ea442c7ee564f4416fd7650",
+      "sourceSha256": "94b2381c70aa41b92cd1e5de4e17884d77d8828d7990fbd3fe6009754af1ed51",
+      "mirrorSha256": "09dfbc8b6b06f2d7cfe3ec728dbe77b5bf441c45b644379a531fa6cdaa63b77d",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
-      "translatedDate": "2026-11-20"
+      "translatedDate": "2026-11-24"
     }
   ]
 }
