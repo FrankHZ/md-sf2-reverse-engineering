@@ -4,6 +4,7 @@ using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Gameplay.Sf2;
+using Sf2.Remake.Domain.Maps;
 using Xunit;
 using static Sf2.Remake.Engine.Tests.EngineTestContent;
 using static Sf2.Remake.Engine.Tests.SilenceSpellTests;
@@ -46,6 +47,70 @@ public sealed class SilenceSessionTests
         Assert.Equal((byte?)0, session.Current.Battle.GetActor(Mage).Exp);
         Assert.DoesNotContain(done.Observations, e => e.Kind.StartsWith("rng-spell") || e.Kind == "exp");
         Assert.True(session.Current.HasBattleControl);
+    }
+
+    [Fact]
+    public void HealBackIsFreeButConfirmedSilencedHealPaysWithoutRecovery()
+    {
+        var heal = new SpellRef("heal", 1);
+        var caster = new ActorRef("medic-a");
+        var patient = new ActorRef("guard-a");
+        var session = Start("practice-yard", document =>
+        {
+            document["spells"]![0]!["id"] = "heal";
+            document["actors"]![0]!["spells"]![0]!["id"] = "heal";
+            document["start"]!["actors"]![0]!["status"] = "silence3";
+        });
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.South)));
+        Accept(session, new Confirm());
+        var before = session.Current;
+        var offer = session.QueryBattleChoices().Actions.Single(option => option.Action.Spell == heal);
+        Assert.True(offer.Enabled);
+        Assert.True(offer.SpellDescription!.SuppressedBySilence);
+        Assert.Contains(offer.Targets, target => target.Actor == patient && target.Enabled);
+        Assert.Same(before, session.Current);
+
+        Accept(session, new SelectBattleAction(offer.Action));
+        Accept(session, new SelectTarget(patient));
+        Accept(session, new ReturnToBattleActions());
+        Assert.Same(before.Battle, session.Current.Battle);
+        Assert.Same(before.Selection!.Preview, session.Current.Selection!.Preview);
+        Assert.Equal(BattleSelectionStage.ActionChoice, session.Current.Selection.Stage);
+
+        Accept(session, new SelectBattleAction(offer.Action));
+        var targeting = session.Current;
+        var rejected = Send(session, new SelectTarget(new("dummy-a")));
+        Assert.Equal("invalid-heal-target", rejected.Failure!.Code);
+        Assert.Empty(rejected.Observations);
+        Assert.Same(targeting, session.Current);
+        Accept(session, new SelectTarget(patient));
+
+        var prepared = Accept(session, new Confirm());
+        var scene = prepared.Snapshot.BattleScene!;
+        Assert.Equal(BattleScenePhase.Initialize, scene.Phase);
+        Assert.False(scene.HasReaction);
+        Assert.Equal(before.Battle.MainSeed, prepared.Snapshot.Battle.MainSeed);
+        Assert.Equal(before.Battle.ThinkingSeed, prepared.Snapshot.Battle.ThinkingSeed);
+        Assert.Equal(20, prepared.Snapshot.Battle.GetActor(caster).Mp);
+        Assert.Equal(9, prepared.Snapshot.Battle.GetActor(patient).Hp);
+
+        var initialized = Accept(session, new CompletePresentation(scene.Token, scene.CompletionKind));
+        var message = new Acknowledge(initialized.Snapshot.BattleScene!.Token);
+        var paid = Accept(session, message);
+        Assert.Equal(BattleScenePhase.SpellCost, paid.Snapshot.BattleScene!.Phase);
+        Assert.Equal(17, paid.Snapshot.Battle.GetActor(caster).Mp);
+        Assert.Equal(before.Battle.MainSeed, paid.Snapshot.Battle.MainSeed);
+        Assert.Equal(before.Battle.ThinkingSeed, paid.Snapshot.Battle.ThinkingSeed);
+        Assert.NotNull(Send(session, message).Failure);
+        Assert.Same(paid.Snapshot, session.Current);
+
+        var settled = FinishBattleScenes(session, paid);
+        Assert.Equal(17, settled.Snapshot.Battle.GetActor(caster).Mp);
+        Assert.Equal(9, settled.Snapshot.Battle.GetActor(patient).Hp);
+        Assert.Single(settled.Observations, effect => effect.Kind == "mp" && effect.Actor == caster);
+        Assert.Single(settled.Observations, effect => effect.Kind == "action-committed");
+        Assert.DoesNotContain(settled.Observations, effect => effect.Kind is "item-consumed" or "hp" or "exp");
+        Assert.Equal(before.Battle.ThinkingSeed, settled.Snapshot.Battle.ThinkingSeed);
     }
 
     [Theory]

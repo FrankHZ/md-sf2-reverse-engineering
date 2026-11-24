@@ -133,6 +133,48 @@ public sealed class BattleActionChoiceTests
     }
 
     [Fact]
+    public void ManualAttackSkipsNeutralOpponentAndSettlesOneOrdinaryHit()
+    {
+        var neutral = new ActorRef("raider");
+        var opponent = new ActorRef("scavenger");
+        var session = Start("stone-court", document =>
+            document["start"]!["actors"]![2]!["initialization"] =
+                new JsonObject { ["initialized"] = true, ["activationWord"] = 8 });
+        Accept(session, new Confirm());
+        var before = session.Current;
+        var attack = session.QueryBattleChoices().Actions.Single(option => option.Action.Kind == BattleActionKind.Physical);
+        Assert.True(attack.Enabled);
+        Assert.DoesNotContain(attack.Targets, candidate => candidate.Actor == neutral);
+        Assert.Contains(attack.Targets, candidate => candidate.Actor == opponent && candidate.Enabled);
+        Assert.Same(before, session.Current);
+
+        Accept(session, new SelectBattleAction(attack.Action));
+        var choosing = session.Current;
+        var rejected = Send(session, new SelectTarget(neutral));
+        Assert.Equal("physical-target", rejected.Failure!.Code);
+        Assert.Same(choosing, session.Current);
+        Assert.Empty(rejected.Observations);
+
+        Accept(session, new SelectTarget(opponent));
+        Assert.Same(before.Battle, session.Current.Battle);
+        var prepared = Accept(session, new Confirm());
+        Assert.Equal(BattleScenePhase.Initialize, prepared.Snapshot.BattleScene!.Phase);
+        Assert.Equal(before.Battle.ThinkingSeed, prepared.Snapshot.Battle.ThinkingSeed);
+        Assert.Equal(ConstructionSeed(prepared), prepared.Snapshot.Battle.MainSeed);
+        Assert.Equal(15, prepared.Snapshot.Battle.GetActor(opponent).Hp);
+
+        Assert.NotNull(Send(session, new Confirm()).Failure);
+        Assert.Same(prepared.Snapshot, session.Current);
+        var settled = FinishBattleScenes(session, prepared);
+        Assert.Equal(0, settled.Snapshot.Battle.GetActor(opponent).Hp);
+        Assert.Equal(15, settled.Snapshot.Battle.GetActor(neutral).Hp);
+        Assert.Single(settled.Observations, effect => effect.Kind == "hp" && effect.Actor == opponent);
+        Assert.Single(settled.Observations, effect => effect.Kind == "action-committed");
+        Assert.DoesNotContain(settled.Observations, effect => effect.Kind is "mp" or "item-consumed");
+        Assert.Equal(before.Battle.ThinkingSeed, settled.Snapshot.Battle.ThinkingSeed);
+    }
+
+    [Fact]
     public void PhysicalQueryUsesPreviewAndTheSelectedRuleForBothQueryAndConfirm()
     {
         var rule = new SmallPhysicalRule(block: "raider");

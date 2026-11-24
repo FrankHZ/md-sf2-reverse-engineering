@@ -32,7 +32,19 @@ public sealed class AttackItemSessionTests
         Assert.NotNull(initial.Progress!.CurrentStats);
 
         ReachNeighbor(session);
-        var result = Use(session, 2);
+        var before = session.Current;
+        var offer = session.QueryBattleChoices().Actions.Single(option => option.Action.ItemSlot == 2);
+        Assert.True(offer.Enabled);
+        Assert.Contains(offer.Targets, target => target.Actor == Center && target.Enabled);
+        Assert.Same(before, session.Current);
+        Accept(session, new SelectBattleAction(offer.Action));
+        Accept(session, new SelectTarget(Center));
+        Assert.Same(before.Battle, session.Current.Battle);
+        var result = Accept(session, new Confirm());
+        Assert.Equal(before.Battle.ThinkingSeed, result.Snapshot.Battle.ThinkingSeed);
+        Assert.Equal(ConstructionSeed(result), result.Snapshot.Battle.MainSeed);
+        Assert.NotNull(Send(session, new Confirm()).Failure);
+        Assert.Same(result.Snapshot, session.Current);
         Assert.Equal(item, session.Current.BattleScene!.AttackItem);
         Assert.Equal(new[] { Center }, session.Current.BattleScene.AttackTargets);
         Assert.True(session.Current.BattleScene.Critical);
@@ -51,8 +63,11 @@ public sealed class AttackItemSessionTests
         Assert.Equal(50 - damage, session.Current.Battle.GetActor(Center).Hp);
         Assert.Equal((byte?)experience, session.Current.Battle.GetActor(Caster).Exp);
         Assert.Equal(0, session.Current.Battle.GetActor(Caster).Mp);
+        Assert.Equal(new ushort[] { item.ItemId, 0, 127, 127 }, finished.Snapshot.Battle.GetActor(Caster).SourceLoadout!.Items);
         Assert.Single(finished.Observations, e => e.Kind == "item-consumed" && e.Before == item.ItemId && e.After == 2);
+        Assert.Single(finished.Observations, e => e.Kind == "hp" && e.Actor == Center);
         Assert.DoesNotContain(finished.Observations, e => e.Kind is "mp" or "silenced-cast");
+        Assert.Equal(before.Battle.ThinkingSeed, finished.Snapshot.Battle.ThinkingSeed);
         Assert.Equal(new ActorRef("guard"), session.Current.Selection!.Actor);
     }
 

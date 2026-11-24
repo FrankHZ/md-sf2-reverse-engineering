@@ -27,8 +27,8 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
     {
         var attacker = battle.GetActor(actor);
         var roster = side == OffensiveTargetSide.Opponents ? battle.Actors : BattleOffense.OrderedRoster(battle, attacker, side);
-        return Array.AsReadOnly(roster.Where(target => target.Hp > 0 && target.Position is not null &&
-            BattleOffense.Matches(attacker, target, side)).Select(target => target.Actor).ToArray());
+        return Array.AsReadOnly(roster.Where(target => CanTarget(attacker, target, side))
+            .Select(target => target.Actor).ToArray());
     }
     public BattleActorState RequireTarget(EngineBattleState battle, ActorRef actor, MapPosition destination,
         BattleActionRef action, ActorRef target)
@@ -83,13 +83,22 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
         var range = RequireActor(battle, actorRef);
         var actor = battle.GetActor(actorRef);
         var target = battle.Actors.SingleOrDefault(a => a.Actor == targetRef);
-        if (target is null || target.Hp == 0 || target.Position is null || !BattleOffense.Matches(actor, target, side))
+        if (target is null || !CanTarget(actor, target, side))
             throw new BattleRuleException("physical-target", "target");
         if (target.Definition.Physical is null)
             throw new BattleRuleException("physical-definition", "target.physical", true);
         if (!InRange(actor, target, destination, range))
             throw new BattleRuleException("target-range", "target");
         return target;
+    }
+
+    private static bool CanTarget(BattleActorState attacker, BattleActorState target, OffensiveTargetSide side)
+    {
+        // The manual attack grid excludes neutral occupants. Automatic decisions have their own roster.
+        bool manualAttack = side == OffensiveTargetSide.Opponents && attacker.Control == BattleControl.Player &&
+            !BattleControlRules.UsesTemporaryAllyAi(attacker);
+        return target.Hp > 0 && target.Position is not null && BattleOffense.Matches(attacker, target, side) &&
+            (!manualAttack || (target.ActivationWord & 8) != 8);
     }
 
     internal static bool InRange(BattleActorState actor, BattleActorState target, MapPosition destination, PhysicalActorDefinition range) =>

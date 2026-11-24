@@ -265,6 +265,10 @@ receipts, scripts and save copies.
 The focused cases exercise both elements with seeded damage and EXP, silenced zero-MP use by
 a promoted holder, real stat refresh on consumption, the duplicate/changed slot, ineligible
 targets, drop capacity before consumption and Running Ring removal after a confirmed stop.
+The selected slot is offered at the provisional stop. Query and target choice keep the live pack
+and both RNG streams intact. Confirm consumes slot 2 while the identical item in slot 0 remains.
+Scene completion applies damage once with the compacted pack and unchanged MP.
+[Action and payment review](gameplay-rules.md#action-admission-construction-and-payment-review)
 The maintained engine check passed 2,936 cases with 49 configured private-input skips.
 The Release adapter and the incremental Debug build passed. Early focused runs found invalid
 controlled test inputs and a pre-movement identity assertion. The native rehearsals exposed
