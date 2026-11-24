@@ -71,7 +71,7 @@ internal sealed partial class BattleMenuLayout : Control
         AddChild(Actor); AddChild(Target);
         Context.AutowrapMode = TextServer.AutowrapMode.Off;
         AddChild(Terrain); AddChild(_context); _context.AddChild(Context);
-        _commandList = new(Commands) { Name = "Commands", CaptionSize = 24, Visible = false,
+        _commandList = new(Commands) { Name = "Commands", CaptionSize = 24, DrawActionSurfaces = true, Visible = false,
             InvalidatePointer = () => InvalidatePointer() };
         _commandList.ItemRectChanged += () => InvalidatePointer();
         AddChild(_commandList);
@@ -159,6 +159,7 @@ internal sealed partial class BattleMenuLayout : Control
         _decisionContext = context;
         _commandList.Visible = main;
         if (main) _commandList.Present(Commands.Select(command => command.Caption).ToArray());
+        else ClearCommandPointer();
         Heading.Visible = !main;
         Help.Visible = true;
         Arrange(Size);
@@ -198,6 +199,14 @@ internal sealed partial class BattleMenuLayout : Control
         var (index, rectangle) = _commandList.Hit(position);
         return index >= 0 ? ($"command:{index}", rectangle) : (null, default);
     }
+
+    internal void PresentCommandPointer(Vector2 position, string? pressedId)
+    {
+        var (index, _) = _commandList.Hit(position);
+        _commandList.PresentPointer(index, index >= 0 && pressedId == $"command:{index}");
+    }
+
+    internal void ClearCommandPointer() => _commandList?.PresentPointer(-1, false);
 
     internal void Wheel(Vector2 position, int step)
     {
@@ -270,7 +279,7 @@ internal sealed partial class BattleMenuLayout : Control
         commands = Commands.Select((button, index) => new { id = button.Identity, label = button.Caption,
             visible = button.IsVisibleInTree(), selected = button.Selected, enabled = button.Available,
             rect = BattleMapViewport.Rectangle(_commandList.RowRect(index)), caption = BattleMapViewport.Rectangle(_commandList.CaptionRect(index)),
-            art = button.ObserveArt() }).ToArray(),
+            surfaceColor = _commandList.RowSurfaceColor(index), art = button.ObserveArt() }).ToArray(),
     };
 
     // Field/battle handoff reparents this same view. Retain its borrowed textures until

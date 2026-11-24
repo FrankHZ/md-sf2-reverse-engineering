@@ -11,8 +11,11 @@ internal sealed partial class CompactCommandList : Control
     private readonly List<Control> _rows = [];
     private readonly List<Label> _labels = [];
     private readonly List<Label> _markers = [];
+    private int _hovered = -1;
+    private bool _pressed;
     internal float RequestedHeight { get; private set; }
     internal int CaptionSize { get; init; } = 30;
+    internal bool DrawActionSurfaces { get; init; }
     internal Action InvalidatePointer { get; set; } = () => { };
 
     internal CompactCommandList(DiamondCommandButton[] icons)
@@ -69,6 +72,29 @@ internal sealed partial class CompactCommandList : Control
             y += height + Gap;
         }
         RequestedHeight = Mathf.Max(0, y - Gap); Size = new(width, RequestedHeight);
+        if (DrawActionSurfaces) QueueRedraw();
+    }
+
+    internal void PresentPointer(int hovered, bool pressed)
+    {
+        if (_hovered == hovered && _pressed == pressed) return;
+        _hovered = hovered;
+        _pressed = pressed;
+        QueueRedraw();
+    }
+
+    private string SurfaceColor(int index)
+    {
+        if (!_icons[index].Available) return StoryTheme.ActionDisabled;
+        if (index != _hovered) return StoryTheme.ActionNormal;
+        return _pressed ? StoryTheme.ActionPressed : StoryTheme.ActionHover;
+    }
+
+    public override void _Draw()
+    {
+        if (!DrawActionSurfaces) return;
+        for (int i = 0; i < _rows.Count; i++)
+            DrawRect(_rows[i].GetRect(), new Color(SurfaceColor(i)));
     }
 
     internal (int Index, Rect2 Rect) Hit(Vector2 position)
@@ -81,6 +107,7 @@ internal sealed partial class CompactCommandList : Control
 
     internal Rect2 RowRect(int index) => _rows[index].GetGlobalRect();
     internal Rect2 CaptionRect(int index) => _labels[index].GetGlobalRect();
+    internal string? RowSurfaceColor(int index) => DrawActionSurfaces ? SurfaceColor(index) : null;
 
     internal object Observe() => new { visible = IsVisibleInTree(), rect = BattleMapViewport.Rectangle(GetGlobalRect()),
         rows = _rows.Select((row, i) => new { label = _labels[i].Text, selected = _icons[i].Selected,

@@ -19,6 +19,8 @@ internal static class StoryTheme
     internal const int GameplayInset = 32, MenuHeight = 56;
     internal const int BelowMenu = GameplayInset + MenuHeight + 24;
     internal const int BodySize = 30, HintSize = 24;
+    internal const string ActionNormal = "102c50", ActionHover = "204c76", ActionPressed = "354c64",
+        ActionDisabled = "142235";
     internal static readonly Color Selected = new("ffe19a");
     internal static readonly Color Unavailable = new("8e9bab");
     // Journey rows reserve marker space. Standalone actions share the square states.
@@ -27,10 +29,10 @@ internal static class StoryTheme
         var theme = Create();
         theme.SetFontSize("font_size", "TooltipLabel", HintSize);
         theme.SetColor("font_color", "TooltipLabel", theme.GetColor("font_color", "Label"));
-        theme.SetStylebox("normal", "Button", Box("102c50", "607d9f"));
-        theme.SetStylebox("hover", "Button", Box("204c76", "d4c5a0"));
-        theme.SetStylebox("pressed", "Button", Box("354c64", "ffe19a"));
-        theme.SetStylebox("disabled", "Button", Box("142235", "435267"));
+        theme.SetStylebox("normal", "Button", Box(ActionNormal, "607d9f"));
+        theme.SetStylebox("hover", "Button", Box(ActionHover, "d4c5a0"));
+        theme.SetStylebox("pressed", "Button", Box(ActionPressed, "ffe19a"));
+        theme.SetStylebox("disabled", "Button", Box(ActionDisabled, "435267"));
         theme.SetStylebox("focus", "Button", Focus());
         theme.SetColor("font_color", "Button", new("f4f5fc"));
         theme.SetColor("font_hover_color", "Button", Colors.White);
@@ -46,7 +48,7 @@ internal static class StoryTheme
         theme.SetColor("font_placeholder_color", "LineEdit", new("a7b9cf"));
         if (journey)
         {
-            theme.SetStylebox("normal", "Button", Box("102c50", "536c87", borderWidth: 1));
+            theme.SetStylebox("normal", "Button", Box(ActionNormal, "536c87", borderWidth: 1));
             theme.SetStylebox("normal", "EntrySelectedButton", Box("273d56", "ffe19a", borderWidth: 3));
             foreach (string type in new[] { "Button", "EntrySelectedButton" })
                 foreach (string state in new[] { "normal", "hover", "pressed", "disabled" })
