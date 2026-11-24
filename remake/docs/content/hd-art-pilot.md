@@ -1,5 +1,7 @@
 # HD art pilot for the pre-voyage demo (#1700)
 
+The [pre-voyage rollout](hd-rollout.md) owns the current coverage, production decisions and rollout order.
+
 Start with **one static Medical Herb identity in the field inventory**, in its normal and selected states. Try palette-preserving Scale2x first. Reserve GPT Image for art direction on independently authored or licensed references. In the trial below, a redraw makes glass and flame easier to distinguish, but it adds an edge fringe even with an explicit transparency request.
 
 **Standard rigor.** This design connects asset publication, an already-mounted presenter and saved preferences. The decision now is which pair merits a playable test. The #1703 implementation below admits this one field pair through the existing content path and adds the saved setting. Art recognition and selection clarity still require player acceptance under #1699; the later [Map3 review](asset-inventory.md) adds field blocks, actor poses and portraits.
