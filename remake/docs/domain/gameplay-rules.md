@@ -566,6 +566,13 @@ wrong-class initial equipment, unsupported classes/status/control and inconsiste
 reject explicitly. The [static ring agreement](ring-equipment-design.md#remake-loadout-actions-and-stats)
 owns the independent ring choice, post-status stats and compatible Continue.
 
+When Main Back ends action selection, movement reach is still weighted from the committed turn
+origin. A preview in range resumes Movement at that cell. If changed equipment reduced MOV below
+the preview's cost, the existing movement continuation delivers the validated path in reverse.
+The gear change survives, and the player reselects with the current budget. While the action
+menu is open, the already confirmed stop follows the ring agreement above.
+[Battle menu return contract](../godot/battle-ui-composition.md#main-back-and-movement-reselection)
+
 **Confirmed static provenance:** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to
 `disasm/`: `code/common/stats/itemstats.asm:GetEquippableWeapons/GetEquippableItemsByType`,
 `IsItemEquippable/IsWeaponOrRingEquippable`, `GetEquippedWeapon`, `EquipItemBySlot` and

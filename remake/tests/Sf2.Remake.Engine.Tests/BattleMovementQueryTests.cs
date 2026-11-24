@@ -55,6 +55,27 @@ public sealed class BattleMovementQueryTests
         Assert.Equal(10, BattleMovement.Preview(session.Current.Battle, range.Actor, new(8, 3)).Cost);
         Assert.Equal("occupied-destination", Assert.Throws<BattleRuleException>(() =>
             BattleMovement.RequireStop(session.Current.Battle, range.Actor, new(4, 3))).Code);
+
+        FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
+        Assert.Equal("occupied-destination", Send(session, new Confirm()).Failure!.Code);
+        for (int x = 5; x <= 8; x++)
+        {
+            FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
+            Accept(session, new Confirm());
+            Accept(session, new Cancel());
+            Assert.Equal(new MapPosition(x, 3), session.Current.Selection!.Preview.Destination);
+            Assert.Equal(range.Origin, session.Current.Battle.GetActor(range.Actor).Position);
+            Assert.Null(session.Current.BattleMovement);
+        }
+        Assert.Equal("movement-range", Send(session, new Move(ExplorationDirection.East)).Failure!.Code);
+        Accept(session, new Confirm());
+        var ready = session.Current;
+        var commit = new CommandEnvelope(ready.SessionId, ready.Revision, range.Actor, new CommitBattleStay());
+        var committed = session.Submit(commit);
+        Assert.Null(committed.Failure);
+        Assert.Equal(new MapPosition(8, 3), committed.Snapshot.Battle.GetActor(range.Actor).Position);
+        Assert.Single(committed.Observations, e => e.Kind == "action-committed" && e.Actor == range.Actor);
+        Assert.Equal("stale-input", session.Submit(commit).Failure!.Code);
     }
 
     [Theory]
@@ -77,7 +98,7 @@ public sealed class BattleMovementQueryTests
     }
 
     [Fact]
-    public void PreviewAndReturnKeepCommittedOriginAndCancelRestoresRange()
+    public void MainBackRestoresRangeFromOriginalOriginWithoutReturn()
     {
         var session = Start();
         var original = session.QueryBattleMovementRange()!;
@@ -89,10 +110,12 @@ public sealed class BattleMovementQueryTests
         Assert.Equal(original.ReachableCells, session.QueryBattleMovementRange()!.ReachableCells);
         Accept(session, new Confirm());
         Assert.Null(session.QueryBattleMovementRange());
+        var atMenu = session.Current;
         var cancel = Accept(session, new Cancel());
-        Assert.Equal(BattleMovementPurpose.Return, session.Current.BattleMovement!.Purpose);
-        Assert.Equal(original.ReachableCells, session.QueryBattleMovementRange()!.ReachableCells);
-        FinishMovement(session, cancel);
+        Assert.Equal(SessionStopReason.PlayerInput, cancel.StopReason);
+        Assert.Null(session.Current.BattleMovement);
+        Assert.Same(atMenu.Battle, session.Current.Battle);
+        Assert.Same(atMenu.Selection!.Preview, session.Current.Selection!.Preview);
         Assert.Equal(original.Origin, session.QueryBattleMovementRange()!.Origin);
         Assert.Equal(original.ReachableCells, session.QueryBattleMovementRange()!.ReachableCells);
     }

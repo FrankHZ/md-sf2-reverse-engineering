@@ -71,8 +71,10 @@ public sealed class PrivateBattleInitializationTests
         Assert.Equal(0xBEEF4321u, state.ThinkingSeed); Assert.Equal(0x5678u, state.MainSeed & 65535);
         var preview = FinishMovement(first.Session, Accept(first.Session, new Move(ExplorationDirection.East)));
         Assert.Equal(cost, preview.Snapshot.Selection!.Preview.Cost); Battle02OutcomeTests.UnchangedExceptFacing(state, preview.Snapshot.Battle, player.Actor, 0);
-        Accept(first.Session, new Confirm()); var cancelled = FinishMovement(first.Session, Accept(first.Session, new Cancel()));
-        Assert.Equal(new MapPosition(2, 2), cancelled.Snapshot.Selection!.Preview.Destination); Battle02OutcomeTests.UnchangedExceptFacing(state, cancelled.Snapshot.Battle, player.Actor, 2);
+        Accept(first.Session, new Confirm());
+        var cancelled = Accept(first.Session, new Cancel());
+        Assert.Same(preview.Snapshot.Selection!.Preview, cancelled.Snapshot.Selection!.Preview);
+        Battle02OutcomeTests.UnchangedExceptFacing(state, cancelled.Snapshot.Battle, player.Actor, 0);
         Assert.Equal(before, JsonSerializer.Serialize(input)); Assert.NotSame(state, second.Session.Current.Battle);
     }
 

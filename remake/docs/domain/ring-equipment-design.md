@@ -121,8 +121,10 @@ existing controlled refresh evidence are sufficient for selecting these remake r
   Prefer one internal action view with the acting member at the confirmed stop, based on the
   session-owned selection, so each action can reuse its existing validation. Keep the live
   origin for movement undo and retain the validated path as the return route if the reduced
-  budget cannot rebuild it. Back to Movement recalculates reach using current MOV and keeps
-  the committed equipment change. Direct movement and AI still require their ordinary budget.
+  budget cannot rebuild it. Main Back resumes Movement at the preview if it is still in range.
+  If the new budget excludes the preview, Main Back delivers that return path to the turn origin.
+  In both cases reselection uses current MOV and keeps the committed equipment change. Direct
+  movement and AI still require their ordinary budget.
   [Original movement and Back](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlefunctions/battlefunctions_2.asm#L99-L159) ·
   [Remake movement](../../src/Sf2.Remake.Domain/Battles/Rules/BattleMovement.cs) ·
   [Selection dispatcher](../../src/Sf2.Remake.Application/Runtime/Battles/BattleCommandDispatcher.cs)

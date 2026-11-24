@@ -297,10 +297,28 @@ public sealed class RingEquipmentTests
         Assert.Contains(committed.Observations, o => o.Kind == "movement" && o.From == new MapPosition(4, 5) && o.To == destination);
 
         var back = Send(after, new Cancel()).Snapshot;
-        Assert.Equal(preview.Path.Reverse(), back.BattleMovement!.Path);
+        Assert.Equal(BattleMovementPurpose.Return, back.BattleMovement!.Purpose);
+        Assert.Equal(preview.Path.Reverse(), back.BattleMovement.Path);
         Assert.Equal(BattleSelectionStage.Movement, back.Selection!.Stage);
-        Assert.DoesNotContain(destination, BattleMovement.Destinations(back.Battle, Hero));
+        Assert.Equal("movement-pending",
+            BattleMovementContinuation.Submit(back, new CommitBattleStay()).Failure!.Code);
+        while (back.BattleMovement is { } movement)
+        {
+            var arrived = BattleMovementContinuation.Submit(back, new CompletePresentation(movement.Token, movement.CompletionKind));
+            Assert.Null(arrived.Failure);
+            back = arrived.Snapshot;
+        }
+        var range = BattleMovementQuery.Query(back)!;
+        Assert.Equal(new MapPosition(4, 5), range.Origin);
+        Assert.Equal(range.Origin, back.Selection!.Preview.Destination);
+        Assert.Contains(new MapPosition(10, 5), range.Destinations);
+        Assert.DoesNotContain(new MapPosition(11, 5), range.Destinations);
+        Assert.DoesNotContain(destination, range.Destinations);
         Assert.Equal((ushort)22, back.Battle.GetActor(Hero).SourceLoadout!.Items[0]);
+
+        var reselected = Send(back, new Move(ExplorationDirection.East)).Snapshot;
+        Assert.Equal(range.Origin, reselected.BattleMovement!.From);
+        Assert.Equal(new MapPosition(5, 5), reselected.BattleMovement.To);
     }
 
     private static SessionResult Send(SessionSnapshot current, SessionCommand command)

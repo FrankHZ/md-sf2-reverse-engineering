@@ -407,6 +407,8 @@ public sealed class Battle02OutcomeTests
         FinishMovement(session, Accept(session, new Move(ExplorationDirection.East)));
         UnchangedExceptFacing(before, session.Current.Battle, actor, 0);
         Accept(session, new Confirm()); Assert.Equal((byte)0, session.Current.Battle.GetActor(actor).Facing);
+        Accept(session, new Cancel());
+        UnchangedExceptFacing(before, session.Current.Battle, actor, 0);
         FinishMovement(session, Accept(session, new Cancel()));
         UnchangedExceptFacing(before, session.Current.Battle, actor, 2);
     }
