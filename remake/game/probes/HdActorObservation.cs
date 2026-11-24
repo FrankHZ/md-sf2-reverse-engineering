@@ -240,7 +240,7 @@ public partial class HdActorObservation : Node
                 var select = typeof(ExplorationPresentation).GetMethod("Sprite", BindingFlags.Instance | BindingFlags.NonPublic)!;
                 foreach (string mode in new[] { "original", "hd", "original" })
                 {
-                    if (mode == "hd") presentation.PreparePaintedRasters(new MapId("synthetic"));
+                    presentation.PrepareGraphicsRasters(new MapId("synthetic"), mode);
                     settings.GraphicsMode = mode;
                     for (int half = 0; half < 2; half++)
                         foreach (bool shadowless in new[] { false, true })
@@ -261,9 +261,67 @@ public partial class HdActorObservation : Node
                                 "actual exploration shadow and transparent coverage");
                         }
                 }
+                if (hasAlternateHd) ObserveFieldPreparation(presentation, settings, visuals, select);
             }
             owner.Free();
         }
         GD.Print("EXPLORATION-ALTERNATE-SHADOW PASS");
+    }
+
+    private static void ObserveFieldPreparation(ExplorationPresentation presentation, InputSettings settings,
+        ExplorationVisuals visuals, MethodInfo select)
+    {
+        var source = typeof(ExplorationPresentation).GetField("_visuals", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        var sprite = visuals.Sprites[252];
+        var map = new MapId("synthetic");
+        var entity = new ExplorationEntity(new("synthetic"), EntityMotionState.At(new(0, 0), 1, 0), true,
+            Slot: 0, Sprite: 252, SpriteRequest: 1);
+        var bad = BrokenPng(96, 48);
+        var badHd = BrokenPng(384, 192);
+        void Bind(ExplorationSpriteVisual actor) => source.SetValue(presentation, visuals with
+        { Sprites = new Dictionary<int, ExplorationSpriteVisual> { [252] = actor } });
+        ImageTexture Texture() => (ImageTexture)select.Invoke(presentation, [entity, false, map, 0])!;
+        void Reject(string mode, string label)
+        {
+            string before = settings.GraphicsMode;
+            var texture = Texture();
+            using var pixels = texture.GetImage();
+            var bytes = pixels.GetData();
+            bool rejected = false;
+            try { presentation.PrepareGraphicsRasters(map, mode); }
+            catch (InvalidOperationException error) when (error.Message == "raster-decode") { rejected = true; }
+            Check(rejected, "field " + label + " rejected in prepare");
+            var retained = Texture();
+            using var after = retained.GetImage();
+            Check(settings.GraphicsMode == before && retained == texture && after.GetSize() == pixels.GetSize() &&
+                after.GetData().SequenceEqual(bytes), "field " + label + " retains mode, texture and pixels");
+            GD.Print("EXPECTED-FIELD-DECODE-REJECTION ", label);
+        }
+
+        Bind(sprite with { Directions = [bad, bad, bad],
+            Graphics = new Dictionary<string, IReadOnlyList<ExplorationRaster>> { ["pose"] = [bad, bad, bad] } });
+        presentation.PrepareGraphicsRasters(map, "hd");
+        settings.GraphicsMode = "hd";
+        Reject("original", "valid HD to broken Original");
+
+        Bind(sprite);
+        presentation.PrepareGraphicsRasters(map, "original");
+        settings.GraphicsMode = "original";
+        Bind(sprite with { HdGraphics = new Dictionary<string, IReadOnlyList<ExplorationRaster>> { ["pose"] = [badHd, badHd, badHd] } });
+        Reject("hd", "broken HD alternate");
+
+        Bind(sprite with { HdDirections = null, HdGraphics = null });
+        presentation.PrepareGraphicsRasters(map, "hd");
+        settings.GraphicsMode = "hd";
+        Check(Texture().GetWidth() == 48, "field prepare accepts missing-HD Original fallback");
+        Bind(sprite with { HdDirections = null, Directions = [bad, bad, bad], HdGraphics = null });
+        Reject("hd", "broken Original direction fallback");
+        Bind(sprite with { HdGraphics = null,
+            Graphics = new Dictionary<string, IReadOnlyList<ExplorationRaster>> { ["pose"] = [bad, bad, bad] } });
+        Reject("hd", "broken Original alternate fallback");
+        source.SetValue(presentation, visuals with { Portraits = new Dictionary<int, ExplorationPortraitVisual>
+        { [0] = new(0, BrokenPng(64, 64)) } });
+        Reject("hd", "broken Original portrait fallback");
+        source.SetValue(presentation, visuals);
     }
 }

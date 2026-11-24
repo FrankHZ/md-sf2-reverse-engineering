@@ -14,20 +14,12 @@ internal sealed partial class ExplorationPresentation : IDisposable
     private readonly Control _owner;
     private readonly ExplorationPaletteView _palette;
     private IReadOnlyDictionary<int, string> _spriteGraphics = new Dictionary<int, string>();
-    private bool _paintPrepared;
     private MapId? _terrainMap;
-    internal void PreparePaintedRasters(MapId map)
+    internal void PrepareGraphicsRasters(MapId map, string mode)
     {
         if (_visuals is null) return;
-        if (_visuals.Maps.TryGetValue(map, out var visual)) _mapTextures.PrepareHd(visual);
-        if (_paintPrepared) return;
-        foreach (var raster in _visuals.Sprites.Values.SelectMany(sprite => (sprite.HdDirections ?? [])
-            .Concat(sprite.HdGraphics?.Values.SelectMany(directions => directions) ?? []))
-            .Concat(_visuals.Portraits.Values.Select(portrait => portrait.HdRaster).OfType<ExplorationRaster>()))
-        {
-            using var decoded = ExplorationRasterImages.Open(raster);
-        }
-        _paintPrepared = true;
+        if (mode == "hd" && _visuals.Maps.TryGetValue(map, out var visual)) _mapTextures.PrepareHd(visual);
+        ExplorationRasterImages.PrepareActors(_visuals, mode == "hd");
     }
     private bool Painted(MapId map) => _settings.GraphicsMode == "hd" &&
         _visuals?.Maps.GetValueOrDefault(map)?.HdBlocks is not null;

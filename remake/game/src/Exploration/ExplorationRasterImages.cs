@@ -5,6 +5,28 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 
 internal static class ExplorationRasterImages
 {
+    internal static void PrepareActors(ExplorationVisuals? visuals, bool hd)
+    {
+        if (visuals is null) return;
+        foreach (var sprite in visuals.Sprites.Values)
+        {
+            foreach (var raster in hd ? sprite.HdDirections ?? sprite.Directions : sprite.Directions)
+            {
+                using var decoded = Open(raster);
+            }
+            foreach (var (name, original) in sprite.Graphics ?? new Dictionary<string, IReadOnlyList<ExplorationRaster>>())
+                foreach (var raster in hd ? sprite.HdGraphics?.GetValueOrDefault(name) ?? original : original)
+                {
+                    using var decoded = Open(raster);
+                }
+        }
+        foreach (var portrait in visuals.Portraits.Values)
+        {
+            var raster = hd ? portrait.HdRaster ?? portrait.Raster : portrait.Raster;
+            using var decoded = Open(raster);
+        }
+    }
+
     internal static Rect2 TextureRegion(Rect2 logicalRegion, Texture2D texture)
     {
         float density = texture.GetWidth() / 24f;
