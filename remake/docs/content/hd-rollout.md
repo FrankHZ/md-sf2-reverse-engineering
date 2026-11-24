@@ -17,8 +17,9 @@ Reuse the admitted original for the selected palette and frame. Where a caller n
 original, join its prepared index to that caller and verify Original first. Use only authorized
 materials for derivation and keep the existing private publication and public-asset boundaries.
 The [static terrain selection](asset-inventory.md#pre-voyage-static-terrain-2175) carries the Map3
-companion and the other nineteen banks. The [UI raster extension](asset-inventory.md#pre-voyage-ui-rasters-2178) carries the closed
-battle, actor, portrait and terrain selections forward.
+companion and the other nineteen banks. The current complete [entry-layer selection](asset-inventory.md#pre-voyage-entry-layers-2179)
+carries six switchable title/Witch layers together with the #2178 UI, battle, actor, portrait
+and terrain selections.
 
 ## Coverage from the selected package
 
@@ -652,8 +653,7 @@ motion and the existing Witch clock remain the governing behavior.
 
 Owned paths are EntryPresentationReader, EntryPresentationAssets, EntryBackdrop,
 SessionEntryView, remake_private_package, remake_hd_entry, the entry observation and
-these content owners. The coordinating gate also transferred the single producer-path
-registration in verification_engine_paths after confirming exclusive ownership. All textures are prepared at mount before Settings can publish a
+these content owners. All textures are prepared at mount before Settings can publish a
 mode. A complete six-layer alternate group uses HD. A partial group uses Original for
 all six layers, and every declared resource still undergoes admission and decoding.
 
@@ -717,9 +717,7 @@ errors in positive cases. Peak process/GPU memory and subjective visual acceptan
 **Unknown**; the 512 MiB process budget is an estimate, not a measured result.
 
 
-The first committed engine-scope plan rejected the unregistered new producer path. The
-coordinating gate transferred its single REMAKE_PRODUCER_PATHS registration after checking
-concurrent ownership. The producer consumes already prepared images and changes only private
-remake presentation. Research selection rules retain their existing boundary. Local engine
-verification passed 3,258 tests with 50 existing skips. Release adapter and the selected
-PrivateAdmission/LiveInspection builds passed. Actual CI results are retained on the Draft PR.
+The entry producer consumes already prepared images and changes private remake presentation.
+Its path is registered in `REMAKE_PRODUCER_PATHS`. On a clean committed head, select checks
+with `uv run sf2 verify plan --base origin/main --head HEAD --scope engine` after reviewing
+the engine-only semantic boundary. The PR retains local and CI verification results.
