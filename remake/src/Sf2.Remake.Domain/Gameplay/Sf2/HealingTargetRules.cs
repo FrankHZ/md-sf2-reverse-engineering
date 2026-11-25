@@ -46,7 +46,7 @@ internal static class HealingTargetRules
         var target = RequireCenter(battle, actor, destination, spell, center);
         if (spell.Targets == HealingTargets.Single) return [target];
         var caster = battle.GetActor(actor);
-        if (spell.IsAura) RequireAuraCaster(battle, caster);
+        if (spell.IsAura) { ValidateAreaRoster(battle.Definition); RequireAuraCaster(battle, caster); }
         var origin = center == actor ? destination : target.Position!;
         var placed = PlacedSide(battle, caster);
         return spell.Targets == HealingTargets.AuraAllAllies ? placed : placed.Where(row =>
@@ -66,6 +66,7 @@ internal static class HealingTargetRules
     internal static IReadOnlyList<BattleActorState> ResolveItem(EngineBattleState battle, ActorRef actor,
         MapPosition destination, HealingItemDefinition item, ActorRef center)
     {
+        if (item.EquipmentEffect is { } spell) return Resolve(battle, actor, destination, spell, center);
         bool party = item.Effect == HealingItemEffect.FullPartyHp;
         if (party && center != actor) throw new BattleRuleException("invalid-aura-center", "target");
         var target = RequireTarget(battle, actor, destination, item.MinimumRange, item.MaximumRange, center);

@@ -1201,6 +1201,23 @@ using `derived/issue2271/equipment-v1` as `-Package` and a fresh ignored destina
 reader/native commands, controlled custody, results and preserved failures. Full class/resource
 closure remains E and future acquisition remains with the campaign owner.
 
+### Use consumer reuse (#2273)
+
+D adds no asset package, capture or downloaded source. It reuses the complete174-file,
+365,753,566-byte `derived/issue2272/equipment-v1` package and independent #2266 catalog/#2252
+opening/#2255 Witch selections. Its three ordinary-input witnesses use already mounted VICR,
+BRGN and SORC bodies with existing equipped weapon layers; the newly used late item is bare.
+White Ring AURA2, Grand Cannon DISPEL1 and Evil Ring BOLT2 use the existing Item gesture and
+functional messages. This does not claim their original effect choreography (#2104) or create
+late weapon/body keys. E still owns that complete class/resource closure. The production reader
+checks the25 nonempty source Use bindings in all26 encounters, without adding learned spells.
+
+Processing remains O(package bytes + source records); one shared read-only package and small
+checkout-local scripts/seeds/receipts suffice. No full package copy is produced. The existing2GiB
+peak/scratch and1GiB publication budgets remain planning limits, not measured peak memory.
+The [D owner](../domain/equipment-use-repair-design.md#d-reproduction-and-retained-boundaries)
+records exact reproduction, controlled custody, Repair/cold results and retained failures.
+
 ### Budget and pilot before expansion
 
 The accepted package is about345MiB. Preparation should be O(input package bytes + selected

@@ -46,26 +46,45 @@ internal static class PrivateBattleActionBindings
                 "source-supply-effect", "items.useSpell", true);
             yield return new(item.Id, item.DisplayName, spell!.Power, spell.MinimumRange, spell.MaximumRange, curesPoison, effect);
         }
+        foreach (var item in definitions.Items.Values.Where(item => item.ItemTypeExpression.Split('|').Contains("BREAKABLE") &&
+            item.UseSpell is "HEALIN" or "DETOX" or "AURA"))
+        {
+            var key = new SpellRef(item.UseSpell.ToLowerInvariant(), item.UseSpellLevel);
+            Require(definitions.Spells.TryGetValue(key, out var source), "source-equipment-healing", "items.useSpell", true);
+            HealingSpellDefinition effect;
+            if (item.UseSpell == "DETOX") effect = PoisonCure(definitions).Single(spell => spell.Spell == key);
+            else
+            {
+                Require(source is { Code: "HEALIN", Level: 1, Power: 10, MpCost: 0, MinimumRange: 0, MaximumRange: 1, Radius: 0,
+                    PropertiesExpression: "TYPE_HEAL|TARGET_TEAMMATES" } or
+                    { Code: "AURA", Level: 2, Power: 15, MpCost: 11, MinimumRange: 0, MaximumRange: 3, Radius: 2,
+                    PropertiesExpression: "TYPE_HEAL|TARGET_TEAMMATES|AFFECTEDBYSILENCE" },
+                    "source-equipment-healing-effect", "items.useSpell", true);
+                effect = new(key, source!.MpCost, source.Power, source.MinimumRange, source.MaximumRange,
+                    source.Code == "AURA" ? HealingTargets.AuraRadius : HealingTargets.Single, source.Radius);
+            }
+            yield return new(item.Id, item.DisplayName, effect.Power, effect.MinimumRange, effect.MaximumRange,
+                effect.CuresPoison, EquipmentEffect: effect);
+        }
     }
 
     internal static IEnumerable<SupportItemDefinition> SupportItems(PrivateBattleDefinitions definitions)
     {
-        foreach (var (id, code, effect) in new (byte, string, string)[]
-            { (19, "POWER_RING", "ATTACK"), (20, "PROTECT_RING", "BOOST") })
+        foreach (var item in definitions.Items.Values.Where(item => item.ItemTypeExpression.Split('|').Contains("BREAKABLE") &&
+            item.UseSpell is "ATTACK" or "BOOST" or "SPOIT" or "MUDDLE" or "DISPEL"))
         {
-            if (!definitions.Items.TryGetValue(id, out var item)) continue;
-            Require(item.Code == code && item.ItemTypeExpression == "RING|RARE|BREAKABLE" &&
-                item.EquipFlagsExpression == "ALL" && item.UseSpell == effect && item.UseSpellLevel == 1,
-                "source-support-item", "items.useSpell", true);
-            yield return new(id, item.DisplayName, PrivateSupportSpellBindings.Read(definitions, new(effect.ToLowerInvariant(), 1)));
+            var key = new SpellRef(item.UseSpell.ToLowerInvariant(), item.UseSpellLevel);
+            if (item.UseSpell != "SPOIT")
+            {
+                yield return new(item.Id, item.DisplayName, PrivateSupportSpellBindings.Read(definitions, key));
+                continue;
+            }
+            Require(definitions.Spells.TryGetValue(key, out var drain) &&
+                drain is { BaseId: 15, Code: "SPOIT", Level: 1, MpCost: 0, Power: 10, MinimumRange: 1, MaximumRange: 2,
+                    Radius: 0, PropertiesExpression: "TYPE_SPECIAL", AnimationExpression: "ABSORB" },
+                "source-drain-item-effect", "items.useSpell", true);
+            yield return new(item.Id, item.DisplayName, new(drain!.Spell, drain.MpCost, drain.MinimumRange, drain.MaximumRange, drain.Radius));
         }
-        if (!definitions.Items.TryGetValue(92, out var staff)) yield break;
-        Require(IsIndraStaff(staff), "source-indra-staff", "items.useSpell", true);
-        Require(definitions.Spells.TryGetValue(new("spoit", 1), out var drain) &&
-            drain is { BaseId: 15, Code: "SPOIT", Level: 1, MpCost: 0, Power: 10, MinimumRange: 1, MaximumRange: 2,
-                Radius: 0, PropertiesExpression: "TYPE_SPECIAL", AnimationExpression: "ABSORB" },
-            "source-indra-effect", "items.useSpell", true);
-        yield return new(staff.Id, staff.DisplayName, new(drain!.Spell, drain.MpCost, drain.MinimumRange, drain.MaximumRange, drain.Radius));
     }
 
     internal static bool IsIndraStaff(SourceItemDefinition item) =>
@@ -103,13 +122,14 @@ internal static class PrivateBattleActionBindings
             yield return new(item.Id, item.DisplayName, new(spell!.Spell, spell.MpCost, spell.Power,
                 spell.MinimumRange, spell.MaximumRange, spell.Radius, row.Element));
         }
-        if (!definitions.Items.TryGetValue(24, out var ring) || !IsBlackRing(ring)) yield break;
-        Require(definitions.Spells.TryGetValue(new("blaze", 2), out var blaze) &&
-            blaze is { BaseId: 11, Code: "BLAZE", Level: 2, MpCost: 6, Power: 10,
-                MinimumRange: 1, MaximumRange: 2, Radius: 1, PropertiesExpression: "TYPE_ATTACK|AFFECTEDBYSILENCE",
-                AnimationExpression: "BLAZE|VARIATION2" }, "source-black-ring-effect", "items.useSpell", true);
-        yield return new(ring.Id, ring.DisplayName, new(blaze!.Spell, 0, blaze.Power,
-            blaze.MinimumRange, blaze.MaximumRange, blaze.Radius, AttackSpellElement.Fire), Breakable: true);
+        var spells = PrivateAttackSpellBindings.Spells(definitions).ToDictionary(spell => spell.Spell);
+        foreach (var item in definitions.Items.Values.Where(item => item.ItemTypeExpression.Split('|').Contains("BREAKABLE") &&
+            item.UseSpell is "BLAZE" or "BOLT" or "FREEZE" or "DESOUL"))
+        {
+            var key = new SpellRef(item.UseSpell.ToLowerInvariant(), item.UseSpellLevel);
+            Require(spells.TryGetValue(key, out var effect), "source-equipment-attack", "items.useSpell", true);
+            yield return new(item.Id, item.DisplayName, effect!, Breakable: true);
+        }
     }
 
     internal static IEnumerable<HealingSpellDefinition> PoisonCure(PrivateBattleDefinitions definitions)

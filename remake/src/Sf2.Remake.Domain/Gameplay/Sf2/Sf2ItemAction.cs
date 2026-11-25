@@ -138,6 +138,7 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         if (id == 127) throw new BattleRuleException("empty-item-slot", "item.slot");
         if (!battle.Definition.HealingItems.TryGetValue(id, out var definition))
             throw new BattleRuleException("item-effect", "item", true);
+        if (definition.EquipmentEffect is not null) EquipmentItemUse.RequireOwner(battle, actor, id);
         return definition;
     }
 
@@ -148,24 +149,35 @@ internal sealed class Sf2ItemAction : IBattleActionRule
         var item = RequireItem(battle, actorRef, slot);
         var actor = battle.GetActor(actorRef);
         var targets = HealingTargetRules.ResolveItem(battle, actorRef, destination, item, targetRef);
-        var reactions = targets.Select(target => Reaction(actorRef, item, target)).ToArray();
+        var reactions = targets.Select(target => Reaction(actor, item, target)).ToArray();
         List<BattleEffect> effects = [];
         var checkedBattle = item.CuresPoison ? PoisonCureRules.PrepareIneffective(battle, actorRef, reactions, effects) : battle;
-        var items = actor.SourceLoadout!.Items.ToList();
-        ushort consumed = items[slot];
-        items.RemoveAt(slot);
-        items.Add(127);
-        var consumedActor = actor.With(position: destination, sourceLoadout: new(items, actor.SourceLoadout.Spells), refreshStats: true);
-        var paid = checkedBattle.With(actors: checkedBattle.Actors.Select(a => a.Actor == actorRef ? consumedActor : a));
-        effects.Add(new("item-consumed", actorRef, consumed, slot));
-        var award = BattleProgressionRules.Award(progression, paid, consumedActor, BattleActionKind.Item, reactions);
+        EquipmentItemUse? equipmentUse = null;
+        BattleActorState paidActor;
+        uint seed = checkedBattle.MainSeed;
+        if (item.EquipmentEffect is not null)
+        {
+            var wear = EquipmentItemUse.Apply(slot, actor, seed, effects);
+            equipmentUse = wear.Use;
+            seed = wear.Seed;
+            paidActor = wear.Owner.With(position: destination);
+        }
+        else
+        {
+            effects.Add(new("item-consumed", actorRef, actor.SourceLoadout!.Items[slot], slot));
+            paidActor = BattleEquipment.RemoveItem(actor, slot).With(position: destination);
+        }
+        var paid = checkedBattle.With(actors: checkedBattle.Actors.Select(a => a.Actor == actorRef ? paidActor : a), mainSeed: seed);
+        var award = BattleProgressionRules.Award(progression, paid, paidActor, BattleActionKind.Item, reactions);
         effects.AddRange(award.Effects);
         return new(paid.With(mainSeed: award.Seed), actorRef, destination, reactions,
-            new(actorRef, award.Amount), effects.AsReadOnly(), [], item);
+            new(actorRef, award.Amount), effects.AsReadOnly(), [], item, EquipmentUse: equipmentUse);
     }
 
-    internal static BattleReaction Reaction(ActorRef actor, HealingItemDefinition item, BattleActorState target)
+    internal static BattleReaction Reaction(BattleActorState owner, HealingItemDefinition item, BattleActorState target)
     {
+        if (item.EquipmentEffect is { } spell) return Sf2HealingRule.Reaction(owner, spell, target, "item-use", item: true);
+        var actor = owner.Actor;
         if (item.CuresPoison) return PoisonCureRules.Reaction(actor, target, "item-use");
         int missingHp = target.MaxHp - target.Hp;
         int hp = item.Effect switch

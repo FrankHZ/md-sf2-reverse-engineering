@@ -279,7 +279,7 @@ public sealed class BattleSceneState
     public bool IsMonsterBreath => AttackSpell?.IsMonsterBreath == true;
     public IReadOnlyList<ActorRef> AttackTargets => AttackSpell is null ? [] : Action.Reactions.Select(r => r.Target).ToArray();
     public HealingSceneCursor? Healing { get; }
-    public bool IsAura => Spell?.IsAura == true || Item?.Effect == HealingItemEffect.FullPartyHp;
+    public bool IsAura => Spell?.IsAura == true || Item?.EquipmentEffect?.IsAura == true || Item?.Effect == HealingItemEffect.FullPartyHp;
     internal bool SequencesRecoveryTargets => IsAura || Spell is { CuresPoison: true, Radius: > 0 };
     public IReadOnlyList<ActorRef> HealingTargets => Spell is null && !IsAura
         ? [] : Action.Reactions.Select(r => r.Target).ToArray();
@@ -295,7 +295,7 @@ public sealed class BattleSceneState
             return basis * 3 / 8;
         }
     }
-    public bool SwitchesAlly => (Item is not null || Spell is not null || EquipmentItem is not null && !AbsorbsMp) && Actor != Target;
+    public bool SwitchesAlly => (Item is not null || Spell is not null || EquipmentItem is not null && FriendlySupport) && Actor != Target;
     // Recovery switches caster/recipient on their actual faction's single scene side.
     private ActorRef RecoveryDisplayed => (SequencesRecoveryTargets || EquipmentItem is not null) && Phase == BattleScenePhase.TargetExit && ReactionIndex > 0
         ? Action.Reactions[ReactionIndex - 1].Target
@@ -580,7 +580,7 @@ internal static class BattleSceneContinuation
                 if (index + 1 < scene.Action.Reactions.Count)
                 {
                     index++;
-                    next = scene.EquipmentItem is not null ? BattleScenePhase.TargetExit :
+                    next = scene.EquipmentItem is not null && scene.FriendlySupport ? BattleScenePhase.TargetExit :
                         scene.Action.Reactions[index].Kind == BattleReactionKind.CurseRecoil ||
                         scene.Laser is not null || scene.AttackSpell is not null || scene.SupportSpell is not null
                             ? BattleScenePhase.TargetEnter : BattleScenePhase.ActionMessage;

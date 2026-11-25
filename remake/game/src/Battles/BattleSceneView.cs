@@ -601,6 +601,7 @@ internal sealed partial class BattleSceneView : Control
     {
         _messageFallback = "";
         if (Suppressed(state)) return "";
+        if (state.Phase == BattleScenePhase.EquipmentWearMessage) return SemanticMessage(state)!;
         if (state.Phase == BattleScenePhase.MuddleTurnMessage)
             return LocalizedMessage("battle.scene.muddle-expired", ActorName(state.Actor));
         if (state.Phase == BattleScenePhase.PhysicalInactionMessage && state.MuddleActionMessage is not null)
@@ -757,8 +758,8 @@ internal sealed partial class BattleSceneView : Control
             BattleScenePhase.AttackExpiredMessage => LocalizedMessage("battle.scene.attack-expired", Target()),
             BattleScenePhase.EquipmentWearMessage =>
                 LocalizedMessage(state.Wear == EquipmentWear.Damaged ? "battle.scene.item-damaged" : "battle.scene.item-destroyed",
-                    DisplayNames.Item(state.EquipmentItem?.ItemId ?? state.AttackItem!.ItemId,
-                        state.EquipmentItem?.Name ?? state.AttackItem!.Name)),
+                    DisplayNames.Item(state.EquipmentItem?.ItemId ?? state.Item?.ItemId ?? state.AttackItem!.ItemId,
+                        state.EquipmentItem?.Name ?? state.Item?.Name ?? state.AttackItem!.Name)),
             _ when state.ShowsStunCure => LocalizedMessage("battle.scene.stun-cleared", Target()),
             _ when state.ShowsCurseCure => LocalizedMessage("battle.scene.curse-cleared", Target()),
             BattleScenePhase.ResultMessage => state.ReactionKind switch

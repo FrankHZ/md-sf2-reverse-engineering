@@ -13,11 +13,13 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class EquipmentItemTests
 {
     private static SessionSnapshot At(ushort[] words, ushort targetStatus = 0, uint seed = 0, uint classMask = uint.MaxValue,
-        BattleClassRule? staffClass = null, byte casterMp = 0, byte? enemyMp = null, bool halve = true)
+        BattleClassRule? staffClass = null, byte casterMp = 0, byte? enemyMp = null, bool halve = true, SupportSpellDefinition? supportEffect = null, AttackSpellDefinition? attackEffect = null)
     {
         var basis = Battle(doc => doc["encounters"]![0]!["rewards"]!["halvedExperience"] = halve);
         var equipment = new BattleEquipmentDefinition(10,
-            [new(92, "Indra Staff", 1u << 17 | 1u << 18 | 1u << 19, 25, 1, 1, DamageOnUse: true)], rings:
+            [new(92, "Indra Staff", 1u << 17 | 1u << 18 | 1u << 19, 25, 1, 1, DamageOnUse: true),
+             new(102, "Iron Ball", 0, 44, 1, 1, DamageOnUse: true),
+             new(110, "Taros Sword", 0, 32, 1, 2, DamageOnUse: true)], rings:
             [new(19, "Attack Ring", classMask, RingStat.Attack, 5, DamageOnUse: true),
              new(20, "Defense Ring", classMask, RingStat.Defense, 5, DamageOnUse: true),
              new(21, "Quick Ring", uint.MaxValue, RingStat.Agility, 5),
@@ -35,9 +37,11 @@ public sealed class EquipmentItemTests
             supportSpells: old.SupportSpells.Values,
             give: new(new Dictionary<byte, string> { [0] = "Herb", [24] = "Black Ring" }),
             discard: new([new(0, "Herb", false, false), new(24, "Black Ring", true, false)]),
-            attackItems: [new(24, "Black Ring", new(new("blaze", 2), 0, 10, 1, 2, 1, AttackSpellElement.Fire), Breakable: true)],
+            attackItems: [new(24, "Black Ring", attackEffect ?? new(new("blaze", 2), 0, 10, 1, 2, 1, AttackSpellElement.Fire), Breakable: true),
+                new(102, "Iron Ball", new(new("blaze",3),10,15,1,2,1,AttackSpellElement.Fire), Breakable: true),
+                new(110, "Taros Sword", new(new("bolt",2),15,16,1,3,2,AttackSpellElement.Lightning), Breakable: true)],
             supportItems:
-            [new(19, "Attack Ring", new(new("attack", 1), 7, 1, 3, 0)),
+            [new(19, "Attack Ring", supportEffect ?? new(new("attack", 1), 7, 1, 3, 0)),
              new(20, "Defense Ring", new(new("boost", 1), 2, 0, 1, 1)),
              new(92, "Indra Staff", new(new("spoit", 1), 0, 1, 2, 0))]);
         var original = basis.GetActor(Mage);
@@ -368,4 +372,64 @@ public sealed class EquipmentItemTests
         Assert.Equal(15, current.Battle.GetActor(Mage).Attack);
         Assert.Equal(battle.MainSeed, current.Battle.MainSeed);
     }
+    [Theory]
+    [InlineData("dispel", 5, 0u)] [InlineData("dispel", 5, 0x12340000u)]
+    [InlineData("muddle", 6, 0u)] [InlineData("muddle", 6, 0x12340000u)]
+    public void HostileEquipmentSharesSpellResistanceBeforeOneWear(string name, byte mp, uint seed)
+    {
+        var effect = new SupportSpellDefinition(new(name, 1), mp, 1, 2, 1);
+        var start = At([19,127,127,127], seed: seed, supportEffect: effect);
+        var b = start.Battle;
+        var magic = Sf2SupportSpellAction.PrepareEffect(b, Mage, b.GetActor(Mage).Position!, effect, Smoke, new Sf2BattleProgressionRule());
+        var item = BattleActionRules.Prepare(new Sf2ItemAction(), b, Mage, b.GetActor(Mage).Position!,
+            new(BattleActionKind.Item, ItemSlot: 0), Smoke, new Sf2BattleProgressionRule());
+        Assert.Equal(magic.Reactions.Select(r => (r.Target,r.Kind,r.StatusWrite)), item.Reactions.Select(r => (r.Target,r.Kind,r.StatusWrite)));
+        Assert.Equal(new[]{"rng-"+name,"rng-item-wear","rng-exp-plus","rng-exp-minus"}, item.ConstructionEffects.Select(e => e.Kind).Where(k => k.StartsWith("rng-")));
+        var current = Accept(Select(start, 0, Smoke), new Confirm());
+        int steps = 0;
+        while (current.BattleScene is { } scene)
+        {
+            Assert.True(steps++ < 40);
+            Assert.False(scene.SwitchesAlly);
+            Assert.NotEqual(BattleScenePhase.SpellCost, scene.Phase);
+            var advanced = BattleSceneContinuation.Submit(current, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token) : new CompletePresentation(scene.Token, scene.CompletionKind));
+            Assert.Null(advanced.Failure); current = advanced.Snapshot;
+        }
+        Assert.Equal(0, current.Battle.GetActor(Mage).Mp);
+    }
+
+    [Theory]
+    [InlineData("blaze",2,10,2,1,AttackSpellElement.Fire)]
+    [InlineData("blaze",3,15,2,1,AttackSpellElement.Fire)]
+    [InlineData("bolt",1,14,2,1,AttackSpellElement.Lightning)]
+    [InlineData("bolt",2,16,3,2,AttackSpellElement.Lightning)]
+    [InlineData("freeze",3,18,3,1,AttackSpellElement.Ice)]
+    [InlineData("desoul",1,0,2,0,AttackSpellElement.Status)]
+    public void OffensiveEquipmentUsesExistingEffectWithOneWearAndNoMagicCost(string spell, byte rank, ushort power, byte range, byte radius, AttackSpellElement element)
+    {
+        var effect = new AttackSpellDefinition(new(spell,rank), spell == "desoul" ? (byte)8 : (byte)0, power, 1, range, radius, element);
+        var start = At([24,127,127,127], staffClass: BattleClassRule.Wizard, attackEffect: effect);
+        var b = start.Battle;
+        var resolution = BattleActionRules.Prepare(new Sf2ItemAction(), b, Mage, b.GetActor(Mage).Position!,
+            new(BattleActionKind.Item, ItemSlot: 0), Smoke, new Sf2BattleProgressionRule());
+        Assert.Equal(effect, resolution.AttackSpell);
+        Assert.Single(resolution.ConstructionEffects, e => e.Kind == "rng-item-wear");
+        int wear = resolution.ConstructionEffects.ToList().FindIndex(e => e.Kind == "rng-item-wear");
+        Assert.All(resolution.ConstructionEffects.Take(wear), e => Assert.DoesNotContain("exp",e.Kind));
+        Assert.All(resolution.ConstructionEffects.Skip(wear+1).Where(e => e.RandomRange.HasValue), e => Assert.StartsWith("rng-exp",e.Kind));
+        Assert.Same(resolution.Prepared, resolution.ApplySpellCost(resolution.Prepared));
+        Assert.Equal(0, resolution.Prepared.GetActor(Mage).Mp);
+    }
+
+    [Theory]
+    [InlineData(102)] [InlineData(110)]
+    public void MaskNoneEquipmentRefusesPlayerUseBeforeAnyEffect(byte item)
+    {
+        var start = Accept(At([item,127,127,127]), new Confirm());
+        var rejected = Send(start, new SelectItem(0));
+        Assert.Equal("equipment-use-class", rejected.Failure!.Code);
+        Assert.Same(start, rejected.Snapshot);
+        Assert.Empty(rejected.Observations);
+    }
+
 }
