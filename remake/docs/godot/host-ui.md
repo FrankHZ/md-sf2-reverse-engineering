@@ -208,11 +208,15 @@ early storage failure. Confirm the overwrite and verify the storage diagnostic a
 primary and backup. For the New Game path, choose Create a New Save from the format error,
 check the name entry, cancel, then overwrite slot 1 through the final Start confirmation.
 
-## Dedicated numbered-save and native recovery demo
+<a id="dedicated-numbered-save-and-native-recovery-demo"></a>
+
+## Numbered-save Main state and input checks
 
 **Accepted design #2215 / #2223, implemented in #2224. Standard rigor** covers the interaction
 between numbered storage, host input and the native client. Run [Main.tscn](../../game/Main.tscn)
-in a dedicated process at the real root window. The ordinary title, Witch and field Menu reach
+in an isolated process at the real root window. This is ordinary Main state/input verification,
+not the dedicated DesignPreview visual demo. Do not capture screenshots here.
+The ordinary title, Witch and field Menu reach
 the sample. The [save contract](../application/battle-save-and-continue.md#manual-save-history-and-developer-files)
 and [window contract](presentation.md#window-support-and-recovery-1455) own the behavior.
 
@@ -249,8 +253,7 @@ function Invoke-NumberedSaveReview {
         [Parameter(Mandatory)][ValidateSet('seed', 'stage', 'continue', 'save', 'summary', 'launch')][string]$Case,
         [string]$From,
         [ValidateSet('en', 'zh-CN')][string]$Language = 'en',
-        [string]$Resolution = '1600x900',
-        [switch]$Stills
+        [string]$Resolution = '1600x900'
     )
     $space = "ui-host-review-$([guid]::NewGuid())"
     $run = (New-Item -ItemType Directory -Path "$review/$Case-$space").FullName
@@ -276,7 +279,7 @@ function Invoke-NumberedSaveReview {
     $env:TMP = $env:TEMP
     $env:SF2_HOST_UI_CASE = $Case
     $env:SF2_HOST_UI_OUTPUT = Join-Path $run 'native.json'
-    $env:SF2_HOST_UI_STILLS = if ($Stills) { '1' } else { '' }
+    $env:SF2_HOST_UI_STILLS = ''
     if ($Case -eq 'seed') {
         $env:SF2_HOST_UI_START = Join-Path $run 'start.json'
         @{ start = @{ map='map-3'; player='entity-0'; position=@{x=32;y=13}; facing=1; speed=32;
@@ -323,13 +326,13 @@ Each invocation copies the read-only baseline to another fresh namespace.
 $null = Invoke-NumberedSaveReview -Case launch -From $baseline
 ```
 
-Choose `-Language zh-CN` for Simplified Chinese. Keep the dedicated client visible. Choose
+Choose `-Language zh-CN` for Simplified Chinese. Keep the ordinary Main client visible. Choose
 `-Resolution 1920x1080` when a decorated client fits. The root window owns startup fit, resize
 admission and native Fullscreen.
 
 ### Routes and acceptance
 
-| Production route | Readback and visual acceptance |
+| Production route | State and input acceptance |
 | --- | --- |
 | Title → Witch → Continue → Next → slot 7 | Read the second page and Previous action. Verify the actual damaged-primary reason, backup identity and Cancel-first prompt. Cancel returns to the Witch caller with both files unchanged. Reopen the prompt and explicitly recover. Compare the installed primary and retained backup to the original backup bytes, then check the restored field progress and usable control. Use a fresh copy for the write review. |
 | Continue slot 2 → field → F10 → Save → Next → slot 7 | Read the protected-write reason and fresh-slot action. Back restores slot 7 on page 2, then the Save row in Menu, then field control. File bytes stay unchanged. On page 1, slot 6 shows the separate Cancel-first overwrite and its backup consequence. Cancel preserves bytes and selection. Confirm Save and Return on the reopened prompt and check that the previous slot 6 primary becomes its backup and the saved acknowledgement returns to the field. |
@@ -338,15 +341,20 @@ admission and native Fullscreen.
 The [numbered-save observer](../../game/probes/numbered_save_review.gd) reuses the ordinary host
 input and projections. It mounts Main in the native root, reads the actual client/mode and checks
 attached landing, names, gold and flags against the selected record. Review the report, native
-log and exit code. Add `-Stills` for individual local UI-page stills in this dedicated review
-only, under the [preview visual rules](../development-and-verification.md#dedicated-ui-preview-visual-review).
+log and exit code; leave `SF2_HOST_UI_STILLS` empty. For visual review, use the existing
+[DesignPreview](../../game/probes/previews/README.md) and its supported page routes under the
+[preview visual rules](../development-and-verification.md#dedicated-ui-preview-visual-review).
+Only that dedicated preview permits necessary local screenshots. If it lacks the affected state,
+record the visual coverage gap rather than capturing ordinary Main.
 
 ```powershell
-$null = Invoke-NumberedSaveReview -Case continue -From $baseline -Language zh-CN -Resolution 1920x1080 -Stills
-$null = Invoke-NumberedSaveReview -Case save -From $baseline -Stills
+$null = Invoke-NumberedSaveReview -Case continue -From $baseline -Language zh-CN -Resolution 1920x1080
+$null = Invoke-NumberedSaveReview -Case save -From $baseline
 ```
 
-**Confirmed** on a native Windows desktop with a 3586×2160 usable area. Chinese Continue at
+**Historical completed observation:** on a native Windows desktop with a 3586×2160 usable area,
+the following was **Confirmed**. Retained stills are past evidence, not authorization for new
+ordinary-Main screenshots. Chinese Continue at
 1920×1080 kept the damaged status, Previous, backup identity, primary detail and both actions
 readable. English Save at 1600×900 kept the protected-write reason, fresh slot and overwrite
 consequence above the fixed actions. The actual 1280×720 recovery cover hid Save and field,
@@ -455,7 +463,7 @@ for lang in ['en','zh-CN']:
 print('Prepared bounded copied field and synthetic typed controls.')
 ```
 
-After preparing the controls, run one fresh namespace per language, without `-Stills`:
+After preparing the controls, run one fresh namespace per language with screenshot capture disabled:
 
 ```powershell
 foreach ($language in @('en', 'zh-CN')) {
