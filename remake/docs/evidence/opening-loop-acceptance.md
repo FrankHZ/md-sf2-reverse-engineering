@@ -246,11 +246,40 @@ time to read the dialogue. The writer finalizes at normal exit. Budget 250 MiB p
 for receipts. Retain failed takes and allow at most one adjustment take. Publish an accepted compact
 take to `handoffs/issue2257/pilot-compact-1080p60.ogv` under the shared root and keep it private.
 
+### Compact pilot evidence (#2257)
+
+**Confirmed.** The visible Godot 4.7.2 take used the MMNK campaign, Witch entry and four-part
+opening specified above. The adapter included PR #2263 at
+`8a776f2bdb849680d3b7c667792157f4746639ad`, the independently reviewed command-list frame
+dependency. The Movie Maker writer finalized 1,977 frames in 32.95 seconds of movie time,
+with 39.6 seconds of wall time and 15,681,171 bytes of OGV at 1920×1080 and 60 fps.
+
+The visible and background runs each exited 0 and matched across 14 key presses and 15 state
+samples. Ordinary Skip released to the title. The Witch defaulted to Continue and showed 225,
+then Slot 1, recognition 226 and farewell 224. Chester's inspection and Back preserved queue 0.
+Up previewed `(7,17)`, Confirm opened Main and Stay committed Chester's tile. Bowie took queue 3
+and previewed `(8,17)`. The command list opened at 27.22 seconds and Stay was submitted at
+29.45 seconds. Each slot copy still matched its shared source byte for byte.
+
 The background check sets the headless root extent before Main attaches so the same production
-window validation can run. The first background attempt left Godot's 64×64 headless default and
-stopped before Skip. With the supported extent the route exited 0 and left the slot unchanged.
-That run warned about four ObjectDB instances at exit. A targeted verbose repeat completed the
-route with zero errors and did not reproduce the warning.
+window validation can run. The first attempt remained at Godot's 64×64 headless default and
+stopped before Skip. With the supported extent the route completed, with an intermittent
+four-instance ObjectDB warning at headless teardown. The visible take completed without the
+warning or script, gameplay, presentation or audio errors.
+
+FFmpeg 9.1 decoded both streams to completion with
+`ffmpeg -v error -xerror -nostdin -i $movie -map 0:v:0 -map 0:a:0 -f null -`.
+Ten in-memory picture samples taken 15 frames after their receipt marks showed distinct, nonblank
+shots, including the command list. Timestamp-based 60 fps sampling retains repeated display
+frames when the decoder omits duplicate pictures. The headless Godot player's texture readback was
+uniform, so its receipt establishes audio only. It played through 32.93 seconds and measured
+1,450,628 non-silent stereo pairs, with a non-silent mix at the command-list mark. The matching
+route receipt places the menu-switch cue at that mark. Human review of the compact take's
+readability and listening experience remains **Unknown**. [FFmpeg 9.1 build](https://github.com/GyanD/codexffmpeg/releases/tag/9.1)
+
+The read-only copy in `handoffs/issue2257/pilot-compact-1080p60.ogv` is byte-identical to the
+verified take. The BRGN comparison file remains in the earlier handoff. Receipts remain in the
+owning checkout.
 
 ### Retained BRGN pilot evidence (#2245)
 
