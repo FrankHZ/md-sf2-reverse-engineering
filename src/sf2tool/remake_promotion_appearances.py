@@ -157,15 +157,22 @@ def brn_weapon_layers(library, scratch, scene):
 
 
 def mount_promotion_appearances(
-    library: Path, scratch: Path, world: dict, scene: dict, promotions: dict[int, str]
+    library: Path,
+    scratch: Path,
+    world: dict,
+    scene: dict,
+    promotions: dict[int, str],
+    *,
+    mount_field: bool = True,
 ) -> None:
     # The selected independent weapon layers use body colors 1 and 2 ($0EEE
     # and $0000) shared by both class palettes. None selects an unarmed body.
     rules = {
         "PGNT": (14, set()),
-        "WIZ": (17, {85, 86, 87, 89}),
+        "WIZ": (17, set()),
+        "SORC": (18, set()),
         "MMNK": (20, set()),
-        "VICR": (19, {85, 86, 87, 89}),
+        "VICR": (19, set()),
         "GLDT": (15, {33, 34, 35, 36}),
         "BRN": (16, set()),
         "BDBT": (23, {57, 58, 59, 71}),
@@ -201,9 +208,13 @@ def mount_promotion_appearances(
             # GetAllyPortrait remaps MNST independently of the field sprite's default.
             sprite = variant["sprite"]
             walking["sprites"][sprite] = dict(walking["sprites"][sprite], portrait=51)
-    mount_walking(
-        library / "walking", world, walking["sprites"], [row["sprite"] for row in variants.values()]
-    )
+    if mount_field:
+        mount_walking(
+            library / "walking",
+            world,
+            walking["sprites"],
+            [row["sprite"] for row in variants.values()],
+        )
 
     portraits = {
         walking["sprites"][variant["sprite"]]["portrait"]
@@ -247,6 +258,38 @@ def mount_promotion_appearances(
             mounted_weapons = [dict(item=item, weaponFrames=[]) for item in [None, 26, 27, 28]]
         elif class_code == "NINJ":
             mounted_weapons = ninja_weapon_layers(scene)
+        elif class_code in {"WIZ", "SORC", "VICR"}:
+            weapon_directory = library / "weapons"
+            index = read_json(weapon_directory / "index.json")["records"]
+            # Current shops admit Iron Rod, Flail and Indra as well as the
+            # starting rods. Use the same prepared layers for all three classes.
+            # Put the explicit bare body first: the reader retains the first
+            # member/class row as its unarmed fallback after a weapon breaks.
+            mounted_weapons = [dict(item=None, weaponFrames=[])]
+            for item in (85, 86, 87, 88, 89, 90, 92):
+                weapon_frames = next(
+                    (
+                        row["weaponFrames"]
+                        for row in scene["actors"]
+                        if row["side"] == "ally" and row["item"] == item
+                    ),
+                    None,
+                )
+                if weapon_frames is None:
+                    weapon_frames = shared_color_weapon_frames(
+                        weapon_directory, index, scratch, scene, item, scale=1
+                    )
+                mounted_weapons.append(dict(item=item, weaponFrames=weapon_frames))
+            scene["actors"] = [
+                row
+                for row in scene["actors"]
+                if not (
+                    row["side"] == "ally"
+                    and row["sprite"] == sprite
+                    and row["palette"] == palette
+                    and row.get("members") == [member]
+                )
+            ]
         else:
             base_items = rules[class_code][1]
             mounted_weapons = [
@@ -283,7 +326,7 @@ def mount_promotion_appearances(
                 sequences["attack"] = prepared_ally_sequence(
                     attack_index, animations[attack_index], draw_weapon
                 )
-            if class_code in {"WIZ", "VICR", "NINJ", "MMNK"}:
+            if class_code in {"WIZ", "SORC", "VICR", "NINJ", "MMNK"}:
                 sequences["cast"] = attack
             if class_code == "MMNK":
                 sequences["special"] = prepared_ally_sequence(83, animations[83], False)

@@ -59,7 +59,7 @@ snapshot. The current package and consumer owner establish what a particular gam
 | Walking, class appearances and special poses | Retail `walking/index.json` joins strip/phase and member/class aliases. Special streams retain their indexed tiles and dispatch references. `manifests/map3-cast.csv` connects entity and party IDs to their Map3 sprite and portrait. [Special sprites](../../../docs/research/presentation/technical-graphics.md#special-sprites-and-view-routing) | World `presentation.sprites` mounts the chosen strips. Class and special-pose callers own their selected appearance and remaining dispatch gaps. [Promotion](../application/ordinary-promotion-classes.md) · [Special-pose dialogue](../godot/presentation.md#special-pose-dialogue-portraits-2070) |
 | Portraits and expressions | Retail `portraits/index.json` records slot aliases and replacement tiles. The atlas and eye/mouth mappings travel together. [Graphics](../../../docs/research/presentation/technical-graphics.md) | World `presentation.portraits` supplies dialogue and Member consumers, with optional Map3 density variants. [Story dialogue](../godot/presentation.md#shared-story-dialogue-agreement) · [Party details](../godot/presentation.md#party-details-agreement) |
 | Battle body, weapon, ground and background | Retail `bodies`, `weapons` and `terrain` indexes retain body/palette/frame, item selector and encounter environment identity. [Source scene engine](../../../docs/research/battle/battle-scene-engine.md) | Main and encounter-specific scene inputs select composition and placements. Review the class/weapon scene binding at the encounter caller. [Scene roster and limits](../godot/battle-scenes.md#which-combatants-need-a-scene) · [Weapon composition](../godot/battle-scenes.md#weapon-frame-composition-1620) · [Backdrops](../godot/battle-scenes.md#fixed-backdrops-for-the-private-campaign) |
-| Battle effect, spell, invocation and status/transition art | Retail `effects/index.json` retains indexed containers and effect controls. The spell table joins family and rank to selector and caller overrides. [Spell source](../godot/spell-presentation.md#source-and-status) | Check the scene mount and actual cast or Use separately. FREEZE 3/4 has admitted learned Magic and a bounded Battle26 witness with placeholder ice. Original effect composition and playback remain open. DAO has prepared source material with private summon gameplay unavailable. [Spell coverage and follow-ups](../godot/spell-presentation.md#attack-magic) |
+| Battle effect, spell, invocation and status/transition art | Retail `effects/index.json` retains indexed containers and effect controls. The spell table joins family and rank to selector and caller overrides. [Spell source](../godot/spell-presentation.md#source-and-status) | Check the scene mount and actual cast or Use separately. FREEZE 3/4 has admitted learned Magic and a bounded Battle26 witness with placeholder ice. Original effect composition and playback remain open. The four summon families have learned private rules; DAO1 has a bounded SORC native witness using the existing modern fallback. Original summon effects remain unavailable under #2104. [Spell coverage and follow-ups](../godot/spell-presentation.md#attack-magic) |
 | UI art, icons, cursors and fonts | Retail `icons` and `ui` indexes distinguish storage slots, semantic IDs and normal/highlighted states. Theme, glyphs and licensed fonts have separate provenance. [Menus](../../../docs/research/presentation/common-menus.md) · [Fonts and theme](presentation-assets.md#fonts-theme-and-input-glyphs) | World and scene namespaces mount supported menus and identity icons. Check each enabled caller's acceptance and legacy text fallback. [Menu inventory](presentation-assets.md#bounded-source-to-consumer-inventory) · [Identity art](../godot/presentation.md#identity-art-acceptance-1667) · [Target cursor](../godot/battle-scenes.md#original-target-and-inspection-cursor-publication) |
 | Entry and other special screens | Retail `entry/index.json` covers special streams and title/witch layout, palette and bubble inputs. [Original screens](../../../docs/research/presentation/special-screens.md) | The independent entry document mounts title/witch images and two music resources. Other screen streams are admitted per caller. [Entry consumer](../godot/presentation.md#production-entry-and-field-dialogue-1606) |
 | BGM and SFX | [Sound inventory](../../../docs/research/presentation/sound-data-inventory.md) owns source IDs, bank aliases and timer/channel context. The private coverage CSV, per-command candidate and inherited base own prepared variants. | World and entry audio rows own selection, including the [command 12 and authored 109 distinctions](music-command-inventory.md). [Session audio](../godot/audio.md) owns cue, finite default, lifetime and playback acceptance. |
@@ -90,7 +90,7 @@ and placeholder choices explicit where they share a semantic ID.
   [#1818 campaign](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1818)
 - Check original cue 12 continuous playback across ordinary invaded-house stairs through
   audio handoff ownership. [#2165 audio initialization](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2165)
-- Take placeholder attack effects and unsupported private summons through their specific
+- Take placeholder attack effects and missing original summon presentation through their specific
   rank and encounter owners. Keep asset selection, gameplay admission and native
   presentation evidence distinct. [#2104 spell presentation](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104) ·
   [Spell family table](../godot/spell-presentation.md#attack-magic)
@@ -1061,3 +1061,30 @@ rasters; direct comparison preserves every predecessor actor/raster/growth row. 
 [published mount](presentation-assets.md#master-monk-promotion-successor) supports both
 rites and published-input cold Continue. [Observed actions, failed exits and Unknowns](../application/church-promotion-design.md#master-monk-promotion)
 remain explicit; this does not establish original timing or distribution rights.
+
+## Sorcerer promotion (#2266)
+
+The registered complete successor `derived/issue2266/pre-voyage-sorc-v3` contains 174
+files and 361,155,769 bytes, a 135,769-byte increase over the MMNK package. This includes
+Kazin/Tyrin SORC walking/body variants, source body 15 palettes 0/1, cast poses and source
+spell 29–32 normal/selected icons. Current mounted appearance choices are explicitly unarmed and
+rods 85/86/87/88/89/90/92 for both SORC/WIZ actors and both VICR actors in all 26
+loaded scenes. The production reader checks body, palette and separate weapon frames.
+Guardian Staff (91) remains outside the admitted equipment rules because of its DEF effect.
+The five accepted translated names live in `derived/issue2266/catalogs-v1/world.zh-CN.json`.
+
+Preparation used one serial bounded pass; 1 GiB RAM and 1 GiB scratch/publication allowances
+were sufficient for the initial pass. The corrective run retains v1 and rejected v2 alongside
+v3; allow 2 GiB for these complete packages and local staging, with prepared immutable
+dependencies reused and only changed JSON copied. Compact pilot receipts are 3,537,931 bytes before the final reader receipt.
+No new ROM-derived animation capture was needed. The complete output was copied and
+checked through dependency closure, with no producer-scratch dependency. After moving
+producer scratch aside, the initial field/battle witnesses and corrective v3 battle Continue matched complete decoded
+data. The production reader checks both actors across 26 encounter scenes and rejects
+illegal saved books. Tyrin native playback and higher-rank spells remain Unknown.
+
+Original DAO/APOLLO/NEPTUN/ATLAS effect composition and playback are **Unavailable** in
+this successor. The native DAO1 witness uses the existing modern fallback, not an original
+summon animation. [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104)
+retains the four-family gap. [Source, rule and native boundary](../application/church-promotion-design.md#sorcerer-promotion)
+· [Producer and selections](presentation-assets.md#sorcerer-promotion-successor).

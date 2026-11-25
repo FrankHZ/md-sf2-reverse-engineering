@@ -15,6 +15,14 @@ internal static class PrivateAttackSpellBindings
             (int Id, int Mp, int Power, int Range, int Radius, AttackSpellElement Element)? expected =
                 (source.Code, source.Level) switch
                 {
+                    ("DAO", 1) => (29, 8, 18, 2, 1, AttackSpellElement.Wind),
+                    ("DAO", 2) => (29, 15, 40, 2, 1, AttackSpellElement.Wind),
+                    ("APOLLO", 1) => (30, 10, 23, 2, 1, AttackSpellElement.Fire),
+                    ("APOLLO", 2) => (30, 17, 50, 2, 1, AttackSpellElement.Fire),
+                    ("NEPTUN", 1) => (31, 12, 30, 2, 1, AttackSpellElement.Ice),
+                    ("NEPTUN", 2) => (31, 19, 61, 2, 1, AttackSpellElement.Ice),
+                    ("ATLAS", 1) => (32, 14, 35, 2, 1, AttackSpellElement.Neutral),
+                    ("ATLAS", 2) => (32, 23, 73, 3, 1, AttackSpellElement.Neutral),
                     ("DESOUL", 1) => (8, 8, 0, 2, 0, AttackSpellElement.Status),
                     ("DESOUL", 2) => (8, 13, 0, 2, 1, AttackSpellElement.Status),
                     ("BLAZE", 1) => (11, 2, 6, 2, 0, AttackSpellElement.Fire),
@@ -69,7 +77,7 @@ internal static class PrivateAttackSpellBindings
                 Require(source.AnimationExpression == "BLAST", "source-attack-animation", "spells.animation", true);
                 animation = 5;
             }
-            if (row.Element == AttackSpellElement.Neutral)
+            if (source.Code is "KATON" or "RAIJIN")
             {
                 string family = source.Code == "KATON" ? "BLAZE" : "BOLT";
                 Require(source.AnimationExpression == $"{family}|VARIATION{source.Level + 1}",

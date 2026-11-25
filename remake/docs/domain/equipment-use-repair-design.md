@@ -5,7 +5,7 @@ covers ordinary Battle Item → Use, the exact slot that survives or is destroye
 Repair transaction, and cold Continue. Action construction, stat refresh and persistence meet at
 the same loadout. A mismatch can lose gear, advance RNG, or charge gold without repairing the
 selected copy. Power Ring, Protect Ring and Indra Staff use the implemented battle and Repair loop.
-Indra Staff uses the admitted ordinary WIZ and VICR progression. The accepted [ring slots](ring-equipment-design.md),
+Indra Staff uses the admitted WIZ/VICR and [SORC progression](../application/church-promotion-design.md#current-rod-consumers). The accepted [ring slots](ring-equipment-design.md),
 [status refresh](support-spell-status-design.md), [offensive item origin](offensive-items-design.md#remake-item-action),
 [promotion and rebind](../application/church-promotion-design.md), and
 [Deals and shop return](../godot/field-and-shop.md#hassan-deals-and-cold-continue) supply the dependencies.
@@ -31,7 +31,26 @@ and turn fixtures give the ROM, emulator and controlled boundaries for those obs
 | Quick Ring (21), Running Ring (22), Chirrup Sandals (126) | Source `NOTHING` Use. Quick's BREAKABLE flag supplies no effect or reachable damage roll. | Retain ordinary Use refusal. Sandals acquisition and audio belong to [#1962](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1962). |
 | Taros Sword (110) | Battle18 enemy BOLT 2 and potential rare drop. Mask NONE refuses player Use even from an intact bare slot. Enemy Use bypasses ally breakage. | Preserve the accepted Taros path and player refusal. |
 | Black Ring (24) | Battle26 drop, once bit 10. WIZ/SORC only, including bare BLAZE 2 Use. Ordinary WIZ promotion is available. | Equip, BLAZE 2 Item Use, wear and Repair are admitted. [Worn equipment and physical curse](ring-equipment-design.md#black-ring-admission-and-physical-curse). |
-| Indra Staff (92) | Pacalon weapon shop 10 sells it for 3,200. WIZ/SORC/VICR, weapon ATT +25, physical range 1, BREAKABLE, SPOIT 1 on Use. A legally promoted Kazin or Sarah can use it in the original at this frontier. | The remake admits Equip and battle Use from WIZ/VICR. The source mask also retains SORC, which has no playable class path in this slice. |
+| Indra Staff (92) | Pacalon weapon shop 10 sells it for 3,200. WIZ/SORC/VICR, weapon ATT +25, physical range 1, BREAKABLE, SPOIT 1 on Use. A legally promoted Kazin or Sarah can use it in the original at this frontier. | The remake admits Equip and battle Use from WIZ/VICR/SORC. The [SORC successor](../application/church-promotion-design.md#current-rod-consumers) supplies the shared current-rod appearance closure and its separate Equip/physical/cold witness; the Use/Repair observations below retain their original WIZ scope. |
+
+**Open current-caller gap: Guardian Staff (91).** The current SORC v3 world stocks it in
+`loc-54b1a` (Map06 `s2_entityevents_701.asm`), `loc-5d2c4` (Map25
+`s2_entityevents.asm`) and `map2-entityevent7` (Map02 `s2_entityevents.asm`). It is not
+merely a future source definition. Inspection of this package's world, ally start rows
+and encounter placements found no initial held 91; arbitrary player saves are not covered
+by that inspection. The retained Karna rite/action/cold witness instead holds Power Stick
+89, equipped word 217. [Exact receipt evidence](../application/ordinary-promotion-classes.md#vicar-ordinary-reproduction)
+
+The static definition is WIZ/SORC/VICR, ATT +22 and DEF +5. Current
+`PrivateFieldPreparation.Weapons` filters it out through
+`PrivateBattleActionBindings.HasSupportedWeaponEffects`, which accepts ATT/critical
+weapon effects but not `INCREASE_DEF`. Thus `BattleEquipment.Choices` omits its slot;
+a forced field/battle Equip command rejects with `equipment-slot`. An already equipped
+loadout rejects with `equipment-nonweapon` in `BattleEquipment.ValidateLoadout`; direct
+source physical admission uses `source-equipment-effects`. These are code-path findings,
+not a new native Guardian observation. Mixed-effect weapon admission and its stat/save
+closure belong to [#2268 current equipment reconciliation](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268)
+under this owner; #2266 does not implement it.
 
 The reached shop/drop/grant join yields three scoped player effects including the conditional
 Indra Staff, plus Black Ring under its own issue. Later rows include the White Ring and Demon Rod

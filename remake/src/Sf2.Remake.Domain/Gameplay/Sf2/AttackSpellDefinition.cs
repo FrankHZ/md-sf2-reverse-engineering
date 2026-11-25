@@ -10,9 +10,10 @@ public sealed record AttackSpellDefinition(SpellRef Spell, byte MpCost, ushort P
     byte MinimumRange, byte MaximumRange, byte Radius, AttackSpellElement Element, byte? SourceAnimationSelector = null)
 {
     public bool IsInstantDeath => Spell.Value == "desoul";
+    internal bool DividesPower => Spell.Value is "dao" or "apollo" or "neptun" or "atlas";
     internal bool IsMonsterBreath => Spell.Value == "kiwi";
     internal ushort CriticalRange => Spell.Value switch
-    { "aqua" or "bolt" or "raijin" => 8, "kiwi" => 16, _ => 32 };
+    { "aqua" or "bolt" or "raijin" => 8, "kiwi" or "neptun" => 16, _ => 32 };
 
     internal static bool InstantDeathSucceeds(BattleActorState target, int roll) =>
         roll >= 5 + (target.Definition.Resistance >> (int)AttackSpellElement.Status & 3);
@@ -35,6 +36,11 @@ public sealed record AttackSpellDefinition(SpellRef Spell, byte MpCost, ushort P
         }
         (int Range, int Radius) limits = (Spell.Value, Spell.Level, Element) switch
         {
+            ("dao", 1 or 2, AttackSpellElement.Wind) when !enemy => (2, 1),
+            ("apollo", 1 or 2, AttackSpellElement.Fire) when !enemy => (2, 1),
+            ("neptun", 1 or 2, AttackSpellElement.Ice) when !enemy => (2, 1),
+            ("atlas", 1, AttackSpellElement.Neutral) when !enemy => (2, 1),
+            ("atlas", 2, AttackSpellElement.Neutral) when !enemy => (3, 1),
             ("aqua", 1 or 2, AttackSpellElement.Ice) when MpCost == 0 => (3, 0),
             ("blaze", >= 1 and <= 3, AttackSpellElement.Fire) => (2, 1),
             ("blaze", 4, AttackSpellElement.Fire) when !enemy => (2, 0),

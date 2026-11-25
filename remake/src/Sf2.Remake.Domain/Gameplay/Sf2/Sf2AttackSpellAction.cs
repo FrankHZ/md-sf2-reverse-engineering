@@ -180,6 +180,8 @@ internal sealed class Sf2AttackSpellAction : IBattleActionRule
         BattleReaction ResolveDamage(BattleActorState target)
         {
             int power = SpellPower(actor, spell, itemSlot.HasValue);
+            // AdjustSpellPower divides after promotion and before resistance/critical quarters.
+            if (spell.DividesPower) power /= targets.Count;
             int quarter = power / 4;
             int damage = ResistedDamage(target, spell, power);
             bool critical = Roll(spell.CriticalRange, "spell-critical", target.Actor) == 0;

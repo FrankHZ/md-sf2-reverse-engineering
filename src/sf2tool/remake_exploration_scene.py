@@ -56,7 +56,7 @@ def ally_sprites(compiler) -> list[dict[str, Any]]:
         "TORT": "MNST",
     }
 
-    special = {"KNTE": "PGNT", "WARR": "BRN", "PRST": "MMNK", "ACHR": "BRGN"}
+    special = {"KNTE": "PGNT", "WARR": "BRN", "MAGE": "SORC", "PRST": "MMNK", "ACHR": "BRGN"}
 
     def class_sprite(table_sprite, role):
         # GetAllyMapsprite's offsets are relative to the member's table entry.
