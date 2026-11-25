@@ -713,7 +713,8 @@ current equipment admission because `PrivateBattleActionBindings.HasSupportedWea
 does not admit its additional `INCREASE_DEF` effect. The older Karna receipt is
 [Power Stick 89, not Guardian Staff](ordinary-promotion-classes.md#vicar-ordinary-reproduction).
 No Guardian capability is claimed; future mixed-effect weapon admission belongs to
-[the equipment rule owner](../domain/equipment-use-repair-design.md).
+[the equipment rule owner](../domain/equipment-use-repair-design.md) and
+[#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
 
 The short native witness starts from a labeled copy of the prior `road01` battle-ready
 slot, changing only Kazin's carried slot 3 from Medical Herb to bare Indra Staff in both

@@ -49,7 +49,8 @@ a forced field/battle Equip command rejects with `equipment-slot`. An already eq
 loadout rejects with `equipment-nonweapon` in `BattleEquipment.ValidateLoadout`; direct
 source physical admission uses `source-equipment-effects`. These are code-path findings,
 not a new native Guardian observation. Mixed-effect weapon admission and its stat/save
-closure remain a separate follow-up under this owner; #2266 does not implement it.
+closure belong to [#2268 current equipment reconciliation](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268)
+under this owner; #2266 does not implement it.
 
 The reached shop/drop/grant join yields three scoped player effects including the conditional
 Indra Staff, plus Black Ring under its own issue. Later rows include the White Ring and Demon Rod
