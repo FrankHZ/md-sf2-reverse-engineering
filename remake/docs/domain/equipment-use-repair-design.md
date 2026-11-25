@@ -92,9 +92,16 @@ production implementation. Each child updates the rows it actually completes.
    consumers. Include `EnemyEquipment` and source physical admission without applying an
    ally-only class gate to enemies or adding weapon ATT twice to initialized enemy stats.
    Extend `BattleWeaponDefinition` with optional immutable terms so existing authored
-   definitions remain compatible. Check weapon-before-ring slot order and clamping rather than
-   summing signed changes without regard to source application order. Behavior acceptance:
-   mixed stats under BOOST/SLOW, zero/cap edges, queue unchanged by AGI equip, MOV preview/undo,
+   definitions remain compatible. Apply equipped effects in actual carried-slot order, with
+   each operation's source clamp, rather than a fixed weapon-then-ring order or a summed delta.
+   **Confirmed (static):** pinned `UpdateCombatantStats` initializes current stats, applies status
+   effects, then walks from `COMBATANT_OFFSET_ITEMS` by `ITEMENTRY_SIZE`, calling `ApplyItemOnStats`
+   for each nonempty equipped slot. There is no separate weapon/ring phase.
+   [Pinned loop](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/updatecombatantstats.asm#L10-L44)
+   · [Existing slot-order and clamp contract](ring-equipment-design.md#original-rules-and-evidence).
+   Behavior acceptance includes swapping the weapon and ring's carried positions, checking
+   each intermediate clamp at zero/cap edges, mixed stats under BOOST/SLOW,
+   queue unchanged by AGI equip, MOV preview/undo,
    two cursed slots/cure, failed Give/Sell/Repair, valid removal, growth/promotion and restored
    words. One ordinary Guardian shop purchase/Equip and a legal controlled negative-stat weapon
    witness suffice; ordinary Dagger shop stock must still be admitted. Mount the relevant
