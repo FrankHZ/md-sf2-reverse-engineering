@@ -189,32 +189,75 @@ read-only state and projection calls.
 
 ### Pilot and recording boundary
 
-Use a fresh copy of Battle01 slot 1 from the checkpoint table. It is a saved Battle01 Movement
-at Chester's first turn. The nearest living enemy starts
-well outside one move plus attack range. Choose a movement/Stay decision for this short take:
-about 15 seconds for title/Witch → Continue, 20 seconds for inspection and Back, 15 seconds for
-a legal preview move and Main command list, and 20–30 seconds to commit Stay and reach the next
-usable player decision. A total of about 70–80 seconds leaves room for reading speed. Require
-the inspection to return to the same actor, actual movement and one turn commitment, the next
-player receiving a fresh direction, and music plus an audible UI cue in the recorded clip. Check
-the same steps unrecorded and recorded from independent copies of that slot. Compare elapsed
-loading and input-to-result time, and inspect playback for visible stalls, dropped frames and
-missing game audio. Use a single short take to decide whether to proceed with longer recording.
+Use a fresh copy of Battle01 slot 1 from the checkpoint table. At Chester's first turn, the nearest
+living enemy starts beyond one move plus attack range. The pilot shows the title and Witch,
+Continue, inspection and Back, a move preview, the Main command list and Stay. Verify that
+inspection returns to the unspent turn, Stay commits the chosen tile, and the next player can move.
+The continuous opening route above separately covers a physical attack and Save and Quit.
 
-The target is 1920×1080 at 60 fps. At 12–20 Mbit/s, 60–90 seconds is about 90–225 MB of
-video before audio and container overhead. Cap the pilot at 250 MiB and receipts at 20 MiB.
-The entire route has a provisional 10–15 minutes of raw captures and a 2–4 minute edit, with
-waiting, repetitive turns and the cold-launch interval trimmed where appropriate. Fifteen minutes
-at 12–20 Mbit/s costs 1.35–2.25 GB of video. Keep one serial recording round within 3 GiB and
-re-estimate from the first real clip. Keep reports and media out of Git and CI. Before retaining
-media across checkout cleanup, select an explicit stable private directory outside the worktree.
+Godot Movie Maker in the installed 4.7.2 .NET editor build emits OGV with Theora video and Vorbis
+audio. It writes the game viewport and engine mix to the specified file at a fixed 60 fps. Rendered
+time and elapsed wall time differ. Real-time capture pacing, physical keyboard/controller input
+and physical audio playback remain **Unknown**. The earlier Game Bar option remained blocked on
+capture isolation. [Godot Movie Maker](https://docs.godotengine.org/en/stable/tutorials/animation/creating_movies.html)
 
-**Pilot blocked.** Windows Game Bar was present, but the selected Godot window, app-only audio,
-microphone-off state and a task-owned capture destination could not be confirmed. Its documented
-workflow also offers system-wide audio and uses the account's Captures folder. No capture ran.
-Resume by verifying an existing recorder's target window, game-only audio, disabled microphone
-and isolated output in the actual capture configuration, then run the short take above. [Microsoft
-Game Bar capture controls](https://support.microsoft.com/en-us/accessibility/windows/use-a-screen-reader-to-record-your-screen-with-xbox-game-bar)
+Use the [showcase observer](../../game/probes/pre_voyage_showcase.gd). It reuses the existing native
+input helper and drives the production Main scene with the same key sequence in either mode. Frame
+checks wait for input ownership. The recording holds confirmed states for reading and writes a
+small receipt with actual phase, key, frame, actor, queue, preview, audio and error samples.
+
+For each take, apply [Launch and checkpoints](#launch-and-checkpoints) through the directory setup
+with `handoffs/issue2245/battle01/slot1.json`, a separate fresh namespace and a fresh run name. Use
+a desktop that admits a visible 1920×1080 client. Replace the final launch line with this block.
+Set `$record` to `$false` for the short functional check and `$true` for the recorded take.
+
+```powershell
+$settings = Join-Path $runRoot 'settings.json'
+Set-Content -LiteralPath $settings -Encoding utf8 -Value '{"formatVersion":1,"language":"en","textMode":"instant"}'
+$env:SF2_SAVE_REPORT = Join-Path $runRoot 'witness.json'
+$env:SF2_SAVE_RELEASE_OBSERVER = '1'
+$nativeLog = Join-Path $runRoot 'godot.log'
+$gameArgs = @('--path', (Join-Path $repoRoot 'remake/game'), '--position', '0,0',
+    '--resolution', '1920x1080', '--disable-vsync', '--log-file', $nativeLog,
+    '--quit-after', '5400', '--script', 'res://probes/pre_voyage_showcase.gd')
+if ($record) {
+    $gameArgs += @('--write-movie', (Join-Path $runRoot 'pilot.ogv'), '--fixed-fps', '60')
+} else {
+    $gameArgs += @('--max-fps', '60')
+}
+& $env:GODOT_BIN @gameArgs -- --input-settings $settings
+```
+
+Require exit 0, a complete receipt through `next-player-preview`, and no script, engine,
+presentation or audio errors. Verify the published source slot remains byte-identical to the
+disposable input. For recording, verify an elapsed movie duration of 60–90 seconds, 1920×1080 at
+60 fps and decodable picture and mixed audio. The writer finalizes at normal exit. Budget 250 MiB
+for the pilot and 20 MiB for receipts. Longer takes remain a later decision under #2245 and #1825.
+
+**Confirmed with the BRGN inputs.** A five-second title sample produced 300 frames at 60 fps and
+530,543 bytes. Its 1920×1080 picture and non-silent audio decoded in Godot. The pilot then produced
+4,699 frames in 78.32 seconds of movie time, with a 94-second writer run and 28,884,168 bytes of OGV
+(27.55 MiB). The title alone had a lower data rate than the full battle sequence.
+
+Both the recorded run and the unrecorded functional run sent the same keys and reached the same
+decision boundaries. Slot 1 mounted round 1 Chester at `(7,18)`, queue 0. Inspection and Back
+preserved that turn. Up previewed `(7,17)`, Confirm opened Main and Stay committed the new tile.
+Bowie received the next player input at queue 3 and Up previewed `(8,17)`. The receipt includes
+the title, Witch and battlefield music and the menu-switch cue on Main. Both route processes
+exited 0 with no script, gameplay, presentation or audio errors. The first unrecorded attempt
+reported a script error when reading session audio on the title. The corrected observer uses
+the entry view's audio reading until the battle mounts.
+
+Godot's Theora player decoded the complete file through 78.31 seconds, with nonblank 1920×1080
+samples at all ten checked shots. The picture changed across the Witch, slot confirmation,
+battle mount, inspection, command list and next turn. The decoded mix had 3,443,671 stereo sample
+pairs above 0.001 peak amplitude, with non-silent audio during the command-list shot. The audio
+receipt ties the menu-switch cue to that shot. These results establish captured rendering and
+engine audio delivery at the checked boundaries. Human playback review remains **Unknown**.
+
+Both disposable slot copies still match the published primary byte for byte. The private finished
+take is `handoffs/issue2245/pilot-1080p60.ogv` beneath `SF2_SHARED_INPUT_ROOT`. This read-only copy
+was compared byte for byte with the decoded take. Run receipts remain local to the owned checkout.
 
 **Confirmed checkpoint checks.** The Debug build at `f92a02bc` succeeded with the selected SDK.
 With the BRGN inputs, separate headless/Dummy invocations of the existing
@@ -227,8 +270,8 @@ exited 0. `SF2_SAVE_CASE=shape` reached Battle01 round 1 Chester Movement, then 
 indexed save sequence opened `confirm-quit` and timed out waiting for `save-slots` (exit 1).
 The latter did not exercise publication or the intended Stay, and reported two ObjectDB instances
 at exit. Both processes exited. These receipts check checkpoint admission. The combined current
-opening smoke, current battle Save/Continue after an action, and recorded audio/visual behavior
-remain **Unknown** for this showcase. The named prior acceptance observations retain their scope.
+opening smoke and current battle Save/Continue after an action remain **Unknown** for this showcase.
+The named prior acceptance observations retain their scope.
 
 ## Retained dependencies
 
