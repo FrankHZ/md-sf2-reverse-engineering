@@ -294,7 +294,11 @@ approval remain separate.
 
 **Independent review and Back synchronization:** at frozen `f3d30f71`, main-gate's loading and
 Chinese pointer controls passed. Loading reported4 ObjectDB shutdown warnings; pointer reported
-none. Its rebuilt Debug `ScenePaletteTests|FullFadeTests|BattleEntrySkipTests` selection passed18
+none. Main-gate independently decoded both natural/Skip save payloads: complete `data` objects
+matched, both sequences were1, and each directory contained only `slot1.json` and `slot1.lock`.
+It also checked `native-8`'s four scene labels,81 automatic messages, title/New Game tail and HD
+resource proofs without replaying the full sequence. Its rebuilt Debug
+`ScenePaletteTests|FullFadeTests|BattleEntrySkipTests` selection passed18
 with1 private skip; the earlier Release `--no-build` result is not its acceptance evidence.
 The native `main-gate-focus` run completed in9,829ms with only “Witch Back returns without replay”
 failing. Real focus recovery, Skip/title and fresh Witch menu had passed, with no engine errors.

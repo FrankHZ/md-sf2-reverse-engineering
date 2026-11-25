@@ -267,8 +267,9 @@ Map42 HD terrain. Plan for24–32MiB opening input, about370MiB closed successor
 and2GiB native working set. Preparation is linear in the selected source/asset bytes; runtime admits
 only the opening selection. Reassess for a new resource family, exceeded budgets or unbounded waits.
 Verification is one full ordinary run plus distinct short handoff controls, affected engine/adapter
-checks and the committed dependency plan. Current implementation/observation work remains pending
-independent acceptance; this paragraph is not a completion receipt.
+checks and the committed dependency plan. The [package owner](../content/presentation-assets.md#four-scene-startup-package-2252)
+records observations; [PR2254](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/2254)
+owns the independent integration disposition.
 
 - On ordinary process launch, load preferences and prepare the selected opening scene set through
   Content. Play it once before the title, regardless of slot occupancy. Show a responsive loading
@@ -407,7 +408,8 @@ or human presentation quality; those remain **Unknown**. The original behavior o
 The bounded scene primitives and first-segment pilot were delivered in #2250/#2251. The #2252
 implementation connects all four scripts, ordinary startup and the closed private selection.
 [Package, reproduction and retained results](../content/presentation-assets.md#four-scene-startup-package-2252)
-own its completion evidence; independent main-gate review is still required.
+own its completion evidence; [PR2254](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/2254)
+owns the independent main-gate review and integration disposition.
 
 Acceptance requires one complete natural run to a usable title; short loading, D2, motion/effect,
 held-input and pointer Skip controls; late/duplicate completion isolation; one actual focus loss and
