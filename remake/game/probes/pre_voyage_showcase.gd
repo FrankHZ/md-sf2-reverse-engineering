@@ -6,19 +6,24 @@ var began := 0
 var recording := OS.has_feature("movie")
 
 func key(code: int) -> void:
+    if not accept(root.has_focus(), "Showcase window owns input before " + OS.get_keycode_string(code)):
+        return
     inputs.append({"frame": elapsed_frames(), "key": OS.get_keycode_string(code)})
     await super.key(code)
 
 func elapsed_frames() -> int:
     return Engine.get_process_frames() - began
 
-func hold(seconds: int) -> void:
-    # Hold settled shots for reading in the movie. Keep the unrecorded check short.
-    await frames(seconds * 60 if recording else 6)
+func hold(movie_frames: int) -> void:
+    # At 60 fps. Only the viewing pause differs between the two runs.
+    await frames(movie_frames if recording else 6)
 
 func entry() -> Dictionary:
     var page := host.find_child("SessionEntryView", true, false)
     return {} if page == null else JSON.parse_string(page.call("ReadEntryObservationJson"))
+
+func opening() -> Dictionary:
+    return JSON.parse_string(host.call("ReadOpeningObservationJson"))
 
 func ready(condition: Callable, limit: int, message: String) -> bool:
     for i in range(limit):
@@ -37,6 +42,7 @@ func movement_ready() -> bool:
 
 func mark(label: String) -> void:
     var row := {"label": label, "frame": elapsed_frames(), "focused": root.has_focus()}
+    check(row.focused, "Showcase window owns input at " + label)
     var page := entry() if view == null else {}
     var audio: Variant = page.get("audio") if view == null else JSON.parse_string(host.call("ReadAudioObservationJson"))
     if not accept(audio is Dictionary, "Audio observation available at " + label):
@@ -53,9 +59,11 @@ func mark(label: String) -> void:
             "failed": board.failure, "scene_error": board.scene.error}
         check(board.failure == null and board.scene.error == null, "No battle error at " + label)
     else:
+        var slots := panel()
         row.entry = {"stage": page.get("stage"), "selected": page.get("selectedAction"),
-            "failure": page.get("failure"), "asset_error": page.get("assetError"), "slot_page": panel().get("state"),
-            "continue_text": page.get("continueText")}
+            "failure": page.get("failure"), "asset_error": page.get("assetError"),
+            "slot_page": slots.get("state"), "slot_index": slots.get("selected"),
+            "continue_text": page.get("continueText"), "text_characters": page.get("totalCharacters")}
         check(page.get("failure") == null and page.get("assetError") == null, "No entry error at " + label)
     samples.append(row)
 
@@ -78,44 +86,55 @@ func move_one() -> bool:
     return accept(false, "Published checkpoint provides a legal adjacent stop")
 
 func play() -> void:
-    if not await ready(func(): return root.has_focus() and entry().get("stage") == "title",
-            300, "Focused production title is available"):
+    if not await ready(func(): return root.has_focus() and opening().active,
+            300, "Focused production opening is available"):
+        return
+    await key(KEY_E)
+    if not await ready(func():
+            var start := opening()
+            return start.result == "skipped" and not start.releaseBarrier and entry().get("stage") == "title",
+            300, "Ordinary Skip hands off to a neutral title"):
         return
     mark("title")
-    await hold(4)
+    samples[-1].opening_result = opening().result
+    await hold(120)
     await key(KEY_ENTER)
     if not accept(entry().get("stage") == "dialogue", "Title opens the Witch greeting"):
         return
     mark("witch")
-    await hold(6)
+    await hold(210)
     await key(KEY_E)
     if not await ready(func(): return entry().get("selectedAction") == "Continue", 600,
             "Witch defaults to Continue for the admitted slot"):
         return
     mark("continue-action")
-    await hold(4)
+    await hold(40)
     await key(KEY_ENTER)
-    if entry().get("continueText") == 225:
-        mark("continue-question")
-        await hold(3)
-        await key(KEY_ENTER)
+    if not await ready(func(): return entry().get("continueText") == 225, 300,
+            "Continue opens the Witch's slot question"):
+        return
+    mark("continue-question")
+    await hold(205)
+    await key(KEY_ENTER)
     if not await ready(func(): return panel().get("state") == "continue-slots", 300, "Continue opens the slot list"):
         return
     mark("continue-slots")
-    await hold(4)
-    await key(KEY_ENTER)
-    if not await ready(func(): return movement_ready() or entry().get("continueText") == 226, 600,
-            "Slot 1 restores its admitted candidate"):
+    if not accept(panel().get("selected") == 0, "Continue highlights the admitted Slot 1"):
         return
-    if entry().get("continueText") == 226:
-        mark("continue-recognition")
-        await hold(3)
-        await key(KEY_ENTER)
-        if not accept(entry().get("continueText") == 224, "Recognition leads to farewell"):
-            return
-        mark("continue-farewell")
-        await hold(3)
-        await key(KEY_ENTER)
+    await hold(75)
+    await key(KEY_ENTER)
+    if not await ready(func(): return entry().get("continueText") == 226, 600,
+            "Slot 1 admission opens recognition"):
+        return
+    mark("continue-recognition")
+    await hold(240)
+    await key(KEY_ENTER)
+    if not await ready(func(): return entry().get("continueText") == 224, 300,
+            "Recognition leads to farewell"):
+        return
+    mark("continue-farewell")
+    await hold(180)
+    await key(KEY_ENTER)
     if not await ready(movement_ready, 600, "Slot 1 mounts stable battle Movement"):
         return
     var first := state()
@@ -123,29 +142,29 @@ func play() -> void:
             "Continue restores the selected Battle01 Chester turn"):
         return
     mark("battle-movement")
-    await hold(6)
+    await hold(130)
     await key(KEY_X)
     if not accept(state().inspection.active and state().inspection.page == "Cursor", "Cancel opens battle inspection"):
         return
     mark("inspection")
-    await hold(14)
+    await hold(135)
     await key(KEY_X)
     if not accept(movement_ready() and not state().inspection.active and state().actor == first.actor
             and state().queueCursor == first.queueCursor, "Back returns to the unspent turn"):
         return
     mark("inspection-back")
-    await hold(3)
+    await hold(35)
     if not await move_one():
         return
     var moved := state()
     mark("preview")
-    await hold(6)
+    await hold(60)
     await key(KEY_ENTER)
     if not accept(state().stage == "ActionChoice" and state().menu.visible and state().menu.page == "Main",
             "Confirm opens the ordinary battle command list"):
         return
     mark("action-list")
-    await hold(11)
+    await hold(130)
     await key(KEY_SPACE)
     mark("stay-submitted")
     if not await ready(func(): return movement_ready() and state().actor != first.actor,
@@ -159,14 +178,16 @@ func play() -> void:
             "Stay commits the chosen tile and advances the live turn queue"):
         return
     mark("next-player")
-    await hold(8)
+    await hold(65)
     if not await move_one():
         return
     mark("next-player-preview")
-    await hold(9)
+    await hold(105)
 
 func run() -> void:
     began = Engine.get_process_frames()
+    if DisplayServer.get_name() == "headless":
+        root.size = Vector2i(1920, 1080)
     host = load("res://Main.tscn").instantiate()
     root.add_child(host)
     root.grab_focus()
