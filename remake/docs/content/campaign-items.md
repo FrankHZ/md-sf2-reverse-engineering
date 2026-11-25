@@ -228,8 +228,8 @@ original ally starts, shops or grants: its acquisition owner is the [remaining c
 Current caller reproduction is below. A/B/C/D/E refer to the five serial slices in the agreement;
 The final production check covers every row below, including mask-NONE refusal, all25 nonempty
 Use bindings and legal late holders. A–D retain their independently accepted rule witnesses;
-E adds class, appearance and persistence closure. Independent final acceptance of #2268 remains
-with main-gate.
+E adds independently accepted class, appearance and persistence closure. The accepted complete
+equipment consumer scope is recorded in [#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
 
 | ID / equipment | Source classes | Passive effects; range | Use; flags | Allied equip / scene | Selected acquisition | Implementation / consumer status |
 | --- | --- | --- | --- | --- | --- | --- |

@@ -8,8 +8,8 @@ handoffs, carried state and acceptance boundaries for Battle03 through departure
 The [#2268 agreement](domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268)
 and [complete equipment reconciliation](content/campaign-items.md#whole-game-equipment-reconciliation)
 cover all94 source equipment definitions. The audit is complete at the static definition/code
-boundary; equipment rule/consumer implementation has local complete-table verification, with final
-independent parent acceptance pending. Slices A/B/C admit85 weapon definitions
+boundary; the complete equipment rule/consumer implementation is independently accepted.
+Slices A/B/C admit85 weapon definitions
 (including two player-ineligible mask-NONE rows) and nine rings. Signed ATT/DEF/AGI/MOV operations
 run after statuses in actual carried-slot order, with each source clamp. Weapon and ring curses
 share Equip, custody, Cure and Repair. Guardian91 has ordinary purchase/Equip, body/weapon
@@ -36,8 +36,9 @@ field/battle saves, without changing their existing party/flags/RNG or adding a 
 
 Late holders use controlled custody, not natural recruitment/acquisition. Future maps, recruitment
 and smithing remain campaign work; original animation-only gaps remain #2104 and shutdown warnings
-remain #1716. No equipment rule or necessary consumer is deferred to those owners. #2268 stays open
-for main-gate's independent final acceptance. [Resource closure](content/asset-inventory.md#equipment-closure-pilot-2274)
+remain #1716. No equipment rule or necessary consumer is deferred to those owners. The independent
+equipment acceptance is recorded in [#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
+[Resource closure](content/asset-inventory.md#equipment-closure-pilot-2274)
 
 ## Campaign feature trace
 

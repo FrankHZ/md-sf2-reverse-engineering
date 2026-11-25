@@ -13,8 +13,8 @@ or backup is an acceptance workspace. This section owns the implementation seque
 the [complete item reconciliation](../content/campaign-items.md#whole-game-equipment-reconciliation)
 owns individual rows. Slices A–D implement static equipment, physical prowess, turn recovery and equipment Use.
 Slice E completes the source-legal equipment consumer table and representative late consumers;
-independent final acceptance remains pending
-and this does not close [#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
+the complete equipment consumer scope is independently accepted, recorded in
+[#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
 
 The current successor is `derived/issue2274/equipment-v2`, built from the accepted slice-C package.
 The [E reproduction section](#complete-equipment-consumers-2274) owns its complete consumer checks.
@@ -28,7 +28,7 @@ must remain independent of the controlled witnesses used to test them.
 
 ## Complete equipment consumers (#2274)
 
-**Confirmed (local implementation; independent final acceptance pending).** The producer joins
+**Confirmed (implemented and independently accepted).** The producer joins
 original starts and ordinary/special promotion destinations to the registered #2001 walking/body
 library. Against pinned `c834c652b6862bc5679fd7f69a38a7093206efc6`, the owning source tables are
 `data/stats/allies/allystartdefs.asm`, `data/stats/allies/classes/promotions.asm`,
@@ -144,7 +144,7 @@ Natural late recruitment/acquisition, later campaign, original full choreography
 lifecycle #1716 remain separate. Chinese rendering reuses the registered catalog and existing
 fallbacks; this does not assert complete Chinese proper-name coverage. A–D effects, including
 unique effects, remain their accepted mechanisms; E does not replace them with admission-only
-claims. Main-gate owns independent final acceptance and parent closure.
+claims. Main-gate has independently accepted the complete equipment consumer scope.
 
 ### Audit result and decisions
 
@@ -199,7 +199,7 @@ Main-gate opens and dispatches these five child outcomes serially after independ
 review. The estimates are engineering ranges, not runtime promises or permission thresholds:
 roughly 4–8, 3–6, 3–6, 6–12 and 6–12 working hours respectively, including tests and review fixes.
 Reassess at each handoff or if a new rule authority/save representation is required. The parent
-stays open until all five outcomes and the final checklist pass. The accepted audit contained no
+records the independently accepted five outcomes and final checklist. The accepted audit contained no
 production implementation; slice A status is recorded below. Each child updates the rows it actually completes.
 
 1. **Static equipment, signed stats and weapon curses.** Independently make current-shop
@@ -411,8 +411,9 @@ investigate or close lifecycle behavior.
 
 **Unknown / remaining:** natural original equipment Use at these seams was not newly observed;
 source-static evidence remains distinct from controlled remake input. Independent original effect
-choreography remains #2104. Legal late holders and exhaustive body/weapon keys remain E, with future
-acquisition/recruitment/maps owned by the campaign. Whole-game equipment #2268 stays open.
+choreography remains #2104. E supplies the independently accepted legal late holders and exhaustive
+body/weapon keys; future acquisition/recruitment/maps remain owned by the campaign. #2268 records
+the accepted whole-game equipment scope.
 
 ## Equipped turn recovery (#2272)
 
@@ -420,7 +421,7 @@ acquisition/recruitment/maps owned by the campaign. Whole-game equipment #2268 s
 have passive definition admission, including the two player-refused mask-NONE weapons. Holy
 Staff97 adds ATT29/HP3, Mystery Staff100 ATT39/MP2, and Life Ring124 HP5. Existing class masks,
 equipped words and source nonbreakable constraints apply. Equipment Use is implemented by D below;
-exhaustive legal body/class closure remains E; this slice does not close #2268.
+exhaustive legal body/class closure is independently accepted in E and recorded under #2268.
 
 The Domain `EquipmentRecoveryRules` calculates each capped delta from the live equipped weapon
 or ring and current vitals. `BattleActionCommitter.NeedsAfterTurn` admits an otherwise status-free

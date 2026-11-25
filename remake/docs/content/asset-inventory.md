@@ -1097,7 +1097,8 @@ The [equipment agreement](../domain/equipment-use-repair-design.md#whole-game-eq
 and [94-row reconciliation](campaign-items.md#whole-game-equipment-reconciliation) own the scope.
 The resource plan uses the registered #2001 prepared retail library. The current complete
 equipment successor is #2274 below, retaining the accepted SORC v3 selections, #2266 catalog
-and separately selected #2252 opening/#2255 Witch. Independent final acceptance is pending.
+and separately selected #2252 opening/#2255 Witch. The equipment consumer/resource scope is
+independently accepted.
 Do not fall back to rejected v2 or require old producer scratch.
 
 **Confirmed (prepared metadata and selected JSON).** The prepared weapon index contains84
