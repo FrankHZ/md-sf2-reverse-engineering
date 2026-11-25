@@ -87,6 +87,149 @@ This is remake product evidence. Original facts retain their named source/H2/H3 
 SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6` plus the registered USA input identity.
 No original reset, hardware restart, menu raster, exhausted-sprite or timing claim is added.
 
+## Pre-voyage showcase (#2245)
+
+**Standard rigor.** [#2245](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2245)
+uses the accepted opening to plan a short feature reel and the same ordinary-input route for a
+functional smoke. The continuous journey runs from New Game through a Battle01 action, Save and
+Quit, and playable Continue in a new process. Magic and boarding have independent starts. The
+60–90 second pilot covers one Continue and one battle decision. Full editing, release review and
+distribution belong to [#1825](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1825).
+
+### Launch and checkpoints
+
+Use the owned Debug adapter and installed Godot with the
+[locked SDK workflow](../development-and-verification.md#locked-net-workflow). For visible play
+and recording, select the directory containing the configured `DOTNET_BIN` as `DOTNET_ROOT` in
+the launch process. Set `DOTNET_ROOT_X64` to the same value because Windows x64 Godot checks that
+selection first. The registered installation was checked for the locked SDK, `hostfxr.dll` and the
+.NET 8 runtime family used by Godot. [Godot host resolver at `ed1daf0bf`](https://github.com/godotengine/godot/blob/ed1daf0bf/modules/mono/editor/hostfxr_resolver.cpp#L269-L308)
+
+Load the ignored worktree input configuration in the launching process. Select the complete
+[BRGN publication](../content/presentation-assets.md#brass-gunner-promotion-successor), including
+its entry and all six opening inputs. Use the catalog from that publication and the registered
+[#1941 entry catalog](../application/pacalon-first-visit.md#continue-after-worktree-cleanup) for Simplified
+Chinese. Resolve selections from the configured shared root and read them in place. Select a fresh
+absolute external disposable save root and namespace, and fresh worktree-local application-data,
+TEMP and log paths. Keep the same namespace for the two processes in the continuous sequence.
+
+These three read-only primary copies are byte-identical to their source slots. Resolve each path
+from `SF2_SHARED_INPUT_ROOT`. Copy only the selected checkpoint into a fresh disposable namespace
+and keep its original slot number. The table records the save format version.
+
+| Shared selection | Original slot and format | Source owner and observed boundary with the BRGN package |
+| --- | --- | --- |
+| `handoffs/issue2245/battle01/slot1.json` | Slot 1, v2 | #1666 ordinary Battle01 review. This slot Continued to round 1 Chester Movement. The later observer save attempt timed out as recorded below. [Battle Continue evidence](../godot/presentation.md#ordinary-menu-resource-acceptance-1666) |
+| `handoffs/issue2245/map58/slot1.json` | Slot 1, v1 | #1606 entry review's post-Battle07 tower slot, using `battle07-return`. This slot Continued to usable Map58 control. The rest of the boat route relies on the prior campaign observation. [Entry review](../godot/presentation.md#production-entry-and-field-dialogue-1606) · [Voyage handoff](../application/pre-voyage-campaign.md#tower-return-through-first-damaged-ship-control) |
+| `handoffs/issue2245/map16/slot2.json` | Slot 2, v6 | #2167 review copy's post-Battle05 Map16 visit. File inspection confirmed Kazin and Sarah in the active roster with early learned spells. This is a candidate. Continue and casts remain **Unknown**. [Review provenance](../application/pre-voyage-campaign.md#castle-to-quake-handoff-from-a-player-save-2167) · [Battle06 gate](../application/pre-voyage-campaign.md#reproduce-the-south-gate-entry) |
+
+```powershell
+. ./local/private-inputs.ps1
+$repoRoot = (Get-Location).Path # Run at the owning checkout's root.
+$shared = $env:SF2_SHARED_INPUT_ROOT
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$env:DOTNET_ROOT = Split-Path -Parent $env:DOTNET_BIN
+$env:DOTNET_ROOT_X64 = $env:DOTNET_ROOT
+$package = Join-Path $shared 'derived/issue2242/pre-voyage-brgn-v1'
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $package 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $package 'main-scenes.json'
+$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $package 'entry/entry.json'
+$env:SF2_DISPLAY_CATALOG = Join-Path $shared 'derived/issue2240/catalogs-v1/world.zh-CN.json'
+$env:SF2_ENTRY_DISPLAY_CATALOG = Join-Path $shared 'handoffs/issue1941/content/catalog-final/entry.zh-CN.json'
+foreach ($file in Get-ChildItem -LiteralPath (Join-Path $package 'opening-inputs') -Filter 'SF2_PRIVATE_*.json' -File) {
+    [Environment]::SetEnvironmentVariable($file.BaseName, $file.FullName, 'Process')
+}
+Remove-Item Env:SF2_PRIVATE_CONTROLLED_START -ErrorAction SilentlyContinue
+# Supply the absolute disposable $saveRoot, $namespace and a fresh $runName for each process.
+$env:SF2_SAVE_ROOT = $saveRoot
+$env:SF2_SAVE_NAMESPACE = $namespace
+# Set $checkpoint to a shared selection from the table on the first launch of that segment.
+# Use $null for New Game and subsequent launches in the same namespace.
+if ($checkpoint) {
+    $namespaceRoot = Join-Path $saveRoot $namespace
+    if (Test-Path -LiteralPath $namespaceRoot) { throw 'Select a fresh disposable namespace' }
+    $source = Get-Item -LiteralPath (Join-Path $shared $checkpoint) -ErrorAction Stop
+    $slotDirectory = Join-Path $namespaceRoot 'sf2-opening'
+    [void][IO.Directory]::CreateDirectory($slotDirectory)
+    $destination = Join-Path $slotDirectory $source.Name
+    [IO.File]::Copy($source.FullName, $destination)
+    (Get-Item -LiteralPath $destination).IsReadOnly = $false
+}
+$runRoot = Join-Path $repoRoot "local/issue2245/$runName"
+$env:APPDATA = Join-Path $runRoot 'appdata'
+$env:LOCALAPPDATA = Join-Path $runRoot 'localappdata'
+$env:TEMP = Join-Path $runRoot 'temp'
+$env:TMP = $env:TEMP
+foreach ($directory in $env:APPDATA, $env:LOCALAPPDATA, $env:TEMP) {
+    [void][IO.Directory]::CreateDirectory($directory)
+}
+& $env:GODOT_BIN --path (Join-Path $repoRoot 'remake/game') --log-file (Join-Path $runRoot 'godot.log')
+```
+
+Use a supported visible gameplay client, preferably 1920×1080, with default mapped controls. Choose
+settings through production Main. Use the same inputs and acceptance boundaries with recording on
+or off. Record the actual slot, phase, selected action, before/after result, input return and any
+engine, projection or audio error at step boundaries. Compare the saved and resumed progress with
+the existing persistence observation. For a manual pass, record what the real UI proves and leave
+unread state fields unverified. The [host owner](../verification/host.md#opening-save-and-continue)
+and [battle save owner](../verification/battle-save.md#method-and-reproduction) name the existing
+read-only state and projection calls.
+
+### Shot order and functional checks
+
+| Shot | Ordinary start and input | Pass evidence and retry point |
+| --- | --- | --- |
+| Title, Witch and naming | Fresh namespace. At the Witch select Settings → Display → Language, Apply Simplified Chinese, then New Game in an empty slot. Enter a valid name of up to seven characters, confirm Start and reach Granseal. | Title and choices render in the selected language, the confirmed name survives, and the field accepts a direction. Retry from the Witch before choosing a slot, or use a fresh namespace for a new take. [Entry and naming](../godot/ui-scene-review.md#2-new-game-name-and-slot-choice) |
+| Walking, dialogue and artwork | Continue the same New Game. Walk out through the starting house threshold, talk to the opening speakers, follow Sarah, school and messenger input, and Search the reachable school pickup. Use Settings → Display → Graphics to switch Original/HD in the same settled scene, Apply, then move. | Show the house foreground across the threshold, acknowledgement returning control, the concise current guidance and the item/description. Repeat Search once for no duplicate grant. Compare position, party and pickup receipt on both sides of Apply. Retry the graphics comparison at the same settled field. Repeat the pickup take from an earlier legitimate save or a fresh take before collection. [Opening route](#reproduce-the-composed-route) · [Field UI](../godot/ui-scene-review.md#3-exploration-world-speech-choices-and-search) · [Guidance](../capability-status.md#modern-guidance) |
+| Party, equipment and Church | Still on that journey, open Member → Prepare. Show all four item positions and one item's description. Select Unarmed then legally re-equip Bowie's Wooden Sword. At the actual Granseal priest, inspect a service, return from it, and use Record to Save and Return in the field slot. | Check the equipped marker/attack change and return to the party and walking controls. Read the ordinary service result/refusal and require successful publication at the named field destination. Retry equipment or service after Back, or continue from the successful field record in a fresh take. [Field and Church](../godot/ui-scene-review.md#4-party-inventory-and-preparation) · [Field save](../verification/host.md#opening-save-and-continue) |
+| Battle01, one resolved physical attack | Follow the actual castle/palace/Astral/tower route from the same field. At player Movement, Cancel for inspection, Back, move to a legal stop, confirm, then Attack and choose a living in-range enemy. Advance ordinary turns if no target is currently in range. | See Movement → Main → Target → action/result → usable player control. Check the actual target and outcome including HP and any awarded EXP/gold, once. If the hit misses, retain its result. Retry a failed take from the legal field save or a battle save produced on this same journey. [Battle decision](../godot/ui-scene-review.md#8-battle-one-complete-decision-then-its-consequences) · [Tower route](../verification/host.md#opening-save-and-continue) |
+| Battle Save and Quit, cold Continue | At the next settled player Movement use the production Menu's Save, select a different slot from the field record, confirm Save and Quit, and wait for the native process to exit. Launch the same command and Continue that battle slot. | Observe the slot label/confirmation, actual process exit and distinct new PID. Require the same encounter, turn/actor, board/resources and usable Movement, with no replay of the completed attack. Take a legal preview step after restore. Retry Continue from the successful battle publication. If Save refuses, keep the refusal and resume at eligible Movement. [Battle persistence](../verification/battle-save.md#confirmed-observations-and-limits) |
+| Independent learned BLAZE and HEAL | Use the Map16 candidate in the checkpoint table. Continue slot 2, then take the Map16 `(26,31)` and Map18 `(9,29)` gates to Battle06. On Kazin's turn choose a learned BLAZE rank with a legal enemy or area. On Sarah's turn use learned HEAL 1 on a living wounded ally after ordinary damage. | Verify the displayed rank, explicit target, one MP debit, damage/healing, art and return to Movement. Retry from a fresh copy or a newly written settled turn on that branch. The retained Battle04 Kazin and Battle01 HEAL observations establish the mechanics. [Battle04 cast](../application/pre-voyage-campaign.md#battle04-and-the-galam-prison-handoff) · [Galam gate](../application/pre-voyage-campaign.md#reproduce-the-south-gate-entry) · [HEAL](../verification/battle-save.md#confirmed-observations-and-limits) |
+| Independent boarding tail | Continue slot 1 from the Map58 checkpoint in the table. From the post-Battle07 tower return, descend to the castle, walk across the damaged town and take the east docks exit. Talk to the captain, decline once, then affirm on a fresh Talk. | No retains docks control. Yes resolves the crossing. Show regained Map14 control at `(40,8)` and one legal step. End before the plank or Battle08. Retry from a fresh tower copy. Lead the edit with the docks decision if the approach runs long. [Tower and ship handoff](../application/pre-voyage-campaign.md#tower-return-through-first-damaged-ship-control) |
+
+### Pilot and recording boundary
+
+Use a fresh copy of Battle01 slot 1 from the checkpoint table. It is a saved Battle01 Movement
+at Chester's first turn. The nearest living enemy starts
+well outside one move plus attack range. Choose a movement/Stay decision for this short take:
+about 15 seconds for title/Witch → Continue, 20 seconds for inspection and Back, 15 seconds for
+a legal preview move and Main command list, and 20–30 seconds to commit Stay and reach the next
+usable player decision. A total of about 70–80 seconds leaves room for reading speed. Require
+the inspection to return to the same actor, actual movement and one turn commitment, the next
+player receiving a fresh direction, and music plus an audible UI cue in the recorded clip. Check
+the same steps unrecorded and recorded from independent copies of that slot. Compare elapsed
+loading and input-to-result time, and inspect playback for visible stalls, dropped frames and
+missing game audio. Use a single short take to decide whether to proceed with longer recording.
+
+The target is 1920×1080 at 60 fps. At 12–20 Mbit/s, 60–90 seconds is about 90–225 MB of
+video before audio and container overhead. Cap the pilot at 250 MiB and receipts at 20 MiB.
+The entire route has a provisional 10–15 minutes of raw captures and a 2–4 minute edit, with
+waiting, repetitive turns and the cold-launch interval trimmed where appropriate. Fifteen minutes
+at 12–20 Mbit/s costs 1.35–2.25 GB of video. Keep one serial recording round within 3 GiB and
+re-estimate from the first real clip. Keep reports and media out of Git and CI. Before retaining
+media across checkout cleanup, select an explicit stable private directory outside the worktree.
+
+**Pilot blocked.** Windows Game Bar was present, but the selected Godot window, app-only audio,
+microphone-off state and a task-owned capture destination could not be confirmed. Its documented
+workflow also offers system-wide audio and uses the account's Captures folder. No capture ran.
+Resume by verifying an existing recorder's target window, game-only audio, disabled microphone
+and isolated output in the actual capture configuration, then run the short take above. [Microsoft
+Game Bar capture controls](https://support.microsoft.com/en-us/accessibility/windows/use-a-screen-reader-to-record-your-screen-with-xbox-game-bar)
+
+**Confirmed checkpoint checks.** The Debug build at `f92a02bc` succeeded with the selected SDK.
+With the BRGN inputs, separate headless/Dummy invocations of the existing
+[battle save observer](../../game/probes/engine_battle_save_observation.gd) opened the title and
+Continued both copied slots. Use the [observer launch](../verification/battle-save.md#method-and-reproduction)
+with format 1 English instant text (`{"formatVersion":1,"language":"en","textMode":"instant"}`),
+`--max-fps 120` in place of `--fixed-fps 60`, a separate report/log per run,
+and no controlled field input. `SF2_SAVE_CASE=field-continue` ended at playable Map58 control and
+exited 0. `SF2_SAVE_CASE=shape` reached Battle01 round 1 Chester Movement, then the observer's
+indexed save sequence opened `confirm-quit` and timed out waiting for `save-slots` (exit 1).
+The latter did not exercise publication or the intended Stay, and reported two ObjectDB instances
+at exit. Both processes exited. These receipts check checkpoint admission. The combined current
+opening smoke, current battle Save/Continue after an action, and recorded audio/visual behavior
+remain **Unknown** for this showcase. The named prior acceptance observations retain their scope.
+
 ## Retained dependencies
 
 | Boundary reused without another full run | Accepted owner and supporting evidence |
