@@ -240,6 +240,16 @@ The published package also passes a fresh-process battle Continue with no produc
 
 ### Slice A reproduction and retained failures
 
+Verification selection: run the existing engine unit project with filter
+`Equipment|Ring|Curse|FieldService|ShopService|EnemyCarried|PartyDetails|ConnectedBattleGive|ConnectedBattleDiscard|Growth|Promotion|Persistence`
+(each term is a `FullyQualifiedName~` predicate), plus `uv run sf2 verify adapter`.
+The clean committed-head planner uses `--base origin/main --head HEAD --scope engine`:
+these Python changes only mount already-prepared remake equipment/icons and close its package;
+they change no research extraction, fixture or harness semantics. Its direct public checks are
+`uv run ruff check src tests/python`, `uv run sf2 design-contracts test` and
+`uv run sf2 research-index test`; all pass. No full research gate or retired aggregate was run.
+
+
 Load the worktree-local private-input configuration and build the current Debug adapter with
 `UseSharedCompilation=false` and `nodeReuse:false`. Select `derived/issue2270/equipment-v1`, the
 unchanged `derived/issue2266/catalogs-v1/world.zh-CN.json`, independent #2252 opening and #2255 Witch.
