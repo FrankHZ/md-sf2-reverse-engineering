@@ -162,10 +162,10 @@ pulse and graphics parity remain **Unknown**. [Original range construction](../.
 
 Use the [shared visual language](ui-design-language.md) for all panels. At 1920×1080, anchor the
 quiet round panel at the existing upper-left gameplay inset below host chrome, with the terrain
-readout below it. Use the existing roughly 560px right-side decision column,
+readout below the acting card. Use the existing roughly 560px right-side decision column,
 32px gameplay inset and below-Menu band. The acting, recipient or hover card takes its top role
 as the phase changes. Let wide values grow within the layout budget. Place the Main or child
-list below the measured card. Use one independent reading/footer region below the controls
+list below the measured card and terrain frames. Use one independent reading/footer region below the controls
 and keep Back and Confirm fixed within their phase. Main uses `CompactCommandList` in
 Attack, Magic, Item, Stay/Search order. The existing icon control draws the admitted art
 at nearest 3× beside the persistent 24px localized label. Each complete row is a single hit
@@ -179,7 +179,7 @@ existing edge anchors and readable panel widths. Reflow by phase, viewport and p
 geometry only. Use `BattleMenuLayout.AvoidSubject` and the existing hover-card clearance to
 protect the focused board cell and honor the right-top host exclusion. When the right column
 would cover that cell, keep the footer and card aligned in the alternate clear stack and place
-the order opposite them, below the protected cell if needed. Fit a bounded reader and scroll before
+the round panel opposite them where it is clear of the cell. Fit a bounded reader and scroll before
 allowing card, command, hint or host rectangles to intersect. Hit rects and pointer occlusion
 follow the actual visible panels.
 
@@ -672,27 +672,20 @@ Resizing or changing page cancels an old capture.
 Movement, Target, hover inspection and playback use a project-authored double-gold frame
 with stepped corner accents. The mini-status composition puts the name and admitted ally
 class and level in the header, then stacks HP and MP with aligned bars and right-side values.
-Movement and inspection display coordinates and land effect in a dedicated panel opposite the unit card. During movement it follows the last delivered tile. During inspection it follows the cursor. Target selection and playback omit this terrain readout. The game preserves the live
-resource and participant boundaries. This composition follows the placement of information in
+Movement and inspection display coordinates and land effect in a dedicated panel. During movement
+it follows the last delivered tile. During inspection it follows the cursor. Target selection and
+playback omit this terrain readout. The mini-status information is traceable to
 the [pinned mini-status routine](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/ministatuswindow.asm#L572-L664).
 
-### Proposed terrain panel placement for playtest
+### Terrain panel beside the focused unit
 
-The current layout places the terrain panel across the board from the unit card. At the
-1920×1080 canvas width, reading one unit's vitals and land effect requires looking at both
-sides of the battlefield.
-
-For the next layout trial, keep the two frames distinct and align the terrain panel with the
-leading edge of the unit card, **12px below it**. Keep the round counter in its current column.
-This preserves the visual link between the unit and its cell and leaves room in the round
-column for the battlefield. A side-by-side pair would extend farther over the playable map.
-
-Use the combined bounds of both panels when choosing the side that clears the focused cell.
-In F4 the terrain row takes vertical space above Main or the spell/item list. Check the longest
-two-line unit name, all four Main rows, the selected list row and the fixed description footer.
-In F8, keep the same column when moving to adjacent empty ground where possible. Show just the
-terrain frame there and keep it clear of the cursor. Target selection and playback retain their
-existing disclosure. Review both languages at 1600×900 and 1920×1080 before adopting the placement.
+[#2256](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2256) places the independent
+terrain frame **12px below** the card, aligned with its leading edge. The combined bounds of both
+frames determine clearance from the focused cell. The round counter uses the opposite column.
+In Main, Magic and Item, the controls start below both measured frames. The reader keeps its
+bottom anchor and uses the remaining space when a tall Main header needs room for all four rows.
+Inspection on an empty cell shows the terrain frame at the top of the last clear column. The
+cursor can force a side change. Both visible frames shield the board from pointer input.
 
 ### Reproduce shared description reading and inspection return
 
@@ -932,12 +925,14 @@ natural source reach beyond the linked evidence remain **Unknown**.
 [#2145](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2145) applies the two-size
 [gameplay typography](ui-design-language.md#gameplay-typography) agreement to the shared card.
 Movement, Main, list and target decisions, free inspection and close-ups show names and vitals
-at 30px. Ally cards show class and level on their own 30px line when available. Enemy cards omit
-that line. The panel measures the wrapped name and allocates the required height. It widens up
-to 800 design units for names. Exceptionally long metadata can use a two-line ellipsis at the
-same font size. HP and MP share aligned labels, gauges and value columns. A zero maximum still
-shows a dash and an empty gauge. Full details inherit the shared gauge typography in their
-existing layout.
+at 30px. [#2256](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2256) puts the name
+at the leading edge and the admitted ally class and level at the trailing edge. The card measures
+the shaped name beside the role at the available width. When the name needs the full row, the
+role moves to the following row and stays right-aligned. Enemy cards show the name and admitted
+vitals. The card can widen up to 800 design units for names. Exceptionally long metadata
+can use a two-line ellipsis at the same font size. HP and MP share aligned labels, gauges and
+value columns. A zero maximum still shows a dash and an empty gauge. Full details inherit the
+shared gauge typography in their existing layout.
 
 Use the locked Debug build and fresh native observation directories from
 [Reproduce slice 1](#reproduce-slice-1). Run the same command with
@@ -948,10 +943,13 @@ The observer needs no persisted settings or saves. Supply `--input-settings` for
 | --- | --- |
 | `private` | Use the controlled private Battle01 start above with English settings. Inspect ally and enemy, open the real Main and Magic list, then select and click the admitted Attack target. Advance only to the first defeated enemy's card. |
 | `zh-long` | Use the same Battle01 start with zh-CN settings. Select a small UTF-8 `SF2_DISPLAY_CATALOG` with the world package and repository/commit/ROM identity, locale `zh-CN`, empty `texts`, and two `names` rows. Use `name.ally` index 1 with `北境守望祭司与远行队医伊莉莎白西风谷巡旅护卫队首席治疗师` and `name.class` index 4 with `祭司`. Select a friendly HEAL target and observe single-card playback. |
-| `wide` | Use the public authored wide-vitals recipe above in English. Also rename the center enemy to `very-long-controlled-enemy-name-for-wrap-and-five-digit-vitals` in its definition, placement and start row, and set its current/max HP to 29,999/30,000. Observe long-name wrapping and the live opposing BLAZE cards. |
+| `wide` | Use the public authored wide-vitals recipe above in English. Also rename the center enemy to `very-long-controlled-enemy-name-for-wrap-and-five-digit-vitals` in its definition, placement and start row, and set its current/max HP to 29,999/30,000. To check a populated Item row, copy the Practice Leaf item definition from `localization-pilot.json` into the scratch package's root `items` and give its item word to the mage. Observe long-name wrapping, the Item caption hit and Back, Magic, and the live opposing BLAZE cards. |
 
-Read the mounted text sizes, visible lines, role disclosure, gauge values and rectangles. The
-target card is measured at 1600×900, 1920×1080 and 2560×1440. At 1280×720 the host's window
+Read the mounted text sizes, visible lines, right-aligned role and fallback row, gauge values
+and rectangles. Acting and inspection terrain is checked for the 12px gap and clearance from
+the cursor and the reader. The target card is measured at 1600×900, 1920×1080 and 2560×1440.
+At 1280×720 the host's window
 recovery covers battle, then 1920×1080 restores the pending target without acting. Clicks on the
 inspection card stay out of the board, invalid target gestures leave resources alone, and a
 complete legal target click enters playback. These checks cover the shared card and gauge.
+[Dedicated F4 and F8 visual review](ui-scene-review.md#battle-card-and-terrain-visual-review)

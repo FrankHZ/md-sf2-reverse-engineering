@@ -149,10 +149,11 @@ identify the unit on turn. The dispatch queue and cursor remain part of battle c
 ## Battle status card readability
 
 **Implemented.** Movement, decisions, target selection, free inspection and playback share the
-30px unit card. Names can wrap above the class and level shown for allies. HP/MP labels and values
-use the same body size, including the shared gauge in full details. English and Chinese native
-Battle01 observations cover disclosure, supported window geometry and pointer ownership.
-[Card layout and reproduction](godot/battle-ui-composition.md#readable-battle-status-cards)
+30px unit card. The name starts at the left and the admitted ally class and level align right on
+the same row when they fit. Movement and inspection align the separate land-effect frame 12px below
+the card. HP/MP labels and values use the same body size, including the shared gauge in full details.
+[Card layout and reproduction](godot/battle-ui-composition.md#readable-battle-status-cards) ·
+[F4 and F8 visual review](godot/ui-scene-review.md#battle-card-and-terrain-visual-review)
 
 ## Battle continuation state
 

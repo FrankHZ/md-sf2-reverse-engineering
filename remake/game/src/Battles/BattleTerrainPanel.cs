@@ -8,6 +8,7 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 
 internal sealed partial class BattleTerrainPanel : PanelContainer
 {
+    internal const int CardGap = 12;
     private readonly Label _reading = new() { Name = "TerrainReading", MouseFilter = MouseFilterEnum.Ignore };
 
     public override void _Ready()
@@ -24,15 +25,6 @@ internal sealed partial class BattleTerrainPanel : PanelContainer
     {
         _reading.Text = GameText.Get("battle.land-effect", value, cell.X, cell.Y);
         Size = GetCombinedMinimumSize();
-    }
-
-    internal void Place(Vector2 corner, Rect2 subject, bool alignRight)
-    {
-        var position = corner;
-        if (alignRight) position.X -= Size.X;
-        if (subject.HasArea() && new Rect2(position, Size).Intersects(subject))
-            position.Y = subject.End.Y + 12;
-        Position = position;
     }
 
     internal object Observe() => new { text = _reading.Text, visible = IsVisibleInTree(),

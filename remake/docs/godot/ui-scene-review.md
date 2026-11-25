@@ -557,13 +557,15 @@ The current user slot and backup must never be a design-validation fixture.
 The [#2079 battle composition](battle-ui-composition.md#phase-focus-and-return) is mounted in
 production. The [battle feature trace](battle-interaction-baseline.md#one-player-decision-from-entry-through-return)
 owns gameplay and source evidence. [#2090](battle-ui-composition.md#vertical-battle-main-2090)
-restores four vertical Main rows between the measured acting card and the bounded reader. The preferred column is on the right. If it would cover
-the board subject, the card, controls and reader move together to the clear left column.
+restores four vertical Main rows above the bounded reader. The [terrain frame](battle-ui-composition.md#terrain-panel-beside-the-focused-unit)
+sits 12px below the acting card in the preferred right column. If the stack would cover the
+board subject, the card, terrain, controls and reader move together to the clear left column.
 
 ```text
-   Round                                              Acting unit · Level
-   Coordinates · Land effect                          HP
+   Round                                              Acting unit              Class · Level
+                                                      HP
                                                       MP
+                                                      Land effect · Coordinates
 
    Battle board                                       [icon] Attack
                                                       [icon] Magic
@@ -575,7 +577,7 @@ the board subject, the card, controls and reader move together to the clear left
 ```
 
 Up/Down moves through the rows and wraps at either end. Confirm or a complete row click chooses
-the command. Magic and Item replace Main with a scrollable list below the card. The footer keeps
+the command. Magic and Item replace Main with a scrollable list below the terrain frame. The footer keeps
 its bounds as offers change. Left/Right reads overflowing descriptions in Main and child lists,
 and the wheel reads the body under the pointer. Read feedback uses the active bindings and appears
 only when there is overflow. In Target, the shared board cursor marks the eligible recipient and
@@ -599,9 +601,9 @@ battlefield. [Spell reader](battle-ui-composition.md#selected-spell-descriptions
 | Decision phase | Visible composition and focus | Invalid/long state and return |
 | --- | --- | --- |
 | Battle entry / before player control | Present the existing scene/intro dialogue and real entry status. No commands while the script owns play. | Long intro uses the story reader; existing Skip appears only when eligible. No new deployment or pre-battle equipment screen is inferred. Host cover preserves delivery. |
-| Movement | An acting card and quiet round support the shared cursor and movement field. The cursor follows the displayed actor through preview and undo. | Preserve actual range/refusal feedback; no invented path legality. Confirm opens actions. Current Cancel and movement-preview behavior remain session-owned. [Held directions](presentation.md#battle-directional-hold-and-mode-isolation-1615) repeat within Movement. |
-| Main action | Four deep-blue rows beneath the acting card each contain the command icon and label. The footer shows the consequence or refusal. At a registered faced chest, the last row offers Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). | Disabled focus is inspectable and cannot commit. Left/Right reads long reasons in the fixed reader without moving focus. Main Back resumes Movement at the legal preview. Range is still calculated from the turn origin. If equipment puts the preview beyond current MOV, Back delivers the existing return path. Choosing ordinary Stay commits once at the legal stop. [Battle input behavior](battle-ui-composition.md#fresh-target-input-and-direct-stay) |
-| Spell / item list | A scrollable list replaces Main beneath the acting card. Rows identify the actual spell level, MP cost or inventory slot, and the selected offer's reason or detail uses the footer. | Confirm enters an enabled offer. Back restores the same command without changing resources or RNG. |
+| Movement | The acting card and terrain frame support the shared cursor and movement field. The round stays in the opposite column. The cursor follows the displayed actor through preview and undo. | Preserve actual range/refusal feedback; no invented path legality. Confirm opens actions. Current Cancel and movement-preview behavior remain session-owned. [Held directions](presentation.md#battle-directional-hold-and-mode-isolation-1615) repeat within Movement. |
+| Main action | Four deep-blue rows beneath the terrain frame each contain the command icon and label. The footer shows the consequence or refusal. At a registered faced chest, the last row offers Search under the [existing admission](../content/profiles-and-trust.md#battle-search-admission). | Disabled focus is inspectable and cannot commit. Left/Right reads long reasons in the fixed reader without moving focus. Main Back resumes Movement at the legal preview. Range is still calculated from the turn origin. If equipment puts the preview beyond current MOV, Back delivers the existing return path. Choosing ordinary Stay commits once at the legal stop. [Battle input behavior](battle-ui-composition.md#fresh-target-input-and-direct-stay) |
+| Spell / item list | A scrollable list replaces Main below the terrain frame. Rows identify the actual spell level, MP cost or inventory slot, and the selected offer's reason or detail uses the footer. | Confirm enters an enabled offer. Back restores the same command without changing resources or RNG. |
 | Target / affected area | One cursor marks the eligible recipient. One field shows reach and affected cells. The recipient card replaces the acting card. Cycle, Confirm and Back use the footer. | An empty, defeated, wrong-side or out-of-range cell clears the cursor, recipient card and effect inset. Confirm cannot commit the old target. Back returns to the prior row or Main. |
 | Equipment / Give / Drop | Reuse the auxiliary presenter and advertised mapped shortcuts from action choice; show the actual candidate, owner/recipient or consequence in one reading panel. | No simultaneous unrelated equipment/item/spell stacks. Preserve read-before-confirm and cancellation. Product connected Equip/Give have separate [Content admission](../content/profiles-and-trust.md#connected-battle-give-admission); [Drop](../content/profiles-and-trust.md#connected-battle-discard-admission) binds its own finite free transaction. Controlled field-only equipment bindings remain immutable. This layout grants no new mouse coverage or transaction capability. |
 | Commit | The explicit current command owns payment/action commitment; UI retires the provisional pages and switches to the real presentation phase. | A refusal/stale offer remains with its current responsible view and reason; do not invent success or silently submit a previous choice. Returning held directions/Confirm cannot act on the next phase. |
@@ -626,8 +628,9 @@ and [target input](../../../docs/research/battle/battle-functions.md#confirmed-p
 ### Viewing the battlefield
 
 During free inspection, pointer hover and directional focus reveal the same short status.
-The unit card shows the name and admitted class/level above stacked HP and MP. The separate
-Land effect panel keeps its label and coordinates on both occupied and empty cells. It shows
+The unit card uses the shared left name and right class and level header above stacked HP and MP.
+If the header lacks width, the class and level move below the name. The separate Land effect
+panel sits beneath the card and keeps its label and coordinates on both occupied and empty cells. It shows
 the inspected unit’s setting or the regular ground mover’s reading on an empty cell.
 Impassable cells show a localized status and an unavailable value reads as a dash.
 Confirm on empty ground opens battlefield options. Confirm on a unit opens
@@ -651,6 +654,29 @@ Member shares the field roster and sheet and returns directly to Options. Battle
 flow. Cyan ally and red enemy fields show traversal and legal stops from the inspected unit's actual
 cell. It clears on empty ground, subordinate pages, host cover and exit.
 [Inspected movement and shared members](battle-ui-composition.md#read-only-inspection-and-the-member-view)
+
+### Battle card and terrain visual review
+
+In the [production DesignPreview](../../game/probes/previews/README.md), use F4 Practice Yard.
+Move down one cell and Confirm for Main. Open Magic, select MEND, cycle to Guard A and
+commit. F8 opens inspection on Medic A. Move right from (3, 3) to (4, 3) to see the terrain
+frame stay in the same column while the card clears and the reading changes from 15% to 30%.
+Use L to switch language and repeat at 1920×1080 and 1600×900.
+
+The English and Chinese previews showed the level on the name row and the terrain frame below
+the acting and inspected cards. Main and Magic kept the row and reader legible. The friendly
+target and MEND playback showed the card alone. Guard A's recovery displayed 12/12 HP and the
+zero-MP dash beside the recovery message without overlap.
+
+For the long-name case, open F8 with a scratch Practice Yard package. Set Medic A's maximum
+HP to 30,000 and starting HP to 29,999. Use
+`very-long-controlled-medic-name-for-wrap-and-five-digit-vitals` in the definition, start and
+placement. At 1600×900 the two-line name left the level on its own row and both HP/MP values
+readable. A controlled Chinese sample in the mounted hover card used
+“北境守望祭司远行队医伊莉莎白西风谷巡旅护卫队首席治疗师” and “祭司 · 等级 1”.
+It showed the same reflow at 30px with the terrain and instructions clear. That check exercises
+the card's layout with supplied text. Campaign-wide visual acceptance and physical-device
+reading comfort remain **Unknown**. [Native input and geometry](battle-ui-composition.md#readable-battle-status-cards)
 
 ### Presentation, outcome and usable return
 

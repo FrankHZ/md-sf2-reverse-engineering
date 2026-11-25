@@ -113,43 +113,50 @@ internal sealed partial class BattleMenuLayout : Control
     {
         Size = size;
         float margin = UI.StoryTheme.GameplayInset, top = UI.StoryTheme.BelowMenu;
+        float availableWidth = size.X - margin * 2;
+        if (availableWidth <= 0) return;
         var card = _targeting ? Target : Actor;
-        float width = Mathf.Max(560, card.Visible ? card.RequestedSize.X : 0);
-        width = Mathf.Min(width, size.X - margin * 2);
-        float height = card.Visible ? Mathf.Max(card.RequestedSize.Y, card.GetCombinedMinimumSize().Y) : 0;
-        float right = size.X - margin - width, bottom = size.Y - margin;
-        float controlsTop = top + (card.Visible ? height + Gap : 0);
-        // Allocate the reader once per phase and viewport. The selected offer can
-        // change its scroll content without moving the controls or the footer.
+        if (card.Visible) card.Fit(availableWidth);
+        var cardSize = card.Visible ? card.RequestedSize : Vector2.Zero;
+        var terrainSize = Terrain.Visible ? Terrain.GetCombinedMinimumSize() : Vector2.Zero;
+        float width = card.Visible ? cardSize.X : Mathf.Min(UI.BattleStatusCard.BaseWidth, availableWidth);
+        float stackWidth = Mathf.Max(width, terrainSize.X);
+        float right = size.X - margin - stackWidth, bottom = size.Y - margin;
+        float terrainTop = top + (card.Visible ? cardSize.Y + BattleTerrainPanel.CardGap : 0);
+        float stackBottom = Terrain.Visible ? terrainTop + terrainSize.Y : top + cardSize.Y;
+        float controlsTop = stackBottom + (stackBottom > top ? Gap : 0);
+        // Give the reader a stable bottom anchor and leave room for every Main row.
         float footerHeight = _targeting ? 320 : _list.Visible ? 304 : _commandList.Visible ? 260 : 228;
         float detailTop = bottom - footerHeight;
+        if (_commandList.Visible)
+        {
+            if (_commandList.Size.X != width) _commandList.Arrange(width);
+            detailTop = Mathf.Max(detailTop, controlsTop + _commandList.RequestedHeight + Gap);
+        }
         var protection = _subject.HasArea() ? _subject.Grow(16) : default;
-        bool alternate = protection.HasArea() && new Rect2(right, top, width, bottom - top).Intersects(protection);
+        float protectedBottom = _targeting || _list.Visible || _commandList.Visible ? detailTop : stackBottom;
+        bool alternate = protection.HasArea() && (
+            new Rect2(right, top, stackWidth, protectedBottom - top).Intersects(protection) ||
+            new Rect2(right, detailTop, width, bottom - detailTop).Intersects(protection));
         float x = alternate ? margin : right;
         if (card.Visible)
         {
             card.Position = new(x, top);
-            card.Size = new(width, height);
+            card.Size = cardSize;
         }
-        // Keep map readings opposite the active unit card.
-        var readingSize = _context.GetCombinedMinimumSize();
         if (Terrain.Visible)
         {
-            readingSize = readingSize.Max(Terrain.GetCombinedMinimumSize());
-            Terrain.Size = readingSize;
+            Terrain.Position = new(x, terrainTop);
+            Terrain.Size = terrainSize;
         }
-        _context.Size = readingSize;
+        _context.Size = _context.GetCombinedMinimumSize();
         _context.Position = new(alternate ? size.X - margin - _context.Size.X : margin, top);
         _context.Visible = _decisionContext && (!protection.HasArea() || !_context.GetRect().Intersects(protection));
-        if (Terrain.Visible)
-            Terrain.Place(new(alternate ? size.X - margin : margin, top + (_context.Visible ? _context.Size.Y + Gap : 0)),
-                protection, alternate);
         _commandList.Position = new(x, controlsTop);
-        if (_commandList.Visible && _commandList.Size.X != width) _commandList.Arrange(width);
         _list.Position = new(x, controlsTop);
         _list.Size = new(width, Mathf.Max(0, detailTop - controlsTop - Gap));
         _detail.Position = new(x, detailTop);
-        _detail.Size = new(width, footerHeight);
+        _detail.Size = new(width, Mathf.Max(0, bottom - detailTop));
         foreach (var label in _rowLabels) label.CustomMaximumSize = new(Mathf.Max(1, width - 164), -1);
     }
 

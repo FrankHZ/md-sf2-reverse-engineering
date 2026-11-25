@@ -302,7 +302,7 @@ canvas and larger native viewports.
 | Movement | Quiet round and a movement hint support the shared cursor and cyan field. Traversable ally cells have an edge and legal stops also have a fill. |
 | Main and spell/item lists | A measured acting card heads the 560px decision column. Main uses four labeled vertical rows above the blue reader. Magic and Item replace them with scrollable rows. The fixed footer contains descriptions, refusals and the mapped actions. |
 | Choose a target | The selected recipient takes the card. The cursor denotes the legal candidate, with one reach and effect field. Back retains the previous command, spell level or item slot. |
-| Free inspection | The shared unit card shows the name and admitted class/level above stacked HP and MP. Coordinates and land effect occupy the separate terrain panel. Empty ground shows the terrain panel alone. |
+| Free inspection | The shared 30px unit card aligns the name left and admitted class and level right, moving the role below when the header needs more width. HP and MP sit below the header. A separate frame 12px beneath the unit card shows coordinates and land effect. Empty ground shows the terrain frame alone. [Battle composition](battle-ui-composition.md#terrain-panel-beside-the-focused-unit) |
 | Action playback and outcome | Decision windows retire. Actual close-up participants and their messages own the scene. Resize refreshes the art, cards and reader around the retained delivery state. |
 
 At supported sizes, move the card and footer together when the preferred column would cover the
