@@ -126,7 +126,7 @@ and the chapter consumers supply the class and effect definitions below.
 | **Protect Ring** (20) | **Confirmed** static. Battle21 Dark Madam 129 can drop it under bit 8 and the rare fallback. Equip grants DEF +5. Successful Use casts BOOST1 without MP. An ally's intact Ring can break, and using a broken Ring removes it. [Original effects and action drop](../../../docs/research/chapters/southern-travel-creed/battle21-initialization-and-first-control.md#item-selection-conditional-use-and-independent-drops) | Gerhalt received it in the separate English fight that ended in defeat. Chinese leader cleanup left bit 8 clear. In a later ordinary Battle21 run Peter received it, equipped it for DEF 35→40 and kept the worn ring across cold Continue. Ordinary BOOST1 Use damaged Peter's worn copy. The New Granseal merchant repaired it, and fresh Continue retained the intact worn word. [Equipment Use and Repair](../domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction) [Battle21 held items](../application/battle21-devils-tail.md#held-items-and-battle-outcomes) · [Equip and Continue](../domain/ring-equipment-design.md#implemented-behavior-and-ordinary-input) |
 | **Blizzard** (17) | **Confirmed** static. Battle24 Dark Bishop 135 holds it after placement refresh. A qualifying drop uses bit 9 and the rare fallback. Admitted Use casts BREZAD1 and consumes the slot. The enemy placement bits alone do not enable AI use. [Original masked items and drops](../../../docs/research/chapters/northern-travel-mitula/battle24-initialization-and-first-control.md#equipment-masked-items-and-independent-drops) | Retained Battle24 receipts and cold saves establish Peter's English receipt and Kazin's Chinese receipt. Ordinary Battle26 use dealt 30 HP damage from Peter's slot 0 and 28 from Kazin's slot 2, consuming the selected slot. The Chinese post-use packs survived battle and field Continue. [Battle24 receipt](../application/battle24-north-parmecia.md#observed-remake-play) · [Battle26 use](../domain/offensive-items-design.md#ordinary-remake-observations) |
 | **Indra Staff** (92) | **Confirmed** static. Pacalon and Ketto weapon merchants sell it for 3,200. Its WIZ/SORC/VICR mask admits bare and worn Use. Equip adds ATT +25 at physical range 1. SPOIT1 drains enemy MP at range 1–2. | Admitted for WIZ/VICR/SORC. Use, damage, destruction, 800-gold Repair and Continue share the equipment loop. The SORC successor supplies all current rod bindings; Kazin has an ordinary Equip → physical attack → cold Continue witness. [SORC equipment boundary](../application/church-promotion-design.md#current-rod-consumers) [Indra Staff rules and reproduction](../domain/equipment-use-repair-design.md#indra-staff-reproduction) |
-| **Black Ring** (24) | **Confirmed** static. Battle26 enemy row 2 (combatant 130) must still hold the ring at the qualifying kill. The rare fallback and bit 10 govern delivery and repeats. Original Equip and ordinary BLAZE2 Use both require WIZ/SORC. An eligible holder can Use it from an unequipped slot. The cursed equipment record adds ATT +10 while equipped and defines breakability. [Original kill/drop and separate flag bank](../../../docs/research/chapters/northern-travel-mitula/battle26-outcomes-and-higins-recruitment.md#the-independent-black-ring-drop) | **Drop, carry, Give/Discard and saves are supported.** Rohde received the Ring in a separate Chinese fight. In both main victories the carrier survived the lethal action on the leader, and cleanup left bit 10 clear. Neither inherited force has WIZ/SORC. **Player Equip, curse and BLAZE2 Use are unimplemented.** The first natural eligible consumer depends on promotion. [Battle26 custody](../application/battle26-higins.md#retreat-defeat-and-victory) · [Black Ring follow-up #1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926) · [Promotion design #1945](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945) |
+| **Black Ring** (24) | **Confirmed** static. Battle26 enemy row 2 (combatant 130) must still hold the ring at the qualifying kill. The rare fallback and bit 10 govern delivery and repeats. Original Equip and ordinary BLAZE2 Use both require WIZ/SORC. An eligible holder can Use it from an unequipped slot. The cursed equipment record adds ATT +10 while equipped and defines breakability. [Original kill/drop and separate flag bank](../../../docs/research/chapters/northern-travel-mitula/battle26-outcomes-and-higins-recruitment.md#the-independent-black-ring-drop) | **Drop, carry, Give/Discard and saves are supported.** Rohde received the Ring in a separate Chinese fight. In both main victories the carrier survived the lethal action on the leader, and cleanup left bit 10 clear. Neither inherited force has WIZ/SORC. **Player Equip, curse and BLAZE2 Use are implemented** for eligible WIZ/SORC, with damage, Repair and Continue. These later accepted consumers are separate from the older Battle26 custody witness. [Current Black Ring mechanism](../domain/ring-equipment-design.md#black-ring-admission-and-physical-curse). [Battle26 custody](../application/battle26-higins.md#retreat-defeat-and-victory) · [Black Ring follow-up #1926](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1926) · [Promotion design #1945](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945) |
 
 ## Shared supplies and nearby boundaries
 
@@ -192,3 +192,216 @@ and the chapter consumers supply the class and effect definitions below.
   [Creed consultation](../../../docs/design/synthesis/chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md) ·
   [Later Arm of Golem caller](../../../docs/research/world/map-event-item-transactions.md#confirmed-static-caller-surface) ·
   [Later Sky Orb route](../application/remaining-campaign-risk-baseline.md)
+
+## Whole-game equipment reconciliation
+
+The [High-rigor agreement and five implementation slices](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268)
+own #2268. This table covers **all** weapon/ring definitions, independently of the current
+campaign frontier. It records compact behavioral facts, not a distributable source-data export
+or a second production catalog. Original definitions remain in the pinned source and private
+static input. Current equipment consumers remain in `PrivateFieldPreparation`,
+`PrivateBattleActionBindings` and `BattleEquipment`.
+
+**Confirmed (static).** The 94 rows are source IDs19–110 plus124/126: 85 weapons and nine rings.
+All 128 definitions were compared with pinned USA/SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6` for mask, range, price, type, Use and all three
+ordered effects; no mismatch. The [item contract](../../../docs/design/contracts/party/item-definition-data.md)
+provides ROM packing/parity and [level-up](../../../docs/design/contracts/party/level-up.md)
+provides the equipment/prowess observations. The selected source is the SORC **v3** package's
+`opening-inputs/SF2_PRIVATE_STATIC_DATA.json`; the [package owner](presentation-assets.md#sorcerer-promotion-successor)
+locates it without a producer dependency. Reproduce from a pinned upstream checkout with
+`git show c834c652b6862bc5679fd7f69a38a7093206efc6:disasm/data/stats/items/itemdefs.asm`,
+then join its ordered rows to that input by ID. Exclude non-equipment by **category**, not by
+currently carried items, current shops or the equip mask (NONE still has two weapon definitions).
+
+Legend: `+`/`−` denotes the named stat effect; HP/MP_RECOVERY and prowess terms are separate
+consumers. Range is physical weapon range, not Use spell range. Class codes retain the source
+mask; ALL includes every source class. CURSED, BREAKABLE and UNSELLABLE are independently
+reported flags; rarity remains in the source catalog and custody metadata. `yes` means admitted
+by the current allied equipment filter for implemented classes, **not** whole-game support.
+`NONE` means intentional player ineligibility. `row` means at least one allied item-specific
+record in selected Battle26 scene JSON, **not** every member/class tuple or a native observation.
+Rings have no independent weapon layer. The final production-reader key check is still required.
+
+`shop`/`Search` denotes a selected content caller, not natural reach; Search includes future or
+gated locations. `drop` is the connected battle rule. `other/future` makes no absence claim about
+original ally starts, shops or grants: its acquisition owner is the [remaining campaign](../application/remaining-campaign-risk-baseline.md#optional-content-and-ownership).
+Current caller reproduction is below. A/B/C/D/E refer to the five serial slices in the agreement;
+E's exhaustive class/appearance check applies to **every** row, even one already observed.
+A on B/C items means shared catalog integration after that item's effect exists, not permission
+to admit it early with missing effects. Existing accepted native evidence remains in the linked
+mechanism owners; no new native witness was run for this design.
+
+| ID / equipment | Source classes | Passive effects; range | Use; flags | Allied equip / scene | Selected acquisition | Remaining slice |
+| --- | --- | --- | --- | --- | --- | --- |
+| 19 Power Ring | ALL | +ATT5; 0–0 | ATTACK1; BREAKABLE | yes / n/a | drop | existing; E check |
+| 20 Protect Ring | ALL | +DEF5; 0–0 | BOOST1; BREAKABLE | yes / n/a | drop | existing; E check |
+| 21 Quick Ring | ALL | +AGI5; 0–0 | —; BREAKABLE | yes / n/a | Search | existing; E check |
+| 22 Running Ring | ALL | +MOV2; 0–0 | —; — | yes / n/a | Search | existing; E check |
+| 23 White Ring | HERO, VICR | +DEF10; 0–0 | AURA2; BREAKABLE | no / n/a | other/future | A,D |
+| 24 Black Ring | WIZ, SORC | +ATT10; 0–0 | BLAZE2; CURSED,BREAKABLE | yes / n/a | drop | existing; E check |
+| 25 Evil Ring | WIZ, SORC, VICR | +ATT15; 0–0 | BOLT2; CURSED,BREAKABLE | no / n/a | other/future | A,D |
+| 26 Leather Glove | MMNK | +ATT26; 1–1 | —; — | yes / row | shop | existing; E check |
+| 27 Power Glove | MMNK | +ATT33; 1–1 | —; — | yes / row | shop | existing; E check |
+| 28 Brass Knuckles | MMNK | +ATT39; 1–1 | —; — | yes / row | other/future | existing; E check |
+| 29 Iron Knuckles | MMNK | +ATT43; 1–1 | —; — | yes / none | other/future | E |
+| 30 Misty Knuckles | MMNK | +ATT48; 1–1 | SPOIT1; BREAKABLE | no / none | other/future | A,D,E |
+| 31 Giant Knuckles | MMNK | +ATT55; 1–1 | MUDDLE1; BREAKABLE | no / none | other/future | A,D,E |
+| 32 Evil Knuckles | MMNK | +ATT63; 1–1 | —; CURSED | no / none | Search | A,E |
+| 33 Short Axe | WARR, GLDT, BRN, RDBN | +ATT5; 1–1 | —; — | yes / row | shop | existing; E check |
+| 34 Hand Axe | WARR, GLDT, BRN, RDBN | +ATT9; 1–1 | —; — | yes / row | shop | existing; E check |
+| 35 Middle Axe | WARR, GLDT, BRN, RDBN | +ATT13; 1–1 | —; — | yes / row | shop | existing; E check |
+| 36 Power Axe | WARR, GLDT, BRN, RDBN | +ATT17; 1–1 | —; — | yes / row | shop | existing; E check |
+| 37 Battle Axe | WARR, GLDT, BRN, RDBN | +ATT21; 1–1 | —; — | yes / row | shop | existing; E check |
+| 38 Large Axe | GLDT, BRN, RDBN | +ATT25; 1–1 | —; — | yes / row | shop | existing; E check |
+| 39 Great Axe | GLDT, BRN, RDBN | +ATT28; 1–1 | —; — | yes / none | other/future | E |
+| 40 Heat Axe | GLDT, BRN, RDBN | +ATT32; 1–1 | BLAZE2; BREAKABLE | no / none | other/future | A,D,E |
+| 41 Atlas Axe | GLDT, BRN, RDBN | +ATT35; 1–1 | BLAZE3; BREAKABLE | no / none | other/future | A,D,E |
+| 42 Ground Axe | GLDT, BRN, RDBN | +ATT39, +MOV1; 1–1 | —; — | no / none | other/future | A,E |
+| 43 Rune Axe | GLDT, BRN, RDBN | +ATT42, +CRITICAL1; 1–1 | DETOX2; BREAKABLE | no / none | other/future | A,D,E |
+| 44 Evil Axe | GLDT, BRN, RDBN | +ATT50, −DEF5; 1–1 | —; CURSED | no / none | Search | A,E |
+| 45 Wooden Arrow | ACHR, RNGR, SNIP, BRGN, BWNT | +ATT7; 2–2 | —; — | yes / row | shop | existing; E check |
+| 46 Iron Arrow | ACHR, RNGR, SNIP, BRGN, BWNT | +ATT12; 2–2 | —; — | yes / row | shop | existing; E check |
+| 47 Steel Arrow | ACHR, RNGR, SNIP, BRGN, BWNT | +ATT17; 2–2 | —; — | yes / row | shop | existing; E check |
+| 48 Robin Arrow | SNIP, BRGN, BWNT | +ATT21, +CRITICAL1; 2–3 | —; — | yes / row | shop | existing; E check |
+| 49 Assault Shell | SNIP, BRGN, BWNT | +ATT25; 2–3 | —; — | yes / row | shop | existing; E check |
+| 50 Great Shot | SNIP, BRGN, BWNT | +ATT29; 2–3 | —; — | yes / row | shop | existing; E check |
+| 51 Nazca Cannon | SNIP, BRGN, BWNT | +ATT33, +CRITICAL1; 2–3 | —; — | no / none | other/future | A,E |
+| 52 Buster Shot | SNIP, BRGN, BWNT | +ATT37; 2–3 | —; — | no / none | other/future | A,E |
+| 53 Hyper Cannon | SNIP, BRGN, BWNT | +ATT40; 2–3 | —; — | no / none | other/future | A,E |
+| 54 Grand Cannon | SNIP, BRGN, BWNT | +ATT43; 2–3 | DISPEL1; BREAKABLE | no / none | other/future | A,D,E |
+| 55 Evil Shot | SNIP, BRGN, BWNT | +ATT51, −DEF5; 2–3 | —; CURSED | no / none | Search | A,E |
+| 56 Wooden Stick | KNTE, PLDN, PGNT | +ATT3; 1–1 | —; — | yes / row | other/future | existing; E check |
+| 57 Short Sword | SDMN, BDMN, HERO, BRN, BDBT, NINJ, RDBN | +ATT5; 1–1 | —; — | yes / row | shop | existing; E check |
+| 58 Middle Sword | SDMN, BDMN, HERO, BRN, BDBT, NINJ, RDBN | +ATT8; 1–1 | —; — | yes / row | shop | existing; E check |
+| 59 Long Sword | SDMN, BDMN, HERO, BRN, BDBT, NINJ, RDBN | +ATT12; 1–1 | —; — | yes / row | shop | existing; E check |
+| 60 Steel Sword | SDMN, BDMN, HERO, BRN, BDBT, NINJ, RDBN | +ATT16; 1–1 | —; — | yes / row | shop, Search | existing; E check |
+| 61 Achilles Sword | SDMN, HERO | +ATT19; 1–1 | —; — | yes / row | Search | existing; E check |
+| 62 Broad Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT22; 1–1 | —; — | yes / row | shop | existing; E check |
+| 63 Buster Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT26; 1–1 | —; — | yes / row | shop | existing; E check |
+| 64 Great Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT29; 1–1 | —; — | yes / row | shop | existing; E check |
+| 65 Critical Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT32, +CRITICAL1; 1–1 | —; — | no / none | other/future | A,E |
+| 66 Battle Sword | HERO, BRN, BDBT, RDBN | +ATT35; 1–1 | —; — | no / none | other/future | A,E |
+| 67 Force Sword | HERO | +ATT46; 1–1 | —; UNSELLABLE | no / none | other/future | A,E |
+| 68 Counter Sword | HERO, BRN, BDBT, RDBN | +ATT39, +COUNTER1; 1–1 | —; — | no / none | other/future | A,B,E |
+| 69 Levanter | HERO | +ATT42; 1–1 | BLAZE3; BREAKABLE | no / none | other/future | A,D,E |
+| 70 Dark Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT50, −DEF5; 1–1 | DESOUL1; CURSED,BREAKABLE | no / none | other/future | A,D,E |
+| 71 Wooden Sword | SDMN, BDMN, HERO, BRN, BDBT, NINJ, RDBN | +ATT3; 1–1 | —; — | yes / row | other/future | existing; E check |
+| 72 Short Spear | KNTE, PLDN, PGNT | +ATT6; 1–2 | —; — | yes / row | shop | existing; E check |
+| 73 Bronze Lance | KNTE, PLDN, PGNT | +ATT9; 1–1 | —; — | yes / row | shop | existing; E check |
+| 74 Spear | KNTE, PLDN, PGNT | +ATT12; 1–2 | —; — | yes / row | shop | existing; E check |
+| 75 Steel Lance | KNTE, PLDN, PGNT | +ATT16; 1–1 | —; — | yes / row | shop | existing; E check |
+| 76 Power Spear | KNTE, PLDN, PGNT | +ATT20; 1–2 | —; — | yes / row | shop | existing; E check |
+| 77 Heavy Lance | PLDN, PGNT | +ATT23; 1–1 | —; — | yes / row | shop | existing; E check |
+| 78 Javelin | PLDN, PGNT | +ATT26; 1–2 | —; — | yes / row | shop | existing; E check |
+| 79 Chrome Lance | PLDN, PGNT | +ATT31; 1–1 | —; — | yes / row | other/future | existing; E check |
+| 80 Valkyrie | PLDN, PGNT | +ATT33; 1–2 | ATTACK1; BREAKABLE | no / none | other/future | A,D,E |
+| 81 Holy Lance | PLDN, PGNT | +ATT39, +DEF5; 1–1 | HEALIN1; BREAKABLE | no / none | other/future | A,D,E |
+| 82 Mist Javelin | PLDN, PGNT | +ATT42; 1–2 | —; — | no / none | other/future | A,E |
+| 83 Halberd | PLDN, PGNT | +ATT37; 1–1 | BOLT1; BREAKABLE | no / none | other/future | A,D,E |
+| 84 Evil Lance | PLDN, PGNT | +ATT48, −MOV2; 1–1 | —; CURSED | no / none | Search | A,E |
+| 85 Wooden Rod | MAGE, PRST, WIZ, SORC, VICR | +ATT3; 1–1 | —; — | yes / row | shop | existing; E check |
+| 86 Short Rod | MAGE, PRST, WIZ, SORC, VICR | +ATT5; 1–1 | —; — | yes / row | shop | existing; E check |
+| 87 Bronze Rod | MAGE, PRST, WIZ, SORC, VICR | +ATT8; 1–1 | —; — | yes / row | shop | existing; E check |
+| 88 Iron Rod | MAGE, PRST, WIZ, SORC, VICR | +ATT12; 1–1 | —; — | yes / row | shop | existing; E check |
+| 89 Power Stick | MAGE, PRST, WIZ, SORC, VICR | +ATT15; 1–1 | —; — | yes / row | shop | existing; E check |
+| 90 Flail | WIZ, SORC, VICR | +ATT19; 1–1 | —; — | yes / row | shop | existing; E check |
+| 91 Guardian Staff | WIZ, SORC, VICR | +ATT22, +DEF5; 1–1 | —; — | no / none | shop | A,E |
+| 92 Indra Staff | WIZ, SORC, VICR | +ATT25; 1–1 | SPOIT1; BREAKABLE | yes / row | shop | existing; E check |
+| 93 Mage Staff | WIZ, SORC | +ATT27; 1–1 | BLAZE2; BREAKABLE | no / none | other/future | A,D,E |
+| 94 Wish Staff | VICR | +ATT26; 1–1 | ATTACK1; BREAKABLE | no / none | other/future | A,D,E |
+| 95 Great Rod | WIZ, SORC, VICR | +ATT28; 1–1 | —; — | no / none | other/future | A,E |
+| 96 Supply Staff | WIZ, SORC | +ATT32; 1–1 | SPOIT1; BREAKABLE | no / none | other/future | A,D,E |
+| 97 Holy Staff | VICR | +ATT29, HP_RECOVERY3; 1–1 | —; — | no / none | other/future | A,C,E |
+| 98 Freeze Staff | WIZ, SORC | +ATT37; 1–1 | FREEZE3; BREAKABLE | no / none | other/future | A,D,E |
+| 99 Goddess Staff | VICR | +ATT31; 1–1 | AURA2; BREAKABLE | no / none | other/future | A,D,E |
+| 100 Mystery Staff | WIZ, SORC, VICR | +ATT39, MP_RECOVERY2; 1–1 | —; — | no / none | other/future | A,C,E |
+| 101 Demon Rod | WIZ, SORC, VICR | +ATT50, −AGI10; 1–1 | SPOIT1; CURSED,BREAKABLE | no / none | other/future | A,D,E |
+| 102 Iron Ball | NONE | +ATT44; 1–1 | BLAZE3; CURSED,BREAKABLE | NONE / none | other/future | D |
+| 103 Short Knife | THIF | +ATT5; 1–1 | —; — | yes / row | shop | existing; E check |
+| 104 Dagger | THIF | +ATT8; 1–1 | —; — | yes / row | shop | existing; E check |
+| 105 Knife | THIF | +ATT12; 1–1 | —; — | yes / row | shop | existing; E check |
+| 106 Thieve's Dagger | THIF | +ATT17, +AGI5; 1–1 | —; — | no / none | shop | A,E |
+| 107 Katana | NINJ | +ATT34; 1–1 | —; — | no / none | other/future | A,E |
+| 108 Ninja Katana | NINJ | +ATT39, +DOUBLE1; 1–1 | —; — | no / none | other/future | A,B,E |
+| 109 Gisarme | NINJ | +ATT42, SET_CRITICAL6; 1–1 | —; — | no / none | other/future | A,B,E |
+| 110 Taros Sword | NONE | +ATT32; 1–2 | BOLT2; BREAKABLE | NONE / none | Taros/drop | D |
+| 124 Life Ring | HERO, PLDN, PGNT, GLDT, BRN, WIZ, SORC, VICR, MMNK, SNIP, BRGN, BDBT, WFBR, BWNT, PHNX, NINJ, MNST, RBT, GLM, RDBN | HP_RECOVERY5; 0–0 | —; — | no / n/a | other/future | A,C |
+| 126 Chirrup Sandals | ALL | none; 0–0 | —; — | yes / n/a | Search | existing; E check |
+
+### Reproduce the full definition join
+
+Load the owning private configuration and verify the ROM. `$pinnedSource` is the existing
+pinned SF2DISASM checkout root; `$package` is the registered complete SORC v3 selection.
+The command below reads only, compares all128 rows and prints the equipment/count boundary.
+Use source `itemdefs.asm` at the exact commit above, not a floating checkout. The audit used
+that commit's raw file and also compared its CRLF-normalized bytes with the existing provenance
+digest; line-ending differences do not alter the parsed comparison.
+
+```powershell
+. ./local/private-inputs.ps1
+uv run sf2 rom verify
+$source = Join-Path $pinnedSource 'disasm/data/stats/items/itemdefs.asm'
+$static = Join-Path $package 'opening-inputs/SF2_PRIVATE_STATIC_DATA.json'
+@'
+import json, re, sys
+from pathlib import Path
+source = Path(sys.argv[1]).read_text(encoding="utf-8-sig")
+data = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8-sig"))
+assert data["provenance"]["commit"] == "c834c652b6862bc5679fd7f69a38a7093206efc6"
+blocks = re.split(r"^\s*equipFlags\s+", source, flags=re.M)[1:]
+assert len(blocks) == len(data["items"]) == 128
+for index, (item, block) in enumerate(zip(data["items"], blocks)):
+    assert item["id"] == index
+    assert block.splitlines()[0].strip() == item["equipFlagsExpression"]
+    for directive, key in (("price", "price"), ("itemType", "itemTypeExpression"),
+                           ("useSpell", "useSpellExpression")):
+        value = re.search(r"^\s*" + directive + r"\s+([^\r\n;]+)", block, re.M)
+        assert value.group(1).strip() == str(item[key]), (index, key)
+    limits = re.search(r"^\s*range\s+(\d+),\s*(\d+)", block, re.M)
+    assert tuple(map(int, limits.groups())) == (item["range"]["min"], item["range"]["max"])
+    effect = re.search(r"equipEffects\s+(\w+),\s*(\d+),\s*&\s*"
+                       r"(\w+),\s*(\d+),\s*&\s*(\w+),\s*(\d+)", block).groups()
+    assert [{"type": effect[n], "parameter": int(effect[n+1])}
+            for n in (0, 2, 4)] == item["equipEffects"], index
+gear = [i for i in data["items"] if set(i["itemTypeTokens"]) & {"WEAPON", "RING"}]
+assert [i["id"] for i in gear] == list(range(19, 111)) + [124, 126]
+assert sum(32 if i["equipFlagsExpression"] == "ALL" else len(i["equipFlagTokens"])
+           for i in gear) == 439
+print("PASS: 128 source rows; 94 equipment definitions; 439 legal class/item pairs")
+'@ | python -X utf8 - $source $static
+if ($LASTEXITCODE -ne 0) { throw 'Equipment source reconciliation failed' }
+```
+
+### Caller and consumer checks
+
+**Confirmed (selected content/code).** Guardian91 is stocked by `loc-54b1a` (Map06),
+`loc-5d2c4` (Map25) and `map2-entityevent7` (Map02). Thieve's Dagger106 is stocked by
+`map9-entityevent5` (Hassan Map09). Both are real current acquisition callers whose next Equip
+fails admission; they are not merely later source definitions. `HasSupportedWeaponEffects`
+rejects DEF and AGI effects. The current weapon filter otherwise admits 45 identities, while
+rings19/20/21/22/24/126 are admitted separately. No initial holder or natural pickup was inferred
+from a shop row. The prior Karna witness is Power Stick89, not Guardian91.
+
+For the selected Search rows, compare itemWord identity and receipt against every map/setup's
+`search.chests` and `search.otherItems`: 21/F149, 22/F167, 32/F197, 44/F198, 55/F200,
+60/F150, 61/F147, 84/F199 and126/F205. Repeated setup rows are one receipt, not extra items.
+[Special equipment reach](special-equipment-reach.md) distinguishes accessible versus late
+Galam/Yeel conditions; [campaign flags](campaign-flags.md) owns the other receipt routes.
+Connected drops19/20/24 and Taros110 retain their battle/drop conditions in the mechanism and
+chapter owners above. Future source acquisition is not required to validate these definitions.
+
+Reproduce consumer boundaries in the current code rather than trusting the table alone:
+
+```powershell
+rg -n 'HasSupportedWeaponEffects|IsIndraStaff|IsBlackRing|EnemyEquipment' remake/src/Sf2.Remake.Content/Scenarios/PrivateBattleActionBindings.cs
+rg -n 'Weapons|Rings|WEAPON|INCREASE_' remake/src/Sf2.Remake.Content/Scenarios/PrivateFieldPreparation.cs
+rg -n 'WornCurse|RingBonus|Physical|CanBeDamaged' remake/src/Sf2.Remake.Domain/Battles/Rules/BattleEquipment.cs
+```
+
+The raw final scene has 42 distinct allied weapon item IDs; Iron Knuckles29 and Great Axe39
+are admitted but missing their explicit row. This detects a real content gap without asserting
+that all remaining rows form complete appearance bindings. RBT/GLM/RDBN class mapping and
+late legal consumers are part of E; their joins, future maps and full campaign growth journeys
+are not. Final acceptance uses actual reader results and representative ordinary inputs, not
+these static counts.

@@ -3,6 +3,24 @@
 The [pre-voyage campaign agreement](application/pre-voyage-campaign.md) tracks the ordinary-entry
 handoffs, carried state and acceptance boundaries for Battle03 through departure.
 
+## Whole-game equipment audit and implementation boundary
+
+The [#2268 agreement](domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268)
+and [complete equipment reconciliation](content/campaign-items.md#whole-game-equipment-reconciliation)
+cover all94 source equipment definitions. The audit is complete at the static definition/code
+boundary; whole-game implementation is **not complete**. Current admission covers45 weapons and
+six rings for implemented classes. Connected shops already expose two rejected mixed-stat weapons,
+Guardian91 and Thieve's Dagger106. Current admission also includes Iron Knuckles29 and Great Axe39
+without corresponding explicit item rows in the selected final scene. Row presence elsewhere is
+not complete appearance acceptance.
+
+Five serial implementation outcomes own signed stats/weapon curses, prowess/cutoff, turn recovery,
+all equipment Use, and final legal class/resource consumers. RBT/GLM/RDBN mappings and necessary
+controlled late holders belong to equipment closure; future recruitment/maps/acquisition stay with
+the campaign owners. No new runtime or native evidence is claimed by the audit. The parent remains
+open until the final production reader and representative input/save checks close every equipment
+rule and necessary consumer. [Resource plan](content/asset-inventory.md#whole-game-equipment-resource-plan-2268)
+
 ## Campaign feature trace
 
 For a numeric flag, follow the [campaign flag index](content/campaign-flags.md) to its original writer, current consumer, entry and save lifetime, and chapter acceptance.
