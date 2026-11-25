@@ -193,7 +193,7 @@ policy. Documentation-only design uses document checks, not those runtime gates.
 
 ## Static equipment and weapon curses (#2270)
 
-**Implemented slice A; independent integration pending.** The connected source catalog retains
+**Implemented static-equipment behavior.** The connected source catalog retains
 all 94 definitions and their complete class masks without requiring present custody. The passive
 reader admits 80 weapons and eight rings, including player-ineligible Iron Ball102/Taros Sword110.
 Counter Sword68, Ninja Katana108 and Gisarme109 remain excluded until B; Holy Staff97, Mystery
@@ -284,7 +284,8 @@ Original natural reach/timing and the unobserved late native equipment combinati
 The first PR CI run [45672349397](https://github.com/FrankHZ/md-sf2-reverse-engineering/actions/runs/45672349397)
 completed with 3,327 passing, 50 skipped and one failure:
 `FieldSearchTests.SelectedPickupGrantsCarryAndGiveWithoutAdmittingAnUnrelatedItemOrUseEffect`.
-Its obsolete assertion excluded Mage Staff90 from the preparation catalog. The correction removes
+Its obsolete assertion excluded item90, named Mage Staff in the old test fixture, from the preparation
+catalog. The original item90 is Flail; Mage Staff is item93. The correction removes
 that exclusion while preserving pickup, Give, repeat-pickup and absent Use assertions; the case is
 renamed `SelectedPickupGrantsCarryAndGiveWithoutAdmittingAUseEffect`. A direct
 `FullyQualifiedName~FieldSearchTests` run passes 44 with one private-input skip. The completed
