@@ -82,7 +82,9 @@ For the optional painted Map3 package, follow the
 [Map3 HD preparation, matching world/scene selection and Graphics setting](docs/content/asset-inventory.md#rebuild-and-review).
 Menu publication alone does not generate that artwork. HD covers Map3's outdoor/interior blocks,
 field actors and portraits; other maps retain their installed artwork. Original remains selectable.
-The ordinary launch opens the title; New Game needs the six
+When `SF2_PRIVATE_OPENING_CONTENT` selects the [closed four-scene package](docs/content/presentation-assets.md#four-scene-startup-package-2252),
+ordinary launch plays the disposable pre-title story. Completion or Skip enters the same title;
+an unselected opening goes directly there. New Game needs the six
 private battle/static selections, prepared world and optional battle scene content described by the
 [New Game input owner](docs/content/profiles-and-trust.md#opening-new-game-admission). Missing content
 reports a startup diagnostic. Witch New Game selects or creates a slot, then asks for a protagonist name

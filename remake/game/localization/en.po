@@ -72,6 +72,15 @@ msgid "ui.settings.gradual"
 msgstr "Gradual"
 
 #. Settings display; actions use stable indexes.
+msgid "opening.skip"
+msgstr "{0}: Skip opening"
+
+msgid "opening.loading"
+msgstr "Preparing opening…"
+
+msgid "opening.failed"
+msgstr "The opening could not be played. You can continue from the title."
+
 msgid "entry.loading"
 msgstr "Loading, please wait… You can cancel to return."
 

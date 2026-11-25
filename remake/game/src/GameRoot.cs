@@ -28,6 +28,7 @@ public sealed partial class GameRoot : Node
     private bool _releaseBarrier;
     public override void _ExitTree()
     {
+        ReleaseOpening();
         ReleaseWindowSupport(); GetWindow().FocusExited -= SettingsFocusLost;
         GetWindow().FocusEntered -= PacingFocusReturned; Godot.Input.JoyConnectionChanged -= PacingDeviceChanged;
         _audio?.Dispose(); ClearPreparedNewGame();
@@ -47,6 +48,7 @@ public sealed partial class GameRoot : Node
             GetViewport().SetInputAsHandled(); return;
         }
         if (RouteWindowInput(input)) return;
+        if (RouteOpeningInput(input)) return;
         if (_settings is not null && !GetWindow().HasFocus()) { GetViewport().SetInputAsHandled(); return; }
         if (_settings?.CaptureInput(input) == true)
         {
@@ -121,6 +123,7 @@ public sealed partial class GameRoot : Node
 
     public override void _Process(double delta)
     {
+        ProcessOpening();
         RefreshPartyName();
         if (_menuButton is not null)
         {
@@ -179,8 +182,8 @@ public sealed partial class GameRoot : Node
         else if (options.TryGetValue("--authored-package", out string? authored)) BeginSource(new AuthoredScenarioPackageReader(authored));
         else
         {
-            ShowEntry();
-            if (_seedFile is not null) ShowContinue(loadSeed: true);
+            if (_seedFile is not null) { ShowEntry(); ShowContinue(loadSeed: true); }
+            else BeginOpening();
         }
     }
 

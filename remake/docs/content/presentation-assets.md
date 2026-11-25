@@ -11,6 +11,9 @@ version to the registered selection, actual consumer and bounded evidence. Use t
 
 ## Controlled opening scene package (#2250)
 
+The successor ordinary-start selection is documented in [four-scene startup](#four-scene-startup-package-2252).
+The commands and retained results below continue to describe the earlier controlled package.
+
 The finite private selection is `derived/issue2250/opening-scenes-v1` beneath the configured
 `SF2_SHARED_INPUT_ROOT`. It is separate from the active campaign package. It contains the two scene
 starts, controlled party input, six opening definition inputs, scene-only world, matching Chinese
@@ -140,6 +143,186 @@ completed scene rerun. Preserve that interrupted result and the independent revi
 and Debug builds pass without warnings/errors. Independent review retains the two complete published
 native routes after this correction; the earlier completed scene results above remain separately
 identified.
+
+## Four-scene startup package (#2252)
+
+The closed private successor is `derived/issue2252/pre-voyage-opening-v1` beneath the configured
+shared input root. It reuses the accepted #2242 campaign, #2240 world catalog and registered Witch
+catalog; its `opening/` subdirectory independently contains both scene maps, all four scripts,
+all81 English/Chinese opening rows, default names, selected actors/portraits, finite audio and inputs.
+Startup reads only `opening/opening.json` and its bounded dependencies. It does not admit the full
+campaign world until the player chooses an existing journey action. No ROM/upstream/scratch is a
+runtime dependency. Private use does not authorize redistribution.
+
+From the owning checkout with private configuration loaded, prepare a **fresh** destination using
+the registered pinned source and full-text corpus roots. `$witchCatalog` is the existing registered
+Witch overlay; it is copied without translation changes:
+
+```powershell
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2242/pre-voyage-brgn-v1'
+$pack = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2252/pre-voyage-opening-v1'
+uv run python -m sf2tool.remake_opening_scene --complete `
+    --base $base --canonical (Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/canonical-map-import.json') `
+    --upstream $pinnedSource --rom (Join-Path $env:SF2_SHARED_INPUT_ROOT 'roms/sf2-us.bin') `
+    --corpus $fullTextRoot --party remake/reference/inputs/map3-opening-party.json `
+    --campaign-catalogs (Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2240/catalogs-v1') `
+    --entry-catalog $witchCatalog --output $pack
+```
+
+The opening payload is24,903,861 bytes (23.75MiB); the closed campaign plus opening/catalogs is
+386,091,826 bytes (368.21MiB, before the small final preparation receipt). The measured selected
+opening preparation took0.433s. This fits the planned24–32MiB opening and about370MiB successor.
+The full campaign copy is the requested reusable successor, not the startup working set.
+
+Configure the complete selection together. `$disposableSaveRoot` is an explicitly permitted
+external test root; choose a fresh namespace for a New Game control:
+
+```powershell
+foreach ($name in @('SF2_PRIVATE_BATTLE01_DATA','SF2_PRIVATE_BATTLE01_SCENE',
+    'SF2_PRIVATE_BATTLE01_TERRAIN','SF2_PRIVATE_STATIC_DATA','SF2_PRIVATE_ENEMY_DATA',
+    'SF2_PRIVATE_ENEMY_GOLD')) {
+    [Environment]::SetEnvironmentVariable($name, (Join-Path $pack "opening-inputs/$name.json"), 'Process')
+}
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $pack 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $pack 'main-scenes.json'
+$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $pack 'entry/entry.json'
+$env:SF2_PRIVATE_OPENING_CONTENT = Join-Path $pack 'opening/opening.json'
+$env:SF2_DISPLAY_CATALOG = Join-Path $pack 'catalogs/world.zh-CN.json'
+$env:SF2_ENTRY_DISPLAY_CATALOG = Join-Path $pack 'catalogs/entry.zh-CN.json'
+$env:SF2_SAVE_ROOT = $disposableSaveRoot
+$env:SF2_SAVE_NAMESPACE = 'opening-review'
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+& $env:GODOT_BIN --path (Join-Path $repo 'remake/game')
+```
+
+Unselecting `SF2_PRIVATE_OPENING_CONTENT` preserves direct title startup. A selected malformed or
+unavailable opening produces a visible bounded diagnostic and the same title when entry assets
+are valid. Diagnostic starts, preview and explicit seeded Continue bypass the sequence.
+
+HD uses the existing per-asset preference. Map42 now carries its accepted external HD terrain bank;
+uniform scene fades transform those actual textures. Arbitrary palette-slot replacement needs
+Original indexed terrain for that effect interval. Map65 has no admitted HD terrain. Compatible
+HD actor directions and portraits remain selected through fades and do not inherit terrain-only
+fallback. Effects183/187 have Original resources only. The existing six-layer title/Witch HD bank
+retains its coherent entry selection. Original source palette accuracy, HD visual approval and
+original hardware timing are separate from actual resource consumption.
+
+The four scripts actually require sprites14/59/159/173/183/187/202/203/205/206. All except183/187
+have admitted HD directions in the baseline, including Slade's special pose59. Their non-null
+portrait bindings are5/32/45 and have HD rasters. The bounded selection also retains the population
+reader's required fallback/ally sprite bindings; these do not imply that every retained actor or
+portrait appears in the opening. No new HD imagery was generated.
+
+Native observation uses `engine_opening_scene_observation.gd` with `SF2_OPENING_SCENE=all`,
+`SF2_OPENING_LOCALE=en` or`zh-CN`, and a fresh `SF2_OPENING_OUTPUT`. It uses ordinary startup,
+automatic text and state/resource/audio readback; no screenshots or per-frame output. Set
+`SF2_OPENING_NEW_GAME=1` only with disposable slots to follow natural title completion through
+ordinary slot/name/confirmation using controlled comparison seeds. The short
+`engine_opening_startup_observation.gd` uses `SF2_OPENING_CONTROL` values `load`, `delay`, `motion`,
+`pointer`, `focus`, `back`, `absent`, `bad`, `empty`, `newgame`, `continue` or`seeded`. The absent control
+unselects the opening; bad/empty select a fresh malformed/zero-byte manifest. Seeded uses an explicit
+`--load-save` copy outside every player namespace, as required by the existing seed-path guard.
+Late completion and controlled seeds use the bounded
+`OpeningStartupControl` probe; production has no seed override. Focus recovery makes at most three
+requests and waits at most30s per pause. An unrecovered loss is an environment interruption.
+
+**Confirmed — worker observation:** the ordinary published selection completed all four scenes and
+all81 messages, reached a usable title with command28 and then completed the ordinary New Game
+flow in471,819ms. The run had zero focus pauses, no engine/script errors or shutdown warnings, and
+no producer scratch at the original preparation paths. The opening owner was absent at title,
+with no journey allocated. It retained party/gold throughout the intro. Native opening working-set
+peak observed during playback was632.45MiB, within the2GiB budget; this is not a campaign peak claim.
+The retained receipt is `local/issue2252/native-8/observation.json` in the owning review checkout.
+
+Actual projected HD actor sprites0/14/59/159/173/202/203/205/206 used96-pixel rasters; Map42 supplied
+11,055 HD terrain draw proofs. The two rendered portraits5/32 used192×256 textures; portrait45 is
+available in the package but was not observed mounted. All six title/Witch textures were1024×896.
+The observation retained459 indexed palette proofs and26,611 opaque-black exterior proofs.
+The Chinese Original control consumed24-pixel actor/terrain resources under the active palette.
+The bounded complete fourth-scene Chinese/Original/Reduced Flash control passed all34 messages
+4233–4266 and terminal tick10,986. This control is distinct from the full native ordinary launch.
+
+Short controls passed loading Skip, actual D2, entity motion, palette/pointer Skip, held-key/release,
+late detached load and duplicate completion, title music ownership and Witch Back without replay.
+The real native focus control paused scene time/music and resumed the same owner in9,748ms.
+Absent, malformed and zero-byte selected opening controls reached the usable title as specified.
+Explicit seeded Continue bypassed opening. Headless controls retain the existing2/6 ObjectDB
+shutdown warnings; their object ownership remains **Unknown**. The native focus and complete runs
+had none; do not generalize that to every shutdown or device.
+
+Natural-finish and Skip New Game used identical controlled seeds. Their complete decoded save
+`data` objects were equal, both envelopes had sequence1, and each fresh namespace contained only
+`slot1.json` plus its lock, with no backup. Map, wait, complete party, gold, flags, seeds, actors,
+custody, travel and text/music state at first control also matched. Ordinary Continue restored those
+same facts while the8,142-byte existing slot remained byte-for-byte unchanged. All saves were in
+the explicitly disposable issue namespace; real player namespaces and backups were untouched.
+
+Retained failures include the initial missing pose59 binding, observer cursor/type mistakes,
+bounded foreground interruptions and the fourth-scene `full-fade-state` failure. That last failure
+was the existing FlashWhite admission guard rejecting a scene bank immediately before full fade;
+native-7 had zero focus loss and is retained as a completed product failure. The producer now includes explicit script sprite
+changes. Draw derives its palette from the consumed snapshot across same-frame map transfers.
+Script full fades service existing scene terrain/actor banks; ordinary warp validation remains
+unchanged. The two added behavior cases initially assumed early FullFade acknowledgement must
+reject; the existing contract allows independent actual/logical completion. The corrected cases
+check stale tokens, final banks, restoration and save exclusion. All8 focused palette cases pass.
+The earlier engine run passed3,290 with50 private skips; that result predates the full-fade extension.
+The final local engine execution completed with3,301 passes,6 skips and35 failures after the ordinary
+play configuration enabled private tests. Those selected tests require their separate controlled
+starts/sleep fixture and older bounded worlds (including7 encounters/4 roster entries); the closed
+campaign is not their fixture. The exact nodes and completed log remain in
+`local/issue2252/failed-private-nodes.txt` and `engine-final.log`. No expectations were changed.
+A narrow rerun of those35 nodes with private selections absent skipped all35, as in public CI;
+it is not a private acceptance pass. Affected scene palette/full-fade/Battle Entry Skip behavior
+passed20 with1 private skip. Release adapter and admission/inspection builds, Ruff, design contracts
+and research-index checks passed. The first focus probe used an embedded subwindow and therefore
+failed to produce OS focus loss; the native-window correction passed. The first seeded control
+selected a file inside a player namespace and the existing guard rejected it; a byte-identical
+ignored copy outside that namespace restored successfully. Both failed controls remain retained.
+
+On clean implementation commit `a6418e838bc954830bc1303c37b002fa7c613b27`,
+`uv run sf2 verify plan --scope engine --base origin/main --head HEAD` selected
+`private-admission-build`, `live-inspection-build`, `engine-unit`, `adapter-build` and
+`research-public`, with no unclassified paths. This producer diff is engine-only; it changes no
+research extraction or evidence semantics. [Public checks run45555538206](https://github.com/FrankHZ/md-sf2-reverse-engineering/actions/runs/45555538206)
+passed scope, engine-unit (**3,292 passed /50 private skipped /0 failed**), adapter-build,
+private-admission-build and research-public. Remote live-inspection-build and h4-comparison-build
+were skipped by the actual workflow. The planner's extra live-inspection build passed locally;
+H4 was not selected by the plan. This receipt update changes documentation only.
+Independent main-gate acceptance, physical-device coverage, hardware timing and human visual/audio
+approval remain separate.
+
+**Independent review and Back synchronization:** at frozen `f3d30f71`, main-gate's loading and
+Chinese pointer controls passed. Loading reported4 ObjectDB shutdown warnings; pointer reported
+none. Main-gate independently decoded both natural/Skip save payloads: complete `data` objects
+matched, both sequences were1, and each directory contained only `slot1.json` and `slot1.lock`.
+It also checked `native-8`'s four scene labels,81 automatic messages, title/New Game tail and HD
+resource proofs without replaying the full sequence. Its rebuilt Debug
+`ScenePaletteTests|FullFadeTests|BattleEntrySkipTests` selection passed18
+with1 private skip; the earlier Release `--no-build` result is not its acceptance evidence.
+The native `main-gate-focus` run completed in9,829ms with only “Witch Back returns without replay”
+failing. Real focus recovery, Skip/title and fresh Witch menu had passed, with no engine errors.
+Its retained `witch` receipt shows `stage=menu`, `latched=true`: the observer sent Back without
+establishing that the prior Start release had reached the entry's normal neutral-input boundary.
+**Inferred:** the existing latch guard suppressed that Back; the old probe did not retain a
+post-Back input receipt. The release-edge control below directly confirms the pending-release state.
+
+The probe now records physical/mapped held state, host release barrier, entry latch/stage and focus
+before Back, then waits at most2s for their actual neutral state. It sends one ordinary Back and
+requires the returned title and inactive opening owner; it never retries Back or relaxes that
+assertion. The focused `back` control releases held Start immediately before this check. Native
+`witch-back-release-edge` passed in1,814ms: Start/held/latch were initially true, cleared after35ms,
+and the single fresh Back returned to title. The corrected native focus run passed in9,989ms.
+Both logs had no errors or shutdown warnings. This is a probe input-synchronization correction;
+production code, private package and the completed full-play observation are unchanged. No
+eight-minute replay was performed. The original failed receipt remains available beside these
+short controls under `local/issue2252/`.
+
+Reproduce after the ordinary selection above, with a fresh output path and disposable namespace:
+set `SF2_OPENING_CONTROL=back` (or`focus`) and launch
+`& $env:GODOT_BIN --path remake/game --script res://probes/engine_opening_startup_observation.gd`.
+The owning checkout's prepared equivalent is
+`./local/issue2252/run.ps1 -Run <fresh-name> -Control back -Namespace main-gate-controls`.
 
 ## Public localization pilot assets
 

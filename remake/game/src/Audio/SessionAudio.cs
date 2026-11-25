@@ -31,6 +31,7 @@ internal sealed partial class SessionAudio : IDisposable
     private string? _battlefieldMusic;
     private int _sceneMusic;
     private bool _fading;
+    internal bool SelectMapMusic { get; init; } = true;
     private double _fadeProgress;
     internal long? MusicGeneration { get; private set; }
     internal SessionAudio(Node owner, ExplorationDefinition definition) : this(owner,
@@ -213,6 +214,7 @@ internal sealed partial class SessionAudio : IDisposable
                 else if (observation.Kind == "church-promoted") PlayPromotion();
             }
             _observedSequence = current.ObservationSequence;
+            if (!SelectMapMusic) return;
             if (current.Exploration is { } world)
             {
                 if (current.Story.MapMusicPending) return;

@@ -16,13 +16,21 @@ internal sealed class MapBlockTextures : IDisposable
     private IReadOnlyList<ushort>? _sceneColors;
     private readonly Dictionary<int, object> _paletteSamples = [];
     internal object PaletteProjection => new { active = _scenePalette is not null,
-        colors = _sceneColors, blocks = _blocks.Count, slots = _paletteSamples.Values.ToArray() };
+        colors = _sceneColors, hdOffset = HdPaletteOffset, blocks = _blocks.Count, slots = _paletteSamples.Values.ToArray() };
+    // Precolored art can reproduce a uniform channel fade. Arbitrary slot replacement
+    // (storm banks) needs Original indices; only that terrain pass falls back.
+    internal int? HdPaletteOffset { get; private set; } = 0;
     internal bool PaletteChanged(ScenePaletteDefinition? resource, IReadOnlyList<ushort>? colors) =>
         !ReferenceEquals(_scenePalette, resource) || !ReferenceEquals(_sceneColors, colors);
     internal void SetPalette(ScenePaletteDefinition? resource, IReadOnlyList<ushort>? colors)
     {
         Dispose();
         _scenePalette = resource; _sceneColors = colors;
+        HdPaletteOffset = resource is null || colors is null ? 0 : null;
+        if (resource is not null && colors is not null)
+            for (int offset = -7; offset <= 7; offset++)
+                if (resource.Base.Select(color => Sf2.Remake.Application.Runtime.Exploration.ScenePaletteState.Offset(color, offset)).SequenceEqual(colors))
+                { HdPaletteOffset = offset; break; }
     }
 
     private ExplorationMapVisual? _checkedBank;
@@ -102,6 +110,7 @@ internal sealed class MapBlockTextures : IDisposable
         {
             if (_variants.TryGetValue(variant, out var prepared)) return prepared;
             using var pixels = Exploration.ExplorationRasterImages.Open(variant);
+            Exploration.ExplorationPresentation.OffsetSprite(pixels, HdPaletteOffset ?? 0);
             _variants.Add(variant, prepared = ImageTexture.CreateFromImage(pixels));
             return prepared;
         }
@@ -174,6 +183,7 @@ internal sealed class MapBlockTextures : IDisposable
 
     public void Dispose()
     {
+        HdPaletteOffset = 0;
         _checkedBank = null; _checkedAnimation = null; _scenePalette = null; _sceneColors = null;
         _paletteSamples.Clear();
         foreach (var texture in _blocks.Values) texture.Dispose();

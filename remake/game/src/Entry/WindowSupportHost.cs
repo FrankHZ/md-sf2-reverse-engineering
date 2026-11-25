@@ -76,7 +76,7 @@ public sealed partial class GameRoot
             _windowEditorFocus = GetViewport().GuiGetFocusOwner();
             _systemMenu?.SuspendPointer();
             _settings?.SuspendPointer();
-            foreach (var view in new Control?[] { _entry, _slots, _nameEntry, _settings, _systemMenu })
+            foreach (var view in new Control?[] { _entry, _slots, _nameEntry, _settings, _systemMenu, _opening?.Surface })
                 if (view is not null) { _windowCoveredViews.Add((view, view.Visible)); view.Hide(); }
             _windowRecovery = new WindowRecoveryView { Name = "WindowRecoveryView", Input = _input!,
                 RestoreWindow = RestoreGameplayWindow, Fullscreen = UseGameplayFullscreen, Quit = RequestQuit };
@@ -102,7 +102,7 @@ public sealed partial class GameRoot
         ApplyWindowCanvas();
         if (!WindowClientAllowed)
         {
-            if (_session is not null || _windowRecovery is not null) ShowWindowRecovery();
+            if (_session is not null || _opening is not null || _windowRecovery is not null) ShowWindowRecovery();
             return;
         }
         if (_windowRecovery is null || _windowQuit is not null) return;
@@ -169,6 +169,8 @@ public sealed partial class GameRoot
         if (_nameEntry is not null) _nameEntry.ProcessMode = covered ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
         if (_systemMenu is not null) _systemMenu.ProcessMode = covered || !_systemMenu.Visible ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
         _audio?.SetPaused(paused);
+        if (_opening?.View is { } openingView) openingView.ProcessMode = covered ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
+        _opening?.Audio?.SetPaused(covered || !GetWindow().HasFocus());
     }
     private bool RouteWindowInput(InputEvent input)
     {

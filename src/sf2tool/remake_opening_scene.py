@@ -25,7 +25,7 @@ from sf2tool.remake_exploration_maps import compile_maps
 from sf2tool.remake_exploration_programs import OriginalPrograms
 from sf2tool.remake_exploration_visuals import source_map_atlas
 from sf2tool.remake_localization import _jsonl, _topology
-from sf2tool.remake_private_package import OPENING_INPUTS, private_output, read_json
+from sf2tool.remake_private_package import OPENING_INPUTS, package_files, private_output, read_json
 from sf2tool.texture_extract import decode_md_4bpp_tile, md_palette_color
 
 
@@ -104,6 +104,7 @@ def prepare(
     corpus: Path,
     party: Path,
     output: Path,
+    complete: bool = False,
 ) -> dict:
     began = time.monotonic()
     output = private_output(output)
@@ -116,15 +117,18 @@ def prepare(
     document = read_json(base / "world.json")
     original = document["world"]
     compiler = OriginalPrograms(canonical, upstream, scene_maps=[42, 65])
-    for number in (1, 2):
+    for number in range(1, 5) if complete else (1, 2):
         compiler.register_file(f"disasm/data/scripting/map/cs_intro{number}.asm")
         compiler.compile(f"IntroCutscene{number}")
     # The passage ends after the first post-tint pair has restored its bank. The
     # original prefix is unchanged; the controlled host explicitly closes it.
-    storm = compiler.programs["IntroCutscene2"]["instructions"]
-    tint = next(i for i, op in enumerate(storm) if op["op"] == "scene-palette-fade")
-    pulses = [i for i, op in enumerate(storm) if i > tint and op["op"] == "scene-palette-pulse"]
-    compiler.programs["IntroCutscene2"]["instructions"] = storm[: pulses[1] + 1] + [{"op": "end"}]
+    if not complete:
+        storm = compiler.programs["IntroCutscene2"]["instructions"]
+        tint = next(i for i, op in enumerate(storm) if op["op"] == "scene-palette-fade")
+        pulses = [i for i, op in enumerate(storm) if i > tint and op["op"] == "scene-palette-pulse"]
+        compiler.programs["IntroCutscene2"]["instructions"] = storm[: pulses[1] + 1] + [
+            {"op": "end"}
+        ]
     scene_programs = copy.deepcopy(list(compiler.programs.values()))
     if any(op["op"] == "native-call" for p in scene_programs for op in p["instructions"]):
         raise ValueError("selected scene has an unsupported source operation")
@@ -178,8 +182,20 @@ def prepare(
             }
         )
     needed = {0}
+    if complete:
+        prepared = {row["map"]: row for row in original["presentation"]["maps"]}
+        for visual in visual_maps:
+            visual.update(
+                {
+                    key: copy.deepcopy(value)
+                    for key, value in prepared.get(visual["map"], {}).items()
+                    if key.startswith("hd")
+                }
+            )
     for program in scene_programs:
         for op in program["instructions"]:
+            if op["op"] == "sprite":
+                needed.add(op["sprite"])
             if op["op"] == "scene-entities":
                 population = op["population"]
                 ally = {row["character"]: row["sprite"] for row in population["allySprites"]}
@@ -241,6 +257,18 @@ def prepare(
                 ],
             }
         )
+    if complete:
+        # One program owns order and music. Scene-map transfers bypass campaign onLoad.
+        sequence = scene_programs[-2]["instructions"][:1]
+        sequence += [
+            {"op": "call", "target": {"program": f"introcutscene{n}", "instruction": 0}}
+            for n in range(1, 5)
+        ]
+        sequence += [{"op": "close-text"}, {"op": "end-scene"}]
+        scene_programs.append(
+            {"id": "opening-sequence", "entitiesRunning": True, "instructions": sequence}
+        )
+        maps[0]["onLoad"]["program"] = "opening-sequence"
     texts = [row for row in original["texts"] if 4186 <= row["id"] <= 4266]
     authority = _jsonl(corpus / "source.jsonl", lambda row: (row["namespace"], row["id"]))
     translated = []
@@ -287,6 +315,11 @@ def prepare(
         "post-tint storm pair. "
         "Explicit host terminal; no natural boot or persistent-party claim."
     )
+    if complete:
+        document["provenance"]["controlledBoundary"] = (
+            "Complete IntroCutscene1-4 in source order; disposable pre-title presentation, "
+            "no campaign initialization or save publication."
+        )
     sources = {row["path"]: row for row in document["provenance"]["sources"]}
     for path in compiler.sources:
         sources[path] = {
@@ -332,6 +365,17 @@ def prepare(
             },
         )
     shutil.copyfile(party, output / "party.json")
+    if complete:
+        write(
+            output / "opening.json",
+            {
+                "formatVersion": 1,
+                "world": "world.json",
+                "start": "scene-1.json",
+                "party": "party.json",
+                "catalog": "world.zh-CN.json",
+            },
+        )
     for name in OPENING_INPUTS:
         target = output / "opening-inputs" / (name + ".json")
         target.parent.mkdir(exist_ok=True)
@@ -365,20 +409,61 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("base", "canonical", "upstream", "rom", "corpus", "party", "output"):
         parser.add_argument("--" + name, required=True, type=Path)
-    args = parser.parse_args()
-    print(
-        json.dumps(
-            prepare(
-                args.base,
-                args.canonical,
-                args.upstream,
-                args.rom,
-                args.corpus,
-                args.party,
-                args.output,
-            )
-        )
+    parser.add_argument(
+        "--complete", action="store_true", help="Prepare the complete pre-title sequence"
     )
+    parser.add_argument(
+        "--campaign-catalogs",
+        type=Path,
+        help="Also copy the closed campaign and its accepted catalogs",
+    )
+    parser.add_argument(
+        "--entry-catalog",
+        type=Path,
+        help="Accepted Witch catalog for a complete campaign successor",
+    )
+    args = parser.parse_args()
+    if args.campaign_catalogs and not args.complete:
+        parser.error("--campaign-catalogs requires --complete")
+    if args.campaign_catalogs and not args.entry_catalog:
+        parser.error("--campaign-catalogs requires --entry-catalog")
+    destination = private_output(args.output)
+    if destination.exists():
+        raise ValueError("use a fresh output; preserve previous runs")
+    output = destination / "opening" if args.campaign_catalogs else destination
+    report = prepare(
+        args.base,
+        args.canonical,
+        args.upstream,
+        args.rom,
+        args.corpus,
+        args.party,
+        output,
+        args.complete,
+    )
+    if args.campaign_catalogs:
+        files = package_files(
+            args.base / "world.json",
+            args.base / "main-scenes.json",
+            args.base / "entry/entry.json",
+            args.base / "opening-inputs",
+        )
+        for relative, source in files.items():
+            target = destination / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+        for name in ("world.zh-CN.json", "entry.zh-CN.json"):
+            target = destination / "catalogs" / name
+            target.parent.mkdir(exist_ok=True)
+            shutil.copyfile(
+                args.entry_catalog if name == "entry.zh-CN.json" else args.campaign_catalogs / name,
+                target,
+            )
+        report["campaignBytes"] = sum(
+            p.stat().st_size for p in destination.rglob("*") if p.is_file()
+        )
+        write(destination / "opening-preparation.json", report)
+    print(json.dumps(report))
 
 
 if __name__ == "__main__":
