@@ -1392,3 +1392,10 @@ incomplete verification entry. `review-v2` selects only the explicitly named cas
 all nine restore successfully. With producer scratch moved aside, its production reader
 and a fresh HD BLAZE4 ordinary-input cast both pass against the published flame package.
 An initial Ruff check reported only local import ordering; the corrected check passed.
+
+The committed planner uses `--scope engine` for the reviewed remake-only producer changes.
+It selects engine-unit, adapter-build, private-admission-build, live-inspection-build and the
+three direct research-public checks (Ruff, design-contracts and research-index), with no
+unclassified paths. The engine behavior result above remains valid across the settings-only
+accepted-main advance; the rebased adapter and both selected tool builds pass, as do the
+three public checks. No legacy aggregate, H3 or full research suite is selected or claimed.
