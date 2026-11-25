@@ -772,15 +772,26 @@ available rows. Reduced Flash holds the selected frame. Public commands without 
 display their localized names. The [field and shop lists](field-and-shop.md#current-composition)
 also use this component.
 
-Battle Main uses the [compact vertical rows](#8-battle-one-complete-decision-then-its-consequences).
-Magic and Item retain scrollable child rows with 48×72 identity icons where mounted. The
-[current battle observation](battle-ui-composition.md#vertical-battle-main-2090) covers the
-Main rows, child pages and reader.
+Battle Main uses one blue-and-gold frame around Attack, Magic, Item and Stay/Search. In F4
+Practice Yard, confirm the stop to see all four rows between the separate terrain frame and the
+reader. Compare the outer edges with the acting card and reader. The idle rows share the panel's
+blue interior, with the focus marker, unavailable tint and transient pointer feedback still visible.
+Check English and Chinese at 1920×1080 and 1600×900. Magic and Item replace the Main frame
+with scrollable child rows and 48×72 identity icons where mounted. Target leaves only its own
+controls. The [current battle observation](battle-ui-composition.md#vertical-battle-main-2090)
+covers frame geometry, row clicks, child pages and Back.
+
+In the native F4 preview, both languages at both client sizes showed all four captions inside
+the shared frame. The frame aligned with the card and reader and left the terrain frame clear.
+The public sample showed the unavailable Attack tint and the gold marker on Stay. The separate
+[long-text observation](battle-ui-composition.md#reproduce-slice-1) checks row growth and a
+right-edge target that moves the target card and reader to the left.
 
 Church places the measured 560px service panel on the right, below the host safe area, with the
 room under a 35% veil. Up/Down moves through the four services. Mapped Cancel or a complete
 right-click returns from the service list. Focus and refusals keep the root hit areas fixed.
-Promotion remains unavailable. Quotes retain
+Promotion is unavailable in the public Church sample. See the
+[production promotion routes](../application/church-promotion-design.md). Quotes retain
 the actual source-ordered member, condition, funds and exact price; Cancel declines and paid
 results stay paid. Record completes the caller before the shared Save host opens. Back from that
 host resumes field control; reopening services requires a fresh priest interaction.

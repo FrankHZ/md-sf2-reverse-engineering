@@ -93,6 +93,8 @@ Keep one foe and place `reserve` at (1,1). Keep the allied placements and Herb s
 real host with this controlled package. Run it once with `language=en` and route `keyboard`
 and once with `language=zh-CN`, `reducedFlash=true` and route `pad`. It resizes the client
 to 1600×900 and back to 1920×1080 and projects the actual canvas rectangles into each client.
+The observer checks the shared frame against the card and reader, verifies the 16px insets and
+the terrain gap, and clicks the border and row gaps to check that they never choose a command.
 
 For mounted command art, use the same observer with the private Battle01 source and start
 under [Reproduce slice 1](#reproduce-slice-1), English settings and keyboard route. For Search,
@@ -166,11 +168,15 @@ readout below the acting card. Use the existing roughly 560px right-side decisio
 32px gameplay inset and below-Menu band. The acting, recipient or hover card takes its top role
 as the phase changes. Let wide values grow within the layout budget. Place the Main or child
 list below the measured card and terrain frames. Use one independent reading/footer region below the controls
-and keep Back and Confirm fixed within their phase. Main uses `CompactCommandList` in
-Attack, Magic, Item, Stay/Search order. The existing icon control draws the admitted art
-at nearest 3× beside the persistent 24px localized label. Each complete row is a single hit
-area. Magic and Item retain their scrollable lists. A blocked command can show its refusal
-in the same reader.
+and keep Back and Confirm fixed within their phase. [#2262](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2262)
+places Main's `CompactCommandList` inside one `PanelContainer` using `StoryTheme.PanelFrame`.
+The frame, unit card, child list and reader share the column's outer edges. Terrain remains in
+its own frame 12px below the card. `BattleMenuLayout` owns the frame's visibility, board
+coverage and footprint, including its style insets. The shared list measures and hits its
+four inner rows in Attack, Magic, Item, Stay/Search order. The existing icon control draws
+the admitted art at nearest 3× beside the persistent 24px localized label. The panel border,
+padding and row gaps have no command hit. Magic, Item and Target hide the Main frame.
+A blocked command can show its refusal in the same reader.
 
 Reserve the footer's reading bounds on page entry from the available viewport and keep them
 stable across offers. Long rows and descriptions wrap and scroll within their own bounds without moving
@@ -876,7 +882,7 @@ Use UTF-8 input settings with `formatVersion` 1, `confirmCancel` standard, `text
 | Case | Selection before launch |
 | --- | --- |
 | Private Battle01 | Select the registered `derived/issue2035/galam-town-v1` world, entry, main-scenes and six opening files as described in the [publication owner](../content/presentation-assets.md#final-publication-and-ordinary-selection). Set `SF2_DEMO_BATTLE_CASE=private`, `SF2_CURSOR_ORIGINAL=1` and `SF2_CURSOR_SHA256` to the decoded identity in [cursor publication](battle-scenes.md#source-and-publication). Set `language` to en and `reducedFlash` to false. Set `SF2_COMPACT_START` to the controlled start below. Use 1920×1080. |
-| Public long text and wide vitals | Set `SF2_DEMO_BATTLE_CASE=public`, `SF2_CURSOR_ORIGINAL=0` and clear `SF2_COMPACT_START`. Set `language` to zh-CN and `reducedFlash` to true. Copy `remake/content/authored/attack-spells.json` to run scratch. Change the mage maximum HP to 30,000 and initial HP to 29,999. Rename its actor ID, start actor reference and encounter placement reference to `very-long-controlled-mage-name-for-wrap-and-five-digit-vitals`. Keep its physical movement type. Widen the terrain to the left by eight cells, extending the barrier on the top and bottom rows and inserting eight open cells after the left barrier of each interior row. Shift every placement eight cells right to exercise right-edge target clearance. Pass that copy as the authored package. The observer extends one localized help string before mounting the host. Use 1600×900. |
+| Public long text and wide vitals | Set `SF2_DEMO_BATTLE_CASE=public`, `SF2_CURSOR_ORIGINAL=0` and clear `SF2_COMPACT_START`. Set `language` to zh-CN and `reducedFlash` to true. For English, set `language=en` and `SF2_CURSOR_LANGUAGE=en` with the same Reduced Flash setting. Copy `remake/content/authored/attack-spells.json` to run scratch. Change the mage maximum HP to 30,000 and initial HP to 29,999. Rename its actor ID, start actor reference and encounter placement reference to `very-long-controlled-mage-name-for-wrap-and-five-digit-vitals`. Keep its physical movement type. Widen the terrain to the left by eight cells, extending the barrier on the top and bottom rows and inserting eight open cells after the left barrier of each interior row. Shift every placement eight cells right to exercise right-edge target clearance. Pass that copy as the authored package. The observer lengthens the Attack caption and reader text before mounting the host. Use 1600×900. |
 
 | Public area completion | Set `SF2_DEMO_BATTLE_CASE=area`, `SF2_CURSOR_ORIGINAL=0` and clear `SF2_COMPACT_START`. Use English and Reduced Flash and select the unchanged `attack-spells.json` at 1920×1080. |
 

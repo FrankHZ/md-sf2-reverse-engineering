@@ -29,6 +29,7 @@ internal sealed partial class BattleMenuLayout : Control
     private readonly PanelContainer _context = Frame("ContextPanel");
     private readonly PanelContainer _detail = Frame("DescriptionPanel");
     private readonly PanelContainer _list = Frame("ChoicePanel");
+    private readonly PanelContainer _commandFrame = Frame("CommandPanel");
     private readonly ScrollContainer _scroll = new() { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled, FocusMode = FocusModeEnum.None };
     private readonly VBoxContainer _rows = new() { SizeFlagsHorizontal = SizeFlags.ExpandFill };
     private readonly List<Label> _rowLabels = [];
@@ -44,7 +45,7 @@ internal sealed partial class BattleMenuLayout : Control
     internal Action InvalidatePointer { get; set; } = () => { };
     internal bool Covers(Vector2 point) =>
         Covers(Actor, point) || Covers(Target, point) || Covers(Terrain, point) || Covers(_context, point) || Covers(_list, point) ||
-        Covers(_detail, point) || HitCommand(point).Id is not null;
+        Covers(_detail, point) || Covers(_commandFrame, point);
 
     private static bool Covers(Control control, Vector2 point) =>
         control.IsVisibleInTree() && control.GetGlobalRect().HasPoint(point);
@@ -66,15 +67,17 @@ internal sealed partial class BattleMenuLayout : Control
     {
         Theme = UI.StoryTheme.Create();
         var insets = UI.StoryTheme.PanelFrame(PanelInset, PanelInset);
-        foreach (var panel in new[] { _detail, _list }) panel.AddThemeStyleboxOverride("panel", insets);
+        foreach (var panel in new[] { _detail, _list, _commandFrame }) panel.AddThemeStyleboxOverride("panel", insets);
         MouseFilter = MouseFilterEnum.Ignore;
         AddChild(Actor); AddChild(Target);
         Context.AutowrapMode = TextServer.AutowrapMode.Off;
         AddChild(Terrain); AddChild(_context); _context.AddChild(Context);
-        _commandList = new(Commands) { Name = "Commands", CaptionSize = 24, DrawActionSurfaces = true, Visible = false,
+        _commandList = new(Commands) { Name = "Commands", CaptionSize = UI.StoryTheme.HintSize, DrawActionSurfaces = true,
             InvalidatePointer = () => InvalidatePointer() };
         _commandList.ItemRectChanged += () => InvalidatePointer();
-        AddChild(_commandList);
+        _commandFrame.Hide();
+        _commandFrame.ItemRectChanged += () => InvalidatePointer();
+        AddChild(_commandFrame); _commandFrame.AddChild(_commandList);
         AddChild(_list); _list.AddChild(_scroll); _scroll.AddChild(_rows);
         _scroll.GetVScrollBar().FocusMode = FocusModeEnum.None;
         _rows.AddThemeConstantOverride("separation", 8);
@@ -126,15 +129,18 @@ internal sealed partial class BattleMenuLayout : Control
         float stackBottom = Terrain.Visible ? terrainTop + terrainSize.Y : top + cardSize.Y;
         float controlsTop = stackBottom + (stackBottom > top ? Gap : 0);
         // Give the reader a stable bottom anchor and leave room for every Main row.
-        float footerHeight = _targeting ? 320 : _list.Visible ? 304 : _commandList.Visible ? 260 : 228;
+        float footerHeight = _targeting ? 320 : _list.Visible ? 304 : _commandFrame.Visible ? 260 : 228;
         float detailTop = bottom - footerHeight;
-        if (_commandList.Visible)
+        if (_commandFrame.Visible)
         {
-            if (_commandList.Size.X != width) _commandList.Arrange(width);
-            detailTop = Mathf.Max(detailTop, controlsTop + _commandList.RequestedHeight + Gap);
+            var padding = _commandFrame.GetThemeStylebox("panel").GetMinimumSize();
+            float innerWidth = Mathf.Max(1, width - padding.X);
+            if (_commandList.Size.X != innerWidth) _commandList.Arrange(innerWidth);
+            _commandFrame.Size = new(width, _commandList.RequestedHeight + padding.Y);
+            detailTop = Mathf.Max(detailTop, controlsTop + _commandFrame.Size.Y + Gap);
         }
         var protection = _subject.HasArea() ? _subject.Grow(16) : default;
-        float protectedBottom = _targeting || _list.Visible || _commandList.Visible ? detailTop : stackBottom;
+        float protectedBottom = _targeting || _list.Visible || _commandFrame.Visible ? detailTop : stackBottom;
         bool alternate = protection.HasArea() && (
             new Rect2(right, top, stackWidth, protectedBottom - top).Intersects(protection) ||
             new Rect2(right, detailTop, width, bottom - detailTop).Intersects(protection));
@@ -152,7 +158,7 @@ internal sealed partial class BattleMenuLayout : Control
         _context.Size = _context.GetCombinedMinimumSize();
         _context.Position = new(alternate ? size.X - margin - _context.Size.X : margin, top);
         _context.Visible = _decisionContext && (!protection.HasArea() || !_context.GetRect().Intersects(protection));
-        _commandList.Position = new(x, controlsTop);
+        _commandFrame.Position = new(x, controlsTop);
         _list.Position = new(x, controlsTop);
         _list.Size = new(width, Mathf.Max(0, detailTop - controlsTop - Gap));
         _detail.Position = new(x, detailTop);
@@ -164,7 +170,7 @@ internal sealed partial class BattleMenuLayout : Control
     {
         _targeting = target;
         _decisionContext = context;
-        _commandList.Visible = main;
+        _commandFrame.Visible = main;
         if (main) _commandList.Present(Commands.Select(command => command.Caption).ToArray());
         else ClearCommandPointer();
         Heading.Visible = !main;
@@ -266,7 +272,8 @@ internal sealed partial class BattleMenuLayout : Control
 
     internal object Observe() => new
     {
-        commandList = new { visible = _commandList.IsVisibleInTree(), rect = BattleMapViewport.Rectangle(_commandList.GetGlobalRect()) },
+        commandList = new { visible = _commandFrame.IsVisibleInTree(), rect = BattleMapViewport.Rectangle(_commandFrame.GetGlobalRect()),
+            content = BattleMapViewport.Rectangle(_commandList.GetGlobalRect()) },
         description = BattleMapViewport.Rectangle(_detail.GetGlobalRect()),
         descriptionVisible = _detail.IsVisibleInTree(),
         reader = _reading.Observe(),
