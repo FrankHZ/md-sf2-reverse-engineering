@@ -133,7 +133,7 @@ public sealed class FieldSearchTests
     }
 
     [Fact]
-    public void SelectedPickupGrantsCarryAndGiveWithoutAdmittingAnUnrelatedItemOrUseEffect()
+    public void SelectedPickupGrantsCarryAndGiveWithoutAdmittingAUseEffect()
     {
         var basis = ConnectedBattleGiveTests.Source();
         var ring = new SourceItemDefinition(21, "QUICK_RING", "Quick Ring", "", "ALL", [], 0, 0, 0,
@@ -149,7 +149,6 @@ public sealed class FieldSearchTests
         var giver = reward.Recipient!.Value;
         var carried = Assert.Single(session.QueryFieldActions(giver).Items);
         Assert.Null(carried.Use);
-        Assert.DoesNotContain((byte)90, session.Definition.FieldPreparation!.Items.Keys);
         Assert.Null(Send(session, new FieldGive(giver, carried.Slot, carried.Word, FieldInventoryTests.Recipient)).Failure);
         Assert.Equal(ring.Id, Assert.Single(session.QueryFieldActions(FieldInventoryTests.Recipient).Items).Word);
         Assert.Equal(FieldSearchKind.Empty, Search(session).Kind);

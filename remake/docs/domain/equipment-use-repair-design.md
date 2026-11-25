@@ -281,6 +281,14 @@ the requested successful-hit observation and exhausted its short route; `demon-b
 verifies Equip/settled save instead. Successful native runs exit0, but several retain ObjectDB
 shutdown leak warnings (2–6 objects); this does not close or resume #1716. No screenshots were taken.
 Original natural reach/timing and the unobserved late native equipment combinations remain **Unknown**.
+The first PR CI run [45672349397](https://github.com/FrankHZ/md-sf2-reverse-engineering/actions/runs/45672349397)
+completed with 3,327 passing, 50 skipped and one failure:
+`FieldSearchTests.SelectedPickupGrantsCarryAndGiveWithoutAdmittingAnUnrelatedItemOrUseEffect`.
+Its obsolete assertion excluded Mage Staff90 from the preparation catalog. The correction removes
+that exclusion while preserving pickup, Give, repeat-pickup and absent Use assertions; the case is
+renamed `SelectedPickupGrantsCarryAndGiveWithoutAdmittingAUseEffect`. A direct
+`FullyQualifiedName~FieldSearchTests` run passes 44 with one private-input skip. The completed
+CI failure is preserved; no local aggregate rerun or production change was needed.
 
 ## Accepted Use and Repair through first Pacalon
 
