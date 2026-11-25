@@ -28,6 +28,7 @@ public sealed partial class GameRoot : Node
     private bool _releaseBarrier;
     public override void _ExitTree()
     {
+        _entryPreparation.Dispose();
         ReleaseOpening();
         ReleaseWindowSupport(); GetWindow().FocusExited -= SettingsFocusLost;
         GetWindow().FocusEntered -= PacingFocusReturned; Godot.Input.JoyConnectionChanged -= PacingDeviceChanged;
@@ -182,6 +183,7 @@ public sealed partial class GameRoot : Node
         else if (options.TryGetValue("--authored-package", out string? authored)) BeginSource(new AuthoredScenarioPackageReader(authored));
         else
         {
+            StartEntryPreparation();
             if (_seedFile is not null) { ShowEntry(); ShowContinue(loadSeed: true); }
             else BeginOpening();
         }
