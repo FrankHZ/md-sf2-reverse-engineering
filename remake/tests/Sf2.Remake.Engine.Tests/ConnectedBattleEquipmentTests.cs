@@ -80,15 +80,18 @@ public sealed class ConnectedBattleEquipmentTests
 
     [Theory]
     [InlineData(false)] [InlineData(true)]
-    public void CursedDefinitionsCannotBecomeOffersOrEquippedState(bool equipped)
+    public void CursedDefinitionsEquipAndThenRefuseRemoval(bool equipped)
     {
         var admitted = Admitted("battle-equipment");
         var b = admitted.Definition.Encounters.Values.Single(); var hero = b.Deployments[0];
         var loadout = new BattleSourceLoadout([equipped ? (ushort)178 : (ushort)50, 127, 127, 127], [63, 63, 63, 63]);
         var definition = hero.Definition.WithEquipment(new(20, PrivateFieldPreparation.Weapons(Source(true))));
         var actor = new BattleActorState(hero with { Definition = definition }, 10, 0, 0, hero.Position, 0, 0,
-            sourceLoadout: loadout, attack: 20);
-        if (equipped) Assert.Equal("equipment-nonweapon", Assert.Throws<BattleRuleException>(() => BattleEquipment.Choices(actor)).Code);
-        else Assert.Empty(BattleEquipment.Choices(actor));
+            sourceLoadout: loadout);
+        Assert.Contains(BattleEquipment.Choices(actor), choice => choice.Slot == 0);
+        actor = BattleEquipment.Equip(actor, 0);
+        Assert.Equal(25, actor.Attack);
+        Assert.Equal(4, actor.Status);
+        Assert.Equal("equipped-curse", Assert.Throws<BattleRuleException>(() => BattleEquipment.Equip(actor, 4)).Code);
     }
 }

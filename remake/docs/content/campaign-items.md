@@ -228,9 +228,10 @@ gated locations. `drop` is the connected battle rule. `other/future` makes no ab
 original ally starts, shops or grants: its acquisition owner is the [remaining campaign](../application/remaining-campaign-risk-baseline.md#optional-content-and-ownership).
 Current caller reproduction is below. A/B/C/D/E refer to the five serial slices in the agreement;
 E's exhaustive class/appearance check applies to **every** row, even one already observed.
-A on B/C items means shared catalog integration after that item's effect exists, not permission
-to admit it early with missing effects. Existing accepted native evidence remains in the linked
-mechanism owners; no new native witness was run for this design.
+A on B/C items means retained source metadata and deferred equipment integration after the unique
+effect exists, not permission to equip it early with missing effects. `A complete` marks passive
+mechanics only; D/E remain explicit where Use or exhaustive appearance closure is unfinished.
+The linked mechanism owners retain the original accepted observations and slice A witnesses.
 
 | ID / equipment | Source classes | Passive effects; range | Use; flags | Allied equip / scene | Selected acquisition | Remaining slice |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -238,16 +239,16 @@ mechanism owners; no new native witness was run for this design.
 | 20 Protect Ring | ALL | +DEF5; 0–0 | BOOST1; BREAKABLE | yes / n/a | drop | existing; E check |
 | 21 Quick Ring | ALL | +AGI5; 0–0 | —; BREAKABLE | yes / n/a | Search | existing; E check |
 | 22 Running Ring | ALL | +MOV2; 0–0 | —; — | yes / n/a | Search | existing; E check |
-| 23 White Ring | HERO, VICR | +DEF10; 0–0 | AURA2; BREAKABLE | no / n/a | other/future | A,D |
+| 23 White Ring | HERO, VICR | +DEF10; 0–0 | AURA2; BREAKABLE | yes / n/a | other/future | A complete; D |
 | 24 Black Ring | WIZ, SORC | +ATT10; 0–0 | BLAZE2; CURSED,BREAKABLE | yes / n/a | drop | existing; E check |
-| 25 Evil Ring | WIZ, SORC, VICR | +ATT15; 0–0 | BOLT2; CURSED,BREAKABLE | no / n/a | other/future | A,D |
+| 25 Evil Ring | WIZ, SORC, VICR | +ATT15; 0–0 | BOLT2; CURSED,BREAKABLE | yes / n/a | other/future | A complete; D |
 | 26 Leather Glove | MMNK | +ATT26; 1–1 | —; — | yes / row | shop | existing; E check |
 | 27 Power Glove | MMNK | +ATT33; 1–1 | —; — | yes / row | shop | existing; E check |
 | 28 Brass Knuckles | MMNK | +ATT39; 1–1 | —; — | yes / row | other/future | existing; E check |
 | 29 Iron Knuckles | MMNK | +ATT43; 1–1 | —; — | yes / none | other/future | E |
-| 30 Misty Knuckles | MMNK | +ATT48; 1–1 | SPOIT1; BREAKABLE | no / none | other/future | A,D,E |
-| 31 Giant Knuckles | MMNK | +ATT55; 1–1 | MUDDLE1; BREAKABLE | no / none | other/future | A,D,E |
-| 32 Evil Knuckles | MMNK | +ATT63; 1–1 | —; CURSED | no / none | Search | A,E |
+| 30 Misty Knuckles | MMNK | +ATT48; 1–1 | SPOIT1; BREAKABLE | yes / none | other/future | A complete; D,E |
+| 31 Giant Knuckles | MMNK | +ATT55; 1–1 | MUDDLE1; BREAKABLE | yes / none | other/future | A complete; D,E |
+| 32 Evil Knuckles | MMNK | +ATT63; 1–1 | —; CURSED | yes / none | Search | A complete; E |
 | 33 Short Axe | WARR, GLDT, BRN, RDBN | +ATT5; 1–1 | —; — | yes / row | shop | existing; E check |
 | 34 Hand Axe | WARR, GLDT, BRN, RDBN | +ATT9; 1–1 | —; — | yes / row | shop | existing; E check |
 | 35 Middle Axe | WARR, GLDT, BRN, RDBN | +ATT13; 1–1 | —; — | yes / row | shop | existing; E check |
@@ -255,22 +256,22 @@ mechanism owners; no new native witness was run for this design.
 | 37 Battle Axe | WARR, GLDT, BRN, RDBN | +ATT21; 1–1 | —; — | yes / row | shop | existing; E check |
 | 38 Large Axe | GLDT, BRN, RDBN | +ATT25; 1–1 | —; — | yes / row | shop | existing; E check |
 | 39 Great Axe | GLDT, BRN, RDBN | +ATT28; 1–1 | —; — | yes / none | other/future | E |
-| 40 Heat Axe | GLDT, BRN, RDBN | +ATT32; 1–1 | BLAZE2; BREAKABLE | no / none | other/future | A,D,E |
-| 41 Atlas Axe | GLDT, BRN, RDBN | +ATT35; 1–1 | BLAZE3; BREAKABLE | no / none | other/future | A,D,E |
-| 42 Ground Axe | GLDT, BRN, RDBN | +ATT39, +MOV1; 1–1 | —; — | no / none | other/future | A,E |
-| 43 Rune Axe | GLDT, BRN, RDBN | +ATT42, +CRITICAL1; 1–1 | DETOX2; BREAKABLE | no / none | other/future | A,D,E |
-| 44 Evil Axe | GLDT, BRN, RDBN | +ATT50, −DEF5; 1–1 | —; CURSED | no / none | Search | A,E |
+| 40 Heat Axe | GLDT, BRN, RDBN | +ATT32; 1–1 | BLAZE2; BREAKABLE | yes / none | other/future | A complete; D,E |
+| 41 Atlas Axe | GLDT, BRN, RDBN | +ATT35; 1–1 | BLAZE3; BREAKABLE | yes / none | other/future | A complete; D,E |
+| 42 Ground Axe | GLDT, BRN, RDBN | +ATT39, +MOV1; 1–1 | —; — | yes / none | other/future | A complete; E |
+| 43 Rune Axe | GLDT, BRN, RDBN | +ATT42, +CRITICAL1; 1–1 | DETOX2; BREAKABLE | yes / none | other/future | A complete; D,E |
+| 44 Evil Axe | GLDT, BRN, RDBN | +ATT50, −DEF5; 1–1 | —; CURSED | yes / none | Search | A complete; E |
 | 45 Wooden Arrow | ACHR, RNGR, SNIP, BRGN, BWNT | +ATT7; 2–2 | —; — | yes / row | shop | existing; E check |
 | 46 Iron Arrow | ACHR, RNGR, SNIP, BRGN, BWNT | +ATT12; 2–2 | —; — | yes / row | shop | existing; E check |
 | 47 Steel Arrow | ACHR, RNGR, SNIP, BRGN, BWNT | +ATT17; 2–2 | —; — | yes / row | shop | existing; E check |
 | 48 Robin Arrow | SNIP, BRGN, BWNT | +ATT21, +CRITICAL1; 2–3 | —; — | yes / row | shop | existing; E check |
 | 49 Assault Shell | SNIP, BRGN, BWNT | +ATT25; 2–3 | —; — | yes / row | shop | existing; E check |
 | 50 Great Shot | SNIP, BRGN, BWNT | +ATT29; 2–3 | —; — | yes / row | shop | existing; E check |
-| 51 Nazca Cannon | SNIP, BRGN, BWNT | +ATT33, +CRITICAL1; 2–3 | —; — | no / none | other/future | A,E |
-| 52 Buster Shot | SNIP, BRGN, BWNT | +ATT37; 2–3 | —; — | no / none | other/future | A,E |
-| 53 Hyper Cannon | SNIP, BRGN, BWNT | +ATT40; 2–3 | —; — | no / none | other/future | A,E |
-| 54 Grand Cannon | SNIP, BRGN, BWNT | +ATT43; 2–3 | DISPEL1; BREAKABLE | no / none | other/future | A,D,E |
-| 55 Evil Shot | SNIP, BRGN, BWNT | +ATT51, −DEF5; 2–3 | —; CURSED | no / none | Search | A,E |
+| 51 Nazca Cannon | SNIP, BRGN, BWNT | +ATT33, +CRITICAL1; 2–3 | —; — | yes / none | other/future | A complete; E |
+| 52 Buster Shot | SNIP, BRGN, BWNT | +ATT37; 2–3 | —; — | yes / none | other/future | A complete; E |
+| 53 Hyper Cannon | SNIP, BRGN, BWNT | +ATT40; 2–3 | —; — | yes / none | other/future | A complete; E |
+| 54 Grand Cannon | SNIP, BRGN, BWNT | +ATT43; 2–3 | DISPEL1; BREAKABLE | yes / none | other/future | A complete; D,E |
+| 55 Evil Shot | SNIP, BRGN, BWNT | +ATT51, −DEF5; 2–3 | —; CURSED | yes / none | Search | A complete; E |
 | 56 Wooden Stick | KNTE, PLDN, PGNT | +ATT3; 1–1 | —; — | yes / row | other/future | existing; E check |
 | 57 Short Sword | SDMN, BDMN, HERO, BRN, BDBT, NINJ, RDBN | +ATT5; 1–1 | —; — | yes / row | shop | existing; E check |
 | 58 Middle Sword | SDMN, BDMN, HERO, BRN, BDBT, NINJ, RDBN | +ATT8; 1–1 | —; — | yes / row | shop | existing; E check |
@@ -280,12 +281,12 @@ mechanism owners; no new native witness was run for this design.
 | 62 Broad Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT22; 1–1 | —; — | yes / row | shop | existing; E check |
 | 63 Buster Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT26; 1–1 | —; — | yes / row | shop | existing; E check |
 | 64 Great Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT29; 1–1 | —; — | yes / row | shop | existing; E check |
-| 65 Critical Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT32, +CRITICAL1; 1–1 | —; — | no / none | other/future | A,E |
-| 66 Battle Sword | HERO, BRN, BDBT, RDBN | +ATT35; 1–1 | —; — | no / none | other/future | A,E |
-| 67 Force Sword | HERO | +ATT46; 1–1 | —; UNSELLABLE | no / none | other/future | A,E |
+| 65 Critical Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT32, +CRITICAL1; 1–1 | —; — | yes / none | other/future | A complete; E |
+| 66 Battle Sword | HERO, BRN, BDBT, RDBN | +ATT35; 1–1 | —; — | yes / none | other/future | A complete; E |
+| 67 Force Sword | HERO | +ATT46; 1–1 | —; UNSELLABLE | yes / none | other/future | A complete; E |
 | 68 Counter Sword | HERO, BRN, BDBT, RDBN | +ATT39, +COUNTER1; 1–1 | —; — | no / none | other/future | A,B,E |
-| 69 Levanter | HERO | +ATT42; 1–1 | BLAZE3; BREAKABLE | no / none | other/future | A,D,E |
-| 70 Dark Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT50, −DEF5; 1–1 | DESOUL1; CURSED,BREAKABLE | no / none | other/future | A,D,E |
+| 69 Levanter | HERO | +ATT42; 1–1 | BLAZE3; BREAKABLE | yes / none | other/future | A complete; D,E |
+| 70 Dark Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT50, −DEF5; 1–1 | DESOUL1; CURSED,BREAKABLE | yes / none | other/future | A complete; D,E |
 | 71 Wooden Sword | SDMN, BDMN, HERO, BRN, BDBT, NINJ, RDBN | +ATT3; 1–1 | —; — | yes / row | other/future | existing; E check |
 | 72 Short Spear | KNTE, PLDN, PGNT | +ATT6; 1–2 | —; — | yes / row | shop | existing; E check |
 | 73 Bronze Lance | KNTE, PLDN, PGNT | +ATT9; 1–1 | —; — | yes / row | shop | existing; E check |
@@ -295,34 +296,34 @@ mechanism owners; no new native witness was run for this design.
 | 77 Heavy Lance | PLDN, PGNT | +ATT23; 1–1 | —; — | yes / row | shop | existing; E check |
 | 78 Javelin | PLDN, PGNT | +ATT26; 1–2 | —; — | yes / row | shop | existing; E check |
 | 79 Chrome Lance | PLDN, PGNT | +ATT31; 1–1 | —; — | yes / row | other/future | existing; E check |
-| 80 Valkyrie | PLDN, PGNT | +ATT33; 1–2 | ATTACK1; BREAKABLE | no / none | other/future | A,D,E |
-| 81 Holy Lance | PLDN, PGNT | +ATT39, +DEF5; 1–1 | HEALIN1; BREAKABLE | no / none | other/future | A,D,E |
-| 82 Mist Javelin | PLDN, PGNT | +ATT42; 1–2 | —; — | no / none | other/future | A,E |
-| 83 Halberd | PLDN, PGNT | +ATT37; 1–1 | BOLT1; BREAKABLE | no / none | other/future | A,D,E |
-| 84 Evil Lance | PLDN, PGNT | +ATT48, −MOV2; 1–1 | —; CURSED | no / none | Search | A,E |
+| 80 Valkyrie | PLDN, PGNT | +ATT33; 1–2 | ATTACK1; BREAKABLE | yes / none | other/future | A complete; D,E |
+| 81 Holy Lance | PLDN, PGNT | +ATT39, +DEF5; 1–1 | HEALIN1; BREAKABLE | yes / none | other/future | A complete; D,E |
+| 82 Mist Javelin | PLDN, PGNT | +ATT42; 1–2 | —; — | yes / none | other/future | A complete; E |
+| 83 Halberd | PLDN, PGNT | +ATT37; 1–1 | BOLT1; BREAKABLE | yes / none | other/future | A complete; D,E |
+| 84 Evil Lance | PLDN, PGNT | +ATT48, −MOV2; 1–1 | —; CURSED | yes / none | Search | A complete; E |
 | 85 Wooden Rod | MAGE, PRST, WIZ, SORC, VICR | +ATT3; 1–1 | —; — | yes / row | shop | existing; E check |
 | 86 Short Rod | MAGE, PRST, WIZ, SORC, VICR | +ATT5; 1–1 | —; — | yes / row | shop | existing; E check |
 | 87 Bronze Rod | MAGE, PRST, WIZ, SORC, VICR | +ATT8; 1–1 | —; — | yes / row | shop | existing; E check |
 | 88 Iron Rod | MAGE, PRST, WIZ, SORC, VICR | +ATT12; 1–1 | —; — | yes / row | shop | existing; E check |
 | 89 Power Stick | MAGE, PRST, WIZ, SORC, VICR | +ATT15; 1–1 | —; — | yes / row | shop | existing; E check |
 | 90 Flail | WIZ, SORC, VICR | +ATT19; 1–1 | —; — | yes / row | shop | existing; E check |
-| 91 Guardian Staff | WIZ, SORC, VICR | +ATT22, +DEF5; 1–1 | —; — | no / none | shop | A,E |
+| 91 Guardian Staff | WIZ, SORC, VICR | +ATT22, +DEF5; 1–1 | —; — | yes / row | shop | A complete; E |
 | 92 Indra Staff | WIZ, SORC, VICR | +ATT25; 1–1 | SPOIT1; BREAKABLE | yes / row | shop | existing; E check |
-| 93 Mage Staff | WIZ, SORC | +ATT27; 1–1 | BLAZE2; BREAKABLE | no / none | other/future | A,D,E |
-| 94 Wish Staff | VICR | +ATT26; 1–1 | ATTACK1; BREAKABLE | no / none | other/future | A,D,E |
-| 95 Great Rod | WIZ, SORC, VICR | +ATT28; 1–1 | —; — | no / none | other/future | A,E |
-| 96 Supply Staff | WIZ, SORC | +ATT32; 1–1 | SPOIT1; BREAKABLE | no / none | other/future | A,D,E |
+| 93 Mage Staff | WIZ, SORC | +ATT27; 1–1 | BLAZE2; BREAKABLE | yes / none | other/future | A complete; D,E |
+| 94 Wish Staff | VICR | +ATT26; 1–1 | ATTACK1; BREAKABLE | yes / none | other/future | A complete; D,E |
+| 95 Great Rod | WIZ, SORC, VICR | +ATT28; 1–1 | —; — | yes / none | other/future | A complete; E |
+| 96 Supply Staff | WIZ, SORC | +ATT32; 1–1 | SPOIT1; BREAKABLE | yes / none | other/future | A complete; D,E |
 | 97 Holy Staff | VICR | +ATT29, HP_RECOVERY3; 1–1 | —; — | no / none | other/future | A,C,E |
-| 98 Freeze Staff | WIZ, SORC | +ATT37; 1–1 | FREEZE3; BREAKABLE | no / none | other/future | A,D,E |
-| 99 Goddess Staff | VICR | +ATT31; 1–1 | AURA2; BREAKABLE | no / none | other/future | A,D,E |
+| 98 Freeze Staff | WIZ, SORC | +ATT37; 1–1 | FREEZE3; BREAKABLE | yes / none | other/future | A complete; D,E |
+| 99 Goddess Staff | VICR | +ATT31; 1–1 | AURA2; BREAKABLE | yes / none | other/future | A complete; D,E |
 | 100 Mystery Staff | WIZ, SORC, VICR | +ATT39, MP_RECOVERY2; 1–1 | —; — | no / none | other/future | A,C,E |
-| 101 Demon Rod | WIZ, SORC, VICR | +ATT50, −AGI10; 1–1 | SPOIT1; CURSED,BREAKABLE | no / none | other/future | A,D,E |
+| 101 Demon Rod | WIZ, SORC, VICR | +ATT50, −AGI10; 1–1 | SPOIT1; CURSED,BREAKABLE | yes / row | other/future | A complete; D,E |
 | 102 Iron Ball | NONE | +ATT44; 1–1 | BLAZE3; CURSED,BREAKABLE | NONE / none | other/future | D |
 | 103 Short Knife | THIF | +ATT5; 1–1 | —; — | yes / row | shop | existing; E check |
 | 104 Dagger | THIF | +ATT8; 1–1 | —; — | yes / row | shop | existing; E check |
 | 105 Knife | THIF | +ATT12; 1–1 | —; — | yes / row | shop | existing; E check |
-| 106 Thieve's Dagger | THIF | +ATT17, +AGI5; 1–1 | —; — | no / none | shop | A,E |
-| 107 Katana | NINJ | +ATT34; 1–1 | —; — | no / none | other/future | A,E |
+| 106 Thieve's Dagger | THIF | +ATT17, +AGI5; 1–1 | —; — | yes / row | shop | A complete; E |
+| 107 Katana | NINJ | +ATT34; 1–1 | —; — | yes / none | other/future | A complete; E |
 | 108 Ninja Katana | NINJ | +ATT39, +DOUBLE1; 1–1 | —; — | no / none | other/future | A,B,E |
 | 109 Gisarme | NINJ | +ATT42, SET_CRITICAL6; 1–1 | —; — | no / none | other/future | A,B,E |
 | 110 Taros Sword | NONE | +ATT32; 1–2 | BOLT2; BREAKABLE | NONE / none | Taros/drop | D |
@@ -377,10 +378,11 @@ if ($LASTEXITCODE -ne 0) { throw 'Equipment source reconciliation failed' }
 
 **Confirmed (selected content/code).** Guardian91 is stocked by `loc-54b1a` (Map06),
 `loc-5d2c4` (Map25) and `map2-entityevent7` (Map02). Thieve's Dagger106 is stocked by
-`map9-entityevent5` (Hassan Map09). Both are real current acquisition callers whose next Equip
-fails admission; they are not merely later source definitions. `HasSupportedWeaponEffects`
-rejects DEF and AGI effects. The current weapon filter otherwise admits 45 identities, while
-rings19/20/21/22/24/126 are admitted separately. No initial holder or natural pickup was inferred
+`map9-entityevent5` (Hassan Map09). Both current acquisition callers now admit Equip through the same ordered signed-stat mechanism.
+The production catalog retains all 94 equipment source definitions; 80 weapons and eight rings
+have passive admission, including the two mask-NONE weapon definitions that remain player-refused.
+Counter Sword68, Ninja Katana108, Gisarme109, Holy Staff97, Mystery Staff100 and Life Ring124
+remain unavailable for Equip until their B/C effect consumers exist. New Use bindings remain D. No initial holder or natural pickup was inferred
 from a shop row. The prior Karna witness is Power Stick89, not Guardian91.
 
 For the selected Search rows, compare itemWord identity and receipt against every map/setup's

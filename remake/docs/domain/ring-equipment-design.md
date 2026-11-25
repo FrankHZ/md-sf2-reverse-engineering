@@ -9,6 +9,11 @@ in any one of them can leave an otherwise legal party unable to act or resume. T
 [capability trace](../capability-status.md#connected-battle-equipment-agreement) records current
 support and [ordinary input acceptance](#implemented-behavior-and-ordinary-input).
 
+The [static-equipment extension](equipment-use-repair-design.md#static-equipment-and-weapon-curses-2270)
+also admits White Ring DEF+10 and Evil Ring ATT+15 with their exact masks, damage and curse flags.
+Their Use remains slice D. Weapons and rings now share ordered stat refresh and curse custody;
+Cure clears both worn categories. Life Ring remains excluded until its turn-recovery consumer.
+
 ## Original rules and evidence
 
 **Confirmed (fixed USA source and item data).** The four carried words encode identity in bits

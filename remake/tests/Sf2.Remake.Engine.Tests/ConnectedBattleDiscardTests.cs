@@ -75,7 +75,7 @@ public sealed class ConnectedBattleDiscardTests
     }
 
     [Theory]
-    [InlineData(90)] [InlineData(218)] [InlineData(113)] [InlineData(306)]
+    [InlineData(113)] [InlineData(306)]
     public void UnsupportedCursedProtectedAndBrokenWordsRefuseWithoutMutation(ushort word)
     {
         var session = Session(); var original = session.Current.Battle; var actor = original.GetActor(new("champion"));

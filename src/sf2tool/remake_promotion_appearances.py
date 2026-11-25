@@ -156,6 +156,23 @@ def brn_weapon_layers(library, scratch, scene):
     return rows
 
 
+def mount_static_equipment(library: Path, scratch: Path, scene: dict) -> None:
+    """Add the mixed-stat rod/knife consumers without replacing existing class bodies."""
+    directory = library / "weapons"
+    index = read_json(directory / "index.json")["records"]
+    for item, donor, selector in ((91, 92, [16, 31]), (106, 105, [22, 41]), (101, 92, [19, 38])):
+        if index["items"][str(item)] != selector:
+            raise ValueError(f"equipment {item} differs from the pinned weapon selector")
+        frames = shared_color_weapon_frames(directory, index, scratch, scene, item, scale=1)
+        donors = [row for row in scene["actors"] if row["side"] == "ally" and row["item"] == donor]
+        if not donors:
+            raise ValueError(f"equipment {item} has no existing legal body consumer")
+        for row in donors:
+            mounted = dict(row, item=item, weaponFrames=frames)
+            if mounted not in scene["actors"]:
+                scene["actors"].append(mounted)
+
+
 def mount_promotion_appearances(
     library: Path,
     scratch: Path,

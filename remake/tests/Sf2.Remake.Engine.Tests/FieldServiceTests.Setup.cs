@@ -160,12 +160,17 @@ public sealed partial class FieldServiceTests
             var ring = new SourceItemDefinition(24, "BLACK_RING", "Black Ring", "Black Ring", "WIZ|SORC",
                 ["WIZ", "SORC"], 0, 0, 5000, "RING|RARE|CURSED|BREAKABLE", "BLAZE|LV2", "BLAZE", 2,
                 [new("INCREASE_ATT", 10), new("NONE", 0), new("NONE", 0)]);
-            curseTerms = new(null!, [], [], [ring], [], [], []);
+            var rod = new SourceItemDefinition(101, "DEMON_ROD", "Demon Rod", "Demon Rod", "WIZ|SORC|VICR",
+                ["WIZ", "SORC", "VICR"], 1, 1, 12500, "WEAPON|RARE|CURSED|BREAKABLE", "SPOIT", "SPOIT", 1,
+                [new("INCREASE_ATT", 50), new("DECREASE_AGI", 10), new("NONE", 0)]);
+            curseTerms = new(null!, [], [], [ring, rod], [], [], []);
             deployments = deployments.Select(row => row.Actor != First ? row : row with
             {
                 Definition = new(row.Actor, BattleClassRule.Wizard, 2, maxHp, row.Definition.MaxMp, 20, 10, 20, false,
                     5, [], physical: row.Definition.Physical! with { Promoted = true },
-                    equipment: new(20, [], rings: [new(24, "Black Ring", 1u << 17, RingStat.Attack, 10, DamageOnUse: true, Cursed: true)])),
+                    equipment: new(20, [new(101, "Demon Rod", 1u << 17, 50, 1, 1, DamageOnUse: true,
+                        Stats: new([new(RingStat.Attack, 50), new(RingStat.Agility, -10)]), Cursed: true)],
+                        rings: [new(24, "Black Ring", 1u << 17, RingStat.Attack, 10, DamageOnUse: true, Cursed: true)])),
             });
         }
         var battle = new BattleDefinition(source.Encounter, source.Map, source.Width, source.Height,

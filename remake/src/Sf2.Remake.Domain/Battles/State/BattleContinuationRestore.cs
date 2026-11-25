@@ -59,7 +59,7 @@ internal static class BattleContinuationRestore
         {
             byte initializedAttack = BattleInitializationRules.EnemyAttack(deployment.Definition.Attack, 0);
             Require(saved.Attack == (deployment.Definition.Equipment is null ? initializedAttack :
-                Math.Min(200, initializedAttack + BattleEquipment.Contribution(deployment.Definition, saved.Loadout))), "attack");
+                BattleEquipment.EffectiveAttack(initializedAttack, 0, deployment.Definition, saved.Loadout)), "attack");
         }
         else Require(saved.Attack == ordinaryAttack, "attack");
         if (deployment.Initialization is not null || deployment.SourceAllyControl)

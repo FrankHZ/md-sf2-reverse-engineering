@@ -26,7 +26,7 @@ public sealed class PartyDetailsQueryTests
         Assert.Equal(7, member.Level!.Value); Assert.Equal(250, member.MaxHp!.Value); Assert.Equal(19, member.MaxMp!.Value);
         Assert.Equal(33, member.Defense!.Value); Assert.Equal(28, member.Agility!.Value);
         var definition = read.Definition.Encounters[read.Start.Encounter].Deployments.Single(d => d.Actor == champion.Actor).Definition;
-        Assert.Equal(Math.Min(200, 40 + BattleEquipment.Contribution(definition, loadout)), member.Attack!.Value);
+        Assert.Equal(BattleEquipment.EffectiveAttack(40, 0, definition, loadout), member.Attack!.Value);
         Assert.Equal("CHANGED MAGIC 3", Assert.Single(member.Spells!).Name);
         Assert.Equal(new[] { 0, 1, 2, 3 }, member.Inventory.Select(s => s.Slot));
         Assert.True(member.Inventory[0].Equipped); Assert.False(member.Inventory[1].Equipped);

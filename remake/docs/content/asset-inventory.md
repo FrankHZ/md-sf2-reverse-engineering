@@ -1124,6 +1124,35 @@ are limited here to equipment eligibility, source-defined combat operands and co
 consumer/appearance/save admission. Recruitment, chapter maps and full growth journeys remain
 outside this work.
 
+### Static-equipment successor (#2270)
+
+`derived/issue2270/equipment-v1` is the complete slice-A successor to SORC v3:174 files,
+365,717,916 bytes. It retains predecessor world, map/audio dependencies and class bindings;
+independent #2252 opening/#2255 Witch and the #2266 catalog remain selected by the launcher.
+The `static-equipment` family in the existing producer adds Guardian91, Dagger106 and Demon Rod101
+using prepared selectors16/31,22/41 and19/38. Six rod member/class bodies and the THIF body reuse
+existing original sequences; all26 production-reader scenes resolve the added keys. Guardian's
+native attack explicitly projects the SORC body and weapon91 separately. Demon Rod art is reader-
+validated; its native witness covers Equip/stats/save, not a completed attack scene.
+
+The first three-key mount took1.10s and produced361,186,722 bytes. Production admission then
+required complete equipment identity icons; the corrected package adds the existing normal/selected
+icons to field and scene surfaces. The final size remains within the existing1GiB publication budget.
+No new body capture, source acquisition, audio generation or per-item world copies are needed.
+Peak memory was not measured; the existing2GiB planning allowance remains an estimate. The final
+package is closed by `sf2tool.remake_private_package` and was consumed from its registered location.
+The E slice still owns exhaustive legal class/item/body closure; this successor does not assert it.
+
+```powershell
+. ./local/private-inputs.ps1
+& ./tools/Prepare-PrivateAssets.ps1 -Repo (Get-Location).Path -Operation Mount `
+    -Family static-equipment -Package (Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2266/pre-voyage-sorc-v3') `
+    -Destination $freshIgnoredPackage
+```
+
+The [slice A owner](../domain/equipment-use-repair-design.md#slice-a-reproduction-and-retained-failures)
+records reader/native commands, retained failures and private receipt registration.
+
 ### Budget and pilot before expansion
 
 The accepted package is about345MiB. Preparation should be O(input package bytes + selected

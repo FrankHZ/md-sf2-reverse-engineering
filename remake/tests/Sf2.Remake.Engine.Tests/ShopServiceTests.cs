@@ -21,7 +21,9 @@ public sealed class ShopServiceTests
         var battle = original.Definition.Encounters.Values.Single();
         if (repairGear) battle = battle.WithDeployments(battle.Deployments.Select(row => row.Actor == Buyer
             ? row with { Definition = row.Definition.WithEquipment(new(row.Definition.Equipment!.BaseAttack,
-                row.Definition.Equipment.Weapons.Values.Append(new(92, "Indra Staff", uint.MaxValue, 25, 1, 1, DamageOnUse: true)),
+                row.Definition.Equipment.Weapons.Values.Concat([
+                    new(92, "Indra Staff", uint.MaxValue, 25, 1, 1, DamageOnUse: true),
+                    new(101, "Demon Rod", uint.MaxValue, 50, 1, 1, DamageOnUse: true, Cursed: true)]),
                 rings: [new(19, "Ring", uint.MaxValue, RingStat.Attack, 5, DamageOnUse: true),
                     new(24, "Black Ring", uint.MaxValue, RingStat.Attack, 10, DamageOnUse: true, Cursed: true)])) }
             : row));
@@ -169,6 +171,29 @@ public sealed class ShopServiceTests
         {
             Assert.Equal(0u, Party(session).Gold);
             Assert.Equal(new ushort[] { 24, 24, 0, 127 }, Owner(session).SourceLoadout!.Items);
+        }
+        else Assert.Same(before, Party(session));
+    }
+
+    [Theory]
+    [InlineData(485, ShopResult.EquippedCurse)]
+    [InlineData(357, ShopResult.Repaired)]
+    public void WeaponRepairUsesTheSameCurseLockAndPreservesTheOtherSlot(ushort word, ShopResult expected)
+    {
+        var terms = new ShopDefinition([0], [Terms.Items[0],
+            new(101, "Demon Rod", 12500, Rare: true, Cursed: true, Repairable: true)]);
+        var session = Session(3125, [101, word, 0, 127], terms: terms, repairGear: true);
+        var before = Party(session);
+        Choose(session, ShopAction.Repair);
+        Accept(session, new SelectShopMember(Wait(session).Token, Buyer));
+        Accept(session, new SelectShopSlot(Wait(session).Token, 1, word));
+        Assert.Equal(3125u, Wait(session).Offer!.Price);
+        Pay(session);
+        Assert.Equal(expected, Wait(session).Result);
+        if (expected == ShopResult.Repaired)
+        {
+            Assert.Equal(0u, Party(session).Gold);
+            Assert.Equal(new ushort[] { 101, 101, 0, 127 }, Owner(session).SourceLoadout!.Items);
         }
         else Assert.Same(before, Party(session));
     }

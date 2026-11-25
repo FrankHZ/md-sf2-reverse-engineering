@@ -41,7 +41,7 @@ internal static class BattleEquipmentReader
         if (actor.Equipment is null) return;
         Require(actor.Physical is { Promoted: false }, "equipment-physical", "actor.physical", true);
         BattleEquipment.ValidateLoadout(actor, actor.SourceLoadout);
-        Require(actor.Attack == Math.Min(200, actor.Equipment.BaseAttack + BattleEquipment.Contribution(actor, actor.SourceLoadout)),
+        Require(actor.Attack == BattleEquipment.EffectiveAttack(actor.Equipment.BaseAttack, 0, actor, actor.SourceLoadout),
             "equipment-initial-attack", "actor.attack");
     }
 }

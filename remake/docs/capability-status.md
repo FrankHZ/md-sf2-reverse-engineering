@@ -8,16 +8,24 @@ handoffs, carried state and acceptance boundaries for Battle03 through departure
 The [#2268 agreement](domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268)
 and [complete equipment reconciliation](content/campaign-items.md#whole-game-equipment-reconciliation)
 cover all94 source equipment definitions. The audit is complete at the static definition/code
-boundary; whole-game implementation is **not complete**. Current admission covers45 weapons and
-six rings for implemented classes. Connected shops already expose two rejected mixed-stat weapons,
-Guardian91 and Thieve's Dagger106. Current admission also includes Iron Knuckles29 and Great Axe39
-without corresponding explicit item rows in the selected final scene. Row presence elsewhere is
-not complete appearance acceptance.
+boundary; whole-game implementation is **not complete**. Slice A admits 80 weapon definitions
+(including two player-ineligible mask-NONE rows) and eight rings. Signed ATT/DEF/AGI/MOV operations
+run after statuses in actual carried-slot order, with each source clamp. Weapon and ring curses
+share Equip, custody, Cure and Repair. Guardian91 has ordinary purchase/Equip, body/weapon
+projection, removal and independent field/battle Continue; Thieve's Dagger106 has production-reader
+admission, THIF Equip/removal and 26-scene keys. Demon Rod101 has legal controlled Equip and cold
+battle Continue. These witnesses do not establish natural late acquisition or exhaustive art.
+[Slice A evidence and reproduction](domain/equipment-use-repair-design.md#static-equipment-and-weapon-curses-2270)
+
+Counter Sword68, Ninja Katana108 and Gisarme109 remain B; Holy Staff97, Mystery Staff100 and
+Life Ring124 remain C. Their definitions are retained but their unique effects are not discarded
+through Equip admission. New equipment Use remains D; remaining legal class/body/weapon tuples
+remain E. Iron Knuckles29 and Great Axe39 still need their explicit appearance rows.
 
 Five serial implementation outcomes own signed stats/weapon curses, prowess/cutoff, turn recovery,
 all equipment Use, and final legal class/resource consumers. RBT/GLM/RDBN mappings and necessary
 controlled late holders belong to equipment closure; future recruitment/maps/acquisition stay with
-the campaign owners. No new runtime or native evidence is claimed by the audit. The parent remains
+the campaign owners. The initial audit made no runtime claim; slice A evidence is linked above. The parent remains
 open until the final production reader and representative input/save checks close every equipment
 rule and necessary consumer. [Resource plan](content/asset-inventory.md#whole-game-equipment-resource-plan-2268)
 
@@ -642,8 +650,10 @@ bonuses and presentation are example inputs, not newly confirmed original defini
 
 **Standard implementation; existing High save/custody boundary:** product New Game and Continue
 explicitly admit the existing free weapon transaction in connected Battles01–07. Trusted selected
-ordinary `WEAPON` records with ATT-only effects and ranges1–1,1–2 or2–2 supply class masks and
-contributions. Only supported unpromoted, physical, player allies with growth/loadout bindings opt in.
+weapon records with supported ordered stat/critical effects and ranges1–1,1–2,2–2 or2–3 supply
+exact class masks. Supported physical player allies with growth/loadout bindings opt in, including
+accepted promotions. [Slice A](domain/equipment-use-repair-design.md#static-equipment-and-weapon-curses-2270)
+owns signed effects and weapon curses; new Use, unique prowess/recovery and complete art remain bounded above.
 Enemy gear and field-only controlled bindings retain `AllowChanges=false`. Power, Protect, Quick
 and Running Ring use a separate equipped category in the same four words on supported campaign
 allies. Current class, refresh and custody rules apply across Field, Caravan and battle. Power

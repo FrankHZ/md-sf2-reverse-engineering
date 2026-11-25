@@ -585,6 +585,7 @@ def main():
             "blaze-2",
             "blast-1",
             "indra",
+            "static-equipment",
             "south-shrine",
             "all",
         ),
@@ -610,6 +611,7 @@ def main():
         "blaze-2",
         "blast-1",
         "indra",
+        "static-equipment",
         "south-shrine",
     }.intersection(args.family) and not args.mount:
         parser.error("this family selects already prepared assets for --mount")

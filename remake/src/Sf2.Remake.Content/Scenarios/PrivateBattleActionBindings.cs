@@ -140,17 +140,28 @@ internal static class PrivateBattleActionBindings
 
     internal static bool HasSupportedWeaponEffects(SourceItemDefinition item) =>
         (item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) or (2, 3) &&
-        item.EquipEffects.All(effect => effect.Type is "INCREASE_ATT" or "INCREASE_CRITICAL" || effect is { Type: "NONE", Parameter: 0 });
+        item.EquipEffects.All(effect => effect.Type is "INCREASE_ATT" or "DECREASE_ATT" or
+            "INCREASE_DEF" or "DECREASE_DEF" or "INCREASE_AGI" or "DECREASE_AGI" or
+            "INCREASE_MOV" or "DECREASE_MOV" or "INCREASE_CRITICAL" || effect is { Type: "NONE", Parameter: 0 });
 
     internal static BattleWeaponDefinition Weapon(SourceItemDefinition item, uint classMask) =>
         new(item.Id, item.DisplayName, classMask,
             checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_ATT").Sum(effect => effect.Parameter)),
             item.MinimumRange, item.MaximumRange,
-            checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_CRITICAL").Sum(effect => effect.Parameter)));
+            checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_CRITICAL").Sum(effect => effect.Parameter)),
+            DamageOnUse: item.ItemTypeExpression.Split('|').Contains("BREAKABLE"),
+            Stats: new(item.EquipEffects.Where(effect => effect.Type is not ("NONE" or "INCREASE_CRITICAL"))
+                .Select(effect => new BattleEquipmentStat(effect.Type[9..] switch
+                {
+                    "ATT" => RingStat.Attack, "DEF" => RingStat.Defense,
+                    "AGI" => RingStat.Agility, "MOV" => RingStat.Move,
+                    _ => throw new BattleRuleException("source-equipment-effects", "items", true),
+                }, effect.Type.StartsWith("DECREASE", StringComparison.Ordinal) ? -effect.Parameter : effect.Parameter))),
+            Cursed: item.ItemTypeExpression.Split('|').Contains("CURSED"));
 
     internal static BattleEquipmentDefinition? EnemyEquipment(PrivateBattleDefinitions definitions, byte attack, IReadOnlyList<ushort> items)
     {
-        var weapons = definitions.Items.Values.Where(item => (item.ItemTypeExpression is ("WEAPON" or "WEAPON|RARE") && item.UseSpell == "NOTHING" || item is { Id: 110, Code: "TAROS_SWORD", ItemTypeExpression: "WEAPON|RARE|BREAKABLE", UseSpell: "BOLT", UseSpellLevel: 2 }) &&
+        var weapons = definitions.Items.Values.Where(item => item.ItemTypeExpression.Split('|').Contains("WEAPON") &&
             HasSupportedWeaponEffects(item))
             .Select(item => Weapon(item, 0)).ToArray();
         // Bare placement items can be carried without enabling their use or equip effects.
@@ -194,8 +205,7 @@ internal static class PrivateBattleActionBindings
         byte minimum = 1, maximum = unarmedMaximum; // Unarmed source attack range.
         foreach (var item in equipped)
         {
-            Require(item.ItemTypeExpression.Split('|').Contains("WEAPON") && item.EquipEffects.All(effect =>
-                effect.Type is "INCREASE_ATT" or "INCREASE_CRITICAL" || effect is { Type: "NONE", Parameter: 0 }),
+            Require(item.ItemTypeExpression.Split('|').Contains("WEAPON") && HasSupportedWeaponEffects(item),
                 "source-equipment-effects", "actor.items", true);
             Require((item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) or (2, 3),
                 "source-weapon-range", "actor.items", true);

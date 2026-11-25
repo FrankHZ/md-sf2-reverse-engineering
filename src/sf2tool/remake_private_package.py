@@ -32,6 +32,7 @@ from sf2tool.remake_exploration_scene import (
 from sf2tool.remake_promotion_appearances import (
     installed_png,
     mount_promotion_appearances,
+    mount_static_equipment,
     mount_walking,
     prepared_ally_sequence,
     read_json,
@@ -450,6 +451,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         "monster": {6: "MNST"},
     }
     optional = retained_families.keys() | {
+        "static-equipment",
         "phoenix-wave",
         "south-shrine",
         "indra",
@@ -523,6 +525,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
             target.parent.mkdir(parents=True, exist_ok=True)
             if (
                 (selected == {"south-shrine"} and rel not in scenes)
+                or (selected == {"static-equipment"} and rel not in scenes)
                 or ((indra_only or selected <= special_promotions) and rel != battle26_scene)
                 or (spell_only and rel not in spell_paths)
             ):
@@ -600,6 +603,8 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
             )
         if "indra" in selected:
             mount_indra_staff(root, Path(temp), scene)
+        if "static-equipment" in selected:
+            mount_static_equipment(root, Path(temp), scene)
         if "monster" in selected:
             mount_monster_breath(root / "effects", Path(temp), scene)
         if "phoenix-wave" in selected:
@@ -632,13 +637,23 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         if shrine:
             items = mount_south_shrine(world, root, upstream, canonical_path)
             bind_field_item_icons(presentation, root, dest, scenes, items)
+        if "static-equipment" in selected:
+            source = read_json(base / "opening-inputs/SF2_PRIVATE_STATIC_DATA.json")
+            items = {
+                row["id"]
+                for row in source["items"]
+                if set(row["itemTypeTokens"]) & {"WEAPON", "RING"}
+            }
+            bind_field_item_icons(presentation, root, dest, scenes, items)
         if spell_scenes:
             mount_attack_spells(root / "effects", Path(temp), dest, spell_scenes, spell_families)
         if not indra_only:
             (dest / "world.json").write_text(
                 json.dumps(world, separators=(",", ":")), encoding="utf-8"
             )
-        if shrine and (dest / "world.json").stat().st_size > 128 * 1024 * 1024:
+        if (shrine or "static-equipment" in selected) and (
+            dest / "world.json"
+        ).stat().st_size > 128 * 1024 * 1024:
             raise ValueError("world exceeds the private reader limit")
         package_files(
             dest / "world.json",
