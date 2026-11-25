@@ -156,7 +156,8 @@ internal static class MapTransfer
     internal static SessionSnapshot BeginFade(SessionSnapshot current, StoryState story, PresentationCueKind kind,
         FullFadePurpose purpose, byte? temporaryPeriod, List<SessionObservation> observations, FullFadeColor color = FullFadeColor.Black)
     {
-        ValidateDisplay(story.Display);
+        ValidateDisplay(purpose == FullFadePurpose.Script && story.Display?.Scene is not null
+            ? story.Display with { Scene = null } : story.Display);
         if (temporaryPeriod == 0) throw new BattleRuleException("full-fade-period", "program.period", true);
         var display = story.Display!;
         if (!Enum.IsDefined(color) || color == FullFadeColor.White && (purpose != FullFadePurpose.Script || temporaryPeriod is not null))
@@ -192,7 +193,8 @@ internal static class MapTransfer
                 ushort Color(ushort value) => (ushort)(Math.Clamp((value & 14) + 2 * offset, 0, 14) |
                     (Math.Clamp(((value >> 4) & 14) + 2 * offset, 0, 14) << 4) |
                     (Math.Clamp(((value >> 8) & 14) + 2 * offset, 0, 14) << 8));
-                display = display with { Current = new(Color(display.Base.Color2), Color(display.Base.Color3)) };
+                display = display with { Current = new(Color(display.Base.Color2), Color(display.Base.Color3)),
+                    Scene = display.Scene?.Fade(15, offset) };
             }
             wait = wait with { Entry = entry + 1, Countdown = wait.Period,
                 LogicalDone = entry == 7 && wait.ExtraServices == 0 };

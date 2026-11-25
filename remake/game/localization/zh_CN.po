@@ -72,6 +72,15 @@ msgid "ui.settings.gradual"
 msgstr "逐字显示"
 
 #. Settings display; actions use stable indexes.
+msgid "opening.skip"
+msgstr "{0}：跳过开场"
+
+msgid "opening.loading"
+msgstr "正在准备开场……"
+
+msgid "opening.failed"
+msgstr "无法播放开场。你可以从标题继续。"
+
 msgid "entry.loading"
 msgstr "正在加载，请稍候…可取消返回。"
 

@@ -138,4 +138,41 @@ public sealed class ScenePaletteTests
         Assert.True(session.Current.Story.Display.Current.Black);
         Assert.IsType<SceneEndWait>(session.Current.Story.Wait);
     }
+
+    [Theory]
+    [InlineData("white", 7)]
+    [InlineData("black", -7)]
+    public void ScriptFullFadeContinuesSceneBanksAndRestoresTheirBase(string color, int offset)
+    {
+        var session = StartPalette($$"""
+            {"op":"scene-palette-fade","banks":15,"offsets":[-2],"period":1},
+            {"op":"present","kind":"FlashWhite","resource":"white-pulses","durationTicks":16,"entity":null,"position":null},
+            {"op":"present","kind":"FadeOut","resource":"{{color}}","entity":null,"position":null},
+            {"op":"present","kind":"FadeIn","resource":"{{color}}","entity":null,"position":null}
+            """);
+        var palette = Assert.IsType<ScenePaletteWait>(session.Current.Story.Wait);
+        Accept(session, new AdvanceSimulation(palette.Token, palette.Duration));
+        Accept(session, new CompletePresentation(palette.Token, PresentationCueKind.ScenePalette));
+        var flash = Assert.IsType<PresentationWait>(session.Current.Story.Wait);
+        var retained = session.Current.Story.Display!.Scene;
+        Assert.Equal(PresentationCueKind.FlashWhite, flash.Cue.Kind);
+        Accept(session, new CompletePresentation(flash.Token, flash.Cue.Kind));
+        Assert.Same(retained, session.Current.Story.Display!.Scene);
+        var party = session.Current.Exploration!.Party;
+        foreach (int expected in new[] { offset, 0 })
+        {
+            var fade = Assert.IsType<FullFadeWait>(session.Current.Story.Wait);
+            Assert.NotNull(Send(session, new CompletePresentation(new(fade.Token.Value + 1), fade.Kind)).Failure);
+            for (int tick = 0; tick < 60 && !((FullFadeWait)session.Current.Story.Wait!).LogicalDone; tick++)
+                Accept(session, new AdvanceSimulation(fade.Token));
+            Assert.True(((FullFadeWait)session.Current.Story.Wait!).LogicalDone);
+            var scene = session.Current.Story.Display!.Scene!;
+            Assert.Equal(expected, scene.ActorOffset);
+            Assert.Equal(scene.Resource.Base.Select(word => ScenePaletteState.Offset(word, expected)), scene.Terrain);
+            Assert.False(session.QuerySave().Allowed);
+            Accept(session, new CompletePresentation(fade.Token, fade.Kind));
+        }
+        Assert.IsType<SceneEndWait>(session.Current.Story.Wait);
+        Assert.Same(party, session.Current.Exploration!.Party);
+    }
 }

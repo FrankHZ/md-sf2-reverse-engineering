@@ -243,7 +243,8 @@ when title becomes visible, with first-entry/return/reduced-flash acceptance; it
 idle animation or audio service. Player visual and listening acceptance remains **Unknown** under
 [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456).
 
-### Proposed opening sequence (#2247)
+<a id="proposed-opening-sequence-2247"></a>
+### Ordinary opening sequence (#2247, #2252)
 
 **Standard rigor** for the pre-title presentation and its Content, Application and Godot handoff.
 The existing High-rigor save boundary still governs New Game and Continue. The objective is to
@@ -253,6 +254,21 @@ present the four boot-story scenes with an ordinary, skippable route to the curr
 [#2247](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2247).
 
 #### Lifecycle decision
+
+The #2252 implementation uses the existing Standard agreement here. Its owned increment is the
+four-scene content selection, disposable ordinary-start host, shared natural/Skip title handoff,
+and consumption of compatible installed HD resources. Save publication and restoration remain in
+their existing High-rigor owners. No new scene framework, branding, idle attract sequence, AI art
+production or broader campaign behavior is admitted.
+
+The finite compiler pilot lowers all four scripts without an unsupported native call. The selected
+baseline is344.24MiB; the first full opening candidate is23.75MiB including its18.34MiB PCM and
+Map42 HD terrain. Plan for24–32MiB opening input, about370MiB closed successor, under1GiB preparation
+and2GiB native working set. Preparation is linear in the selected source/asset bytes; runtime admits
+only the opening selection. Reassess for a new resource family, exceeded budgets or unbounded waits.
+Verification is one full ordinary run plus distinct short handoff controls, affected engine/adapter
+checks and the committed dependency plan. Current implementation/observation work remains pending
+independent acceptance; this paragraph is not a completion receipt.
 
 - On ordinary process launch, load preferences and prepare the selected opening scene set through
   Content. Play it once before the title, regardless of slot occupancy. Show a responsive loading
@@ -340,7 +356,7 @@ scene-map/scene-entities operations, actor services and presentation clock. Its 
 no campaign setup, events or persistent-party actions. The initial population supplies the existing
 player sprite binding until the original scene entity list replaces it. `EndScene` retains a terminal
 wait and releases temporary palette state; it does not return field control or enable saving.
-Ordinary startup and the four-scene pre-title/Skip owner remain the next slice.
+The #2252 ordinary pre-title host reuses this scene mechanism with the complete four-script selection.
 
 `Delay2` waits for 119 normal logical services independently of mouth control and modern instant
 reveal. Reading Confirm cannot shorten this delay. Automatic text then continues and closes through
@@ -357,7 +373,9 @@ replaced correctly by a global color lookup. Only the selected maps therefore ca
 128×320 byte index plane and sixteen base words. `MapBlockTextures` reconstructs its existing blocks
 with these slot colors. No whole-map migration or frame atlas is needed. Actor half-fade uses the
 same absolute channel offset on the existing source sprite; terrain-only tint/storm does not affect
-actors or UI. During scene palette work, existing Original resources supply the fallback for HD.
+actors or UI. Installed HD sprites now retain the uniform channel fade. Map42 HD terrain uses the
+same bounded transform for uniform fades; arbitrary slot replacement falls back to indexed Original
+terrain for that interval. Map65 terrain and183/187 effects have no admitted HD assets.
 Reduced Flash holds a smaller presentation change for a pulse; logical replacement/restoration and
 wait completion remain unchanged.
 
@@ -380,22 +398,26 @@ Reduced Flash retains the six storm restoration pairs. Both published starts rep
 producer candidates are moved away, without party/gold changes or save writes. Actual state,
 indexed texture samples, actor/effect projection and error checks support this bounded result.
 [Commands, package and validation limits](../content/presentation-assets.md#controlled-opening-scene-package-2250).
-Independent integration is still required. Source structure does not prove original natural timing
+This bounded pilot was accepted in #2251. Source structure does not prove original natural timing
 or human presentation quality; those remain **Unknown**. The original behavior owner remains
 [special screens](../../../docs/research/presentation/special-screens.md#boot-story-sequence).
 
 #### Implementation order and acceptance
 
-Effort is person-days for one worker with the existing private preparation tools and accepted
-inputs. Ranges assume ordinary native state/input/audio observations and one independent review
-pass per slice. They exclude new art commissions, new emulator acquisition and human sign-off.
+The bounded scene primitives and first-segment pilot were delivered in #2250/#2251. The #2252
+implementation connects all four scripts, ordinary startup and the closed private selection.
+[Package, reproduction and retained results](../content/presentation-assets.md#four-scene-startup-package-2252)
+own its completion evidence; independent main-gate review is still required.
 
-| Slice in dependency order | Owned increment and estimate | Acceptance at the slice boundary |
-| --- | --- | --- |
-| 1. Prepare the finite scene input and pilot the missing primitives | Use Map42 and scene actors for one complete shrine segment under the existing controlled route. Prepare Map65's exact scene resources, verify the 81 source rows and selected zh-CN bindings, and resolve audio roles. Implement the confirmed D2 and required finite effect/actscript additions in their current owners. About **3–6 days**, including **1–2 days** for resource preparation and display review if the existing producer and translation corpus suffice. | Probe one shrine segment and a bounded castle storm passage using admitted content. Inspect initial actors/planes, a camera wait, automatic bilingual text delay, transient effect/restore and audio receipt. Required missing-resource or unsupported-op failures identify the binding. No automatic startup rollout in this slice. |
-| 2. Connect the four scenes to ordinary startup | Finish the sequence as one Content selection and install the pre-title owner and shared completion/skip path. Integrate the complete private successor candidate. About **3–6 days**, including short normal/skip/restore observations. | One normal launch reaches all four ordered boundaries and the usable title. Repeat with fresh Skip during load, timed text and active effect/motion, plus held-key/release and pointer handoff. Check one Reduced Flash launch, in-process Witch/title return, missing optional content and a failed selected input. Use a disposable slot and a fresh-process Continue control: first title may follow the intro, and restoring the slot lands at its saved field or battle state without new initialization, save writes or prologue effects. Compare fresh New Game starts after normal finish and Skip with the same controlled seeds and verify one explicit initial commit and the same Map3 first control. |
-| 3. Optional logo or title enhancement | Only after the story ships and the product selects branding or added title phases. Reuse the entry projection, keep the finite score, and preserve the existing responsive Start path. Budget **1–3 days** for a single approved layer or bounded title phase change with available art. | Check first entry, early Skip, Witch Back, idle and Reduced Flash by state/projection; verify there is a fresh press per transition. Record any appearance decision separately. |
+Acceptance requires one complete natural run to a usable title; short loading, D2, motion/effect,
+held-input and pointer Skip controls; late/duplicate completion isolation; one actual focus loss and
+recovery; Reduced Flash; Witch Back; absent and malformed selections. Disposable New Game controls
+compare natural finish with Skip under the same seeds, one initial publication and the same Map3
+first control. Continue must preserve existing bytes and restore the saved state. Actual resource
+projection establishes Original/HD consumption and the pure-black exterior without screenshots.
 
+Optional branding, expanded title choreography and an idle attract sequence remain outside this
+implementation. They require a separately selected product outcome and available art.
 Inspect the actual adapter and use small engine behavior checks only where a real rule such as
 timed dialogue or terminal scene completion changes. Existing input, state, cue and error
 inspection is enough for the short acceptance runs. A full chapter, all save formats, a pixel

@@ -8,6 +8,7 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 
 public sealed partial class ExplorationSessionView
 {
+    internal string? OpeningFailure => PresentationFailure?.Code;
     private long _rateGeneration;
     internal bool CanAccelerate => _session is { } session && IsVisibleInTree() && CanProcess() && GetWindow().HasFocus() &&
         !MenuEntryPending && !PartyMenuOpen && !_handedOff && !_battleHandoffPending && PresentationFailure is null &&

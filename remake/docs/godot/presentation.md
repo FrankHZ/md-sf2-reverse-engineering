@@ -116,72 +116,37 @@ before UI and exposes its actual color in camera projection. It uses no map iden
 ordinary exploration keeps its existing backdrop and dialogue/menu colors remain unchanged.
 [Scene agreement](../application/opening-session-lifecycle.md#bounded-scene-implementation-2250) ·
 [Native reproduction](../content/presentation-assets.md#controlled-opening-scene-package-2250).
-The four-scene startup/Skip integration below is still proposed.
 
+The #2252 ordinary startup now follows the [disposable lifecycle](../application/opening-session-lifecycle.md#proposed-opening-sequence-2247).
+Its independent content reader selects only the bounded opening, without admitting a campaign or
+allocating a journey. Four scripts are sequenced by content. The existing viewport, scene renderer,
+text clock and audio own playback; the fixed entry canvas owns title/Witch afterward. Preferences
+apply before loading. Localized loading/Skip chrome uses the actual binding and explicit pointer
+hit target. Completion and Skip use one teardown/title handoff. Skip cancels the owner rather than
+executing remaining instructions. Held keys, pointer gestures and detached load results cannot
+activate or replace the title. Existing New Game, Continue and Battle Entry Skip keep their semantics.
 
-This is the [proposed startup lifecycle](../application/opening-session-lifecycle.md#proposed-opening-sequence-2247).
-Use the ordinary world viewport, scene actor projection, camera and story windows for the boot
-story. Use the existing fixed entry canvas for title and Witch. Display a compact localized Skip
-affordance using the actual binding and an explicit pointer target. Read preferences before
-showing the first scene. Use the existing loading and window-cover behavior, with a single
-active input owner and a release barrier at the title. Pause scene ticks, presentation completion
-and audio while a recovery/quit cover owns input. A late result from a disposed scene cannot take
-focus or start another track.
+Native focus loss and existing recovery/quit covers suspend scene time and audio. Reduced Flash
+retains logical waits and completion while suppressing white flashes, positive scene offsets and
+shake; palette storms use the existing lower-contrast steady projection. Scene full fades transform
+terrain and actors through their existing logical service, without a second overlay fade. Uniform
+palette offsets consume available HD textures. Arbitrary slot replacement falls back to indexed
+Original terrain only; actor HD remains independently selected. Pure-black exterior masking and
+blue dialogue surfaces remain unchanged. Source CRAM fidelity, hardware timing and human visual
+approval remain Unknown.
 
-Preserve the normal scene ordering and completion semantics in Reduced Flash. Apply the existing
-white suppression to screen and entity flash and substitute a steady, lower-contrast storm cue
-for repeated palette pulses. Suppress camera shake in this mode while retaining camera targets
-and authored waits. Keep an unbroken text reading surface during fades/effects. Capture the
-existing logical/projection receipts to verify that a suppressed cue still completes. For normal
-mode, prefer extending the existing palette handling with a scoped tint/pulse and restore over
-adding a pixel-composition engine. A bounded visual approximation for precolored HD art is a
-remake choice. Source CRAM pixels and exact visual timing remain Unknown. [Existing white projection](#bound-white-palette-projection).
+The scene's `SessionAudio` owns command9 and SFX across map cuts, with implicit field-map music
+suppressed for this owner. Teardown releases its voices before title command28. Existing cue/bank
+selection, finite/loop policy and title/Witch return behavior apply. Software playback receipts do
+not establish listening approval. [Audio consumer](../../game/src/Audio/SessionAudio.cs).
 
-Use `SessionAudio` for ownership and cue delivery. The scene owns command 9 and its SFX/speech for
-the entire sequence. A cut between maps keeps the same music generation. Suppress implicit
-field-map music in this presentation context. When ending or skipping, stop and detach scene
-music and voices before the title starts command 28. Title/Witch/field then use their existing
-owners and finite/loop policies. Check the requested Timer B and chosen bank in the sound
-receipts. The selected package has command 89 at C4 and existing default assets at other timers
-for 77/117/118. Use the existing selection rule for a bounded modern delivery if review accepts
-the defaults. Matching C4 variants, if needed, are a preparation dependency. Software cue
-and playback receipts leave listening acceptance open.
-[Audio consumer](../../game/src/Audio/SessionAudio.cs) ·
-[Existing title behavior](../application/opening-session-lifecycle.md#title-lifecycle-investigation-1447).
-
-The selected [complete #2242 package](../content/presentation-assets.md#brass-gunner-promotion-successor)
-already provides Map42 terrain (Original and HD), the core scene actors, canonical English
-`world.text` 4186–4266, and the external C4 intro WAV (about 18.3 MiB, with loop points).
-Require Map65 layout, area/camera metadata and base palette with its Original atlas,
-the missing effect sprite families 183/187 and the verified scene-local actor/pose/portrait and
-speech bindings. Reuse the Map42 atlas with scene-owned layout edits and no campaign setup.
-Confirm the exact operand binding for Slade, pose 59 and the fixed/transparent actors before
-preparation. The selected entry package's six title/Witch layers and their optional HD bank
-have no pre-title art. In the world follow the existing per-bank/per-asset Original fallback.
-The implemented entry HD all-layer rule continues to apply to title/Witch. HD production for
-the new scene can follow the Original pilot. [Art-mode owner](../content/hd-rollout.md#entry-layers-2179).
-
-Admit the 81 already translated messages from the reviewed full-text corpus into the matching
-world catalog namespace, with the unchanged source IDs, `{D2}` and name operands. The currently
-selected zh-CN world and Witch catalogs contain none of those 81 rows. Keep the Witch greeting
-catalog for its own 216–221 rows. The canonical text clock remains language-independent. Add
-localized host labels/hints through the UI catalog. An unavailable overlay uses the existing
-English fallback and diagnostic. Check both languages for automatic progression and readable
-line breaks. [Localization authority](../application/localization-design.md#current-full-text-chinese-corpus).
-
-Planning envelope for one cold-start scene set: one new Original terrain bank, a few effect
-sprites, 81 catalog rows, one reused audio cue and four short SFX. Reserve **1–6 MiB incremental
-private package size** for bounded Original preparation, assuming the existing WAV is referenced
-in place in the closed candidate. The selected Map42 and Map19 Original atlas PNG payloads are
-about 12 and 21 KiB before base64, with optional HD terrain banks about 0.4 and 1.0 MiB. The
-critical startup cost is the already prepared PCM (18.3 MiB for the intro cue alone). Budget
-**20–32 MiB selected inputs** and measure peak memory during one-map admission, playback and
-disposal. Godot may hold decoded/duplicated textures or audio beyond the on-disk count. Measure
-that pilot before setting a launch budget. Check the existing 128 MiB world-document ceiling if
-the candidate adds world rows. A new score, duplicated WAV, larger-than-planned terrain or new HD
-banks needs a revised estimate. Publish only the minimum private successor through existing
-package closure. No frame sequences enter the candidate.
-
+The [closed package and reproduction](../content/presentation-assets.md#four-scene-startup-package-2252)
+own the actual assets, measured volumes and observation results. Map42 has admitted Original/HD
+terrain; Map65 has Original only. Required actor directions and non-null portraits have existing HD
+except effects183/187. All81 canonical English/Chinese rows retain their IDs, controls and names;
+Witch uses its separate registered catalog. The six-layer entry HD rule is unchanged. No new art or
+translation was generated. Startup selects23.75MiB; the complete reusable campaign successor is
+about368MiB. Preparation and native memory remain within the recorded bounded budget.
 ## Entry confirmation observation
 
 The [entry lifecycle agreement](../application/opening-session-lifecycle.md#entry-confirmation-responsiveness)

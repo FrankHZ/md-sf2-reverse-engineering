@@ -493,7 +493,8 @@ internal static class ProgramRunner
                         if (cue.Kind == PresentationCueKind.FlashWhite)
                         {
                             MapTransfer.ValidateFlash(cue);
-                            if (current.Story.Display is not null) MapTransfer.ValidateDisplay(current.Story.Display);
+                            if (current.Story.Display is { } flashDisplay)
+                                MapTransfer.ValidateDisplay(flashDisplay with { Scene = null });
                         }
                         if (cue.FullBlack is not null && current.Active is not ActiveExploration)
                             throw new BattleRuleException("full-fade-context", "program.presentation", true);

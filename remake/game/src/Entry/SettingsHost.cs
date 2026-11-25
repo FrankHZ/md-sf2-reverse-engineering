@@ -99,6 +99,7 @@ public sealed partial class GameRoot
 
     private void RefreshInputHints()
     {
+        RefreshOpeningHints();
         _entry?.RefreshInputHints(); _slots?.RefreshInputHints();
         _systemMenu?.RefreshInputHints(); _settings?.RefreshInputHints();
         _windowRecovery?.RefreshInputHints(); _windowQuit?.RefreshInputHints();

@@ -12,35 +12,30 @@ internal sealed partial class ExplorationPresentation
     private WaitToken? _reducedPulse;
     private IReadOnlyList<ushort>? _reducedTerrain;
     private WaitToken? _sceneEnd;
-    private int SceneActorOffset => _scenePalette?.ActorOffset ?? 0;
+    private int SceneActorOffset => _reducedFlash ? Math.Min(0, _scenePalette?.ActorOffset ?? 0) : _scenePalette?.ActorOffset ?? 0;
     private Color? SceneBackdrop => _sceneTerrain is { } bank
         ? new Color((bank[0] & 14) / 14f, ((bank[0] >> 4) & 14) / 14f, ((bank[0] >> 8) & 14) / 14f) : null;
 
     private bool ProjectScenePalette(SessionSnapshot current, List<SessionCommand> completions)
     {
-        _scenePalette = current.Story.Display?.Scene;
-        _sceneTerrain = _scenePalette?.Terrain;
+        SelectScenePalette(current);
+        if (_scenePalette is not null && current.Story.Wait is FullFadeWait fullFade)
+        {
+            // Its existing logical service owns all banks. Do not also apply the generic
+            // overlay fade to the already transformed scene textures.
+            _owner.Modulate = Colors.White;
+            if (fullFade.LogicalDone && !fullFade.ActualDone)
+                completions.Add(current.Story.EntrySkip is null
+                    ? new CompletePresentation(fullFade.Token, fullFade.Kind)
+                    : new CompleteSkippedEntryPresentation(fullFade.Token, fullFade.Kind));
+            return true;
+        }
         if (_scenePalette is not null && current.Story.Wait is not FullFadeWait) _owner.Modulate = Colors.White;
         if (current.Story.Wait is SceneEndWait ended)
         {
             _owner.Modulate = Colors.Black;
             if (_sceneEnd != ended.Token) { _audio.CutMusic(); _sceneEnd = ended.Token; }
             return true;
-        }
-        if (_reducedFlash && current.Story.Wait is ScenePaletteWait { Operation: PulseScenePalette pulse } storm)
-        {
-            if (_reducedPulse != storm.Token)
-            {
-                _reducedPulse = storm.Token;
-                _reducedTerrain = Array.AsReadOnly(storm.Previous.Terrain.Select((color, index) =>
-                {
-                    int target = pulse.Colors[index], result = 0;
-                    for (int shift = 0; shift <= 8; shift += 4)
-                        result |= ((((color >> shift) & 14) * 3 + ((target >> shift) & 14)) / 4 & 14) << shift;
-                    return (ushort)result;
-                }).ToArray());
-            }
-            _sceneTerrain = storm.LogicalDone ? storm.Previous.Terrain : _reducedTerrain;
         }
         if (current.Story.Wait is not ScenePaletteWait palette) return false;
         if (_cue != palette.Token)
@@ -59,7 +54,31 @@ internal sealed partial class ExplorationPresentation
         return true;
     }
 
-    private static void OffsetSprite(Image image, int offset)
+    // A completed service can replace the map after Update and before the same frame's Draw.
+    // Derive both projections from the snapshot they actually consume.
+    private void SelectScenePalette(SessionSnapshot current)
+    {
+        _scenePalette = current.Story.Display?.Scene;
+        _sceneTerrain = _scenePalette?.Terrain;
+        if (_reducedFlash && _scenePalette is { ActorOffset: > 0 }) _sceneTerrain = _scenePalette.Resource.Base;
+        if (_reducedFlash && current.Story.Wait is ScenePaletteWait { Operation: PulseScenePalette pulse } storm)
+        {
+            if (_reducedPulse != storm.Token)
+            {
+                _reducedPulse = storm.Token;
+                _reducedTerrain = Array.AsReadOnly(storm.Previous.Terrain.Select((color, index) =>
+                {
+                    int target = pulse.Colors[index], result = 0;
+                    for (int shift = 0; shift <= 8; shift += 4)
+                        result |= ((((color >> shift) & 14) * 3 + ((target >> shift) & 14)) / 4 & 14) << shift;
+                    return (ushort)result;
+                }).ToArray());
+            }
+            _sceneTerrain = storm.LogicalDone ? storm.Previous.Terrain : _reducedTerrain;
+        }
+    }
+
+    internal static void OffsetSprite(Image image, int offset)
     {
         if (offset == 0) return;
         for (int y = 0; y < image.GetHeight(); y++)

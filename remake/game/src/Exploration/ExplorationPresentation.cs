@@ -24,7 +24,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
         if (mode == "hd" && _visuals.Maps.TryGetValue(map, out var visual)) _mapTextures.PrepareHd(visual);
         ExplorationRasterImages.PrepareActors(_visuals, mode == "hd");
     }
-    private bool Painted(MapId map) => _scenePalette is null && _settings.GraphicsMode == "hd" &&
+    private bool Painted(MapId map) => _mapTextures.HdPaletteOffset is not null && _settings.GraphicsMode == "hd" &&
         _visuals?.Maps.GetValueOrDefault(map)?.HdBlocks is not null;
     internal UI.StoryDialoguePanel? DialoguePanel { get; set; }
     private readonly ExplorationVisuals? _visuals;
@@ -416,6 +416,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
             LayoutDrawObservation = null;
         }
         var story = current.Story;
+        SelectScenePalette(current);
         if (_visuals is null) return false;
         try
         {
@@ -879,7 +880,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
         var original = graphics is null ? visual.Directions :
             visual.Graphics?.GetValueOrDefault(graphics) ?? throw new InvalidOperationException("shared-sprite-graphics-binding");
         var variant = graphics is null ? visual.HdDirections : visual.HdGraphics?.GetValueOrDefault(graphics);
-        bool hd = _scenePalette is null && _settings.GraphicsMode == "hd" && variant is not null;
+        bool hd = _settings.GraphicsMode == "hd" && variant is not null;
         var key = (sprite, direction, half, nod, headShift, orientation, size, hd, shadowless, graphics, SceneActorOffset);
         if (_sprites.TryGetValue(key, out var texture)) return texture;
         var directions = hd ? variant! : original;
@@ -903,7 +904,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
         }
         OffsetSprite(image, SceneActorOffset);
         _sprites[key] = texture = ImageTexture.CreateFromImage(image);
-        _resourceSelectors[texture] = new { kind = "entity", sprite, graphics, direction, half, nod, orientation, size, pixels = image.GetWidth() };
+        _resourceSelectors[texture] = new { kind = "entity", sprite, graphics, direction, half, nod, orientation, size, hd,
+            paletteOffset = SceneActorOffset, pixels = image.GetWidth() };
         List<Rect2> ink = [];
         for (int y = 0; y < frameSize; y++)
             for (int x = 0; x < frameSize;)
