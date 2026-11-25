@@ -11,16 +11,140 @@ recruitment, maps, smithing and other acquisition services remain with the campa
 legal detached inputs can validate their equipment before those routes exist. No real save
 or backup is an acceptance workspace. This section owns the implementation sequence;
 the [complete item reconciliation](../content/campaign-items.md#whole-game-equipment-reconciliation)
-owns individual rows. Slices A/B/C/D implement static equipment, physical prowess, turn recovery and equipment Use below; whole-game support is still incomplete
-and this does not close [#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
+owns individual rows. Slices A–D implement static equipment, physical prowess, turn recovery and equipment Use.
+Slice E completes the source-legal equipment consumer table and representative late consumers;
+the complete equipment consumer scope is independently accepted, recorded in
+[#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
 
-The current successor is `derived/issue2272/equipment-v1`, built from the accepted slice-B package.
+The current successor is `derived/issue2274/equipment-v2`, built from the accepted slice-C package.
+The [E reproduction section](#complete-equipment-consumers-2274) owns its complete consumer checks.
 It retains SORC **v3** and its catalog, with independent
 opening and Witch selections retained. Do not substitute rejected v2, earlier v1, or a removed
 producer checkout. Reuse the existing Domain/Application/Content/adapter boundaries and
 registered prepared assets. No new equipment platform, second item catalog, save format,
 reference runner or per-item scenario framework is proposed. Ordinary source-backed definitions
 must remain independent of the controlled witnesses used to test them.
+
+
+## Complete equipment consumers (#2274)
+
+**Confirmed (implemented and independently accepted).** The producer joins
+original starts and ordinary/special promotion destinations to the registered #2001 walking/body
+library. Against pinned `c834c652b6862bc5679fd7f69a38a7093206efc6`, the owning source tables are
+`data/stats/allies/allystartdefs.asm`, `data/stats/allies/classes/promotions.asm`,
+`data/stats/allies/allybattlesprites.asm` and `data/stats/items/itemdefs.asm`.
+Paths above are relative to the pinned repository's `disasm/` directory. The source-backed set has **94 equipment definitions, 439 class/item pairs, 59 member/class pairs,
+912 member/class/equipment tuples and 557 member/class/weapon tuples**. Adding one explicit bare
+row per member/class gives **616 appearance keys and 16,016 selections across 26 scenes**.
+The pinned `allystartdefs.asm` has32 rows, but `sf2enums.asm` defines
+`COMBATANT_ALLIES_NUMBER=30`. Rows30/31 are both RDBN and are outside the30 playable allies.
+Each excluded row contributes24 legal weapons,30 equipment combinations and one bare appearance:
+excluding them explains exactly61→59 member/class pairs,605→557 weapon tuples,972→912 equipment
+tuples and666→616 appearance keys. Rohde and Higins do start promoted, but do not explain this
+count correction; no hypothetical base-class records are added for them.
+
+RBT29, GLM30 and RDBN31 now have named class, source prowess and AI target-priority operands
+(`data/battles/global/aipriority.asm`). Late members20–29 have the necessary original start/growth,
+class/mask, portrait and prepared bodies. Original effective starting level uses the class>=11
+threshold, including its TORT behavior; HEAL3 initial prowess preserves the packed source rule.
+No later recruitment, map, natural acquisition or complete late growth campaign is connected.
+The scene's optional explicit source class distinguishes RDBN from its shared BRN body22.
+All item-null rows are explicit; weapon selector255, fists and arrows retain source layering.
+Rings retain the selected body. Mask-NONE items102/110 remain refused for player equipment.
+
+Recipe11 extends the existing historical roster with30 members. Field exact snapshots and battle
+records use the existing historical-roster upgrade, retaining existing party values and RNG while
+adding detached late members. No save format or second equipment authority is introduced.
+The two coupled persistence owners are `FieldPartySnapshot` and `SettledFieldSnapshot`; source
+growth admission, class rules and target priority are dependencies of these late equipment holders.
+
+The complete publication is `derived/issue2274/equipment-v2`; independent opening #2252, Witch
+#2255 and Chinese catalog #2266 remain selected. The registered review bundle is
+`derived/issue2274/review-v2` under `SF2_SHARED_INPUT_ROOT`. It contains the actual production-reader
+consumer, launchers, controlled seeds, receipts and completed failure logs. From the isolated
+checkout with its private configuration loaded:
+
+```powershell
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2274/review-v2'
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+uv run python (Join-Path $review 'assets-check.py')
+uv run sf2 verify adapter
+```
+
+To regenerate the package, select the registered pinned disassembly root as `$upstream` and
+a fresh ignored destination as `$destination`, then use the existing producer (no new capture):
+
+```powershell
+uv run python -m sf2tool.remake_retail_assets --root (Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1') --base (Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2272/equipment-v1') --upstream $upstream --mount $destination --family equipment
+```
+
+`Verify.ps1` stages the consumer locally and runs production `OpeningNewGameReader`, actual
+equipment choices/equip and `TryAllyVisual`, checking every legal key in every scene. It compares
+source code/mask/ordered effects/Use, body/palette, weapon layers, animation headers, indices,
+signed frame offsets and projectile selectors; it also restores accepted field/battle records.
+It checks actual selected HD dimensions, format and bytes for 27,144 body and 17,160 weapon
+references, using the predecessor production reader as the accepted-content source. The raster comparison checks all260 distinct weapon
+frames against the prepared 4bpp palette and newly mounted bodies byte-for-byte. The package has
+174 files / 368,469,461 bytes: only world.json and Battle26 scenes change from C, a 2,715,895-byte
+increment. [Asset owner](../content/asset-inventory.md#complete-equipment-successor-2274) records
+the four-family pilot, measured mount/reader memory, runtime and budget boundaries.
+
+Independent review found that v1 remapped weapon keys without carrying their HD bindings.
+The strengthened consumer reproduces `weapon HD lost battle-1/weapon75/frame0` on immutable v1;
+v1 and `review-v1` retain that failure and the original rule/native-family evidence. V2 copies HD
+only from the same accepted item/frame, rejects conflicting donors, and leaves bare/no-layer
+rows unchanged. Old 128px versus new 64px original rasters have equal normalized visible pixels;
+only transparent RGB differs. Shared selectors never substitute another item's palette/art.
+The v2 `redbaron-hd` ordinary-input receipt selects Great Sword64 frames0–2 with `weapon.hd=true`
+and 256px textures, settles and saves, exits0 with4 retained ObjectDB warnings. Its new Red Baron
+body has no prior HD variant and correctly remains Original. Existing multitype native evidence
+is reused from `review-v1`; v2 changes no gameplay or adapter code.
+
+Native `Boot.ps1` accepts `-Repo`, `-Mode`, `-Sample`, `-Journey`, `-SaveRoot`, `-Seed`,
+`-Language`, `-Actor` and `-Target`. Use a fresh sample/namespace and an explicitly disposable root.
+The modes are `field-cold`, `battle-cold`, `attack`, and `field-equip`. Original controlled seeds
+and saved slots remain under `review-v1/seeds` and `review-v1/receipts`; v2 provides its own
+`redbaron-hd.json` and `receipts/redbaron-hd`. All are private controlled records.
+For example, replay a published old-field slot with `-Mode field-cold -Language en`, or the
+v2 `redbaron-hd.json` with `-Mode attack -Actor ally-28 -Target enemy-12 -Language en`.
+The v2 runner explicitly selects HD; earlier seeds/receipts remain in `review-v1`.
+Drivers use ordinary input and read actual state/projection; they take no screenshots.
+
+| Receipt | Observed boundary |
+| --- | --- |
+| old-field-en / old-battle-zh | Accepted pre-E field and battle cold Continue; recipe11 and30 members |
+| robot-en3 | Robot26 body20, bare physical attack and next legal movement |
+| redbaron-zh / redbaron-cold-en | Red Baron28 body22 with explicit Great Axe39 layer; attack save and fresh Continue |
+| fist-en | Sheela25 MMNK body19, Iron Knuckles29 attack without fabricated overlay |
+| golem-zh | Claude29 body23 bare attack and next movement |
+| late-field-zh / late-field-cold-en | Controlled late holder28 equips Great Axe39 through PartyStatus, saves and cold continues |
+
+All listed final native processes exited0. Old-field had no ObjectDB warning; battle-cold and field
+equipping reported2 and attack runs4. These retained warnings remain with #1716. Earlier Robot
+attempts retain malformed controlled-seed rejection and a real `ai-target-class` failure; the
+source-backed priority rows corrected the latter. Seed construction/reconstruction failures,
+zero-valued memory instrumentation and unavailable optional Pillow attempt are preserved too.
+
+The completed engine run had3374 passed,50 skipped and one new fixture failure:
+`HistoricalSaveRosterTests.EquipmentRosterUpgradePreservesExactVisitPartyAndRandomState`
+(`field-visit-actor`). Its fixture incorrectly mixed legacy visit state; the corrected focused
+party/RNG test plus affected files passed24 tests. After the native AI finding, focused
+`LateEquipmentTests|TargetSelectionTests` passed73 tests. The completed broad failure is not
+relabelled interrupted or overwritten with a new aggregate. Final adapter compilation and the
+complete published production-reader check pass. The initial default planner selected research/tooling partitions because the new prepared-asset
+producer was absent from its engine allowlist; the explicit engine-scope rejection remains in the
+review bundle. Following the shared-path ownership transfer, its single path is registered in
+`REMAKE_PRODUCER_PATHS`. This is a prepared remake transformer, with no new research extraction
+semantics; research changes to shared producers still require their research selection. Public Ruff,
+design-contract and research-index checks pass. The final clean-head `--scope engine` plan and
+actual CI are recorded with the frozen PR's Git objects. No planner tests or framework were added.
+
+
+Natural late recruitment/acquisition, later campaign, original full choreography #2104 and
+lifecycle #1716 remain separate. Chinese rendering reuses the registered catalog and existing
+fallbacks; this does not assert complete Chinese proper-name coverage. A–D effects, including
+unique effects, remain their accepted mechanisms; E does not replace them with admission-only
+claims. Main-gate has independently accepted the complete equipment consumer scope.
 
 ### Audit result and decisions
 
@@ -75,7 +199,7 @@ Main-gate opens and dispatches these five child outcomes serially after independ
 review. The estimates are engineering ranges, not runtime promises or permission thresholds:
 roughly 4–8, 3–6, 3–6, 6–12 and 6–12 working hours respectively, including tests and review fixes.
 Reassess at each handoff or if a new rule authority/save representation is required. The parent
-stays open until all five outcomes and the final checklist pass. The accepted audit contained no
+records the independently accepted five outcomes and final checklist. The accepted audit contained no
 production implementation; slice A status is recorded below. Each child updates the rows it actually completes.
 
 1. **Static equipment, signed stats and weapon curses.** Independently make current-shop
@@ -213,7 +337,7 @@ reward, including English healing-item feedback. Hostile status Item scenes use 
 **Confirmed (static).** `AdjustSpellPower` in
 `code/gameflow/battle/battleactions/calculatespelldamage.asm` applies promoted scaling only to
 `BATTLEACTION_CAST_SPELL`; Item healing and offensive effects retain raw source power. The
-`rjt_FieldItemEffects` table in `code/common/menus/item/fielditemeffects.asm` contains3,5,9–15,
+`rjt_FieldItemEffects` table in `code/common/stats/items/fielditemeffects.asm` contains3,5,9–15,
 not equipment. The existing Field capability table is unchanged and the production consumer checks
 that no equipment Use leaks into it. Iron Ball102 and Taros Sword110 retain mask NONE and reject
 player Use before effect/wear; the accepted enemy Taros actual-slot/zero-MP/no-wear path is unchanged.
@@ -287,8 +411,9 @@ investigate or close lifecycle behavior.
 
 **Unknown / remaining:** natural original equipment Use at these seams was not newly observed;
 source-static evidence remains distinct from controlled remake input. Independent original effect
-choreography remains #2104. Legal late holders and exhaustive body/weapon keys remain E, with future
-acquisition/recruitment/maps owned by the campaign. Whole-game equipment #2268 stays open.
+choreography remains #2104. E supplies the independently accepted legal late holders and exhaustive
+body/weapon keys; future acquisition/recruitment/maps remain owned by the campaign. #2268 records
+the accepted whole-game equipment scope.
 
 ## Equipped turn recovery (#2272)
 
@@ -296,7 +421,7 @@ acquisition/recruitment/maps owned by the campaign. Whole-game equipment #2268 s
 have passive definition admission, including the two player-refused mask-NONE weapons. Holy
 Staff97 adds ATT29/HP3, Mystery Staff100 ATT39/MP2, and Life Ring124 HP5. Existing class masks,
 equipped words and source nonbreakable constraints apply. Equipment Use is implemented by D below;
-exhaustive legal body/class closure remains E; this slice does not close #2268.
+exhaustive legal body/class closure is independently accepted in E and recorded under #2268.
 
 The Domain `EquipmentRecoveryRules` calculates each capped delta from the live equipped weapon
 or ring and current vitals. `BattleActionCommitter.NeedsAfterTurn` admits an otherwise status-free

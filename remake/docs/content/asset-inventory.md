@@ -1095,31 +1095,32 @@ retains the four-family gap. [Source, rule and native boundary](../application/c
 
 The [equipment agreement](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268)
 and [94-row reconciliation](campaign-items.md#whole-game-equipment-reconciliation) own the scope.
-This is a resource/design audit; no new package or native acceptance is claimed. Reuse the
-registered #2001 prepared retail library and accepted `pre-voyage-sorc-v3`, with its matching
-catalog and the separately selected #2252 opening/#2255 Witch. Do not fall back to v2/v1 or
-require old producer scratch.
+The resource plan uses the registered #2001 prepared retail library. The current complete
+equipment successor is #2274 below, retaining the accepted SORC v3 selections, #2266 catalog
+and separately selected #2252 opening/#2255 Witch. The equipment consumer/resource scope is
+independently accepted.
+Do not fall back to rejected v2 or require old producer scratch.
 
 **Confirmed (prepared metadata and selected JSON).** The prepared weapon index contains84
 item selectors (26–109),42 palettes and23 packed weapon files totaling188,416 bytes. Selector255
 means no independent weapon raster, including fists/arrows; it does not imply a missing asset.
 Taros110 is outside that item-selector index and retains its enemy-specific path; Iron Ball102
 has no eligible player class. No acquisition or capture is needed merely to recover these
-existing files. The final selected Battle26 scene has42 distinct allied item IDs; raw row presence
+existing files. The pre-A selected Battle26 scene had42 distinct allied item IDs; raw row presence
 is only a diagnostic, not full legal combination coverage. Guardian91 shares prepared selector16/
-palette31 with Indra92 but still needs its own admitted item key. Thieve's Dagger106 reuses
+palette31 with Indra92 and needs its own admitted item key. Thieve's Dagger106 reuses
 selector22/palette41. Iron Knuckles29 and Great Axe39 need explicit appearance coverage despite
 already passing the equipment filter.
 
 **Confirmed (source enumeration, not runtime admission).** The full source's30 ally starts plus
-legal regular/special class destinations produce61 member/class pairs. Their weapon masks yield
-605 legal member/class/weapon tuples, plus61 explicit unarmed tuples:666 appearance keys.
-Including rings yields972 member/class/equipment tuples. Independently, the94 definitions yield
+legal regular/special class destinations produce59 member/class pairs. Their weapon masks yield
+557 legal member/class/weapon tuples, plus59 explicit unarmed tuples:616 appearance keys.
+Including rings yields912 member/class/equipment tuples. Independently, the94 definitions yield
 439 class/item pairs when ALL expands to32 and NONE to zero. These are joins over source
 `allies`, `classes`, `items` and the accepted promotion mapping, not assumptions about which
 members have joined the current campaign. The existing source party and class readers must
 admit the necessary legal consumers; missing late class mappings cannot be hidden by limiting
-this join to the20 currently mounted member identities. RBT/GLM/RDBN and late member records
+this join to the20 pre-E mounted member identities. RBT/GLM/RDBN and late member records
 are limited here to equipment eligibility, source-defined combat operands and controlled
 consumer/appearance/save admission. Recruitment, chapter maps and full growth journeys remain
 outside this work.
@@ -1224,8 +1225,8 @@ The accepted package is about345MiB. Preparation should be O(input package bytes
 body/weapon records), with serial processing and one reusable final successor. No per-frame
 runtime capture, downloaded executable, model/API generation, or per-item world copy is planned.
 The23 packed weapon files are already present; raster expansion, JSON duplication and extra
-body palettes dominate the uncertain increment. The61/666 source joins bound enumeration;
-checking all26 scenes entails at most17,316 expected appearance-key lookups, not17,316 native
+body palettes dominate the uncertain increment. The59/616 source joins bound enumeration;
+checking all26 scenes entails 16,016 expected appearance-key lookups, not16,016 native
 runs. Reuse the established shared-scene admission mechanism instead of duplicating all rasters
 per member or scene.
 
@@ -1253,6 +1254,35 @@ compare exact source-derived selections; do not rebuild unrelated assets. Valida
 main scene, all26 encounter consumers, six opening inputs, catalog, independent opening and Witch
 without any producer-local paths. Retain the closed package and receipts for independent review.
 
+### Equipment closure pilot (#2274)
+
+The four-key pilot reuses the registered #2001 library and C successor. Actual
+`PrivateBattleContentReader` admission resolves Guardian91 for Kazin/SORC, Gisarme109 for
+Slade/NINJ, Iron Knuckles29 for Karna/MMNK, and bare Zynk/RBT. Their body/palette/layer counts
+are respectively15/0/4,26/0/4,19/2/0 and20/0/0. Compact scene size grows3,705,578 to3,756,563
+bytes; four candidate rows replace two existing rows and add29 referenced rasters. The corrected
+memory instrumentation measured57,577,472 bytes peak working set and0.037s. The first memory
+sample returned zero because its native handle argument was not pointer-sized; it is not a valid
+peak measurement. Pilot reader/build passed; receipts remain under the slice's ignored outputs.
+
+Full expansion remains serial with one scene's shared complete appearance table, not one package
+per key or duplicated rasters in26 scenes. Budget remains2GiB peak/scratch, publication below1GiB
+and expected increment below100MiB. Prepared input is already local; no capture/download/API work
+is needed. Measure the full single-scene output before the one closure publication, then measure
+actual production admission and all26 shared consumers. Explicit source-class identity is needed
+because Lemon's RDBN uses the BRN body; explicit bare records supersede legacy first-row fallback.
+
+**Confirmed (corrected source enumeration).** The pinned starting-class and promotion
+join and prepared walking index currently reproduce59 member/class pairs,557 weapon pairs and912
+member/class/equipment pairs;94 definitions and439 class/item pairs agree with the earlier audit.
+At pinned `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/data/stats/allies/allystartdefs.asm` has32 rows, while `disasm/sf2enums.asm` defines
+`COMBATANT_ALLIES_NUMBER=30`. The final rows30/31 both start RDBN but are outside the30 playable
+allies. Each contributes24 legal weapons,30 equipment combinations and one bare appearance.
+Excluding precisely those rows explains61→59 member/class pairs,605→557 weapon tuples,
+972→912 equipment tuples and666→616 appearance keys. No source-legal playable key is omitted
+or invented to match the old estimate.
+
 ### Final reader and native acceptance
 
 Use `OpeningNewGameReader`/`BattleSceneContentReader` and the existing consumer pattern to enumerate
@@ -1269,3 +1299,52 @@ shop acquisition and controlled late custody are reported separately. All functi
 screenshot-free and use disposable save namespaces. Full original spell animation remains under
 [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104); an equipment Use result
 must identify its actual functional/visual boundary rather than call a modern effect original.
+
+### Complete equipment successor (#2274)
+
+`derived/issue2274/equipment-v1` is the retained initial candidate (superseded by v2 below):174 files,368,276,281 bytes,
+2,522,715 bytes above C. Only world.json and Battle26 scene JSON differ; all172 other predecessor
+files compare byte-identical. Independent #2252 opening, #2255 Witch and #2266 Chinese catalog
+remain selected. The existing private-package closure publishes this once; the production reader
+and all native observations consume the registered package independently of producer scratch.
+
+The full serial mount took5.915s and peaked at412,954,624 bytes working set. The initial full
+memory query returned zero and is retained as failed instrumentation; the corrected Win32 call
+specifies handle/pointer types and checks success. The completed scene, including retained HD aliases, is 6,197,105 bytes, below 8 MiB. The reader's former4MiB bound
+was too small for the complete table and is now8MiB. There is still one shared actor/raster table,
+not26 copies or616 packages. Scratch, including preserved pilot/failure candidates, remains below
+the 2 GiB budget (1,125,716,387 bytes in the slice scratch at handoff); no source or previous publication is removed.
+
+`equipment` in `remake_retail_assets` mounts prepared bodies, weapon palette selectors and exact
+sequences; `remake_equipment_assets` joins original starts/masks and adds necessary source party
+records. Existing field/HD/media selections are preserved. All260 distinct mounted weapon frames
+compare pixel-for-pixel with their prepared4bpp selector/palette; newly mounted body PNGs compare
+byte-for-byte. Production admission preserves27,144 predecessor HD body references. Its full table
+includes all616 explicit keys, source animation indices/headers/frame/weapon operands and projectile
+selectors in all26 scenes. The [E reproduction owner](../domain/equipment-use-repair-design.md#complete-equipment-consumers-2274)
+records the commands, native boundaries, saved failures and independent review handoff.
+
+The full production reader check peaked at 1,381,109,760 bytes (below 2 GiB), including
+loading the predecessor for the HD preservation comparison.
+
+### Equipment HD correction (v2)
+
+**Confirmed.** Independent review found that v1 retained body HD but dropped selected weapon HD
+after renaming its frame keys. The expanded production consumer fails on immutable v1; both v1
+bundles and all completed failures remain available. The current complete package is
+`derived/issue2274/equipment-v2`, with reproduction/consumer/native receipts in `review-v2`.
+The producer inherits HD by accepted item/frame, checks duplicate donors agree and never uses a
+different item's shared selector or palette. The116 unique accepted item/frame donors include
+aliases of older resource keys. Their original raster visible pixels match after128→64 scaling;
+only transparent RGB differs. Actual production selection preserves the dimensions, format and
+bytes of27,144 body and17,160 weapon HD references across26 scenes. All260 original weapon
+frames still compare pixel-for-pixel with prepared source data.
+
+V2 has174 files /368,469,461 bytes:193,180 bytes above v1 and2,715,895 above C. Only world and
+Battle26 scene JSON differ from C; the other172 files remain byte-identical. The mount took6.569s
+with412,745,728-byte peak working set; complete published reader comparison peaked at1,387,896,832
+bytes. These remain within the2GiB memory and<1GiB full-package limits. The correction uses one
+isolated local candidate and one immutable publication; previous review scratch is untouched.
+The `redbaron-hd` native receipt confirms selected Great Sword64 frames0–2 use256px HD textures
+through ordinary input, then settle/save and exit0 (four retained #1716 warnings). Original late
+rule/native-family evidence remains valid; no full campaign or per-key native rerun was made.

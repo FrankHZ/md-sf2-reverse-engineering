@@ -190,6 +190,34 @@ public sealed class HistoricalSaveRosterTests
         Assert.IsType<SessionStarted>(GameSession.RestoreBattle(latest, upgraded, rules));
     }
 
+    [Fact]
+    public void EquipmentRosterUpgradePreservesCarriedPartyAndRandomState()
+    {
+        var (_, original) = OpeningRestoreTests.Fixture(joined: true);
+        var prior = Package(10, 20);
+        var latest = Package(11, 30);
+        var rules = RuleCompositions.Sf2();
+        var saved = original with
+        {
+            Compatibility = OpeningSave.FieldCompatibility(prior, rules),
+            Flags = original.Flags.Where(flag => flag != 256).Order().ToArray(),
+            Allies = prior.Encounters["opening"].Deployments.Select(row =>
+                original.Allies[row.Actor.Value == "ally-0" ? 0 : 1] with { Actor = row.Actor.Value }).ToArray(),
+        };
+        var session = Assert.IsType<SessionStarted>(GameSession.Restore(prior, saved, rules)).Session;
+        var exact = FieldPartySnapshot.Capture(prior, session.Current.Exploration!.Party);
+        var (restored, _) = exact.Rebuild(latest, saved.Flags, saved.Names,
+            expected: OpeningSave.FieldCompatibility(latest, rules), priorRecipe: 10);
+        var after = FieldPartySnapshot.Capture(latest, restored);
+        Assert.Equal(30, after.Allies.Count);
+        Assert.Equal(exact.MainSeed, after.MainSeed);
+        Assert.Equal(exact.ThinkingSeed, after.ThinkingSeed);
+        foreach (var ally in exact.Allies)
+            EqualAlly(ally, after.Allies.Single(row => row.Actor == ally.Actor));
+        Assert.Equal(exact.ActiveAllies, after.ActiveAllies);
+        Assert.Equal(saved.Flags, session.Current.Story.Flags.Order());
+    }
+
     private static void EqualAlly(SavedAlly expected, SavedAlly actual)
     {
         Assert.Equal(expected.Items, actual.Items);
@@ -215,7 +243,7 @@ public sealed class HistoricalSaveRosterTests
         var curve = Enumerable.Repeat(new StatGrowthFraction(32, 32), 29).ToArray();
         var growth = new BattleGrowthDefinition(0, 0, Enumerable.Repeat(new StatGrowth(7, 35, curve), 5).ToArray(),
             [], new Dictionary<byte, SpellRef>());
-        var ids = count < 12 ? Enumerable.Range(0, count).ToArray() : new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18, 11, 19, 12 }.Take(count).ToArray();
+        var ids = count < 12 ? Enumerable.Range(0, count).ToArray() : new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18, 11, 19, 12, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29 }.Take(count).ToArray();
         var rows = ids.Select(id => original with
         {
             Definition = new(new($"ally-{id}"), original.Definition.ClassRule, 1, 7, 7, 7, 7, 7, false, 6, [],

@@ -1,4 +1,5 @@
 using Sf2.Remake.Application.Content.Scenarios;
+using Sf2.Remake.Application.Gameplay.Sf2;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
@@ -38,7 +39,7 @@ internal sealed record FieldPartySnapshot(string Encounter, IReadOnlyList<SavedA
 
     internal (BattleStartInput Party, MapPartyLists Lists) Rebuild(ScenarioDefinition definition,
         IReadOnlyList<int> flags, IReadOnlyDictionary<string, string> names,
-        OpeningSaveData? legacy = null, SaveCompatibility? expected = null)
+        OpeningSaveData? legacy = null, SaveCompatibility? expected = null, int? priorRecipe = null)
     {
         Require(Depot is { Count: <= 64 } && Depot.All(item => item < 127), "save-depot");
         Require(Allies is { Count: > 0 and <= 30 } && flags is { Count: <= 65536 } &&
@@ -59,7 +60,10 @@ internal sealed record FieldPartySnapshot(string Encounter, IReadOnlyList<SavedA
         var savedActors = Allies.Select(actor => new ActorRef(actor.Actor)).ToHashSet();
         Require(savedActors.IsSubsetOf(deployments.Keys), "save-roster");
         var actors = Allies.Select(saved => Ally(saved, deployments[new(saved.Actor)].ResolveClass(saved.Class).Definition)).ToList();
-        if (legacy is null)
+        if (priorRecipe is { } prior)
+            actors.AddRange(Sf2HistoricalRoster.Missing(definition, prior, expected!, deployments, savedActors,
+                flags, ActiveAllies.Concat(names.Keys), MainSeed, "save-roster"));
+        else if (legacy is null)
             Require(savedActors.SetEquals(deployments.Keys), "save-roster");
         else
             actors.AddRange(definition.Persistence!.RestoreRoster(definition, legacy, expected!, deployments, savedActors));

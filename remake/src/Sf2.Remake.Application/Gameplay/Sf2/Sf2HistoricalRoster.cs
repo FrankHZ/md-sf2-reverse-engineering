@@ -8,8 +8,8 @@ namespace Sf2.Remake.Application.Gameplay.Sf2;
 // Members are appended in package revision order, including later admissions of earlier member IDs.
 internal static class Sf2HistoricalRoster
 {
-    private static readonly (int Members, int LastBattle)[] Revisions = [(7, 8), (9, 10), (10, 13), (11, 19), (12, 23), (16, 23), (17, 24), (18, 25), (19, 26), (20, 26)];
-    private static readonly int[] MemberIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18, 11, 19, 12];
+    private static readonly (int Members, int LastBattle)[] Revisions = [(7, 8), (9, 10), (10, 13), (11, 19), (12, 23), (16, 23), (17, 24), (18, 25), (19, 26), (20, 26), (30, 26)];
+    private static readonly int[] MemberIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18, 11, 19, 12, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29];
 
     internal static SavedBattleStory UpgradeBattle(ScenarioDefinition definition, BattleSaveData data,
         EngineBattleState battle, SaveCompatibility expected)

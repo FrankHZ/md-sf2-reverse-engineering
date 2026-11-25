@@ -21,6 +21,7 @@ from sf2tool.remake_attack_spell_mount import mount_attack_spells
 from sf2tool.remake_authored_audio import is_authored_defeat
 from sf2tool.remake_battle_scene_content import compose, sprite_layout
 from sf2tool.remake_command_menu import world_dependencies, write_json
+from sf2tool.remake_equipment_assets import bind_equipment_members, mount_equipment_appearances
 from sf2tool.remake_exploration_content import _selected_growth, checked_canonical, map_compiler
 from sf2tool.remake_exploration_maps import compile_maps
 from sf2tool.remake_exploration_programs import OriginalPrograms
@@ -452,6 +453,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
     }
     optional = retained_families.keys() | {
         "static-equipment",
+        "equipment",
         "phoenix-wave",
         "south-shrine",
         "indra",
@@ -459,6 +461,8 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         "blaze-2",
         "blast-1",
     }
+    if "equipment" in families and upstream is None:
+        raise ValueError("equipment requires the pinned --upstream checkout")
     selected = permitted | (set(families) & optional) if "all" in families else set(families)
     special_promotions = {"pgnt", "brn", "brgn", "mmnk", "sorc"}
     if selected & special_promotions and not selected <= special_promotions:
@@ -525,7 +529,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
             target.parent.mkdir(parents=True, exist_ok=True)
             if (
                 (selected == {"south-shrine"} and rel not in scenes)
-                or (selected == {"static-equipment"} and rel not in scenes)
+                or (selected <= {"static-equipment", "equipment"} and rel not in scenes)
                 or ((indra_only or selected <= special_promotions) and rel != battle26_scene)
                 or (spell_only and rel not in spell_paths)
             ):
@@ -605,6 +609,11 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
             mount_indra_staff(root, Path(temp), scene)
         if "static-equipment" in selected:
             mount_static_equipment(root, Path(temp), scene)
+        if "equipment" in selected:
+            source = read_json(base / "opening-inputs/SF2_PRIVATE_STATIC_DATA.json")
+            paths = bind_equipment_members(root, world, source, upstream)
+            include_sources(world, upstream, paths)
+            mount_equipment_appearances(root, Path(temp), scene, source)
         if "monster" in selected:
             mount_monster_breath(root / "effects", Path(temp), scene)
         if "phoenix-wave" in selected:
@@ -637,7 +646,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         if shrine:
             items = mount_south_shrine(world, root, upstream, canonical_path)
             bind_field_item_icons(presentation, root, dest, scenes, items)
-        if "static-equipment" in selected:
+        if selected & {"static-equipment", "equipment"}:
             source = read_json(base / "opening-inputs/SF2_PRIVATE_STATIC_DATA.json")
             items = {
                 row["id"]
