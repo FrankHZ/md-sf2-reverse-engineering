@@ -5,6 +5,13 @@ internal static partial class GameText
 {
     private static readonly Dictionary<string, int> Arguments = new()
     {
+        ["settings.reset-all"] = 1,
+        ["settings.reset-page"] = 1,
+        ["settings.reset-all-detail"] = 0,
+        ["settings.reset-page-detail"] = 0,
+        ["settings.reset-staged"] = 0,
+        ["settings.reset-controls-detail"] = 0,
+        ["settings.reset-battle-detail"] = 0,
         ["settings.display"] = 0,
         ["settings.assist"] = 0,
         ["settings.input"] = 0,

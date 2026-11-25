@@ -3004,3 +3004,25 @@ msgstr "{0}将忘记现在的全部法术。要转职为召唤师吗？"
 
 msgid "battle.scene.cutoff"
 msgstr "{0}被斩断了！"
+
+msgid "settings.reset-all"
+msgstr "{0} · 重置全部设置"
+
+msgid "settings.reset-page"
+msgstr "{0} · 重置当前页"
+
+msgid "settings.reset-all-detail"
+msgstr "重置草稿中的全部设置和按键绑定。应用后保存，取消则放弃；不影响游戏存档。"
+
+msgid "settings.reset-page-detail"
+msgstr "仅重置当前页。返回设置主页应用或取消。"
+
+msgid "settings.reset-staged"
+msgstr "已暂存重置，仍使用现有按键。"
+
+
+msgid "settings.reset-controls-detail"
+msgstr "仅重置全部绑定和确认/取消习惯。返回设置主页应用或取消。"
+
+msgid "settings.reset-battle-detail"
+msgstr "仅重置战斗速度和命中/金币提示。确认后应用，取消则放弃。"

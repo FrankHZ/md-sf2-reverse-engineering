@@ -42,7 +42,7 @@ internal sealed class SettingsStore
         catch (Exception error) when (error is JsonException or ArgumentException)
         {
             NeedsReset = true;
-            Error = "Saved preferences are invalid. Your file is retained. Restore defaults, then Apply to recover; Cancel keeps it.";
+            Error = "Saved preferences are invalid. Your file is retained. Reset all settings on the main Settings page, then Apply to recover; Cancel keeps it.";
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or NotSupportedException)
         {
@@ -55,7 +55,7 @@ internal sealed class SettingsStore
     internal string? Write(InputSettings candidate, bool reset)
     {
         if (_readFailed) return Error;
-        if (NeedsReset && !reset) return "Restore defaults first, then Apply to explicitly recover the retained invalid file.";
+        if (NeedsReset && !reset) return "Reset all settings on the main Settings page first, then Apply to explicitly recover the retained invalid file.";
         string? temporary = null;
         try
         {

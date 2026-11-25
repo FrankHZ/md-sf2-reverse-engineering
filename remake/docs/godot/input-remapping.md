@@ -15,7 +15,7 @@ tracks the player outcome. The [host handoff](ui-architecture.md#one-event-from-
 | --- | --- |
 | [GameInput.Prepare, Apply and Resolve](../../game/src/Input/GameInput.cs) | Format 1 has **17** actions. Directional actions are Up, Right, Down and Left. Confirm and Cancel form the swappable pair. Attack, Spell, Target, Stay, Item, Wait, Equipment, Give, Discard, Menu and Accelerate complete the set. Sparse, lowercase `bindings` entries override whole default rows. Prepare expands them and swaps the base pair once. Apply publishes to the existing settings object, releases old Godot actions, installs the prepared events and signals hint consumers. |
 | [Movement and action edges](../../game/src/Input/GameInput.cs) and [acceleration](../../game/src/Input/GameInput.Acceleration.cs) | Direction holds drive movement/navigation where admitted. Confirm/Cancel and shortcuts use fresh edges. Wait has its own held/release gate. Accelerate is a separate hold, default Shift (either location), optional pad, with the applied [Hold speed](host-ui.md#implemented-composition-and-return) during eligible exploration and battle and 1× on last release. It never submits a choice. Shift normalization applies only while Shift is bound to Accelerate. Wait and Accelerate are excluded from the general `GameplayHeld` guard. |
-| [InputSettings.Draft](../../game/src/Input/InputSettings.cs) and [SettingsView](../../game/src/UI/SettingsView.cs) | Drafts own a copy of their sparse bindings and arrays. Restore defaults loads model defaults for text mode/rate, swap, reduced flash, language, graphics, modern guidance, both debug flags and battle hit/coin suppression, preserving custom bindings. Battle Speed edits its own two preferences. Shared Settings also opens from the battle system Menu and offers grouped categories, installed Help, [capture and review](../../game/src/UI/SettingsView.Bindings.cs), Apply and Cancel. |
+| [InputSettings.Draft](../../game/src/Input/InputSettings.cs) and [SettingsView](../../game/src/UI/SettingsView.cs) | Drafts own a copy of their sparse bindings and arrays. The fixed footer resets the current category, or all preferences and bindings from the root, in the draft; see the reset scope below. Battle Speed edits its own two preferences. Shared Settings also opens from the battle system Menu and offers grouped categories, installed Help, [capture and review](../../game/src/UI/SettingsView.Bindings.cs), Apply and Cancel. |
 | [SettingsHost](../../game/src/Entry/SettingsHost.cs) and [SettingsStore](../../game/src/Input/SettingsStore.cs) | The host prepares input, language and applicable field graphics before writing. Ordinary settings use `<SF2_SAVE_ROOT>/<SF2_SAVE_NAMESPACE>/sf2-preferences/input.json`. The store takes an exclusive lock, compares loaded bytes, flushes a same-directory temporary and atomically moves/replaces the file. Explicit `--input-settings` selects a read-only whole file. Invalid overrides fail startup. Missing ordinary preferences use defaults without creating a file on read. |
 | [Hint projection](../../game/src/Input/GameInput.Hints.cs) and [grouped Help](../../game/src/UI/ControlsHelpView.cs) | Both device families can operate at once. CompactHint selects the first installed alternative in the active family (pad buttons precede axes), or explicitly names the keyboard fallback. Help lists every installed alternative after the swap and preserves its page and scroll on hint refresh. Mouse shares keyboard hints and existing pointer gestures. Its clicks, wheel and motion have no entries in the bindings schema. Name editing retains its own keyboard controls. |
 
@@ -36,12 +36,12 @@ fall through to Godot’s default GUI actions while Settings is open.
 
 ### Admission and format 1 compatibility
 
-Use the existing `Prepare` rules for both candidate preview and final admission. Expose the resolved **base** rows before the swap from the same default expansion used by Prepare. Editing a default starts from that entire row. Store only explicit row overrides and the single `confirmCancel` value. Never serialize the swapped InputMap back as base rows. Detach the draft dictionary and clone all three arrays of each edited row before mutation. A preference Defaults operation must retain the *draft's* bindings, including edits made earlier in this visit.
+Use the existing `Prepare` rules for both candidate preview and final admission. Expose the resolved **base** rows before the swap from the same default expansion used by Prepare. Editing a default starts from that entire row. Store only explicit row overrides and the single `confirmCancel` value. Never serialize the swapped InputMap back as base rows. Detach the draft dictionary and clone all three arrays of each edited row before mutation. A category reset retains every unrelated draft value; Controls includes the convention and all bindings.
 
 - A row has `keys`, `buttons` and `axes` arrays and at most 32 events total. Keys use canonical logical Godot Keycode names. None, Ctrl, Alt, Meta and chords are ineligible. Shift alone is valid only for Accelerate. Ignore echoes and refuse unsupported captures with feedback. Pad choices are the four face positions, four D-pad directions, shoulders, Back/Start and stick clicks, plus either sign of LeftX, LeftY, RightX or RightY. The installed pad mappings apply to any device. Trigger axes, mouse rebinding, physical keyboard aliases and OS/controller profiles are outside this editor.
 - Every row needs at least one key. Every explicit row except Accelerate also needs a button or signed axis. Missing Accelerate inherits Shift with empty pad arrays. An absent Menu inherits the first unused F10/F9/F8/F7 or canonical fallback key and the first unused signed stick axis, normally RightX+. If all axes are used it may remain keyboard-only. Preserve that implicit row on unrelated edits and saves, including its existing dynamic fallback behavior. Editing Menu itself creates an explicit row and must satisfy explicit Menu admission. Show any resulting fallback change in the preview. [Menu migration and access](presentation.md#system-menu-agreement-1518)
 - Reject repeated identities, including duplicates within the same action, across both explicit and inherited base rows. Report identity and owning action(s). Offer the player a way to remove or replace the old assignment first. A removal may temporarily leave a row without a required family. Mark the row, keep installed Back reachable, and disable Apply until repaired. Refuse duplicate captures or a 33rd event without dropping other alternatives. Validation must permit repairing one row while another is incomplete.
-- **Restore defaults** stages non-binding preferences as above. **Reset bindings** stages an empty override dictionary while preserving every other draft value, including swap. Neither writes. In corrupt-file recovery only the existing explicit Restore defaults → Apply authorizes replacement of the retained invalid input. Reset bindings alone does not authorize recovery.
+- **Reset this page** stages only the category listed below. **Reset all settings** on the root includes bindings. Neither writes. Only root Reset all settings → Apply authorizes corrupt-file recovery and retains the invalid bytes in the existing backup; a page reset cannot authorize recovery.
 
 ## Apply, persistence and live feedback
 
@@ -59,7 +59,7 @@ Keep operation hints at the existing fixed **24px** native role in English and �
 ## Implementation order and acceptance
 
 1. **Prove one Settings transaction.** Extend the existing draft/base-row preparation, then add Change controls → Accelerate → Keyboard → replace Shift with Q → review. At the Witch menu and a settled field, read the installed Shift in Help while Q is staged. Cancel, compare the preference file bytes (or continued absence), then use the old Shift hold in the field. Repeat and Apply, operate the new hold, release it and try Shift. Relaunch the same disposable namespace and repeat using persisted Q without an override.
-2. **Complete the editor in that transaction.** Exercise installed keyboard and pad navigation plus pointer Cancel, opener/capture/review/Apply held through transitions, focus loss, disconnect, signed-axis chatter and reserved Escape/Back. Check multi-key/button/axis rows, replace/add/remove order, same- and cross-row duplicates, missing required family, 32 accepted/33 refused and Shift on an ineligible row. Use a custom base Confirm/Cancel pair, stage swap, verify effective Back before and after Apply and after restart. Load an older sparse file with occupied Menu defaults and all stick directions claimed, save an unrelated edit and verify its implicit keyboard-only Menu survives. Respect keyboard-only Accelerate. Exercise both Defaults operations in both orders with staged bindings and unrelated preferences.
+2. **Complete the editor in that transaction.** Exercise installed keyboard and pad navigation plus pointer Cancel, opener/capture/review/Apply held through transitions, focus loss, disconnect, signed-axis chatter and reserved Escape/Back. Check multi-key/button/axis rows, replace/add/remove order, same- and cross-row duplicates, missing required family, 32 accepted/33 refused and Shift on an ineligible row. Use a custom base Confirm/Cancel pair, stage swap, verify effective Back before and after Apply and after restart. Load an older sparse file with occupied Menu defaults and all stick directions claimed, save an unrelated edit and verify its implicit keyboard-only Menu survives. Respect keyboard-only Accelerate. Exercise page and whole-settings resets with staged bindings and unrelated preferences.
 3. **Verify refusal and return in ordinary hosts.** Use disposable storage for invalid-file recovery, locked/unwritable storage and an external edit since load. Compare bytes, live behavior and draft status before/after refused Apply. Confirm both ordinary file and override stay untouched during a read-only launch. Check session identity, revision, RNG, progress and slot bytes across field Settings, Help, cancel and Apply. Stage held Wait/direction/Accelerate inputs on the covered field and verify fresh-edge return. This field observation leaves gameplay slots untouched. The [battle observation](../verification/host.md#battle-system-settings-observation) covers the same release barrier over a retained target and a real action message.
 4. **Follow the installed map to its consumers.** Repeat the [field/merchant production route](ui-scene-review.md#reproduce-the-field-controls) with actual editor Apply and ordinary inputs at the Ribble counter. Check the controlled Galam shop phases and a controlled Battle01 decision/target/Back. In battle, hold the replacement Accelerate during eligible simulation, then reach a reading boundary and verify 1× and a fresh acknowledgement. In Help, field, shop and battle, switch keyboard → pad → mouse with an otherwise inert input and verify labels/geometry and retained state, then operate the displayed binding. Cover EN/zh-CN, long labels at native 1080p and the existing 720p Settings reader. Check fixed font size, wrapping, control bounds and live errors. A controlled start establishes the named seam. Physical-device legends and human readability remain **Unknown** pending [player review](../verification/host.md#later-physical-focus-human-checklist-1456).
 
@@ -90,9 +90,9 @@ it verifies a restart.
 
 | Case | Initial condition and observed boundary |
 | --- | --- |
-| `all`, `edges`, then `swap-restart` | Standard defaults for the first two; restart on the `edges` namespace. Edit all 17 action rows; replace/add/remove alternatives, reject conflicts/invalid Shift, repair a missing family, exercise both Defaults operations. Held capture and signed-axis chatter cannot confirm review. Focus loss, disconnect, pointer Cancel and physical Escape/Back discard the proposal. Custom base Confirm/Cancel and staged swap operate after Apply and restart. |
+| `all`, `edges`, then `swap-restart` | Standard defaults for the first two; restart on the `edges` namespace. Edit all 17 action rows; replace/add/remove alternatives, reject conflicts/invalid Shift, repair a missing family, exercise category and whole-settings resets. Held capture and signed-axis chatter cannot confirm review. Focus loss, disconnect, pointer Cancel and physical Escape/Back discard the proposal. Custom base Confirm/Cancel and staged swap operate after Apply and restart. |
 | `32`, `compat` | Give Accelerate 31 unique function keys (F1–F31); the 32nd installs, the 33rd is refused. Separately give it Shift/F10/F9/F8/F7 and RightY−/RightX−/RightX+ with no explicit Menu. An unrelated edit preserves the keyboard-only implicit Menu. |
-| `override`, `recovery`, `locked`, `external` | Supply a separate read-only startup override; malformed ordinary bytes; a disposable input.lock held exclusively; or allow the observer to edit the disposable file after load. Compare bytes and installed/draft state. Reset bindings cannot authorize recovery; explicit preference Defaults + Apply retains a byte-identical invalid backup. |
+| `override`, `recovery`, `locked`, `external` | Supply a separate read-only startup override; malformed ordinary bytes; a disposable input.lock held exclusively; or allow the observer to edit the disposable file after load. Compare bytes and installed/draft state. Controls reset cannot authorize recovery; explicit root Reset all settings + Apply retains a byte-identical invalid backup. |
 | `consumer` | The editor installs Accelerate Q and RightY−, Confirm F5, Cancel F6 and Down J. Help family changes preserve page/scroll. Reuse these ordinary preferences for the consumer runs below. |
 | `reader` | At Witch Settings, resize to 1280×720 with an elongated draft label. Check the independent details scroll, fixed actions, 24px hint, wrapping, Back and Help. Gameplay minimum size belongs to the window owner. |
 
@@ -106,3 +106,75 @@ the cue without spending an item, moving selection or drawing RNG. Use [the batt
 with `-- --authored-package <absolute stone-court.json>` to follow edited Q through provisional
 movement and a real attack message: reading stays at 1× until fresh mapped Confirm acknowledges it.
 These observations establish adapter behavior, not natural campaign reach or human readability.
+
+## Reset footer (#2290)
+
+The existing High-rigor host input boundary remains in force: this bounded change alters only
+Settings draft interaction and its fixed footer. No new action, binding format, UI framework,
+gameplay reset or save-slot operation is introduced. Acceptance is page scope, unchanged bytes
+on Cancel, correct Apply/restart, installed remapped hints, and child/read-only input ownership.
+
+The footer is outside `SettingsReading`. Root offers **Reset all settings** beside Apply;
+category pages offer **Reset this page**. Click, focus + Confirm, or use the displayed shortcut.
+The context reuses **Magic / Spell** (default H / north face button), which is otherwise idle
+on Settings categories. Remap that action in Controls → Change controls. The footer follows
+`CompactHint` for the active family and installed map, including while reset or remapping is
+still staged. Draft bindings never take over navigation before Apply.
+
+| Page | Reset draft scope |
+| --- | --- |
+| Root | Every preference plus all custom bindings; explicit invalid-file recovery authorization |
+| Display & text | Language, graphics, text mode and characters per second |
+| Gameplay aids | Reduced flash, modern guidance and hold-speed multiplier |
+| Controls | All binding overrides and confirm/cancel convention |
+| Debug & diagnostics | Both debug flags |
+| Battle Speed | Text mode/rate and hit/coin message suppression; these are the same shared text preferences |
+
+Binding editor pages, capture/review and Help do not offer or route Reset. Capture may read
+its physical key as a candidate binding and reject an existing assignment. Read-only launch
+shows disabled reset actions. Category Back preserves the draft; root Cancel abandons it.
+Only ordinary Apply writes through SettingsHost/SettingsStore. In Battle Speed, Confirm on a
+value or Attack applies; Confirm on its Reset footer stages reset. The hint follows that focus.
+
+### Bounded reproduction
+
+Load the registered worktree environment, build the Debug adapter using the locked .NET workflow,
+and import this fresh checkout once. Select the registered Witch entry bank/catalog (the
+[entry selection](../content/presentation-assets.md#witch-continue-entry-bank-2255)); the title
+Settings transaction requires no campaign slot or opening sequence. Leave opening content unset.
+Keep APPDATA, LOCALAPPDATA, TEMP and output in this worktree's ignored run directory. Set
+`SF2_SAVE_ROOT` to a disposable external directory and use a new `issue2290-*` namespace per case.
+Never point the observer at player storage.
+
+For `main`, seed only that namespace's `sf2-preferences/input.json` with:
+
+```json
+{"formatVersion":1,"textMode":"adjustable","charactersPerSecond":70,"modernGuidance":false,"reducedFlash":true,"suppressBattleHitCoinMessages":true,"bindings":{"spell":{"keys":["Q"],"buttons":[],"axes":["RightY-"]}}}
+```
+
+```powershell
+$env:SF2_HOST_UI_CASE = 'main'
+$env:SF2_HOST_UI_OUTPUT = Join-Path $freshRun 'result.json'
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 120 --resolution 1920x1080 `
+  --path remake/game --script res://probes/settings_reset_observation.gd
+```
+
+Use `restart` on the completed main namespace with a distinct report. Use `override` with the
+same initial JSON in a fresh ordinary namespace and a separate `-- --input-settings <file>`.
+Use `recovery` with malformed `{invalid` bytes instead of JSON. Use `battle` with the initial
+JSON and `-- --authored-package <absolute remake/content/authored/stone-court.json>`; it opens
+inspection → Speed and compares session/revision/RNG across reset, Cancel and Apply.
+Use `visual` without `--headless`, a fresh namespace and output directory: it mounts only the
+dedicated DesignPreview and saves EN/zh root and pad Controls stills locally. The short visual
+run brings its own window into focus before each language/page; do not run another native
+input observer concurrently. Production `main`, `restart`, `override`, `recovery` and `battle`
+cases never capture images.
+
+**Confirmed:** main 41 checks, restart 6, override 8, recovery 7 and authored Battle Speed 9
+passed. Dedicated preview review found legible separated list/footer in both languages and
+actual installed keyboard/pad captions. The first report reader failed GBK decoding after
+main had exited 0; reading the existing UTF-8 result confirmed all 41 checks without rerunning
+that completed observation. A later visual run completed with four navigation failures (focus loss was the inferred cause); its report/stills remain local. Explicit focus before each preview segment
+passed the bounded rerun. Several exits retained the existing two-ObjectDB-instance warning.
+**Unknown:** physical controller/desktop focus interactions and human reading comfort beyond
+the inspected preview remain with player review. No full gameplay or research suite is claimed.

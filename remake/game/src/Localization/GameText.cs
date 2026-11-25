@@ -19,6 +19,13 @@ internal static partial class GameText
     internal sealed record Candidate(string Language, IReadOnlyDictionary<string, string> Rows, IReadOnlyDictionary<string, RowStatus> Status);
     private static readonly Dictionary<string, string> Recovery = new()
     {
+        ["settings.reset-all"] = "{0} · Reset all settings",
+        ["settings.reset-page"] = "{0} · Reset this page",
+        ["settings.reset-all-detail"] = "Resets every preference and control binding in this draft. Apply saves; Cancel discards. Saved journeys are untouched.",
+        ["settings.reset-page-detail"] = "Only this page is reset. Return to Settings to Apply or Cancel.",
+        ["settings.reset-staged"] = "Reset staged; installed controls remain active.",
+        ["settings.reset-controls-detail"] = "Bindings and confirm/cancel only. Apply or Cancel in Settings.",
+        ["settings.reset-battle-detail"] = "Battle speed and hit/coin messages only. Confirm applies; Cancel discards.",
         ["settings.display"] = "Display & text",
         ["settings.assist"] = "Gameplay aids",
         ["settings.input"] = "Controls",
