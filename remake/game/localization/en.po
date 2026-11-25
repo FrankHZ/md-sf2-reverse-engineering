@@ -3001,3 +3001,6 @@ msgstr "{0} ({1},{2}) · {3}"
 
 msgid "church.replace-book"
 msgstr "{0} will forget all current spells. Become a Sorcerer?"
+
+msgid "battle.scene.cutoff"
+msgstr "{0} was cut down!"

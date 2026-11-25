@@ -53,6 +53,23 @@ public sealed class PhysicalCriticalRule
     public int DamageBonusDenominator => DamageBonusShift == 0 ? 0 : 1 << DamageBonusShift;
     internal int DamageBonusShift { get; }
 
+    internal PhysicalCriticalRule WithEquipment(byte doubleIncrease, byte counterIncrease, byte? criticalSetting)
+    {
+        if (doubleIncrease == 0 && counterIncrease == 0 && criticalSetting is null) return this;
+        // ApplyItemIncreaseDouble preserves only the low nibble: the original loses counter bits.
+        ushort twice = (ushort)(32 >> Math.Min(3, ChanceSetting(DoubleChanceDenominator) + doubleIncrease));
+        ushort counter = doubleIncrease == 0 ? CounterChanceDenominator : (ushort)32;
+        counter = (ushort)(32 >> Math.Min(3, ChanceSetting(counter) + counterIncrease));
+        return criticalSetting is { } setting
+            ? new((ushort)(32 >> (setting / 2)), (setting & 1) == 0 ? 1 : 2,
+                doubleChanceDenominator: twice, counterChanceDenominator: counter)
+            : new(ChanceDenominator, DamageBonusShift, InflictsSleep, twice, counter,
+                InflictsSilence, InflictsPoison, InflictsStun);
+    }
+
+    private static int ChanceSetting(ushort denominator) => denominator switch
+    { 32 => 0, 16 => 1, 8 => 2, 4 => 3, _ => throw new BattleRuleException("prowess-setting", "actor.physical") };
+
     internal PhysicalCriticalRule IncreaseCritical(byte amount)
     {
         // Source regular settings alternate 150%/125%, then halve the denominator.

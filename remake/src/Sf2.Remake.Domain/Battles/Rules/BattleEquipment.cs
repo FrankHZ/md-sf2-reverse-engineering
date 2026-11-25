@@ -5,7 +5,8 @@ namespace Sf2.Remake.Domain.Battles;
 
 public sealed record BattleWeaponDefinition(byte ItemId, string Name, uint ClassMask, byte AttackBonus,
     byte MinimumRange, byte MaximumRange, byte CriticalIncrease = 0, bool DamageOnUse = false,
-    BattleEquipmentStats? Stats = null, bool Cursed = false);
+    BattleEquipmentStats? Stats = null, bool Cursed = false,
+    byte DoubleIncrease = 0, byte CounterIncrease = 0, byte? CriticalSetting = null);
 
 // Source effects remain ordered, including repeated operations on the same stat.
 public sealed record BattleEquipmentStat(RingStat Stat, int Adjustment);
@@ -200,7 +201,8 @@ public static class BattleEquipment
         if (actor.Definition.Equipment is null || actor.Definition.Physical is not { } physical) return actor.Definition.Physical;
         var weapon = Weapon(actor.Definition, actor.SourceLoadout);
         return physical with { MinimumRange = weapon?.MinimumRange ?? 1, MaximumRange = weapon?.MaximumRange ?? 1,
-            Critical = physical.Critical.IncreaseCritical(weapon?.CriticalIncrease ?? 0) };
+            Critical = physical.Critical.IncreaseCritical(weapon?.CriticalIncrease ?? 0)
+                .WithEquipment(weapon?.DoubleIncrease ?? 0, weapon?.CounterIncrease ?? 0, weapon?.CriticalSetting) };
     }
 
     internal static bool IsEligible(BattleActorDefinition definition, byte item) =>

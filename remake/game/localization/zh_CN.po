@@ -3001,3 +3001,6 @@ msgstr "{0}（{1},{2}）· {3}"
 
 msgid "church.replace-book"
 msgstr "{0}将忘记现在的全部法术。要转职为召唤师吗？"
+
+msgid "battle.scene.cutoff"
+msgstr "{0}被斩断了！"

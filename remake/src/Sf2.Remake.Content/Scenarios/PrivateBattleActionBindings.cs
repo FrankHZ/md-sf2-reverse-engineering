@@ -142,7 +142,8 @@ internal static class PrivateBattleActionBindings
         (item.MinimumRange, item.MaximumRange) is (1, 1) or (1, 2) or (2, 2) or (2, 3) &&
         item.EquipEffects.All(effect => effect.Type is "INCREASE_ATT" or "DECREASE_ATT" or
             "INCREASE_DEF" or "DECREASE_DEF" or "INCREASE_AGI" or "DECREASE_AGI" or
-            "INCREASE_MOV" or "DECREASE_MOV" or "INCREASE_CRITICAL" || effect is { Type: "NONE", Parameter: 0 });
+            "INCREASE_MOV" or "DECREASE_MOV" or "INCREASE_CRITICAL" or "INCREASE_DOUBLE" or "INCREASE_COUNTER" ||
+            effect is { Type: "SET_CRITICAL", Parameter: 6 } or { Type: "NONE", Parameter: 0 });
 
     internal static BattleWeaponDefinition Weapon(SourceItemDefinition item, uint classMask) =>
         new(item.Id, item.DisplayName, classMask,
@@ -150,14 +151,18 @@ internal static class PrivateBattleActionBindings
             item.MinimumRange, item.MaximumRange,
             checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_CRITICAL").Sum(effect => effect.Parameter)),
             DamageOnUse: item.ItemTypeExpression.Split('|').Contains("BREAKABLE"),
-            Stats: new(item.EquipEffects.Where(effect => effect.Type is not ("NONE" or "INCREASE_CRITICAL"))
+            Stats: new(item.EquipEffects.Where(effect => effect.Type is "INCREASE_ATT" or "DECREASE_ATT" or "INCREASE_DEF" or "DECREASE_DEF" or
+                "INCREASE_AGI" or "DECREASE_AGI" or "INCREASE_MOV" or "DECREASE_MOV")
                 .Select(effect => new BattleEquipmentStat(effect.Type[9..] switch
                 {
                     "ATT" => RingStat.Attack, "DEF" => RingStat.Defense,
                     "AGI" => RingStat.Agility, "MOV" => RingStat.Move,
                     _ => throw new BattleRuleException("source-equipment-effects", "items", true),
                 }, effect.Type.StartsWith("DECREASE", StringComparison.Ordinal) ? -effect.Parameter : effect.Parameter))),
-            Cursed: item.ItemTypeExpression.Split('|').Contains("CURSED"));
+            Cursed: item.ItemTypeExpression.Split('|').Contains("CURSED"),
+            DoubleIncrease: checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_DOUBLE").Sum(effect => effect.Parameter)),
+            CounterIncrease: checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_COUNTER").Sum(effect => effect.Parameter)),
+            CriticalSetting: item.EquipEffects.Any(effect => effect.Type == "SET_CRITICAL") ? (byte)6 : null);
 
     internal static BattleEquipmentDefinition? EnemyEquipment(PrivateBattleDefinitions definitions, byte attack, IReadOnlyList<ushort> items)
     {

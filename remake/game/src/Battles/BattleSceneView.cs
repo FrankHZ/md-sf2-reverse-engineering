@@ -608,6 +608,8 @@ internal sealed partial class BattleSceneView : Control
         if (state.Phase == BattleScenePhase.PhysicalInactionMessage)
             return LocalizedMessage(state.CurseStoppedAttack ? "battle.scene.curse-inaction" : "battle.scene.stun-inaction",
                 ActorName(state.Actor));
+        if (state.IsCutoff && state.Phase == BattleScenePhase.ResultMessage)
+            return LocalizedMessage("battle.scene.cutoff", ActorName(state.Target!.Value));
         if (state.IsCurseRecoil && state.Phase == BattleScenePhase.ResultMessage)
             return LocalizedMessage("battle.scene.curse-recoil", ActorName(state.Actor), state.Amount);
         if (state.IsCurseRecoil && state.Phase == BattleScenePhase.DeathMessage)
@@ -760,6 +762,7 @@ internal sealed partial class BattleSceneView : Control
             {
                 "Status" => LocalizedMessage(state.Spell?.CuresPoison == true || state.Item?.CuresPoison == true ? "battle.scene.poison-cured" : "battle.scene.silence", Target()),
                 "Recovery" => LocalizedMessage("battle.heal.recovery", Target(), state.Amount),
+                "Damage" when state.IsCutoff => LocalizedMessage("battle.scene.cutoff", Target()),
                 "Damage" => LocalizedMessage(state.Critical ? "battle.scene.critical" : "battle.scene.damage", Target(), state.Amount),
                 "Dodge" => LocalizedMessage("battle.scene.dodge", Target()),
                 "Ineffective" => LocalizedMessage("battle.scene.ineffective", Target()), _ => null,
