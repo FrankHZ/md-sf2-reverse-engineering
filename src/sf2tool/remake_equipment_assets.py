@@ -4,7 +4,11 @@ from pathlib import Path
 
 from sf2tool.remake_exploration_content import _selected_growth
 from sf2tool.remake_exploration_programs import OriginalPrograms
-from sf2tool.remake_exploration_scene import ally_sprites, promotion_sprite_fields, promotion_sprites
+from sf2tool.remake_exploration_scene import (
+    ally_sprites,
+    promotion_sprite_fields,
+    promotion_sprites,
+)
 from sf2tool.remake_promotion_appearances import (
     installed_png,
     mount_walking,
@@ -28,7 +32,9 @@ def equipment_variants(library, source):
             if destination is not None:
                 expected.add((member, destination))
     walking = read_json(library / "walking/index.json")["records"]
-    variants = [row for row in walking["classes"] if (row["member"], row["sourceClass"]) in expected]
+    variants = [
+        row for row in walking["classes"] if (row["member"], row["sourceClass"]) in expected
+    ]
     if {(row["member"], row["sourceClass"]) for row in variants} != expected:
         raise ValueError("prepared bodies do not cover legal member/class pairs")
     return variants
@@ -36,16 +42,23 @@ def equipment_variants(library, source):
 
 def legal_weapons(source, role):
     code = next(row["code"] for row in source["classes"] if row["id"] == role)
-    return [row["id"] for row in source["items"] if "WEAPON" in row["itemTypeTokens"]
-            and (row["equipFlagsExpression"] == "ALL" or code in row["equipFlagTokens"])]
+    return [
+        row["id"]
+        for row in source["items"]
+        if "WEAPON" in row["itemTypeTokens"]
+        and (row["equipFlagsExpression"] == "ALL" or code in row["equipFlagTokens"])
+    ]
 
 
 def mount_equipment_appearances(library, scratch, scene, source, *, selected=None):
     """One body per member/class and explicit bare/weapon keys, with source-selected sequences."""
     variants = equipment_variants(library, source)
     directory = library / "bodies"
-    bodies = {(row["sprite"], row["palette"]): row
-              for row in read_json(directory / "index.json")["records"] if row["side"] == "ally"}
+    bodies = {
+        (row["sprite"], row["palette"]): row
+        for row in read_json(directory / "index.json")["records"]
+        if row["side"] == "ally"
+    }
     animations = read_json(directory / "ally-animations.json")
     weapons = read_json(library / "weapons/index.json")["records"]
     previous = list(scene["actors"])
@@ -61,8 +74,11 @@ def mount_equipment_appearances(library, scratch, scene, source, *, selected=Non
         body = bodies.get((sprite, palette))
         if body is None:
             # PLDN is the existing separately prepared family, deliberately omitted by bodies().
-            donor = next(row for row in previous if row["side"] == "ally"
-                         and row["sprite"] == sprite and row["palette"] == palette)
+            donor = next(
+                row
+                for row in previous
+                if row["side"] == "ally" and row["sprite"] == sprite and row["palette"] == palette
+            )
             frames, idle_ticks = donor["frames"], donor.get("idleTicks", 0)
         else:
             frames = []
@@ -72,8 +88,17 @@ def mount_equipment_appearances(library, scratch, scene, source, *, selected=Non
                 frames.append(key)
             idle_ticks = body["idleTicks"]
         # Preserve accepted HD selections for an existing body while publishing its original frames.
-        donor = next((row for row in previous if row["side"] == "ally" and row["sprite"] == sprite
-                      and row["palette"] == palette and len(row["frames"]) == len(frames)), None)
+        donor = next(
+            (
+                row
+                for row in previous
+                if row["side"] == "ally"
+                and row["sprite"] == sprite
+                and row["palette"] == palette
+                and len(row["frames"]) == len(frames)
+            ),
+            None,
+        )
         if donor is not None and "hdRasters" in scene:
             for old, new in zip(donor["frames"], frames, strict=True):
                 if old in scene["hdRasters"]:
@@ -83,29 +108,50 @@ def mount_equipment_appearances(library, scratch, scene, source, *, selected=Non
             weapon_frames = []
             if selector != 255:
                 layer = {"rasters": {}}
-                raw_frames = shared_color_weapon_frames(library / "weapons", weapons, scratch, layer, item, scale=1)
+                raw_frames = shared_color_weapon_frames(
+                    library / "weapons", weapons, scratch, layer, item, scale=1
+                )
                 weapon_frames = ["equipment/" + key for key in raw_frames]
-                scene["rasters"].update(("equipment/" + key, value) for key, value in layer["rasters"].items())
+                scene["rasters"].update(
+                    ("equipment/" + key, value) for key, value in layer["rasters"].items()
+                )
             draw = bool(weapon_frames)
             ordinary = prepared_ally_sequence(sprite, animations[sprite], draw)
             attack = {2: 80, 13: 81, 17: 82}.get(sprite, sprite) if selector in (12, 13) else sprite
-            sequences = dict(idle=ordinary, item=ordinary,
-                             attack=prepared_ally_sequence(attack, animations[attack], draw),
-                             dodge=prepared_ally_sequence(sprite + 40, animations[sprite + 40], draw))
+            sequences = dict(
+                idle=ordinary,
+                item=ordinary,
+                attack=prepared_ally_sequence(attack, animations[attack], draw),
+                dodge=prepared_ally_sequence(sprite + 40, animations[sprite + 40], draw),
+            )
             if role in (3, 4, 12, 17, 18, 19, 20, 27):
                 sequences["cast"] = ordinary
             if role == 20:
                 sequences["special"] = prepared_ally_sequence(83, animations[83], False)
             if role == 28:
                 sequences["cast"] = prepared_ally_sequence(84, animations[84], False)
-            additions.append(dict(side="ally", sprite=sprite, palette=palette, classId=role,
-                                  members=[member], item=item, frames=frames, weaponFrames=weapon_frames,
-                                  sequences=sequences, idleTicks=idle_ticks))
+            additions.append(
+                dict(
+                    side="ally",
+                    sprite=sprite,
+                    palette=palette,
+                    classId=role,
+                    members=[member],
+                    item=item,
+                    frames=frames,
+                    weaponFrames=weapon_frames,
+                    sequences=sequences,
+                    idleTicks=idle_ticks,
+                )
+            )
     if selected is None:
         scene["actors"] = [row for row in previous if row["side"] != "ally"] + additions
         if "fieldDeath" in scene:
-            scene["fieldDeath"]["allies"] = [dict(character=row["member"], sprite=row["sprite"])
-                                              for row in variants if row["slot"] == 0]
+            scene["fieldDeath"]["allies"] = [
+                dict(character=row["member"], sprite=row["sprite"])
+                for row in variants
+                if row["slot"] == 0
+            ]
     else:
         scene["actors"].extend(additions)
     return additions
@@ -116,10 +162,15 @@ def bind_equipment_members(library, package, source, upstream):
     variants = equipment_variants(library, source)
     codes = {row["id"]: row["code"] for row in source["classes"]}
     starts = {row["id"]: row["startClass"] for row in source["allies"] if row["id"] < 30}
-    selections = [dict(member=row["member"], **{"class": codes[row["sourceClass"]]}) for row in variants]
+    selections = [
+        dict(member=row["member"], **{"class": codes[row["sourceClass"]]}) for row in variants
+    ]
     promotions = [row for row in selections if starts[row["member"]] != row["class"]]
-    compiler = OriginalPrograms({"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}},
-                                upstream, promotion_classes=tuple(promotions))
+    compiler = OriginalPrograms(
+        {"resources": {"standaloneScriptPrograms": [], "initSourcePrograms": []}},
+        upstream,
+        promotion_classes=tuple(promotions),
+    )
     compiler.sources = {"disasm/sf2enums.asm"}
     world = package["world"]
     current = {(row["actor"], row["classId"]): row for row in world["growth"]}
@@ -132,12 +183,18 @@ def bind_equipment_members(library, package, source, upstream):
     appearances = {row["character"]: row for row in ally_sprites(compiler)}
     walking = read_json(library / "walking/index.json")["records"]
     existing_sprites = {row["sprite"] for row in world["presentation"]["sprites"]}
-    mount_walking(library / "walking", world, walking["sprites"],
-                  sorted({row["sprite"] for row in variants} - existing_sprites))
+    mount_walking(
+        library / "walking",
+        world,
+        walking["sprites"],
+        sorted({row["sprite"] for row in variants} - existing_sprites),
+    )
     portraits = world["presentation"]["portraits"]
     wanted = {walking["sprites"][row["sprite"]]["portrait"] for row in variants} - {None}
     for row in read_json(library / "portraits/index.json")["records"]:
-        if row["portrait"] in wanted and not any(old["portrait"] == row["portrait"] for old in portraits):
+        if row["portrait"] in wanted and not any(
+            old["portrait"] == row["portrait"] for old in portraits
+        ):
             portraits.append(dict(row, raster=installed_png(library / "portraits", row["raster"])))
 
     def population(value):
