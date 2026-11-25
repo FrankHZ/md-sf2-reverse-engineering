@@ -1107,3 +1107,26 @@ Continue did not admit them; correcting the controlled ATT to5 admits the same c
 One failed-record run also ended in the existing Godot finalizer access violation0xC0000005;
 its cause remains Unknown and belongs with #1716. Final accepted observations have no session/presenter/script/audio error. ObjectDB
 exit warnings remain with #1716 and are not a lifecycle pass. No failed record is relabeled.
+
+
+### BUFF optional-group compatibility
+
+BUFF's original presentation is optional: the scene must have both77 and97 selectable
+through the existing exact-timer/default/sole-finite rules in its upcoming battle-music
+context (allied2 or enemy5). `SessionAudio.CanSelectSceneEffects` performs that read-only
+selection without caching or decoding media. Missing or ambiguous selections keep the prior
+support Magic message path or equipment Item presentation. Thus equipment-v2 remains usable;
+buff-v1 enables the original group. This availability check does not catch content/media
+admission errors: a declared corrupt WAV/digest remains an error, never an optional fallback.
+
+**Confirmed:** `compat-old-boost1` runs ordinary learned BOOST1 against unchanged equipment-v2:
+no BUFF node activity or77/97 requests, prior message presentation,2 MP once, four ordered
+successful recipients and next ActionChoice. `compat-new-boost1` against buff-v1 retains
+mounted rasters/flash, one77/fourteen97 and return. Actor HP/MP/status/stats/items/EXP, both RNG
+seeds and ordered results match across the two observations. Both exit0; the old-package
+sample retains4 ObjectDB exit warnings. The earlier missing-audio/slot failures remain failed.
+No wider matrix or retired suite was repeated for this correction.
+
+`derived/issue2282/review-v2` adds the two receipts and updated launchers. Use
+`-Case boost1 -Legacy` for equipment-v2 and omit `-Legacy` for buff-v1, with a fresh Sample
+and disposable SaveRoot as above. The complete buff-v1 media package is unchanged.

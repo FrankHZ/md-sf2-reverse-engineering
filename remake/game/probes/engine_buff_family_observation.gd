@@ -6,6 +6,7 @@ var spell_name := OS.get_environment("SF2_DEBUFF_SPELL")
 var rank_ := int(OS.get_environment("SF2_DEBUFF_RANK"))
 var item_id := int(OS.get_environment("SF2_DEBUFF_ITEM"))
 var target_id := OS.get_environment("SF2_DEBUFF_TARGET")
+var legacy := OS.get_environment("SF2_BUFF_LEGACY") == "1"
 var frames_seen := {}
 var results := []
 var cast_seen := false
@@ -34,6 +35,10 @@ func settle() -> Dictionary:
         if s.phase == null and current.hasBattleControl and current.movement == null:
             var b := board()
             if b.stage == "Movement" and b.stopReason == "PlayerInput": return b
+        if legacy and s.spell != null and s.spell.Value == spell_name:
+            check(s.buff == null, "legacy content does not activate incomplete BUFF group")
+            if item_id == 0:
+                check(not s.allyVisible and not s.backgroundVisible, "legacy Magic retains message presentation")
         if s.buff != null:
             check(s.spell.Value == spell_name and s.spell.Level == rank_, "selected BUFF action")
             check(s.spellAnimationSelector == (40 if rank_ == 2 else 8) and s.backgroundVisible and s.allyVisible and not s.enemyVisible, "BUFF selector and ally-only composition")
@@ -142,13 +147,13 @@ func verify_return(after: Dictionary) -> void:
             check(current.attack > prior.attack if spell_name == "attack" else current.defense > prior.defense and current.agility > prior.agility, "actual stat increase")
         else:
             check(current.attack == prior.attack and current.defense == prior.defense and current.agility == prior.agility, "ineffective recast preserves stats")
-    check(not frames_seen.is_empty() and cast_seen and flashes_seen, "actual raster, cast and flash boundary")
+    check(legacy or not frames_seen.is_empty() and cast_seen and flashes_seen, "actual raster, cast and flash boundary")
     var charges := events.filter(func(e): return e.Kind == "mp" and e.Actor.Value == caster_id)
     check(charges.is_empty() if item_id > 0 else charges.size() == 1 and charges[0].Before-charges[0].After == (2 if rank_ == 1 else 5), "item free or single rank MP payment")
     var targets := results.map(func(row): return row.target)
     var expected: Array = ["ally-7"] if spell_name == "attack" else (["ally-0","ally-4","ally-7","ally-9","ally-11","ally-13","ally-15","ally-18"] if rank_ == 2 else (["ally-4","ally-7","ally-11","ally-15"] if item_id == 0 else ["ally-1","ally-4","ally-7","ally-11"]))
     check(targets == expected, "ordered recipients")
-    check(cast_index == (13 if item_id == 80 else 25 if item_id > 0 else 1), "actual source Magic or Item gesture")
+    check(legacy or cast_index == (13 if item_id == 80 else 25 if item_id > 0 else 1), "actual source Magic or Item gesture")
     check(targets.size() == 1 if spell_name == "attack" else targets.size() >= 2, "actual single or area recipients")
     check(results.any(func(row): return row.kind == "Status"), "successful recipient")
     if OS.get_environment("SF2_DEBUFF_MIXED") == "1":
@@ -161,8 +166,8 @@ func verify_return(after: Dictionary) -> void:
         check(damage.size() == 1 and damage[0].Before == item_id and damage[0].After == item_id + 256, "selected copy damaged once")
         check(holder.items.any(func(word): return int(word) == item_id + 256), "actual held damaged copy")
     var audio: Dictionary = JSON.parse_string(host.call("ReadAudioObservationJson"))
-    check(audio.error == null and audio.receipts.filter(func(e): return e.Command == 77 and e.Operation == "started").size() == 1, "one cast cue")
-    check(audio.receipts.filter(func(e): return e.Command == 97 and e.Operation == "started").size() == 14, "fourteen accelerating PSH cues")
+    check(audio.error == null and audio.receipts.filter(func(e): return e.Command == 77 and e.Operation == "started").size() == (0 if legacy else 1), "one cast cue or legacy messages")
+    check(audio.receipts.filter(func(e): return e.Command == 97 and e.Operation == "started").size() == (0 if legacy else 14), "fourteen PSH cues or legacy messages")
     check(scene().scene.buff == null and scene().scene.buffBackdrop == "000000ff", "effect retired and black restored")
     samples.append({"after":after,"results":results,"frames":frames_seen,"charges":charges,"animationIndex":cast_index,"audio":audio})
     if not after.is_empty():

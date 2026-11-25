@@ -256,6 +256,23 @@ internal sealed partial class SessionAudio : IDisposable
 
     private string Select(int command) => ExplorationAudio.SelectCue(_assets, command, TimerB);
 
+    // Optional presentation groups must resolve in the upcoming scene's music
+    // context, even while Initialize still has the battlefield timer. Assets
+    // have already passed content/media admission; this does not catch its errors.
+    internal bool CanSelectSceneEffects(int music, params int[] commands)
+    {
+        try
+        {
+            int timer = _assets[ExplorationAudio.SelectCue(_assets, music, TimerB)].TimerB;
+            foreach (int command in commands) ExplorationAudio.SelectCue(_assets, command, timer);
+            return true;
+        }
+        catch (InvalidOperationException error) when
+            (error.Message is "audio-command-unavailable" or "audio-command-ambiguous")
+        { return false; }
+    }
+
+
     internal void Play(int command)
     {
         if (command != 0) Play(Select(command));

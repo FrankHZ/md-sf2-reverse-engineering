@@ -68,7 +68,8 @@ internal sealed partial class BattleSceneView : Control
         DebuffSelector(state) is not null &&
         Content is { } content && DebuffEffectView.Resources.All(content.Rasters.ContainsKey);
 
-    private bool PreparedBuff(BattleSceneState state) => Content is not null && BuffEffectView.Selector(state) is not null;
+    private bool PreparedBuff(BattleSceneState state) => Content is not null && BuffEffectView.Selector(state) is not null &&
+        _audio?.CanSelectSceneEffects(_session.Current.Battle.GetActor(state.Actor).IsAlly ? 2 : 5, 77, 97) == true;
 
     private bool UsesMessagePlayback(BattleSceneState state) =>
         state.SupportSpell is not null && state.EquipmentItem is null && !PreparedDebuff(state) && !PreparedBuff(state) || state.IsSilencedCast ||

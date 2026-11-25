@@ -1462,3 +1462,7 @@ WAV), before the full serial publication. One output/staging each below500MiB an
 scratch/RAM are the initial budget. No source capture or new producer code is required.
 [Mechanism, native reproduction, retained failures and Unknowns](../godot/spell-presentation.md#buff-family-playback-2282)
 retain the acceptance boundary. Private media is not redistributable.
+
+The BUFF group is optional. Existing equipment-v2 and authored content without selectable77/97
+retain their prior support messages/Item presentation; buff-v1 enables the original path.
+Declared corrupt media still fails admission. See the [complete-group boundary](../godot/spell-presentation.md#buff-optional-group-compatibility).
