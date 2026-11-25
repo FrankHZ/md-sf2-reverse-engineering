@@ -59,7 +59,7 @@ encounter admission still control the available action. The
 owns ordered gameplay delivery. [BattleSceneView](../../game/src/Battles/BattleSceneView.cs) and
 [AttackSpellView](../../game/src/Battles/AttackSpellView.cs) establish the adapter paths. Ordinary
 placeholder attack Magic hides the scene actors and scenery and draws element-specific shapes.
-Ordinary support Magic and suppressed casts use cards and messages on black. Item gestures, number
+Prepared DISPEL uses the mounted scene and cloud group. Other ordinary support Magic and suppressed casts use cards and messages on black. Item gestures, number
 of recipients and actual reaction results follow the committed action.
 
 ## Graphics variants
@@ -86,7 +86,7 @@ listed by rank below. [Binding contract](../content/asset-inventory.md#battle-ra
 | BOOST 2 | BUFF1 v2 | **Partial**. Private Magic uses the shared cast scene, ordered AGI/DEF and ineffective messages, and return to battle input. Enemy SUPPORT still rejects the packed rank. | [#2104] retail BUFF1 v2 effect. [Battle26 observation](../domain/support-spell-status-design.md#boost-2-admission-and-observation) |
 | SLOW 1–2 | DEBUFF1 v1–v2 | **Partial**. Both Sarah ranks have private Battle26 witnesses with actual AGI/DEF reactions, expiry/state rules and the black support scene. The original visual effect is absent. | [#2104] later DEBUFF work with DISPEL. [Support evidence](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) |
 | ATTACK 1 | BUFF1 v1 | **Partial** through Power Ring Use with item gesture, target ATT, durability and subsequent control. The current private Magic binding omits ATTACK. Battle25 Dark Soldier holds the spell and its ordinary AI rejects it. | [#2104] BUFF effect after the primary spell work. [#1818] other eligible equipment or learned callers as admitted. [Item-use rules and evidence](../domain/equipment-use-repair-design.md) · [Battle25](../application/battle25-north-cave.md) |
-| DISPEL 1 | DEBUFF1 v1 | **Partial**. The authored silence witness covers ordered area results, success/no-effect, paid suppressed cast, expiry and later effective cast. Private Dark Smoke is a pre-voyage candidate and learned Kazin can use the admitted rank. Magic shows cards/messages on black without a cast gesture or DEBUFF art. Suppressed Magic correctly omits the effect. Physical silence uses its hit and notice. | [#2104] candidate pre-voyage support follow-up. Confirm ordinary legal Dark Smoke/ally use when relevant. Grand Cannon Use is later equipment work under [#1818]. [Silence observation](../development-and-verification.md#silence-observation) |
+| DISPEL 1 | DEBUFF1 v1 | **Original assets bound** for learned Kazin and existing Dark Smoke AI in the [DISPEL successor](../content/presentation-assets.md#dispel-successor). Controlled mixed results, paid silence and Original/HD fallback use ordinary input and completion. | [DISPEL playback](#dispel-playback-implementation-2238) records the source, responsibilities and reproduction. Natural learning/reach and hardware timing remain **Unknown**. Grand Cannon Use remains with [#1818]. |
 | MUDDLE 1–2 | DEBUFF1 v1 for both | **Partial**. Private learned Kazin Magic uses both ranks and the support scene's result delivery. Controlled Battle25 rank-2 automatic actions and cold Continue have gameplay witnesses. The DEBUFF art remains pending. Giant Knuckles Use points to rank 1 in the source. | [#2104] DEBUFF playback. [Accepted MUDDLE evidence](../domain/hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25) |
 | DESOUL 1–2 | DESOUL v1–v2 | **Learned Magic bound.** Controlled Battle26 Kazin casts both ranks with spell-8 icons and localized cast, instant-death, ineffective and reward messages on black. Dark Sword Use selects rank 1 in the source and has no binding here. | [#2104] owns original effects and timing. [DESOUL reproduction](../domain/hostile-spells-design.md#controlled-kazin-input-and-cold-continue) |
 | SLEEP 1 | DEBUFF1 v1 | **Partial**. A controlled Tyrin 25 Battle26 slot exercises private Magic, both original icons, localized result/no-effect feedback and cold Continue with an active sleep count. The support scene uses its existing message presentation. Natural Tyrin progression to a cast remains **Unknown**. | [#2104] DEBUFF playback. [SLEEP boundary](../domain/hostile-spells-design.md#sleep-1-implementation-and-evidence) |
@@ -165,9 +165,9 @@ foreground visual acceptance remain **Unknown** where no named witness covers th
 - **P2 after the two child issues.** [#2104] retains first-use review of pre-voyage recovery and
   support. The [enemy healing family](#enemy-healing-family-2227) covers its bounded HEAL1
   recovery. Enemy AURA delivery remains **Unknown**. The [DETOX successor](#prepared-detox-presentation)
-  covers learned ranks 1–3. Use DISPEL's actual status/suppression consumer for the first
-  DEBUFF decision. These are candidate presentation
-  slices. [#1456] governs foreground acceptance and [#1616] the wider design review.
+  covers learned ranks 1–3. [DISPEL playback](#dispel-playback-implementation-2238) supplies
+  the bounded first DEBUFF consumer. SLOW/MUDDLE/SLEEP and BUFF consumers retain their
+  individual follow-up acceptance. [#1456] governs foreground acceptance and [#1616] the wider design review.
 - **P3 for current later content.** [#2104] groups the remaining elemental variants and shared
   KATON/RAIJIN art, then BUFF/DEBUFF as actual callers need them. Private allied AURA2–4
   has [controlled ordinary coverage](../domain/gameplay-rules.md#private-learned-aura-ranks).
@@ -798,3 +798,105 @@ rank masks, status refresh, equipped curse and separate item/Field handling. Rel
 adapter builds and the three standalone tool builds passed. Public Ruff, design-contract and
 research-index checks passed. The committed engine-scoped plan and actual CI conclusions are in
 the Draft PR handoff.
+
+
+## DISPEL playback implementation #2238
+
+**Standard, implemented for independent acceptance.** The bounded outcome is learned Kazin DISPEL1 and the already
+admitted enemy DISPEL consumer using prepared DEBUFF1, with ordered effective/ineffective
+results and paid silence suppression. Domain owns rolls, cost, status and rewards.
+Application owns reaction order and completion tokens. Godot owns cast pose, scene actors,
+clouds and presentation time. SLOW, MUDDLE and SLEEP retain their pending art acceptance.
+
+**Confirmed source structure.** At SF2DISASM c834c652, animation/debuff.asm selects
+DEBUFF tileset 9, overrides palette slots 9/13/14 with 0888/0BBB/0DDD, and initializes
+four staggered clouds. animation/update/debuff.asm uses 32×32 column-major sprites and
+frames 0,1,2,1,0 at five updates per frame, followed by a randomized hidden interval.
+Coordinates start at (64,32) for the enemy recipient and (168,48) for the ally recipient,
+with separate 0–31 offsets. The adapter uses a local presentation PRNG. Hardware timing
+and natural reach remain **Unknown**. The existing scene clock and completion tokens
+provide the modern delivery boundary.
+
+The three-frame pilot is 5,614 serialized bytes for Original plus 4× HD. The complete
+174-file base is 361,493,189 bytes and its largest scene is 3,188,370 bytes. Publication
+adds this group to declared scenes through the existing closed-package publisher.
+Budget is 400 MB for the successor and another 400 MB for its atomic staging, under
+1 GiB process memory, serial execution and no capture stream. Work is linear in package
+bytes plus three fixed rasters. Replan if a scene exceeds the existing 4 MiB limit or
+publication exceeds the budget. The pilot uses the accepted graphics filter and checks
+alpha masks. Initial pilot failures were missing optional Pillow and unmasked source
+palette words. The corrected producer uses the existing Pillow invocation and VDP
+0x0EEE color mask. The published successor is 361,637,333 bytes across 174 files, with a 3,193,914-byte maximum scene. A disposable complete copy with one missing HD frame supplies the fallback observation and uses the same 400 MB scratch budget.
+
+
+The cloud component owns a deterministic cosmetic sequence and the cast-trigger pause.
+A minimum 30 cloud-update ticks after the 28-tick flash keeps the three frames deliverable
+with instant text. This is a modern duration choice. The existing presenter supplies caster
+pose, current reaction target, scenery, and one cast sound. Clouds continue through result
+reading and retire before rewards/end. Support TargetEnter retains both opposing actors
+in place. It does not use the recovery-only ally slide. Payment, rolls, status and rewards
+remain in the existing Domain/Application path. Missing Original groups retain legacy cards.
+
+**Confirmed bounded native observations.** The production input probe
+`remake/game/probes/engine_dispel_art_observation.gd` checks mounted Sprite2D textures,
+three source frames, 32×32 logical size, target side, foreground layer, cast completion,
+ordered messages, single 5 MP payment and usable subsequent action input.
+
+| Controlled case | Observed result |
+| --- | --- |
+| Battle04 Kazin, Original | Soldier then Bat resist; all three clouds and return |
+| Same cast, complete HD and Reduced Flash | 4× group at original extent; cast tint suppressed |
+| Same cast, one missing HD frame | Entire cloud group falls back to Original |
+| Silenced Kazin | 5 MP paid; no effect RNG, status writes or cloud playback |
+| Battle07 Kazin, seed 123456789 | Mage resists, Cleric status 128→896; ordered mixed results |
+| Battle07 Dark Smoke AI | SUPPORT selects Sarah then Kazin, both resist; 20→15 MP, ally-side clouds and return |
+
+### DISPEL reproduction
+
+Prepare the successor using its linked package owner. Load worktree private inputs and build
+Debug with the locked SDK. Select the package world, main scene, entry and six opening inputs
+together. Set a disposable save root/namespace and a worktree-local output path. Use version-1
+input settings with instant English text and the named graphics/Reduced Flash values.
+
+Copy `remake/reference/inputs/battle01-player-ready.json` to local `party.json`. Replace
+`allies` with the following controlled Kazin row. His MAGE book is legal at level 13 according
+to pinned `data/stats/allies/stats/allystats04.asm`. The hook validates class, equipment and
+learned entries before mounting.
+
+```json
+[{"id":4,"classId":3,"level":13,"maxHp":10,"hp":10,"maxMp":7,"mp":7,"attack":9,"defense":4,"agility":6,"move":5,"status":0,"items":[213,0,127,127],"spells":[75,7,6,63],"exp":0,"kills":0,"defeats":0}]
+```
+
+Create a local start document with `start.battle`, `activeAllies`, `partyInput` set to the
+sibling party filename, and `actors` rows containing `actor`, `position` and optional
+`status`/`hp`. The optional `mainSeed` selects initial state through GameSession.Start.
+
+- Original/HD/fallback/silence use battle-4, active ally-0 and ally-4, at (4,7) and (5,7).
+  Put enemy-1 at (5,8) and enemy-2 at (6,8). Silence sets ally-4 status 768.
+- Mixed success uses battle-7 and mainSeed 123456789, active ally-0 at (12,34) and ally-4
+  at (8,24). Put enemy-2 at (9,24) and enemy-3 at (9,25), both initially status 192.
+  Set the other eight enemies' HP to zero in this controlled start.
+- Enemy SUPPORT uses battle-7, active ally-0 at (12,34), ally-4 at (8,24), ally-1 at
+  (9,24), and enemy-0 at (17,24). Set enemy-1 through enemy-9 HP to zero. This satisfies
+  the existing activation and SUPPORT scoring boundary after ATTACK1 cannot reach.
+
+Set SF2_DISPEL_START to the absolute start filename, SF2_DISPEL_CASTER to ally-4 or enemy-0,
+SF2_DISPEL_SILENCED to 1 only for silence, SF2_DISPEL_SUCCESS to 1 only for mixed success,
+and SF2_DISPEL_EXPECT_HD to 1 only for the complete HD group. Set other switches to 0.
+Set SF2_OBSERVATION_OUTPUT to a fresh local JSON. The missing-HD case uses a disposable
+package copy with only `debuff-1/frame-2` removed from Battle04's hdRasters.
+
+```powershell
+& $env:GODOT_BIN --headless --audio-driver Dummy --rendering-method gl_compatibility `
+  --fixed-fps 60 --resolution 1920x1080 --path remake/game `
+  --script res://probes/engine_dispel_art_observation.gd -- --input-settings $settings
+```
+
+**Completed failures.** The first native run observed only one cloud frame before immediate
+result acknowledgements, corrected by the finite minimum duration. Enemy setups first failed
+blocked placement, then left Smoke outside its activation region or allowed ATTACK1 first.
+Their receipts remain in local issue2238. Some exited with the existing ObjectDB warning.
+The mixed success recipe deliberately sets initial seed and sleeping targets. These are
+controlled states, with natural acquisition and natural encounter reach **Unknown**.
+SLOW/MUDDLE/SLEEP art, equipment consumers, hardware timing and human visual acceptance remain
+open under their existing owners.

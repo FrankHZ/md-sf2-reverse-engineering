@@ -896,3 +896,20 @@ battle scene. Select its `world.json`, `main-scenes.json`, `entry/entry.json` an
 The [resource trace](asset-inventory.md#detox-family-2232) records provenance and closure,
 and the [spell owner](../godot/spell-presentation.md#prepared-detox-presentation) records
 the controlled native runs.
+
+
+### DISPEL successor
+
+`derived/issue2238/pre-voyage-dispel-v1` is the complete successor to the #2232 package.
+It adds three Original/4× HD DEBUFF1 rasters in each declared battle scene. Select world,
+main scene, entry and six opening inputs together. Registered retail effects and the accepted
+filter checkout are read-only inputs. Publish to a fresh absolute local or registered derived path.
+
+```powershell
+uv run --with pillow python -m sf2tool.remake_dispel_art `
+  --base $base --effects $effects --output $output --gfx-root $gfxRoot
+```
+
+The [resource inventory](asset-inventory.md#debuff1-family-2238) records source mapping and
+volume. [Playback and reproduction](../godot/spell-presentation.md#dispel-playback-implementation-2238)
+record the accepted caller boundary and pending independent acceptance.
