@@ -11,10 +11,10 @@ recruitment, maps, smithing and other acquisition services remain with the campa
 legal detached inputs can validate their equipment before those routes exist. No real save
 or backup is an acceptance workspace. This section owns the implementation sequence;
 the [complete item reconciliation](../content/campaign-items.md#whole-game-equipment-reconciliation)
-owns individual rows. Slices A/B implement static equipment and physical prowess below; whole-game support is still incomplete
+owns individual rows. Slices A/B/C implement static equipment, physical prowess and turn recovery below; whole-game support is still incomplete
 and this does not close [#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
 
-The current successor is `derived/issue2271/equipment-v1`, built from the accepted slice-A package.
+The current successor is `derived/issue2272/equipment-v1`, built from the accepted slice-B package.
 It retains SORC **v3** and its catalog, with independent
 opening and Witch selections retained. Do not substitute rejected v2, earlier v1, or a removed
 producer checkout. Reuse the existing Domain/Application/Content/adapter boundaries and
@@ -189,13 +189,96 @@ policy. Documentation-only design uses document checks, not those runtime gates.
   campaign boundary; original animation-only gaps remain explicitly with #2104. Neither
   boundary licenses claiming natural acquisition or original animation from controlled play.
 
+## Equipped turn recovery (#2272)
+
+**Confirmed (implemented and bounded remake observation).** All85 weapons and nine rings now
+have passive definition admission, including the two player-refused mask-NONE weapons. Holy
+Staff97 adds ATT29/HP3, Mystery Staff100 ATT39/MP2, and Life Ring124 HP5. Existing class masks,
+equipped words and source nonbreakable constraints apply. New equipment Use remains D and
+exhaustive legal body/class closure remains E; this slice does not close #2268.
+
+The Domain `EquipmentRecoveryRules` calculates each capped delta from the live equipped weapon
+or ring and current vitals. `BattleActionCommitter.NeedsAfterTurn` admits an otherwise status-free
+Stay when a positive delta exists. The existing `BattleAfterTurnContinuation` runs weapon HP,
+weapon MP, ring HP, poison and final stat refresh after the existing status counters. Recovery
+commits before its356/357 notice, matching the pinned source; matching presentation completion
+advances to the next step without applying the same recovery twice. Holy plus Life therefore
+shows two independent deltas, regardless of carried-slot order. Full resources produce no notice.
+No new queue, clock, persistence field, RNG draw or EXP award is introduced. Dead/off-board/reserve
+actors cannot recover; query, equipment change, refresh and save/load do not invoke the turn rule.
+
+The small [engine behavior cases](../../tests/Sf2.Remake.Engine.Tests/EquipmentRecoveryTests.cs)
+exercise both carried orders, both resources, individual caps, poison ordering, empty-status Stay,
+multi-entry turns, stale completion, free refresh/removal, dead/absent/reserve actors and fabricated
+broken-word refusal. All9 cases pass. The engine run passed3353 with50 existing private skips;
+adapter Release and Debug builds passed. This retains A/B behavior in the same engine run.
+
+Direct inspection of pinned `c834c652b6862bc5679fd7f69a38a7093206efc6`
+[`ProcessAfterTurnEffects`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleloop/processafterturneffects.asm)
+confirmed recovery writes before each positive-delta message and poison afterward. This is static
+original evidence, not original natural runtime evidence; original reach/timing remains **Unknown**.
+
+### C reproduction and retained failures
+
+Load `local/private-inputs.ps1` in the invoking PowerShell process and use the existing controlled
+SDK environment, `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, `UseSharedCompilation=false` and
+`nodeReuse:false`. Run `uv run sf2 verify engine`, `uv run sf2 verify adapter`, then a Debug adapter
+build for native play. Subsequent test-only correction used the engine project with
+`--configuration Release --no-restore --filter FullyQualifiedName~EquipmentRecoveryTests`.
+The clean-head default plan has no unclassified paths. Its engine interpretation uses
+`uv run sf2 verify plan --scope engine --base origin/main --head HEAD`: this is an equipment
+consumer/asset mount change, with no research extraction or harness semantics change. Engine,
+adapter, PrivateAdmission and LiveInspection builds and the selected public ruff/design-contracts/
+research-index checks passed. No normal Python research/full profile or H3 run is required here.
+
+The immutable `derived/issue2272/review-v1` registration holds `Boot.ps1`, `consumer/Verify.ps1`,
+runner, controlled seed and receipts. `derived/issue2272/equipment-v1` is the complete package;
+the unchanged #2266 display catalog and independent #2252 opening/#2255 Witch remain selected.
+Boot stages only helpers into checkout-local scratch and requires a fresh external disposable
+save root/namespace. The source seed is A's `battle-91-seed-v2.json`. On its detached copy, ally1
+receives the accepted VICR progress/loadout from
+`derived/issue1956/vicar-review/receipts/vicar-heal101/after-action-slot.json`; both live and progress
+item words become `[225,252,0,127]`, HP10, MP5, ATT77, status0 and queue cursor0. Other state is
+retained. Re-encode the UTF-8 payload with the existing save-envelope digest; do not modify either
+registered input. Late possession and this arranged turn are **controlled**, not natural acquisition.
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2272/review-v1'
+& (Join-Path $review 'consumer/Verify.ps1') -Repo (Get-Location).Path
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Mode recovery `
+    -Sample recovery-review -Journey recovery-review -SaveRoot $freshExternalSaveRoot `
+    -Seed (Join-Path $review 'seeds/controlled-vicar-recovery.json')
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Mode battle-cold `
+    -Sample cold-review -Journey cold-review -SaveRoot $freshExternalSaveRoot -Language zh-CN `
+    -Seed (Join-Path (Get-Location) 'local/issue2272/review/receipts/recovery-review/after-action-slot.json')
+```
+
+`recovery02` uses title Continue, Enter to confirm the current tile, Space to select Stay and
+Enter to commit. Ordinary scene projection shows Sarah HP10→13 with3 HP, then13→18 with5 HP;
+MP5, EXP, both RNG seeds, gold8747 and round1 remain unchanged. Next input belongs to ally4.
+Save and independent Chinese `cold01` Continue/re-save preserve the entire decoded `data`,
+including resource values and worn words. Reader verification resolves eight added legal
+member/class/item appearance keys in all26 scenes, retains A/B keys, SORC growth/books, independent
+opening and catalog, and restores the accepted prior field/battle samples. This is not an extra
+per-item native battle or a claim that all E combinations have been mounted.
+
+Retained failures: `engine-first.log` records a compile-only local-variable shadowing error;
+renaming the new sequence local fixed it before the passing engine run. Native `recovery01`
+used W instead of the configured Space Stay binding and stopped at ActionChoice; no recovery
+occurred and the observer exited2. Corrected `recovery02` exited0 with four ObjectDB warnings;
+`cold01` exited0 with two. Both retain console, resource/message observations and saves. These
+shutdown warnings do not resolve or resume #1716; B's independent post-save access violation
+remains its separately recorded failure. No real player save, screenshot, new original capture,
+mainline chapter or lifecycle investigation is part of this slice.
+
 ## Static equipment and weapon curses (#2270)
 
 **Implemented static-equipment behavior.** The connected source catalog retains
 all 94 definitions and their complete class masks without requiring present custody. The passive
 reader admits 80 weapons and eight rings, including player-ineligible Iron Ball102/Taros Sword110.
 At the slice-A boundary Counter Sword68, Ninja Katana108 and Gisarme109 were excluded;
-[B now admits them](#equipment-prowess-and-gisarme-2271). Holy Staff97, Mystery Staff100 and Life Ring124 remain excluded until C. The source metadata is retained, not used to
+[B now admits them](#equipment-prowess-and-gisarme-2271). [C now admits Holy Staff97, Mystery Staff100 and Life Ring124](#equipped-turn-recovery-2272). The source metadata is retained, not used to
 silently discard their unique effects. New equipment Use remains D, and full legal class/appearance
 closure remains E. No future acquisition, class roster, recruitment or main campaign advance is added.
 
@@ -319,7 +402,7 @@ without cutoff, drop/once custody, gold/EXP, victory/defeat, illegal class, nonb
 unequip and reconstruction. The production reader resolves HERO0/BRN3/BRN16 Counter Sword and
 NINJ5 Ninja Katana/Gisarme in all 26 scenes, preserving prior SORC/rod, opening and catalog admission.
 The [asset successor](../content/asset-inventory.md#prowess-successor-2271) retains the complete package.
-Full legal class/body coverage remains E; Use remains D and recovery remains C.
+Full legal class/body coverage remains E; Use remains D. [C](#equipped-turn-recovery-2272) implements recovery.
 
 The short native observation starts from a **controlled** copy of the registered NINJ promotion
 battle-ready save, with late Gisarme custody, selected turn/RNG and one adjacent enemy arranged.

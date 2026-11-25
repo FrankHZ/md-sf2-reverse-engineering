@@ -6,7 +6,7 @@ namespace Sf2.Remake.Domain.Battles;
 public sealed record BattleWeaponDefinition(byte ItemId, string Name, uint ClassMask, byte AttackBonus,
     byte MinimumRange, byte MaximumRange, byte CriticalIncrease = 0, bool DamageOnUse = false,
     BattleEquipmentStats? Stats = null, bool Cursed = false,
-    byte DoubleIncrease = 0, byte CounterIncrease = 0, byte? CriticalSetting = null);
+    byte DoubleIncrease = 0, byte CounterIncrease = 0, byte? CriticalSetting = null, byte HpRecovery = 0, byte MpRecovery = 0);
 
 // Source effects remain ordered, including repeated operations on the same stat.
 public sealed record BattleEquipmentStat(RingStat Stat, int Adjustment);
@@ -18,7 +18,7 @@ public sealed class BattleEquipmentStats(IEnumerable<BattleEquipmentStat> operat
 public enum BattleEquipmentCategory { Weapon, Ring }
 public enum RingStat { Attack, Defense, Agility, Move }
 internal sealed record BattleRingDefinition(byte ItemId, string Name, uint ClassMask, RingStat? Stat, byte Bonus,
-    bool DamageOnUse = false, int? MovementSound = null, string? DepotDescriptionKey = null, bool Cursed = false);
+    bool DamageOnUse = false, int? MovementSound = null, string? DepotDescriptionKey = null, bool Cursed = false, byte HpRecovery = 0);
 
 public sealed class BattleEquipmentDefinition
 {
@@ -162,6 +162,14 @@ public static class BattleEquipment
     private static BattleRingDefinition? Ring(BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
         EquippedRingSlot(definition, loadout) is { } slot
             ? definition.Equipment!.Rings[(byte)(loadout!.Items[slot] & 127)] : null;
+
+    internal static byte Recovery(BattleActorState actor, int step) => step switch
+    {
+        0 => Weapon(actor.Definition, actor.SourceLoadout)?.HpRecovery ?? 0,
+        1 => Weapon(actor.Definition, actor.SourceLoadout)?.MpRecovery ?? 0,
+        2 => Ring(actor.Definition, actor.SourceLoadout)?.HpRecovery ?? 0,
+        _ => 0,
+    };
 
     internal static int? MovementSound(BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
         Ring(definition, loadout)?.MovementSound;

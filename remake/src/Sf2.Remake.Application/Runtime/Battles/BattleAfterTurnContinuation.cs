@@ -5,6 +5,7 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 namespace Sf2.Remake.Application.Runtime.Battles;
 
 // Pending source command operands, not another actor/turn state authority.
+internal sealed record EquipmentRecoveryNotice(ActorRef Actor, EquipmentRecovery Recovery);
 internal sealed record StunTurnNotice(ActorRef Actor, ushort Before, ushort After);
 internal sealed record SleepTurnNotice(ActorRef Actor, ushort Before, ushort After, int Text);
 internal sealed record CounterExpiryNotice(ActorRef Actor, ushort Before, ushort After);
@@ -47,6 +48,11 @@ internal static class BattleAfterTurnContinuation
         var scene = current.BattleScene!;
         if (command is not CompletePresentation completion || completion.Wait != scene.Token || completion.Kind != scene.CompletionKind)
             return BattleCommandDispatcher.Reject(current, "battle-scene-wait", "command");
+        if (scene.EquipmentRecovery is { } recovery)
+        {
+            List<SessionObservation> changes = [];
+            return BattleAdvancer.Advance(RecoverEquipment(current, recovery.Actor, recovery.Recovery.Step + 1, changes), changes, rules);
+        }
         if (scene.StunTurn is { } stun)
         {
             var unit = current.Battle.GetActor(stun.Actor);
@@ -191,8 +197,24 @@ internal static class BattleAfterTurnContinuation
         !battle.GetActor(actor).NeedsStatRefresh ? battle :
             battle.With(actors: battle.Actors.Select(a => a.Actor == actor ? a.With(refreshStats: true) : a));
 
-    private static SessionSnapshot AfterCounters(SessionSnapshot current, ActorRef actor, List<SessionObservation> observations)
+    private static SessionSnapshot AfterCounters(SessionSnapshot current, ActorRef actor, List<SessionObservation> observations) =>
+        RecoverEquipment(current, actor, 0, observations);
+
+    private static SessionSnapshot RecoverEquipment(SessionSnapshot current, ActorRef actor, int step, List<SessionObservation> observations)
     {
+        if (EquipmentRecoveryRules.Next(current.Battle.GetActor(actor), step) is { } recovery)
+        {
+            long recoverySequence = current.ObservationSequence, revision = current.Revision + 1;
+            var battle = current.Battle.With(actors: current.Battle.Actors.Select(a => a.Actor == actor
+                ? EquipmentRecoveryRules.Apply(a, recovery) : a));
+            observations.Add(new(++recoverySequence, revision, recovery.RestoresMp ? "equipment-mp" : "equipment-hp",
+                actor, recovery.Before, recovery.After));
+            observations.Add(new(++recoverySequence, revision, "equipment-recovery-message", actor,
+                Detail: recovery.Text.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            return new(current.SessionId, revision, recoverySequence,
+                new ActiveBattle(battle, null, new(null, BattleScenePhase.EquipmentRecoveryMessage, 0, new(recoverySequence),
+                    equipmentRecovery: new(actor, recovery))), current.Story, SessionStopReason.PresentationWait);
+        }
         if (current.Battle.Definition.Poison && PoisonTurnRules.Eligible(current.Battle.GetActor(actor)))
             return BattlePoisonContinuation.Begin(current, actor, observations);
         long sequence = current.ObservationSequence;

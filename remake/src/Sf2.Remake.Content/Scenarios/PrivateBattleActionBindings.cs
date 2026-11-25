@@ -143,7 +143,9 @@ internal static class PrivateBattleActionBindings
         item.EquipEffects.All(effect => effect.Type is "INCREASE_ATT" or "DECREASE_ATT" or
             "INCREASE_DEF" or "DECREASE_DEF" or "INCREASE_AGI" or "DECREASE_AGI" or
             "INCREASE_MOV" or "DECREASE_MOV" or "INCREASE_CRITICAL" or "INCREASE_DOUBLE" or "INCREASE_COUNTER" ||
-            effect is { Type: "SET_CRITICAL", Parameter: 6 } or { Type: "NONE", Parameter: 0 });
+            effect is { Type: "SET_CRITICAL", Parameter: 6 } or { Type: "NONE", Parameter: 0 } ||
+            item.Id == 97 && effect is { Type: "HP_RECOVERY", Parameter: 3 } ||
+            item.Id == 100 && effect is { Type: "MP_RECOVERY", Parameter: 2 });
 
     internal static BattleWeaponDefinition Weapon(SourceItemDefinition item, uint classMask) =>
         new(item.Id, item.DisplayName, classMask,
@@ -162,7 +164,9 @@ internal static class PrivateBattleActionBindings
             Cursed: item.ItemTypeExpression.Split('|').Contains("CURSED"),
             DoubleIncrease: checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_DOUBLE").Sum(effect => effect.Parameter)),
             CounterIncrease: checked((byte)item.EquipEffects.Where(effect => effect.Type == "INCREASE_COUNTER").Sum(effect => effect.Parameter)),
-            CriticalSetting: item.EquipEffects.Any(effect => effect.Type == "SET_CRITICAL") ? (byte)6 : null);
+            CriticalSetting: item.EquipEffects.Any(effect => effect.Type == "SET_CRITICAL") ? (byte)6 : null,
+            HpRecovery: checked((byte)item.EquipEffects.Where(effect => effect.Type == "HP_RECOVERY").Sum(effect => effect.Parameter)),
+            MpRecovery: checked((byte)item.EquipEffects.Where(effect => effect.Type == "MP_RECOVERY").Sum(effect => effect.Parameter)));
 
     internal static BattleEquipmentDefinition? EnemyEquipment(PrivateBattleDefinitions definitions, byte attack, IReadOnlyList<ushort> items)
     {

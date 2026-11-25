@@ -8,7 +8,7 @@ internal static class BattleActionCommitter
 {
     internal static bool NeedsAfterTurn(EngineBattleState battle, BattleActorState actor) =>
         actor.Hp > 0 && actor.Position is not null &&
-        (actor.NeedsStatRefresh || (actor.Status & (0x3C1 | MuddleRules.CounterMask | BattleStatCounters.Mask)) != 0 ||
+        (EquipmentRecoveryRules.Next(actor) is not null || actor.NeedsStatRefresh || (actor.Status & (0x3C1 | MuddleRules.CounterMask | BattleStatCounters.Mask)) != 0 ||
             battle.Definition.Poison && PoisonTurnRules.Eligible(actor));
 
     // Called only after an entire player or enemy ACTION has resolved on temporary state.
