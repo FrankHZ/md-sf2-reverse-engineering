@@ -4,7 +4,15 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 namespace Sf2.Remake.Domain.Battles;
 
 public sealed record BattleWeaponDefinition(byte ItemId, string Name, uint ClassMask, byte AttackBonus,
-    byte MinimumRange, byte MaximumRange, byte CriticalIncrease = 0, bool DamageOnUse = false);
+    byte MinimumRange, byte MaximumRange, byte CriticalIncrease = 0, bool DamageOnUse = false,
+    BattleEquipmentStats? Stats = null, bool Cursed = false);
+
+// Source effects remain ordered, including repeated operations on the same stat.
+public sealed record BattleEquipmentStat(RingStat Stat, int Adjustment);
+public sealed class BattleEquipmentStats(IEnumerable<BattleEquipmentStat> operations)
+{
+    public IReadOnlyList<BattleEquipmentStat> Operations { get; } = Array.AsReadOnly(operations.ToArray());
+}
 
 public enum BattleEquipmentCategory { Weapon, Ring }
 public enum RingStat { Attack, Defense, Agility, Move }
@@ -61,16 +69,18 @@ public static class BattleEquipment
         return EffectiveAttack(basis, applied, definition, loadout);
     }
 
-    private static byte EffectiveAttack(byte basis, ushort applied, BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
-        (byte)Math.Min(200, basis + BattleStatCounters.AttackBonus(basis, applied) + Contribution(definition, loadout));
+    internal static byte EffectiveAttack(byte basis, ushort applied, BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
+        ApplyStats(Math.Min(200, basis + BattleStatCounters.AttackBonus(basis, applied)), definition, loadout, RingStat.Attack);
 
     internal static bool WornCurse(BattleActorDefinition definition, ushort word) =>
-        (word & 128) != 0 && definition.Equipment?.Rings.GetValueOrDefault((byte)(word & 127))?.Cursed == true;
+        (word & 128) != 0 && (definition.Equipment?.Rings.GetValueOrDefault((byte)(word & 127))?.Cursed == true ||
+            definition.Equipment?.Weapons.GetValueOrDefault((byte)(word & 127))?.Cursed == true);
 
     internal static ushort RefreshCurse(BattleActorDefinition definition, BattleSourceLoadout? loadout, ushort status)
     {
         // Controlled scenarios can supply independent packed statuses without cursed equipment terms.
-        if (definition.Equipment?.Rings.Values.Any(ring => ring.Cursed) != true) return status;
+        if (definition.Equipment?.Rings.Values.Any(ring => ring.Cursed) != true &&
+            definition.Equipment?.Weapons.Values.Any(weapon => weapon.Cursed) != true) return status;
         return loadout?.Items.Any(word => WornCurse(definition, word)) == true
             ? (ushort)(status | CurseRules.Mask) : (ushort)(status & ~CurseRules.Mask);
     }
@@ -90,24 +100,18 @@ public static class BattleEquipment
 
     internal static byte Defense(byte basis, ushort applied, BattleActorDefinition definition, BattleSourceLoadout? loadout, bool initial = false)
     {
-        int bonus = RingBonus(definition, loadout, RingStat.Defense);
-        if (initial && bonus == 0) return basis;
-        return (byte)Math.Min(200, BattleStatCounters.Defense(basis, applied) + bonus);
+        return ApplyStats(initial ? basis : BattleStatCounters.Defense(basis, applied), definition, loadout, RingStat.Defense);
     }
 
     internal static byte PackedAgility(byte basis, ushort applied, BattleActorDefinition definition, BattleSourceLoadout? loadout, bool initial = false)
     {
-        int bonus = RingBonus(definition, loadout, RingStat.Agility);
-        if (initial && bonus == 0) return basis;
-        byte effective = BattleStatCounters.PackedAgility(basis, applied);
-        return (byte)((effective & 128) | Math.Min(127, (effective & 127) + bonus));
+        return ApplyStats(initial ? basis : BattleStatCounters.PackedAgility(basis, applied), definition, loadout, RingStat.Agility);
     }
 
     internal static byte Move(byte basis, ushort applied, BattleActorDefinition definition, BattleSourceLoadout? loadout)
     {
         int effective = Math.Max(0, basis - (applied & 1));
-        int bonus = RingBonus(definition, loadout, RingStat.Move);
-        return (byte)(bonus == 0 ? effective : Math.Min(200, effective + bonus));
+        return ApplyStats(effective, definition, loadout, RingStat.Move);
     }
 
     // RemoveItemBySlot shifts following words and refreshes from the live base.
@@ -115,7 +119,7 @@ public static class BattleEquipment
     {
         var loadout = BattleInventory.Remove(actor.SourceLoadout!, slot);
         return actor.With(sourceLoadout: loadout, refreshStats: true, attack: actor.Definition.Equipment is null ? actor.Attack :
-            (byte)Math.Min(200, (initializedBaseAttack ?? actor.BaseAttack) + Contribution(actor.Definition, loadout)));
+            EffectiveAttack(initializedBaseAttack ?? actor.BaseAttack, actor.Status, actor.Definition, loadout));
     }
 
     public static int EquippedSlot(BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
@@ -161,12 +165,35 @@ public static class BattleEquipment
     internal static int? MovementSound(BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
         Ring(definition, loadout)?.MovementSound;
 
-    private static int RingBonus(BattleActorDefinition definition, BattleSourceLoadout? loadout, RingStat stat) =>
-        Ring(definition, loadout) is { } ring && ring.Stat == stat ? ring.Bonus : 0;
+    private static byte ApplyStats(int value, BattleActorDefinition definition, BattleSourceLoadout? loadout, RingStat stat)
+    {
+        if (definition.Equipment is not { } equipment)
+            return (byte)(stat == RingStat.Attack ? Math.Min(200, value + (definition.Growth?.AttackBonus ?? 0)) : value);
+        foreach (ushort word in loadout?.Items ?? [])
+        {
+            if ((word & 128) == 0) continue;
+            byte item = (byte)(word & 127);
+            if (equipment.Weapons.TryGetValue(item, out var weapon))
+            {
+                if (weapon.Stats is { } stats)
+                {
+                    foreach (var operation in stats.Operations)
+                        if (operation.Stat == stat) Apply(operation.Adjustment);
+                }
+                else if (stat == RingStat.Attack) Apply(weapon.AttackBonus);
+            }
+            else if (equipment.Rings.GetValueOrDefault(item) is { } ring && ring.Stat == stat) Apply(ring.Bonus);
+        }
+        return (byte)value;
 
-    internal static int Contribution(BattleActorDefinition definition, BattleSourceLoadout? loadout) =>
-        definition.Equipment is null ? definition.Growth?.AttackBonus ?? 0 :
-        (Weapon(definition, loadout)?.AttackBonus ?? 0) + RingBonus(definition, loadout, RingStat.Attack);
+        void Apply(int adjustment)
+        {
+            // Increase AGI preserves bit 7; decrease uses the original packed subtraction wrapper.
+            value = stat == RingStat.Agility && adjustment >= 0
+                ? (value & 128) | Math.Min(127, (value & 127) + adjustment)
+                : Math.Clamp(value + adjustment, 0, 200);
+        }
+    }
 
     public static PhysicalActorDefinition? Physical(BattleActorState actor)
     {
@@ -306,8 +333,9 @@ public static class BattleEquipment
 
     internal static BattleSourceLoadout Equip(BattleActorDefinition definition, BattleSourceLoadout loadout, int slot)
     {
-        if (IsRingChoice(definition, loadout, slot) && EquippedRingSlot(definition, loadout) is { } worn && worn != slot)
-            RequireTransferable(definition, loadout.Items[worn]);
+        int? worn = IsRingChoice(definition, loadout, slot)
+            ? EquippedRingSlot(definition, loadout) : EquippedSlot(definition, loadout);
+        if (worn is >= 0 and < 4 && worn != slot) RequireTransferable(definition, loadout.Items[worn.Value]);
         return Swap(definition, loadout, slot);
     }
 

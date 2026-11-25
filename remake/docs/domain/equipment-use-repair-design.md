@@ -11,8 +11,8 @@ recruitment, maps, smithing and other acquisition services remain with the campa
 legal detached inputs can validate their equipment before those routes exist. No real save
 or backup is an acceptance workspace. This section owns the implementation sequence;
 the [complete item reconciliation](../content/campaign-items.md#whole-game-equipment-reconciliation)
-owns individual rows. This is an audit/design handoff, not implemented whole-game support,
-and does not close [#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
+owns individual rows. Slice A implements the static-equipment boundary below; whole-game support is still incomplete
+and this does not close [#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
 
 The current dependency is the accepted SORC **v3** package and its catalog, with independent
 opening and Witch selections retained. Do not substitute rejected v2, earlier v1, or a removed
@@ -31,8 +31,8 @@ owns their original packing/parity. The downloaded source uses LF while the regi
 digest was made with CRLF; direct parsed-field comparison agrees. No content mismatch was
 resolved by changing provenance. The registered USA ROM passes `uv run sf2 rom verify`.
 
-**Confirmed (code and selected content).** Current allied Content admits 45 weapons and six
-rings. Guardian91 and Thieve's Dagger106 are already offered by connected shops but rejected
+**Confirmed (accepted audit baseline before slice A).** Allied Content admitted 45 weapons and six
+rings. Guardian91 and Thieve's Dagger106 were already offered by connected shops but rejected
 by the weapon effect filter. Iron Knuckles29 and Great Axe39 pass that filter but have no
 item-specific allied row in the selected Battle26 scene. Rare ordinary ATT weapons are also
 excluded by the category filter. Equipment data, admission, an appearance row, actual gameplay
@@ -77,8 +77,8 @@ Main-gate opens and dispatches these five child outcomes serially after independ
 review. The estimates are engineering ranges, not runtime promises or permission thresholds:
 roughly 4–8, 3–6, 3–6, 6–12 and 6–12 working hours respectively, including tests and review fixes.
 Reassess at each handoff or if a new rule authority/save representation is required. The parent
-stays open until all five outcomes and the final checklist pass. This audit PR contains no
-production implementation. Each child updates the rows it actually completes.
+stays open until all five outcomes and the final checklist pass. The accepted audit contained no
+production implementation; slice A status is recorded below. Each child updates the rows it actually completes.
 
 1. **Static equipment, signed stats and weapon curses.** Independently make current-shop
    Guardian91 add ATT22/DEF5 and Thieve's Dagger106 add ATT17/AGI5, with real appearance,
@@ -190,6 +190,106 @@ policy. Documentation-only design uses document checks, not those runtime gates.
   rule or necessary consumer deferred under the parent. Future acquisition remains a named
   campaign boundary; original animation-only gaps remain explicitly with #2104. Neither
   boundary licenses claiming natural acquisition or original animation from controlled play.
+
+## Static equipment and weapon curses (#2270)
+
+**Implemented static-equipment behavior.** The connected source catalog retains
+all 94 definitions and their complete class masks without requiring present custody. The passive
+reader admits 80 weapons and eight rings, including player-ineligible Iron Ball102/Taros Sword110.
+Counter Sword68, Ninja Katana108 and Gisarme109 remain excluded until B; Holy Staff97, Mystery
+Staff100 and Life Ring124 remain excluded until C. The source metadata is retained, not used to
+silently discard their unique effects. New equipment Use remains D, and full legal class/appearance
+closure remains E. No future acquisition, class roster, recruitment or main campaign advance is added.
+
+`BattleWeaponDefinition.Stats` is an optional immutable ordered list of signed operations. Legacy
+hand-authored weapon definitions still use `AttackBonus`. `BattleEquipment` applies statuses first,
+then each worn slot's operations in actual pack order. ATT/DEF/MOV clamp after every operation;
+AGI increase preserves the current high bit and caps the low seven bits, while decrease uses packed
+subtraction/clamping. Bases, live queue and save format do not change. Initial enemy ATT receives
+its difficulty adjustment then its equipped operations once; growth, removal and restore use the
+same calculation. Weapon range and critical increase remain in the existing physical projection.
+
+A worn cursed weapon or ring derives the existing CURSE status. Swapping/unequipping either cursed
+category is refused. Cure removes the equipped bits from both categories while preserving damage;
+Give, exchange, Drop, Sell and Repair reuse their existing selected-word checks. Bare damaged
+admitted gear remains repairable, including equipment whose Use is deferred. The source reader
+retains all metadata only for the connected field catalog; standalone early opening inputs keep
+their bounded definitions and independent #2252 opening continues to work.
+
+**Confirmed (remake).** Small engine cases cover both pack orders at zero/200 for ATT/DEF/MOV,
+multiple operations on the same stat, BOOST/SLOW ordering, packed AGI, two cursed slots and Cure
+payment/refusal, and weapon Repair. Existing equipment, ring, growth, promotion, persistence,
+transfer and service behavior cases cover queue retention, movement preview/undo and refresh.
+The final selected run passes 402 cases, with seven private-input tests explicitly skipped.
+Production-reader observation checks 80/8 admitted definitions, six deferred unique effects,
+all six WIZ/SORC/VICR rod consumers and THIF Dagger keys across 26 scenes, and older accepted field
+and battle saves. THIF Dagger Equip changes ATT5→22 and AGI6→11; Unarmed restores both.
+
+**Confirmed (ordinary remake input, controlled history).** The field witness copies the registered
+SORC castle save and clears Kazin's last Medical Herb solely to make one purchase slot. It retains
+his class, bases, flags, gold and position. Ordinary walking reaches the Pacalon merchant, buys
+Guardian91 for 2,380 gold (8,747→6,367), and Equip writes `[85,0,17,219]`. ATT is40, DEF34 and AGI41.
+A fresh Chinese Continue shows those values; Unarmed restores ATT18/DEF29 and keeps the carried
+Guardian. A separate registered battle-ready copy replaces the bare Indra slot with Guardian,
+then ordinary Equip/attack projects SORC body `ally15-palette0/frame0` and `weapon91/frame0`.
+A legal controlled Demon Rod101 copy equips through the same input: ATT68, AGI31, CURSE4 and
+`[85,0,17,229]`, then returns to settled Movement and saves. It does not claim a successful
+Demon Rod attack or natural custody. Independent field, Guardian battle and Demon Rod battle
+Continue/re-save preserve the entire decoded data, with sequence advancing exactly once.
+The published package also passes a fresh-process battle Continue with no producer selection.
+
+### Slice A reproduction and retained failures
+
+Verification selection: run the existing engine unit project with filter
+`Equipment|Ring|Curse|FieldService|ShopService|EnemyCarried|PartyDetails|ConnectedBattleGive|ConnectedBattleDiscard|Growth|Promotion|Persistence`
+(each term is a `FullyQualifiedName~` predicate), plus `uv run sf2 verify adapter`.
+The clean committed-head planner uses `--base origin/main --head HEAD --scope engine`:
+these Python changes only mount already-prepared remake equipment/icons and close its package;
+they change no research extraction, fixture or harness semantics. Its direct public checks are
+`uv run ruff check src tests/python`, `uv run sf2 design-contracts test` and
+`uv run sf2 research-index test`; all pass. No full research gate or retired aggregate was run.
+
+
+Load the worktree-local private-input configuration and build the current Debug adapter with
+`UseSharedCompilation=false` and `nodeReuse:false`. Select `derived/issue2270/equipment-v1`, the
+unchanged `derived/issue2266/catalogs-v1/world.zh-CN.json`, independent #2252 opening and #2255 Witch.
+The registered `derived/issue2270/review-v1` contains the bounded ordinary-input runner, labeled
+controlled seeds, consumer source and exact receipts. Its Boot copies drivers into checkout-local
+scratch and requires an explicit disposable save root; it does not write the registered inputs.
+Choose fresh sample/journey names. This uses existing native input/state/projection, no screenshots.
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2270/review-v1'
+& "$review/consumer/Verify.ps1" -Repo (Get-Location).Path
+& "$review/Boot.ps1" -Repo (Get-Location).Path -Mode guardian -Sample $freshSample `
+    -Journey $freshJourney -Seed "$review/seeds/field-seed.json" -SaveRoot $disposableSaveRoot
+# Same journey, new sample/process, no seed: -Mode field-cold -Language zh-CN.
+# Independent battle: -Mode strike -Item 91 (or 101) with battle-91-seed-v2.json
+# (or battle-101-seed-v2.json), then -Mode battle-cold on that journey.
+# Guardian removal: -Mode remove with the saved guardian-field-slot.json in a new journey.
+```
+
+Retained unsuccessful work is not acceptance: the initial build referenced retired `Contribution`
+from three test owners; the first selected run had five failures (four obsolete cursed-item
+rejection assertions and one wrong new AGI expectation). Corrected narrow runs pass. The initial
+consumer caught absent late source definitions, then missing icon23, then an early independent
+opening `source-indra-effect` dependency; the current catalog/asset boundaries correct these.
+Native `guardian01` had a driver `Stock` lookup error despite exit0; `guardian-battle01` rejected
+an inconsistent controlled loadout/progress copy before gameplay. `demon-battle01` did not produce
+the requested successful-hit observation and exhausted its short route; `demon-battle02` explicitly
+verifies Equip/settled save instead. Successful native runs exit0, but several retain ObjectDB
+shutdown leak warnings (2–6 objects); this does not close or resume #1716. No screenshots were taken.
+Original natural reach/timing and the unobserved late native equipment combinations remain **Unknown**.
+The first PR CI run [45672349397](https://github.com/FrankHZ/md-sf2-reverse-engineering/actions/runs/45672349397)
+completed with 3,327 passing, 50 skipped and one failure:
+`FieldSearchTests.SelectedPickupGrantsCarryAndGiveWithoutAdmittingAnUnrelatedItemOrUseEffect`.
+Its obsolete assertion excluded item90, named Mage Staff in the old test fixture, from the preparation
+catalog. The original item90 is Flail; Mage Staff is item93. The correction removes
+that exclusion while preserving pickup, Give, repeat-pickup and absent Use assertions; the case is
+renamed `SelectedPickupGrantsCarryAndGiveWithoutAdmittingAUseEffect`. A direct
+`FullyQualifiedName~FieldSearchTests` run passes 44 with one private-input skip. The completed
+CI failure is preserved; no local aggregate rerun or production change was needed.
 
 ## Accepted Use and Repair through first Pacalon
 

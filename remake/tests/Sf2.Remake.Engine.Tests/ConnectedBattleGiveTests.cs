@@ -107,7 +107,7 @@ public sealed class ConnectedBattleGiveTests
     }
 
     [Theory]
-    [InlineData(90)] [InlineData(218)] [InlineData(306)]
+    [InlineData(306)]
     public void RestrictedOrBrokenLiveItemsRejectBeforeTransfer(ushort word)
     {
         var session = Session(); var battle = session.Current.Battle; var donor = battle.GetActor(new("champion"));

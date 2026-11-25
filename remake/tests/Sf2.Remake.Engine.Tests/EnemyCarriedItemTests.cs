@@ -42,7 +42,7 @@ public sealed class EnemyCarriedItemTests
                 Assert.True(BattleEquipment.OrdinaryAiLoadout(enemy.Definition, enemy.SourceLoadout, true));
                 Assert.Equal(code == "GALAM_ARCHER" ? 2 : 1, BattleEquipment.Physical(enemy)!.MaximumRange);
                 Assert.Equal(definitions.Enemies[code].BaseAttack * 5 / 4 +
-                    (code == "GALAM_ARCHER" ? BattleEquipment.Contribution(enemy.Definition, enemy.SourceLoadout) : 0), enemy.Attack);
+                    (code == "GALAM_ARCHER" ? BattleEquipment.EffectiveAttack(0, 0, enemy.Definition, enemy.SourceLoadout) : 0), enemy.Attack);
             }
         }
     }

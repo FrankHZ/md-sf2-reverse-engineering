@@ -44,8 +44,7 @@ internal static class PrivateFieldPreparation
     }
     internal static BattleWeaponDefinition[] Weapons(PrivateBattleDefinitions source)
     {
-        return source.Items.Values.Where(item => (item.ItemTypeExpression == "WEAPON" ||
-            item is { Code: "ACHILLES_SWORD", ItemTypeExpression: "WEAPON|RARE" } || PrivateBattleActionBindings.IsIndraStaff(item)) &&
+        return source.Items.Values.Where(item => item.ItemTypeExpression.Split('|').Contains("WEAPON") &&
             PrivateBattleActionBindings.HasSupportedWeaponEffects(item))
             .Select(item => PrivateBattleActionBindings.IsIndraStaff(item)
                 ? PrivateBattleActionBindings.Weapon(item, 1u << 17 | 1u << 18 | 1u << 19) with { DamageOnUse = true }
@@ -74,6 +73,17 @@ internal static class PrivateFieldPreparation
         if (source.Items.TryGetValue(24, out var blackRing) && PrivateBattleActionBindings.IsBlackRing(blackRing))
             yield return new(blackRing.Id, blackRing.DisplayName, (1u << 17) | (1u << 18),
                 RingStat.Attack, 10, DamageOnUse: true, Cursed: true);
+        foreach (var (id, code, stat, effect, bonus, classes) in new (byte, string, RingStat, string, byte, uint)[]
+        {
+            (23, "WHITE_RING", RingStat.Defense, "INCREASE_DEF", 10, (1u << 12) | (1u << 19)),
+            (25, "EVIL_RING", RingStat.Attack, "INCREASE_ATT", 15, (1u << 17) | (1u << 18) | (1u << 19)),
+        })
+        {
+            if (!source.Items.TryGetValue(id, out var item)) continue;
+            Require(item.Code == code && item.EquipEffects is [{ } primary, { Type: "NONE", Parameter: 0 }, { Type: "NONE", Parameter: 0 }] &&
+                primary.Type == effect && primary.Parameter == bonus, "source-static-ring", "field.items");
+            yield return new(id, item.DisplayName, classes, stat, bonus, DamageOnUse: true, Cursed: id == 25);
+        }
         if (source.Items.TryGetValue(126, out var sandals))
         {
             Require(sandals is { Code: "CHIRRUP_SANDALS", EquipFlagsExpression: "ALL", ItemTypeExpression: "RING|RARE",

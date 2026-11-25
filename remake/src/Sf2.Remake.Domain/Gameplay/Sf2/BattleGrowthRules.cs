@@ -89,7 +89,7 @@ internal static class BattleGrowthRules
         effects.Add(new("level", actor.Actor, actor.Level, level));
         // Maxima grow; current HP/MP do not heal. Refresh from the new bases.
         return actor.With(progress: progress, refreshStats: true,
-            attack: (byte)Math.Min(200, progress.BaseAttack + BattleEquipment.Contribution(actor.Definition, loadout)));
+            attack: BattleEquipment.EffectiveAttack(progress.BaseAttack, actor.Status, actor.Definition, loadout));
     }
 
     internal static int Gain(StatGrowth growth, byte level, int current, ActorRef actor,

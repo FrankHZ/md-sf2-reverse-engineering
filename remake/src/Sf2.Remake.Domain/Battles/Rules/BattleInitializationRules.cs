@@ -104,7 +104,7 @@ internal static class BattleInitializationRules
                 heal ? actor.MaxHp : actor.Hp, heal ? actor.MaxMp : actor.Mp, actor.Exp, placed ? actor.Deployment.Position : null,
                 actor.Kills, actor.Defeats, attack: actor.IsAlly ? (heal ? null : actor.Attack) : actor.Definition.Equipment is null
                     ? EnemyAttack(actor.Definition.Attack, policy.Difficulty)
-                    : (byte)Math.Min(200, EnemyAttack(actor.Definition.Attack, policy.Difficulty) + BattleEquipment.Contribution(actor.Definition, actor.SourceLoadout)),
+                    : BattleEquipment.EffectiveAttack(EnemyAttack(actor.Definition.Attack, policy.Difficulty), 0, actor.Definition, actor.SourceLoadout),
                 status: actor.IsAlly && heal ? (ushort)(actor.Status & 7) : actor.Status,
                 activationWord: actor.IsAlly ? actor.ActivationWord : InitialActivationWord(actor.Deployment.Initialization!), progress: progress, sourceLoadout: actor.SourceLoadout);
         });

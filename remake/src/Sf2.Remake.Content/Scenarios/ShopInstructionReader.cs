@@ -23,8 +23,8 @@ internal static class ShopInstructionReader
                 var types = item.ItemTypeExpression.Split('|', StringSplitOptions.TrimEntries);
                 return new ShopItem(item.Id, item.DisplayName, item.Price, types.Contains("UNSELLABLE"),
                     types.Contains("RARE"), types.Contains("CURSED"),
-                    Repairable: item.ItemTypeExpression == "RING|RARE|BREAKABLE" && item.UseSpell is "ATTACK" or "BOOST" ||
-                        PrivateBattleActionBindings.IsIndraStaff(item) || PrivateBattleActionBindings.IsBlackRing(item));
+                    Repairable: types.Contains("BREAKABLE") && (types.Contains("WEAPON") &&
+                        PrivateBattleActionBindings.HasSupportedWeaponEffects(item) || item.Id is 19 or 20 or 23 or 24 or 25));
             });
             Require(stock.All(id => source.Items.TryGetValue(id, out var item) && item.ItemTypeExpression is "WEAPON" or "WEAPON|BREAKABLE" or "CONSUMABLE"),
                 "shop-stock-unsupported", "shop.stock", true);

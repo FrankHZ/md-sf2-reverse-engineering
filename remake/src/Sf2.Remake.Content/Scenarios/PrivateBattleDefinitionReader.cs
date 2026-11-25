@@ -64,6 +64,16 @@ internal static class PrivateBattleDefinitionReader
         // Buying or finding an item supplies its source terms, without selecting its Use spell.
         if (fieldItems is not null)
             items = items.Concat(fieldItems.Where(id => !itemIds.Contains(id)).Select(id => Item(FindId(core, "items", id)))).ToArray();
+        if (fieldItems is not null)
+        {
+            // Keep every equipment identity and exact source class mask independent of current custody.
+            // Passive admission remains with PrivateFieldPreparation; retaining metadata does not bind Use.
+            items = items.Concat(Array(core, "items").Where(row => Text(row, "itemTypeExpression").Split('|')
+                .Any(type => type is "WEAPON" or "RING")).Select(Item)).DistinctBy(item => item.Id).ToArray();
+            classes = Array(core, "classes").Select(Class).ToArray();
+            AddSpell("SPOIT", 1); // Existing Indra Use binding.
+            AddSpell("BLAZE", 2); // Existing Black Ring Use binding.
+        }
         var spells = spellKeys.OrderBy(key => key.Id).ThenBy(key => key.Level).Select(key =>
         {
             string code = Text(FindId(core, "spellNames", key.Id), "code");

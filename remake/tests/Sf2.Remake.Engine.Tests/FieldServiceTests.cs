@@ -13,6 +13,30 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed partial class FieldServiceTests
 {
     [Theory]
+    [InlineData(4374u, true, ChurchResultKind.InsufficientGold)]
+    [InlineData(4375u, false, ChurchResultKind.Declined)]
+    [InlineData(4375u, true, ChurchResultKind.Paid)]
+    public void CureRemovesWeaponAndRingTogetherButPreservesDamage(uint gold, bool yes, ChurchResultKind expected)
+    {
+        var session = Session(gold: gold, hp: 100, status: 4, curseItems: [485, 408, 0, 127]);
+        var before = Member(session, First);
+        Choose(session, ChurchAction.Cure);
+        Assert.Equal(4375u, Wait(session).Offer!.Cost);
+        Answer(session, yes);
+        Assert.Equal(expected, Wait(session).Result!.Kind);
+        if (expected == ChurchResultKind.Paid)
+        {
+            var after = Member(session, First);
+            Assert.Equal(new ushort[] { 357, 280, 0, 127 }, after.SourceLoadout!.Items);
+            Assert.Equal(0, after.Status);
+            var details = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First);
+            Assert.Equal(20, details.Attack!.Value);
+            Assert.Equal(20, details.Agility!.Value);
+        }
+        else Assert.Same(before, Member(session, First));
+    }
+
+    [Theory]
     [InlineData(2499u, true, ChurchResultKind.InsufficientGold)]
     [InlineData(2500u, false, ChurchResultKind.Declined)]
     [InlineData(2500u, true, ChurchResultKind.Paid)]
@@ -368,7 +392,7 @@ public sealed partial class FieldServiceTests
         Assert.Equal(member.Progress!.SourceLoadout!.Spells, grown.SourceLoadout!.Spells);
         var unarmed = BattleEquipment.Equip(physical, grown.SourceLoadout, BattleEquipment.UnarmedChoice);
         Assert.Equal(weapon, unarmed.Items[0]);
-        Assert.Equal(warrior ? 5 : 0, BattleEquipment.Contribution(physical, unarmed));
+        Assert.Equal(warrior ? 5 : 0, BattleEquipment.EffectiveAttack(0, 0, physical, unarmed));
     }
 
     [Theory]
@@ -518,7 +542,7 @@ public sealed partial class FieldServiceTests
             (actor.Definition.ClassRule, actor.Definition.Mover, actor.Move));
         Assert.Equal(0, actor.MaxMp);
         Assert.Null(BattleEquipment.EquippedWeaponItem(actor));
-        Assert.Equal(5, BattleEquipment.Contribution(actor.Definition, loadout));
+        Assert.Equal(5, BattleEquipment.EffectiveAttack(0, 0, actor.Definition, loadout));
         Assert.Throws<BattleRuleException>(() => BattleEquipment.Equip(actor, 0));
         var armed = BattleEquipment.Equip(actor, 2);
         Assert.Equal((byte)58, BattleEquipment.EquippedWeaponItem(armed));
@@ -564,7 +588,7 @@ public sealed partial class FieldServiceTests
         Assert.Equal((ushort)0xAA00, actor.Definition.Resistance);
         Assert.Equal((ushort)16, BattleEquipment.Physical(actor)!.Critical.CounterChanceDenominator);
         Assert.Null(BattleEquipment.EquippedWeaponItem(actor));
-        Assert.Equal(5, BattleEquipment.Contribution(actor.Definition, actor.SourceLoadout));
+        Assert.Equal(5, BattleEquipment.EffectiveAttack(0, 0, actor.Definition, actor.SourceLoadout));
         Assert.Equal(new byte[] { 63, 63, 63, 63 }, actor.SourceLoadout!.Spells);
         Assert.Empty(actor.Spells);
         Assert.Equal(0, actor.MaxMp);
@@ -634,7 +658,7 @@ public sealed partial class FieldServiceTests
         else
         {
             Assert.Equal((ushort)147, after.SourceLoadout!.Items[1]);
-            Assert.Equal(5, BattleEquipment.Contribution(after.Definition, after.SourceLoadout));
+            Assert.Equal(5, BattleEquipment.EffectiveAttack(0, 0, after.Definition, after.SourceLoadout));
         }
         uint seed = session.Current.Exploration!.Party.MainSeed;
         var grown = BattleGrowthRules.Award(after, 1, ref seed, []);
