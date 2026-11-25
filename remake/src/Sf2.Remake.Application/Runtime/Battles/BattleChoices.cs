@@ -215,6 +215,29 @@ internal static class BattleChoices
         return BattleActionRules.Prepare(rules.Action(action), battle, actor, destination, action, target, rules.Progression);
     }
 
+    internal static IReadOnlyList<BattleTargetChoice> QueryTargets(SessionRules rules, EngineBattleState battle,
+        ActorRef actor, MapPosition destination, BattleActionRef action, BattleSceneDefinition? content, bool requireContent)
+    {
+        var rule = rules.Action(action);
+        var candidates = BattleActionRules.Invoke(rule, "target-query", () =>
+        {
+            var result = rule.QueryTargets(battle, actor, action).ToArray();
+            if (result.Distinct().Count() != result.Length || result.Any(candidate => !battle.Actors.Any(row => row.Actor == candidate)))
+                throw new InvalidOperationException("Invalid target query.");
+            return result;
+        });
+        List<BattleTargetChoice> targets = [];
+        foreach (var candidate in candidates)
+        {
+            SessionFailure? reason = null;
+            try { _ = RequireTarget(rules, battle, actor, destination, action, candidate, content, requireContent); }
+            catch (BattleRuleException error) { reason = Failure(error); }
+            catch (BattleActionRuleFault error) { reason = Failure(error); }
+            targets.Add(new(candidate, reason is null, reason));
+        }
+        return targets.AsReadOnly();
+    }
+
     internal static BattleChoicesSnapshot Query(SessionSnapshot current, SessionRules rules,
         BattleSceneDefinition? content, bool requireContent)
     {
@@ -246,27 +269,13 @@ internal static class BattleChoices
             {
                 SessionFailure? failure = null;
                 BattleActionAdmission? admission = null;
-                List<BattleTargetChoice> targets = [];
+                IReadOnlyList<BattleTargetChoice> targets = [];
                 try
                 {
                     BattleMovement.RequireStop(battle, selection.Actor, selection.Preview.Destination);
                     admission = RequireAction(rules, battle, selection.Actor, offer.Action);
-                    var candidates = BattleActionRules.Invoke(rule, "target-query", () =>
-                    {
-                        var result = rule.QueryTargets(battle, selection.Actor, offer.Action).ToArray();
-                        if (result.Distinct().Count() != result.Length || result.Any(actor => !battle.Actors.Any(row => row.Actor == actor)))
-                            throw new InvalidOperationException("Invalid target query.");
-                        return result;
-                    });
-                    foreach (var actor in candidates)
-                    {
-                        SessionFailure? reason = null;
-                        try { _ = RequireTarget(rules, battle, selection.Actor, selection.Preview.Destination,
-                            offer.Action, actor, content, requireContent); }
-                        catch (BattleRuleException error) { reason = Failure(error); }
-                        catch (BattleActionRuleFault error) { reason = Failure(error); }
-                        targets.Add(new(actor, reason is null, reason));
-                    }
+                    targets = QueryTargets(rules, battle, selection.Actor, selection.Preview.Destination,
+                        offer.Action, content, requireContent);
                     if (offer.Action.Kind != BattleActionKind.Stay && !targets.Any(target => target.Enabled))
                         failure = targets.FirstOrDefault(target => target.Reason?.Kind == SessionFailureKind.UnsupportedCapability)?.Reason
                             ?? targets.FirstOrDefault(target => target.Reason?.Kind == SessionFailureKind.InvariantFailure)?.Reason
@@ -285,7 +294,7 @@ internal static class BattleChoices
                     _ => BattlePresentationKind.None,
                 };
                 options.Add(new(offer.Action, offer.Label, presentation, admission?.MinimumRange, admission?.MaximumRange,
-                    offer.Empty, failure is null, failure, targets.AsReadOnly())
+                    offer.Empty, failure is null, failure, targets)
                 {
                     SpellDescription = offer.Action.Spell is null ? null :
                         SpellDescriptionFacts.Battle(battle, caster, offer.Action, admission, rules.Healing, failure),

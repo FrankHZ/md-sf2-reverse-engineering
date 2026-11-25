@@ -323,10 +323,18 @@ func area_case() -> bool:
     var selected := state()
     var effect: Dictionary = board().actionRange
     if not expect(effect.visible and effect.effect.size() > 1,"Actual admitted area spell draws multi-cell effect cursor"): return false
+    if not expect(effect.centers.has(selected.candidate) and not effect.recipients.is_empty(),
+            "Projected center is selectable and the rule supplies recipients"): return false
+    if not aura and not expect(effect.effect.size() == 5 and effect.recipients == ["wing","center"] and effect.centers == ["center"],
+            "BLAZE 2 has five nominal cells, two recipients, and only one selectable center"): return false
     samples.append({"label":"area-before-cancel","range":effect,"state":selected})
     var before := resources(selected)
+    await frames(5)
+    if not expect(state().revision == selected.revision and resources(state()) == before and
+            board().actionRange.recipients == effect.recipients,"Repeated projection keeps the state and recipients"): return false
     await act("cancel")
-    if not expect(resources(state()) == before and state().menu.page == "Magic","Area spell Cancel preserves resources/RNG and level"): return false
+    if not expect(resources(state()) == before and state().menu.page == "Magic" and not board().actionRange.visible,
+            "Area spell Cancel clears the board and preserves resources/RNG and level"): return false
     await act("confirm"); await act("confirm")
     var deadline := Time.get_ticks_msec()+25000
     var targets: Array = []
@@ -337,7 +345,8 @@ func area_case() -> bool:
         if s.get("stage") == "Movement" and s.get("movement") == null and s.actor != initial.actor:
             samples.append({"label":"area-completed","state":s,"targets":targets})
             var caster: Dictionary = s.actors.filter(func(a):return a.id == initial.actor)[0]
-            return expect(targets.size() >= (5 if aura else 2) and caster.mp == (60 if aura else 14),"Actual ordered multi-target work completes with one cost and next control")
+            return expect(targets == effect.recipients and caster.mp == (60 if aura else 14),
+                "Actual multi-target results match the projected recipients, pay once and return control")
         var sc: Dictionary = s.scene
         if sc.get("phase") != null and not tokens.has(sc.waitToken):
             tokens[sc.waitToken] = true

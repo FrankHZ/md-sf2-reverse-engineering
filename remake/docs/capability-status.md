@@ -141,7 +141,11 @@ Legacy slots keep their existing readers and anchors. [Snapshot cutover](applica
 
 ## Battle action preview
 
-**Withdrawn, redesign deferred.** Ordinary battles and DesignPreview leave the current-round
+**Implemented.** Targeting displays rule-backed reach and the nominal effect at the selected
+center. The read separates legal centers from effect recipients and includes party-wide
+Healing Rain. [Behavior and reproduction](godot/battle-ui-composition.md#rule-backed-action-footprint)
+
+**Current-round strip withdrawn, redesign deferred.** Ordinary battles and DesignPreview leave the
 strip unmounted, including its layout and pointer area. The acting card and board focus still
 identify the unit on turn. The dispatch queue and cursor remain part of battle continuation.
 [Battle composition and observation](godot/battle-ui-composition.md#current-round-order-2065)

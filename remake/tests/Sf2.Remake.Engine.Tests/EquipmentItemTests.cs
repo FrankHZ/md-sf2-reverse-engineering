@@ -1,3 +1,4 @@
+using Sf2.Remake.Application.Gameplay;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Application.Runtime.Battles;
 using Sf2.Remake.Application.Runtime.Exploration;
@@ -180,11 +181,17 @@ public sealed class EquipmentItemTests
     [Fact]
     public void BrokenBoostSelfUseRemovesOneCopyAfterConstructionWithoutWearDrawOrDeals()
     {
-        var battle = At([404, 20, 19, 127], 0x1000).Battle;
+        var start = At([404, 20, 19, 127], 0x1000);
+        var selection = Select(start, 0, Mage);
+        var preview = BattleActionFootprint.Query(selection, RuleCompositions.Sf2(), null, false, Mage)!;
+        var battle = start.Battle;
         var owner = battle.GetActor(Mage);
+        Assert.Equal(5, preview.Area.Count);
+        Assert.Contains(battle.GetActor(Priest).Position!, preview.Area);
         var resolve = BattleActionRules.Prepare(new Sf2ItemAction(), battle, Mage, owner.Position!,
             new(BattleActionKind.Item, ItemSlot: 0), Mage, new Sf2BattleProgressionRule());
         Assert.Equal(new[] { Mage, Priest }, resolve.Reactions.Select(row => row.Target));
+        Assert.Equal(preview.Recipients.Select(unit => unit.Actor), resolve.Reactions.Select(row => row.Target));
         Assert.Equal(new[] { "rng-boost-recast", "item-destroyed", "rng-exp-plus", "rng-exp-minus" },
             resolve.ConstructionEffects.Select(row => row.Kind));
         Assert.Equal(EquipmentWear.Destroyed, resolve.EquipmentUse!.Wear);
@@ -298,12 +305,16 @@ public sealed class EquipmentItemTests
         int attack, int status, bool rollsWear)
     {
         var start = At([word, 24, 0, 127], seed: 0x00020000, staffClass: BattleClassRule.Wizard);
-        var result = Send(Select(start, 0, Smoke), new Confirm());
+        var selected = Select(start, 0, Smoke);
+        var preview = BattleActionFootprint.Query(selected, RuleCompositions.Sf2(), null, false, Smoke)!;
+        Assert.Equal(5, preview.Area.Count);
+        var result = Send(selected, new Confirm());
         Assert.Null(result.Failure);
         var scene = result.Snapshot.BattleScene!;
         Assert.Equal(new SpellRef("blaze", 2), scene.AttackSpell!.Spell);
         Assert.Equal(10, scene.AttackSpell.Power);
         Assert.Equal(1, scene.AttackSpell.Radius);
+        Assert.Equal(preview.Recipients.Select(unit => unit.Actor), scene.AttackTargets);
         var owner = result.Snapshot.Battle.GetActor(Mage);
         Assert.Equal((ushort)nextFirst, owner.SourceLoadout!.Items[0]);
         Assert.Equal((ushort)(rollsWear ? 24 : 0), owner.SourceLoadout.Items[1]);

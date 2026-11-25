@@ -113,8 +113,8 @@ internal sealed partial class BattleMapViewport : Control
         ApplyCamera(_region is null ? Vector2.Zero : new Vector2(_region.Origin.X, _region.Origin.Y) * 24);
         return before != WorldViewport.Origin;
     }
-    internal void PreviewAction(BattleActionChoice? offer, SessionSnapshot current, ActorRef? candidate, bool steady)
-    { _range.Steady = steady; _actionRange.Present(offer, current, candidate, steady); }
+    internal void PreviewAction(BattleActionFootprint? footprint, bool steady)
+    { _range.Steady = steady; _actionRange.Present(footprint, steady); }
 
     public override void _Ready()
     {
