@@ -538,55 +538,6 @@ internal sealed partial class BattleSceneView : Control
         return state.Healing is { LogicalComplete: false, AtTimedInput: false } ? null : new Acknowledge(state.Token);
     }
 
-    private void ProjectHealing(BattleSceneState state)
-    {
-        foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
-        if (state.Healing is not { } healing) return;
-        bool ally = _session.Current.Battle.GetActor(state.Actor).IsAlly;
-        var recipient = ally ? _ally : _enemy;
-        var origin = ally ? new Vector2(136, 64) : new Vector2(16, 48);
-        if (healing.CastRequested && !_castSoundPlayed) { _audio?.PlayEffect(77); _castSoundPlayed = true; }
-        if (state.Phase == BattleScenePhase.ActionAnimation && healing.CastFrame is > 0 and var frame && frame <= _frames.Length)
-        {
-            _frameIndex = frame - 1;
-            var entry = _frames[_frameIndex];
-            if (entry.Frame != 15) SetFrame(ally, entry.Frame);
-            recipient.Position = origin + new Vector2(entry.X, entry.Y);
-            if (ally) Weapon(entry.Weapon, new(entry.X, entry.Y));
-        }
-        recipient.Modulate = !_settings.ReducedFlash && healing.Caller == "cast-flash-on" ? new Color(0.7f, 1, 0.7f) : Colors.White;
-        if (state.Phase is BattleScenePhase.TargetExit or BattleScenePhase.TargetEnter or BattleScenePhase.ActorExit or BattleScenePhase.ActorEnter)
-        {
-            float from = state.Phase == BattleScenePhase.TargetEnter ? -376 : state.Phase == BattleScenePhase.ActorEnter ? 8 : 136;
-            float to = state.Phase == BattleScenePhase.TargetExit ? 272 : state.Phase == BattleScenePhase.ActorExit ? -112 : 136;
-            int opportunity = healing.Caller?.EndsWith(":wait", StringComparison.Ordinal) == true ? 0 : healing.Opportunity;
-            float x = from + MathF.Sign(to - from) * MathF.Min(opportunity * 16, MathF.Abs(to - from));
-            recipient.Position = ally ? new(x, 64) : new(origin.X - (x - 136), origin.Y);
-            if (ally) { _ground.Position = new(x, 140); Weapon(_allyVisual?.Sequences["idle"].IdleWeapon, new(x - 136, 0)); }
-        }
-        if (Content?.Healing is not { } visual || healing.Fairy is not { Control: not 0 } fairy) return;
-        visual = !ally && visual.Enemy is { } enemyVisual ? enemyVisual : visual;
-        bool groupHasHd = BattleSceneRaster.HasHdGroup(Content, visual.Bodies.Concat(visual.Wings).Concat(visual.Dust));
-        void Put(Sprite2D sprite, string resource, ushort x, ushort y, bool mirror = false)
-        {
-            Bind(sprite, resource, groupHasHd); sprite.FlipH = mirror;
-            sprite.Position = new Vector2(x - 128, y - 128) - sprite.GetRect().Position * sprite.Scale;
-            sprite.Show();
-        }
-        for (int i = 0; i < fairy.Fairies.Count; i++)
-        {
-            var instance = fairy.Fairies[i];
-            if (!instance.Active) continue;
-            Put(_fairyBodies[i], visual.Bodies[instance.BodyFrame], instance.X, instance.Y, instance.Mirrored);
-            Put(_fairyWings[i], visual.Wings[instance.WingFrame], instance.X, instance.Y, instance.Mirrored);
-        }
-        for (int i = 0; i < fairy.Dust.Count; i++)
-        {
-            var dust = fairy.Dust[i];
-            if (dust.Age != 0) Put(_fairyDust[i], visual.Dust[dust.Frame], dust.X, dust.Y);
-        }
-    }
-
     private string ActorName(ActorRef actor) => BattleCharacterNames.Resolve(_session.Current.Battle.GetActor(actor), Content, _session.Current.Story);
 
     private void PresentStatus(BattleSceneState state)
@@ -677,7 +628,7 @@ internal sealed partial class BattleSceneView : Control
                 return LocalizedMessage("battle.heal.action", ActorName(state.Actor), DisplayNames.Spell(state.Spell.Spell), state.Spell.Spell.Level);
             if (SemanticMessage(state) is { } cureMessage) return cureMessage;
         }
-        if (state.Item?.CuresPoison == true && state.Phase == BattleScenePhase.ResultMessage && SemanticMessage(state) is { } itemCure)
+        if (state.Item?.CuresPoison == true && SemanticMessage(state) is { } itemCure)
             return itemCure;
         if (state.EquipmentRecoveryText is { } recoveryText)
             return LocalizedMessage(recoveryText == 357 ? "battle.heal.mp-recovery" : "battle.heal.recovery",
@@ -690,6 +641,8 @@ internal sealed partial class BattleSceneView : Control
         if (state.Spell?.IsAura == true && state.Phase == BattleScenePhase.ResultMessage)
             return GameText.Language == "en" ? $"{ActorName(state.Target!.Value)} recovered {state.Amount} HP." :
                 LocalizedMessage("battle.heal.recovery", ActorName(state.Target!.Value), state.Amount);
+        if (state.Item is { } recoveryItem && state.Phase == BattleScenePhase.ActionMessage)
+            return LocalizedMessage("battle.scene.item", ActorName(state.Actor), DisplayNames.Item(recoveryItem.ItemId, recoveryItem.Name));
         if (state.Healing is { } healing && state.Phase is BattleScenePhase.ActionMessage or BattleScenePhase.SpellCost)
         {
             _messageFallback = GameText.Fallback("battle.heal.action", true, exact: true);
@@ -877,10 +830,6 @@ internal sealed partial class BattleSceneView : Control
         _messagePanel.SetHint(hint);
         PresentStatus(state);
     }
-    private static int? DetoxSelector(BattleSceneState? state) =>
-        state is { IsSilencedCast: false, Spell: { CuresPoison: true, Spell: { Value: "detox", Level: >= 1 and <= 4 } spell } }
-            ? 6 + 32 * (spell.Level - 1) : null;
-
     internal object Observe() => new
     {
         aura = _state is { Spell.IsAura: true, Healing: null } ? _aura.Observe() : null,
@@ -905,8 +854,8 @@ internal sealed partial class BattleSceneView : Control
         reactionAmount = _state?.Amount,
         item = _state?.EquipmentItem?.ItemId ?? _state?.AttackItem?.ItemId ?? _state?.Item?.ItemId,
         equipmentWear = _state?.Wear.ToString(),
-        spell = _state?.Spell?.Spell ?? _state?.AttackSpell?.Spell ?? _state?.SupportSpell?.Spell ?? _state?.SilencedSpell,
-        spellAnimationSelector = BuffEffectView.Selector(_state) ?? DebuffSelector(_state) ?? (_state?.AttackItem is not null || _state?.EquipmentItem is not null ? 0 : _state?.AttackSpell is { } attack ? attack.SourceAnimationSelector : _state is { Spell.IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : DetoxSelector(_state) ?? (_state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null)),
+        spell = _state?.RecoveryEffect?.Spell ?? _state?.AttackSpell?.Spell ?? _state?.SupportSpell?.Spell ?? _state?.SilencedSpell,
+        spellAnimationSelector = BuffEffectView.Selector(_state) ?? DebuffSelector(_state) ?? (_state?.AttackItem is not null || _state?.EquipmentItem is not null ? 0 : _state?.AttackSpell is { } attack ? attack.SourceAnimationSelector : _state is { Spell.IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : DetoxSelector(_state) ?? (_state?.RecoveryEffect is { } recoveryEffect ? 4 + 32 * (recoveryEffect.Spell.Level - 1) : _state?.Item is not null ? 0 : (int?)null)),
         healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
             healing.LogicalComplete, healing.Delivered, healing.CastRequested, healing.CastFrame, healing.Fairy } : null,
         fairySprites = _fairyBodies.Concat(_fairyWings).Concat(_fairyDust).Where(sprite => sprite.Visible)

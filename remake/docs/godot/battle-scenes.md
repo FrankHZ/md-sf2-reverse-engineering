@@ -727,6 +727,16 @@ private image remains **Unknown**; the reproduced inversion is a concrete cause 
 the body, not proof that every reported pixel had this cause. Original natural reach, VDP output,
 all later weapons, hardware timing and human/aesthetic approval remain **Unknown**.
 
+### Equipment recovery scenes
+
+[The equipment recovery owner](spell-presentation.md#equipment-recovery-playback-2291)
+records the source receiver chain, native results and reproduction for Holy Lance,
+White Ring and Rune Axe. `RecoveryEffect` identifies the existing visual family while
+Item retains its gesture, message and zero-MP/silence semantics. The shared fairy cursor
+uses the item sequence, keeps one effect across AURA recipients and drains at SpellStop.
+DETOX reuses its existing mote/trail and end wait; both cure notices remain readable.
+There is no separate equipment amount, RNG or presentation clock authority.
+
 ### Medical Herb scenes
 
 The admitted item family uses the same typed scene continuation. Inventory compaction and its two

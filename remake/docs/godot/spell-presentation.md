@@ -79,8 +79,8 @@ listed by rank below. [Binding contract](../content/asset-inventory.md#battle-ra
 | --- | --- | --- | --- |
 | HEAL 1–4 | HEALING_FAIRY v1–v4 | **Original assets bound** for private allied self/teammate casts. The private cast/idle, light fairy, live target and 77/113 cues are described in [HEAL spell scenes](#heal-spell-scenes). Native private HEAL1–3 settings cases and Sarah's Battle26 HEAL4 cover allied delivery. Enemy HEAL1 is observed with authored Mage/Cleric content, and a controlled private Battle19 Master Monk uses HEAL3 on itself. **Original assets bound** for the controlled pre-voyage enemy HEAL1 through the shared faction selector and evil-fairy group. | [Enemy healing acceptance](#enemy-healing-family-2227) covers a legal Dark Cleric recovery. Other higher-rank enemy playback and exact timing remain **Unknown** beyond named cases. [Enemy witness](../development-and-verification.md#enemy-spell-observation) · [Battle19 comparison](../application/battle19-repeat.md#controlled-comparisons) |
 | AURA 1 | HEALING_FAIRY v1 | **Original assets bound** for admitted private allied content through the HEAL light-fairy path. Karna's allied ordered recovery has engine evidence and ordinary native campaign casting is **Unknown**. The private Battle19 Dark Bishop shares the faction selector and evil-fairy group; actual enemy AURA delivery remains **Unknown**. Authored AURA uses its own pulse, recipient cards and one EXP delivery. | [#2104] recovery follow-up after pre-voyage priorities. Reuse the same enemy fairy decision and verify actual area recipients when needed. [Current spells](../application/church-promotion-design.md#current-battle-spells) · [Battle19 private binding](../application/battle19-repeat.md) · [Authored AURA](battle-scenes.md#authored-aura-recovery) |
-| AURA 2–4 | HEALING_FAIRY v2–v4 | **Original assets bound** for learned private allied Magic through the existing fairy path. Controlled Battle26 input covers ranks2/3 and VICR rank4, one payment and ordered return. | [Recovery and reproduction](../domain/gameplay-rules.md#private-learned-aura-ranks). Equipment Use rules and consumers are accepted under [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268); their original effect presentation is tracked separately. |
-| DETOX 1–3 | DETOX v1–v3 | **Original assets bound** for admitted private Magic in the [DETOX successor](../content/presentation-assets.md#detox-successor). The same mote/trail composition plays for effective and paid no-effect casts and is suppressed by silence. Field Magic and Antidote/Fairy Powder have distinct delivery. Rune Axe Use selects DETOX2 in the original. | [#2232] delivers the [controlled native presentation](#prepared-detox-presentation). [#1965] owns rank-2/3 gameplay and equipped curse. Natural ordinary acquisition and casts remain **Unknown**. |
+| AURA 2–4 | HEALING_FAIRY v2–v4 | **Original assets bound** for learned private allied Magic through the existing fairy path. Controlled Battle26 input covers ranks2/3 and VICR rank4, one payment and ordered return. | [Recovery and reproduction](../domain/gameplay-rules.md#private-learned-aura-ranks). Equipment Use rules and consumers are accepted under [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268); White Ring AURA2 now has [equipment recovery playback](#equipment-recovery-playback-2291). |
+| DETOX 1–3 | DETOX v1–v3 | **Original assets bound** for admitted private Magic in the [DETOX successor](../content/presentation-assets.md#detox-successor). The same mote/trail composition plays for effective and paid no-effect casts and is suppressed by silence. Field Magic and Antidote/Fairy Powder have distinct delivery. Rune Axe Use binds DETOX2 through the [equipment recovery consumer](#equipment-recovery-playback-2291). | [#2232] delivers the [controlled native presentation](#prepared-detox-presentation). [#1965] owns rank-2/3 gameplay and equipped curse. Natural ordinary acquisition and casts remain **Unknown**. |
 | DETOX 4 | DETOX v4 | **Original assets bound** for private learned Magic with one cast and one end wait around the ordered area results. | [Area rules and controlled Battle26 playback](../domain/detox-ranks-design.md#detox-4-area-and-field-admission) |
 | BOOST 1 | BUFF1 v1 | **Original mechanism bound.** Learned Karna and Protect Ring use the original no-tile flash/PSH family, actual Magic/Item gesture, ordered AGI/DEF and return. | [BUFF playback](#buff-family-playback-2282); existing rule/expiry/save evidence remains with the support owner. |
 | BOOST 2 | BUFF1 v2 | **Original mechanism bound.** Selector40 uses the same setup/update as8; learned Karna delivers mixed effective/ineffective area results with one5 MP payment. Enemy SUPPORT remains outside admission. | [BUFF playback](#buff-family-playback-2282). |
@@ -123,7 +123,7 @@ update controls subsequent movement, mirroring and dust. [Enemy family evidence]
 | Retail rows | Original selector | Gameplay, package and scene | Remaining owner |
 | --- | --- | --- | --- |
 | SPOIT 1 | ABSORB v1 | **Partial** for admitted Indra Staff Item Use. It shows the gesture and ordered MP drain/gain notices; original absorb playback is absent. | [#2104] later absorb playback; equipment Use admission is accepted under [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268). [Indra witness](../domain/equipment-use-repair-design.md#indra-staff-reproduction) |
-| HEALIN 1–3 | HEALING_FAIRY v1–v3 in table, NONE for consumable Use | **Original assets bound** for the ordinary private Herb scene's item gesture and recovery. Seed and Drop share the admitted HP item consumer, with a bounded Seed supply witness. Holy Lance equipment Use reads the actual selector. | Preserve [item recovery](battle-scenes.md#medical-herb-scenes). Holy Lance Use is admitted under [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268); [#2104] retains original fairy presentation acceptance for that caller. |
+| HEALIN 1–3 | HEALING_FAIRY v1–v3 in table, NONE for consumable Use | **Original assets bound** for the ordinary private Herb scene's item gesture and recovery. Seed and Drop share the admitted HP item consumer, with a bounded Seed supply witness. Holy Lance equipment Use reads the actual selector. | Preserve [item recovery](battle-scenes.md#medical-herb-scenes). Holy Lance Use is admitted under [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268); [#2291](#equipment-recovery-playback-2291) binds its Item gesture and fairy presentation. |
 | FLAME 1–3 | FLAME_BREATH v1–v3 | **Unavailable** for these enemy spell rows. Kiwi's private converted Attack has separate assets and rules. | [#1818] first enemy caller and [#1369] rule admission, then [#2104] breath playback. |
 | SNOW 1–3 | SNOW_BREATH v2–v4 | **Unavailable** for these enemy spell rows. FREEZE already has a separate Magic path. | [#1818] first enemy caller and [#1369] rule admission, then [#2104] breath playback. |
 | DEMON 1–2 | DEMON_BREATH v1–v2 | **Unavailable** for these enemy spell rows. | [#1818] first enemy caller and [#1369] rule admission, then [#2104] breath playback. |
@@ -1130,3 +1130,140 @@ No wider matrix or retired suite was repeated for this correction.
 `derived/issue2282/review-v2` adds the two receipts and updated launchers. Use
 `-Case boost1 -Legacy` for equipment-v2 and omit `-Legacy` for buff-v1, with a fresh Sample
 and disposable SaveRoot as above. The complete buff-v1 media package is unchanged.
+
+
+## Equipment recovery playback #2291
+
+**Standard; bounded presentation scope.** Holy Lance81/HEALIN1, White Ring23/AURA2
+and Rune Axe43/DETOX2 reuse the existing recovery scene and prepared media. Domain
+remains the sole HP/status, wear and reward authority. Application owns the ordered
+recipients, logical fairy work and completion tokens; Godot projects Item gestures,
+actual sprites and messages. `HealingSceneCursor.cs` and `BattleSceneView.Healing.cs`
+extract the affected responsibilities without creating another runtime or clock.
+No save format, class rule, asset producer, schema or audio algorithm changes.
+
+**Confirmed source structure**, SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`;
+paths below are relative to `disasm/`:
+
+- `data/stats/items/itemdefs.asm` binds Holy Lance to HEALIN1, White Ring to AURA2 and
+  Rune Axe to DETOX2. `data/stats/spells/spelldefs.asm` selects4,36,38 respectively.
+- `code/gameflow/battle/battleactions/getspellanimation.asm:battlesceneScript_GetSpellanimation`
+  checks equipment type in the USE_ITEM branch, reads the item's Use spell and then its
+  animation. The separate CAST_SPELL silence branch does not suppress this item effect.
+  Non-equipment retains NONE even when its calculation shares HEALIN/AURA/DETOX.
+- `createbattlesceneanimation.asm:battlesceneScript_PerformAnimation` keeps
+  `BATTLEANIMATION_USE_ITEM`. `animateaction.asm` forwards the effect operand to
+  `battlescenes/battlesceneengine_0.asm:bsc01_animateAllyAction`; `sub_184B0` returns
+  for Item type2 without replacing that operand with a cast/header default.
+- `battleactions/castspell.asm:spellEffect_Heal` and its cure receiver supply the
+  authoritative reaction/result, not the view. `battleactions/battleactionsengine_1.asm`
+  orders target switches and `battlesceneScript_MakeActorIdle`;
+  `battleactionsengine_2.asm:battlesceneScript_End` emits `endAnimation` before switching
+  back and reward. The existing fairy stop/drain and DETOX shrink/trail consume that end.
+
+`BattleSceneState.RecoveryEffect` selects the visual definition from Magic or equipment
+Item. It does not convert an Item action into Magic: no SpellCost phase, MP debit or
+silence refusal is introduced. The fairy cursor uses the actual `item` sequence and
+message275, keeps one effect across ordered AURA targets, then drains once. Rune Axe
+uses the existing DETOX trigger and SpellStop delivery. Both poison and stun notices
+now use the item semantic message receiver; formerly its second notice was empty and
+ordinary input stalled at CureStunMessage. Ordinary consumables still have no recovery
+overlay. Existing authored AURA without private content retains its authored presentation.
+
+### Controlled native acceptance
+
+**Confirmed bounded remake observations.**
+`remake/game/probes/engine_equipment_recovery_observation.gd` drives Continue, ordinary
+Item/Magic selection, target confirmation and the next ActionChoice. It reads actual
+Sprite2D textures, scene phases, HP/status, messages and audio receipts. No screenshots,
+synthetic presentation completions or emulator acquisition are used.
+
+| Case / retained successful receipt | Actual result |
+| --- | --- |
+| Holy Lance self / `holy-b` | PLDN Chester, Item13, selector4, mounted light fairy; HP1→11, MP0 under Silence, one selected-slot wear81→337. |
+| Holy Lance full HP / `holy-full-b` | Same Item/fairy at full HP with zero recovery and wear once. HD actor is mounted; Battle26 has no fairy HD entries, so the entire fairy group remains Original. |
+| White Ring area / `aura-d` | VICR Sarah, Item25, selector36, one live fairy group across allies0,1,4,7,9,11,15 in source order. Sarah10→25; already-full recipients retain HP. MP0/Silence, one wear23→279, one close/return. Reduced Flash and held acceleration are enabled. Her separate Holy Staff/Life Ring end-turn recovery remains outside this action. |
+| Rune Axe cure / `rune-c` | GLDT Jaha, Item18, selector38, actual complete HD mote/trails. Kazin's poison+stun3→0 with stable HP, both notices, zero MP under Silence and one wear43→299. |
+| Rune Axe clean / `rune-clean-a` | Same original group and Item gesture; ineffective result, no status write and one wear. |
+| Healing Seed / `seed-a` | Item25, selector0, HP10→30, one consumed slot; no fairy or DETOX overlay. |
+| Learned regression / `heal-a`, `detox-a` | VICR Sarah HEAL1 pays20→17, heals10→28; DETOX2 pays20→14, cures Kazin3→0 with both notices. Existing Magic delivery remains live. |
+| Optional media / `rune-fallback`, `rune-missing` | Removing one DETOX HD declaration selects the whole Original group. Removing all eleven optional Original/HD declarations retains Item pose/notices with no DETOX overlay and still reaches the next action menu. Declared damaged media is not caught or hidden. |
+
+Every successful receipt ends in usable ordinary ActionChoice. A pending early cast token
+is checked before natural completion where the source gesture leaves a sufficient window.
+These observations use the accepted modern logical/presentation clocks and existing audio
+variant selection. Natural acquisition/reach, exact hardware cadence and human visual/audio
+acceptance remain **Unknown**. This is not a whole-game equipment or timing acceptance.
+
+### Reproduce and retained failures
+
+Reuse the immutable complete `derived/issue2282/buff-v1` (175 files,368493196 bytes),
+independent #2252 opening, #2255 Witch/entry catalog and #2266 world catalog. No media
+successor was needed. `derived/issue2291/review-v1` holds the controlled records, Boot/Run,
+optional-group preparation and successful/failed native receipts. Boot stages writable
+work only beneath the caller's checkout and requires a fresh external disposable save
+root/namespace. The sole local fallback copy is below500MiB; reports are about25MiB.
+Work is linear in the existing package and serial. No large acquisition was authorized;
+the initial2GiB scratch/RAM budget was not expanded (peak RAM was not measured).
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2291/review-v1'
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case holy `
+    -Sample holy-review -SaveRoot $freshExternalSaveRoot
+# Other distinct families: -Case aura -Reduced -Fast; -Case rune -Graphics hd.
+# Negative/regression cases: holy-full, rune-clean, herb (Healing Seed), heal, detox.
+# Rune optional groups: -Case rune-clean -Variant incomplete -Graphics hd; -Variant missing.
+```
+
+Build Debug with the locked SDK workflow before native use. Release `verify adapter` alone
+does not refresh Debug. Each process is bounded to60 seconds; inspect `native.json`,
+`console.log` and `exit.txt`. The private review records identify the exact inputs; they
+are never public fixtures. Holy records derive from #2282 `valkyrie-ready.json`, changing
+slot2 to bare81 in both loadout copies, MP0/Silence and HP1 or max. Other records derive
+from #2273 `seeds/aura.json`; slot2 is23/43/1 or learned Magic retains its book with MP20
+and silence cleared. Rune uses Jaha's legal GLDT15 class, bare pack, base attack, Sarah's
+position, queue head and active flag35 instead of33; target Kazin has status3 or0.
+AURA/Rune inputs include current unjoined allies20–29 off-board from #2274's
+`receipts/old-battle-zh/cold-slot.json` retained records, using current recipe11 and an
+empty retained partition. Initial stats, books and equipped bonuses come from those
+records and the pinned static item definitions, not invented fields. Both full-roster
+inputs pass direct `SaveRecordRestore.Restore` with45 deployments and45 source slots.
+
+Completed failures remain in the review: first adapter compilation caught an accidental
+string-return insertion in the command method (corrected before Debug playback);
+`holy-a` checked a token too late at the natural action boundary; `aura-c` counted later
+end-turn equipment HP and non-action notices; `holy-full-a` incorrectly expected fairy HD
+in Battle26. `rune-b` exposed the real missing second cure message, now fixed. `rune-a`
+and `aura-b` retained invalid controlled-input attempts (old recipe10 with a current
+roster, and the early Rune active-member setup); the direct consumer diagnosed the
+recipe/retained-roster mismatch before the corrected recipe11 native attempt. `aura-a` is the separate
+supported historical partition defect below. Successful exits are0; some retain2–6
+ObjectDB shutdown warnings under #1716, which this slice does not repair.
+
+### Supported historical AURA partition defect
+
+**Confirmed existing compatibility defect, not Unknown.** The unmodified #2273
+`review-v1/seeds/aura.json` is an accepted recipe10 Battle26 record with20 allies and15
+enemies and no retained allies. With complete buff-v1, Continue restores ordinary VICR
+Sarah control, but White Ring's item choice is disabled with `aura-source-slots`, field
+`initialization.sourceCombatants`. `aura-a` preserves this refusal using a disposable copy; the HP/status/slot values relevant to AURA match that source record.
+
+`Runtime/Persistence/BattleRestore.cs` intentionally restores the saved deployment
+partition using `WithDeployments`; that copy retains the package's45-entry Initialization
+source mapping while the saved battle contains35 deployments. `HealingTargetRules` then
+requires equal counts. The missing10 allies are correctly retained by the existing recipe
+upgrade, but their slot entries remain in this battle definition. This is a supported
+old-record/new-package combination and a reproducible rejected action, not evidence that
+the old save itself is invalid. The retained `aura-a` before/selection projections keep
+all actor data and both RNG seeds unchanged; the only event is entry to ActionChoice,
+with no Item commit, wear, HP/status write or result scene. Complete roster inputs allow this ticket's presentation
+acceptance without changing compatibility code.
+
+Follow-up scope: reconcile the historical battle partition and source-slot mapping in the
+owning restore/definition mechanism, preserve the retained party and source ordering,
+then exercise AURA on this exact old record plus its direct save/restore round trip.
+Reproduce the minimal refusal with `-Case aura -Seed old-aura.json` using the same Boot.
+[#2295](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2295) owns the queued
+compatibility correction. No blanket validator weakening, new save format, campaign
+replay or compatibility repair is included in #2291.
