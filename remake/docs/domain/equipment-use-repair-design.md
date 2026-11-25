@@ -36,8 +36,12 @@ library. Against pinned `c834c652b6862bc5679fd7f69a38a7093206efc6`, the owning s
 Paths above are relative to the pinned repository's `disasm/` directory. The source-backed set has **94 equipment definitions, 439 class/item pairs, 59 member/class pairs,
 912 member/class/equipment tuples and 557 member/class/weapon tuples**. Adding one explicit bare
 row per member/class gives **616 appearance keys and 16,016 selections across 26 scenes**.
-The earlier audit's 61/972/605/666 counts were erroneous cross-checks, not extra legal classes.
-Rohde and Higins start promoted; no hypothetical base-class records are added for them.
+The pinned `allystartdefs.asm` has32 rows, but `sf2enums.asm` defines
+`COMBATANT_ALLIES_NUMBER=30`. Rows30/31 are both RDBN and are outside the30 playable allies.
+Each excluded row contributes24 legal weapons,30 equipment combinations and one bare appearance:
+excluding them explains exactly61→59 member/class pairs,605→557 weapon tuples,972→912 equipment
+tuples and666→616 appearance keys. Rohde and Higins do start promoted, but do not explain this
+count correction; no hypothetical base-class records are added for them.
 
 RBT29, GLM30 and RDBN31 now have named class, source prowess and AI target-priority operands
 (`data/battles/global/aipriority.asm`). Late members20–29 have the necessary original start/growth,
@@ -319,7 +323,7 @@ reward, including English healing-item feedback. Hostile status Item scenes use 
 **Confirmed (static).** `AdjustSpellPower` in
 `code/gameflow/battle/battleactions/calculatespelldamage.asm` applies promoted scaling only to
 `BATTLEACTION_CAST_SPELL`; Item healing and offensive effects retain raw source power. The
-`rjt_FieldItemEffects` table in `code/common/menus/item/fielditemeffects.asm` contains3,5,9–15,
+`rjt_FieldItemEffects` table in `code/common/stats/items/fielditemeffects.asm` contains3,5,9–15,
 not equipment. The existing Field capability table is unchanged and the production consumer checks
 that no equipment Use leaks into it. Iron Ball102 and Taros Sword110 retain mask NONE and reject
 player Use before effect/wear; the accepted enemy Taros actual-slot/zero-MP/no-wear path is unchanged.

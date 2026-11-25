@@ -1274,9 +1274,13 @@ because Lemon's RDBN uses the BRN body; explicit bare records supersede legacy f
 **Confirmed (corrected source enumeration).** The pinned starting-class and promotion
 join and prepared walking index currently reproduce59 member/class pairs,557 weapon pairs and912
 member/class/equipment pairs;94 definitions and439 class/item pairs agree with the earlier audit.
-The earlier61/605/972 audit estimates are not reproduced by pinned `allystartdefs.asm`,
-`classes/promotions.asm`, `allybattlesprites.asm` or the prepared index. Current counts above are
-corrected to those actual rows. No source-legal key is omitted or invented to match the old estimate.
+At pinned `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/data/stats/allies/allystartdefs.asm` has32 rows, while `disasm/sf2enums.asm` defines
+`COMBATANT_ALLIES_NUMBER=30`. The final rows30/31 both start RDBN but are outside the30 playable
+allies. Each contributes24 legal weapons,30 equipment combinations and one bare appearance.
+Excluding precisely those rows explains61→59 member/class pairs,605→557 weapon tuples,
+972→912 equipment tuples and666→616 appearance keys. No source-legal playable key is omitted
+or invented to match the old estimate.
 
 ### Final reader and native acceptance
 
