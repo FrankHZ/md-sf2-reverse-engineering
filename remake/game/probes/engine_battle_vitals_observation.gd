@@ -17,9 +17,12 @@ func card_geometry(card: Dictionary, label: String) -> bool:
     var header_bottom: float = card.nameRect.y+card.nameRect.height
     if card.roleVisible:
         var level := ("等级 %d" if TranslationServer.get_locale().begins_with("zh") else "Level %d") % int(card.level)
+        var inline: bool = abs(card.roleRect.y-card.nameRect.y)<1
         if not expect(card.roleFontSize == 30 and level in card.role and within(card.roleRect,card.rect)
-                and card.roleRect.y >= header_bottom-1,label+": localized role and level fit below name at body size"): return false
-        header_bottom = card.roleRect.y+card.roleRect.height
+                and abs(card.roleRect.x+card.roleRect.width-card.rect.x-card.rect.width+18)<1
+                and (card.nameLines == 1 and card.nameRect.x+card.nameRect.width+12 <= card.roleRect.x+1 if inline
+                else card.roleRect.y >= header_bottom-1),label+": right-aligned role fits beside or below the name at body size"): return false
+        header_bottom = maxf(header_bottom,card.roleRect.y+card.roleRect.height)
     for vital in [card.hp,card.mp]:
         if not expect(vital.labelFontSize == 30 and vital.fontSize == 30 and vital.image.rect.width >= 220
                 and vital.image.rect.height == 28,label+": vital labels and values use body size"): return false
@@ -39,6 +42,9 @@ func card_geometry(card: Dictionary, label: String) -> bool:
             label+": HP/MP rows align in one column"): return false
     return true
 
+func terrain_below(card: Dictionary, terrain: Dictionary) -> bool:
+    return abs(card.x-terrain.x)<1 and abs(card.y+card.height+12-terrain.y)<1 and inside(terrain)
+
 func header_geometry(label: String) -> bool:
     await frames(5)
     var s := state()
@@ -46,24 +52,31 @@ func header_geometry(label: String) -> bool:
     var card: Dictionary = layout.targetCard if layout.targetCard.visible else layout.actorCard
     samples.append({"label":label,"menu":s.menu,"stage":s.stage,"window":[root.size.x,root.size.y]})
     if not card_geometry(card,label) or not expect(card.decisionHeader,label+": actual decision card"): return false
-    if vitals_case == "wide" and not expect(card.name.length() >= 55 and card.nameLines == 2 and card.hp.maximum == 30000,
-            label+": long English name wraps beside five-digit vitals"): return false
+    if vitals_case == "wide" and not expect(card.name.length() >= 55 and card.nameLines == 2 and card.hp.maximum == 30000
+            and (not card.roleVisible or card.roleRect.y >= card.nameRect.y+card.nameRect.height),
+            label+": long English name and fallback role leave five-digit vitals readable"): return false
     if vitals_case == "zh-long" and card.actor == "ally-1" and not expect(card.name.begins_with("北境守望")
             and card.nameLines == 2 and "祭司" in card.role,label+": admitted Chinese name wraps above its class"): return false
     if not expect(card.rect.x == layout.description.x and card.rect.width == layout.description.width and disjoint(card.rect,layout.description),
             label+": header and footer form one measured column"): return false
     if not expect(layout.contextText == (("回合 %d" if TranslationServer.get_locale().begins_with("zh") else "Round %d") % s.round),label+": round has no currency"): return false
     if not expect(layout.terrainPanel.visible == layout.actorCard.visible,label+": terrain belongs to the acting phase"): return false
-    if layout.terrainPanel.visible and not expect(disjoint(layout.terrainPanel.rect,card.rect) and inside(layout.terrainPanel.rect),
-            label+": terrain has its own visible space"): return false
-    if layout.contextVisible and layout.terrainPanel.visible and not expect(layout.context.width == layout.terrainPanel.rect.width and
-            layout.context.height == layout.terrainPanel.rect.height,label+": round and land effect form equal rows"): return false
+    var terrain: Dictionary = layout.terrainPanel.rect
+    if layout.terrainPanel.visible and not expect(terrain_below(card.rect,terrain) and disjoint(terrain,layout.description)
+            and (not board().cellCursor.visible or disjoint(terrain,board().cellCursor.drawn)),
+            label+": terrain stays 12px below the card and clears the cursor and reader"): return false
     if layout.commandList.visible:
         if not expect(card.rect.x == layout.commandList.rect.x and card.rect.width == layout.commandList.rect.width
-                and disjoint(card.rect,layout.commandList.rect) and disjoint(layout.commandList.rect,layout.description),
-                label+": card and Main rows clear the reader"): return false
+                and disjoint(card.rect,layout.commandList.rect) and disjoint(layout.commandList.rect,layout.description)
+                and (not layout.terrainPanel.visible or disjoint(terrain,layout.commandList.rect)),
+                label+": card, terrain and Main rows clear the reader"): return false
     if layout.listVisible and not expect(card.rect.x == layout.list.x and card.rect.width == layout.list.width
-            and disjoint(card.rect,layout.list),label+": child list replaces Main below the card"): return false
+            and disjoint(card.rect,layout.list) and disjoint(layout.list,layout.description)
+            and (not layout.terrainPanel.visible or disjoint(terrain,layout.list)),
+            label+": child list fits between the stacked readouts and reader"): return false
+    if layout.listVisible and not layout.rowRects.is_empty():
+        var row: Dictionary = layout.rowRects[layout.selectedRow]
+        if not expect(row.height >= 80 and within(row,layout.list),label+": selected row remains fully readable"): return false
     if not expect(within(layout.reader.rect,layout.description),label+": text scrolls inside the reader"): return false
     for row in layout.navigation:
         if row.visible and not expect(within(row.rect,layout.description),label+": target controls contained"): return false
@@ -103,11 +116,16 @@ func inspection_vitals() -> bool:
     samples.append({"label":"inspected-enemy","inspection":inspection})
     if not card_geometry(hover,"inspected enemy") or not expect(not hover.roleVisible and hover.role.is_empty(),
             "Enemy card has no role or level"): return false
-    if not expect(disjoint(hover.rect,inspection.terrainPanel.rect) and disjoint(hover.rect,inspection.footer.rect),
-            "Inspection card leaves terrain and operations visible"): return false
+    var terrain: Dictionary = inspection.terrainPanel.rect
+    if not expect(terrain_below(hover.rect,terrain) and disjoint(terrain,inspection.footer.rect)
+            and disjoint(hover.rect,inspection.footer.rect) and disjoint(terrain,board().cellCursor.drawn),
+            "Inspection pairs the card and terrain and clears the cursor and footer"): return false
     await click(hover.rect)
     if not await inspect_page("Cursor"): return false
     if not expect(state().inspection.cursor == enemy.Position,"Card consumes clicks over the board"): return false
+    await click(terrain)
+    if not await inspect_page("Cursor"): return false
+    if not expect(state().inspection.cursor == enemy.Position,"Terrain consumes clicks over the board"): return false
     await act("cancel")
     return await settled() and expect(signature(state()) == baseline,"Free inspection preserves battle state")
 
@@ -140,6 +158,13 @@ func decision_vitals() -> bool:
     if not await header_geometry("main"): return false
     if not await host_cover(): return false
     var baseline := resources(state())
+    if vitals_case == "wide":
+        await click(state().menu.layout.commands[2].caption)
+        if not expect(state().menu.page == "Items","Item caption opens the list below the terrain frame"): return false
+        if not await header_geometry("item-list"): return false
+        await act("cancel")
+        if not expect(state().menu.page == "Main" and state().menu.command == 2 and resources(state()) == baseline,
+                "Item Back retains Main focus and resources"): return false
     for i in range(posmod(1-state().menu.command,4)): await act("down")
     await act("confirm")
     if not expect(state().menu.page == "Magic","Actual Magic list opens"): return false

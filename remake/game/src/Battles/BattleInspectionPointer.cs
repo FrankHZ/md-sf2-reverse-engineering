@@ -3,12 +3,15 @@ using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.GodotAdapter.Input;
 using Sf2.Remake.GodotAdapter.Localization;
+using Sf2.Remake.GodotAdapter.UI;
 
 namespace Sf2.Remake.GodotAdapter.Battles;
 
 internal sealed partial class BattleInspectionView
 {
     private bool _pointerFocus;
+    private bool _hoverOnLeft;
+    private float _hoverColumnWidth = BattleStatusCard.BaseWidth;
     private Vector2 _edgeSpeed, _edgeMouse;
     private double _edgeDelay;
     private void StopEdge() { _edgeSpeed = Vector2.Zero; _edgeDelay = 0; }
@@ -32,15 +35,27 @@ internal sealed partial class BattleInspectionView
     internal void ArrangeHover(Rect2 cell)
     {
         if (!Active || _page != "Cursor" || !_terrainPanel.IsVisibleInTree()) return;
-        if (_hover.Visible) _hover.Size = new(Mathf.Max(560, _hover.RequestedSize.X), _hover.RequestedSize.Y);
-        float right = GetViewportRect().Size.X - UI.StoryTheme.GameplayInset - _hover.Size.X;
-        var position = new Vector2(right, UI.StoryTheme.BelowMenu);
-        if (new Rect2(position, _hover.Size).Intersects(cell.Grow(16)))
-            position.X = UI.StoryTheme.GameplayInset;
-        _hover.Position = position;
-        bool terrainRight = _hover.Visible && position.X != right;
-        _terrainPanel.Place(new(terrainRight ? GetViewportRect().Size.X - UI.StoryTheme.GameplayInset : UI.StoryTheme.GameplayInset,
-            UI.StoryTheme.BelowMenu), cell.Grow(16), terrainRight);
+        float margin = StoryTheme.GameplayInset, top = StoryTheme.BelowMenu;
+        float viewportWidth = GetViewportRect().Size.X;
+        if (_hover.Visible)
+        {
+            _hover.Fit(viewportWidth - 2 * margin);
+            _hover.Size = _hover.RequestedSize;
+            _hoverColumnWidth = _hover.Size.X;
+        }
+        float terrainOffset = _hover.Visible ? _hover.Size.Y + BattleTerrainPanel.CardGap : 0;
+        float width = _hover.Visible ? Mathf.Max(_hover.Size.X, _terrainPanel.Size.X) : _terrainPanel.Size.X;
+        float right = viewportWidth - margin - Mathf.Max(_hoverColumnWidth, width);
+        var occupied = new Vector2(width, terrainOffset + _terrainPanel.Size.Y);
+        var protection = cell.Grow(16);
+        // For an empty cell, try the last column first so the reading stays with the inspected area.
+        bool preferLeft = !_hover.Visible && _hoverOnLeft;
+        float x = preferLeft ? margin : right;
+        if (cell.HasArea() && new Rect2(new Vector2(x, top), occupied).Intersects(protection))
+            x = preferLeft ? right : margin;
+        _hoverOnLeft = x == margin;
+        _hover.Position = new(x, top);
+        _terrainPanel.Position = new(x, top + terrainOffset);
     }
     private static string LandValue(int? percent) => percent is { } value ? GameText.Get("battle.inspect.land-percent", value) : "—";
     private bool CursorUiCovers(Vector2 position) => _footer.GetGlobalRect().HasPoint(position) ||

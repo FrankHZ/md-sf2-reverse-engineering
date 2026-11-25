@@ -71,6 +71,7 @@ internal sealed partial class BattleInspectionView : Control
         _back.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
         _back.ItemRectChanged += _pointer.Cancel;
         _options.InvalidatePointer = _pointer.Cancel;
+        _hover.MinimumSizeChanged += () => { if (Active) ArrangeHover(_map.CellRect(_cursor)); };
         Resized += () => { _pointer.Cancel(); Project(); };
         Close();
     }

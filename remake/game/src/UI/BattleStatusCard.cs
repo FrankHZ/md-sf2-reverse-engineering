@@ -9,12 +9,16 @@ namespace Sf2.Remake.GodotAdapter.UI;
 // Disposable projection of the live combatant, used for decisions and close-ups.
 internal sealed partial class BattleStatusCard : PanelContainer
 {
-    private const int BaseWidth = 560, MaxNameWidth = 800, HorizontalPadding = 18, NameLines = 2;
+    internal const int BaseWidth = 560;
+    private const int MaxNameWidth = 800, HorizontalPadding = 18, HeaderGap = 12, NameLines = 2;
     internal bool DecisionHeader { get; init; }
     internal Vector2 RequestedSize => new(_width, GetCombinedMinimumSize().Y);
     private readonly Label _name = Text("CharacterName"), _role = Text("ClassLevel");
     private readonly BattleVitalGauge _hp = new("HP"), _mp = new("MP");
+    private readonly VBoxContainer _column = new() { MouseFilter = MouseFilterEnum.Ignore };
+    private readonly HBoxContainer _identity = new() { MouseFilter = MouseFilterEnum.Ignore };
     private float _width = BaseWidth, _minimumWidth;
+    private float _availableWidth = float.PositiveInfinity;
     private ActorRef? _actor;
     private int? _level;
     internal ActorRef? Actor => _actor;
@@ -25,15 +29,18 @@ internal sealed partial class BattleStatusCard : PanelContainer
         MouseFilter = MouseFilterEnum.Ignore;
         TextureFilter = TextureFilterEnum.Nearest;
         AddThemeStyleboxOverride("panel", StoryTheme.PanelFrame(HorizontalPadding, 14));
-        var column = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-        column.AddThemeConstantOverride("separation", 4);
-        AddChild(column);
+        _column.AddThemeConstantOverride("separation", 4);
+        _identity.AddThemeConstantOverride("separation", HeaderGap);
+        AddChild(_column);
+        _column.AddChild(_identity);
         _name.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _name.MaxLinesVisible = NameLines;
         _name.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
+        _name.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        _role.HorizontalAlignment = HorizontalAlignment.Right;
         _role.AddThemeColorOverride("font_color", StoryTheme.Selected);
-        column.AddChild(_name); column.AddChild(_role);
-        column.AddChild(_hp); column.AddChild(_mp);
+        _identity.AddChild(_name); _column.AddChild(_role);
+        _column.AddChild(_hp); _column.AddChild(_mp);
         if (!DecisionHeader) MinimumSizeChanged += () => Size = RequestedSize;
         Size = RequestedSize;
     }
@@ -78,31 +85,55 @@ internal sealed partial class BattleStatusCard : PanelContainer
         }
         float vitalsWidth = Mathf.Max(_hp.GetCombinedMinimumSize().X, _mp.GetCombinedMinimumSize().X);
         float roleWidth = _role.Visible ? _role.GetMinimumSize().X : 0;
-        float minimumWidth = Mathf.Max(BaseWidth, Mathf.Ceil(Mathf.Max(roleWidth, vitalsWidth)) + 2 * HorizontalPadding);
+        float minimumWidth = Mathf.Ceil(Mathf.Max(roleWidth, vitalsWidth)) + 2 * HorizontalPadding;
         if (headerChanged || _minimumWidth != minimumWidth)
         {
             _minimumWidth = minimumWidth;
-            MeasureName();
+            ArrangeIdentity();
         }
         Size = RequestedSize;
     }
 
-    private void MeasureName()
+    internal void Fit(float availableWidth)
+    {
+        if (_availableWidth == availableWidth) return;
+        _availableWidth = availableWidth;
+        ArrangeIdentity();
+    }
+
+    private void ArrangeIdentity()
     {
         var font = _name.GetThemeFont("font");
+        float available = Mathf.Max(_minimumWidth, _availableWidth);
+        float innerWidth = Mathf.Min(Mathf.Max(BaseWidth, _minimumWidth), available) - 2 * HorizontalPadding;
         using var shaped = new TextParagraph
         {
-            Width = _minimumWidth - 2 * HorizontalPadding,
+            Width = innerWidth,
             BreakFlags = TextServer.LineBreakFlag.Mandatory | TextServer.LineBreakFlag.WordBound | TextServer.LineBreakFlag.Adaptive,
         };
         shaped.AddString(_name.Text, font, StoryTheme.BodySize);
-        float maxWidth = MaxNameWidth - 2 * HorizontalPadding;
+        float maxWidth = Mathf.Min(MaxNameWidth, available) - 2 * HorizontalPadding;
         while (shaped.GetLineCount() > NameLines && shaped.Width < maxWidth)
             shaped.Width = Mathf.Min(shaped.Width + 16, maxWidth);
+        innerWidth = shaped.Width;
+        float inlineWidth = innerWidth - _role.GetMinimumSize().X - HeaderGap;
+        bool inline = false;
+        if (_role.Visible && inlineWidth > 0)
+        {
+            shaped.Width = inlineWidth;
+            inline = shaped.GetLineCount() == 1 && shaped.GetSize().X <= inlineWidth;
+        }
+        shaped.Width = inline ? inlineWidth : innerWidth;
+        Container parent = inline ? _identity : _column;
+        if (_role.GetParent() != parent)
+        {
+            _role.Reparent(parent, false);
+            if (!inline) _column.MoveChild(_role, 1);
+        }
         // Reserve only the visible lines, even for exceptionally long imported metadata.
         shaped.MaxLinesVisible = NameLines;
         _name.CustomMinimumSize = new(0, Mathf.Ceil(shaped.GetSize().Y));
-        _width = shaped.Width + 2 * HorizontalPadding;
+        _width = innerWidth + 2 * HorizontalPadding;
     }
 
     internal object Observe() => new
