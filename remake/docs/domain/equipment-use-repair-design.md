@@ -225,7 +225,11 @@ SDK environment, `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=false`, `UseSharedCompilation=
 `nodeReuse:false`. Run `uv run sf2 verify engine`, `uv run sf2 verify adapter`, then a Debug adapter
 build for native play. Subsequent test-only correction used the engine project with
 `--configuration Release --no-restore --filter FullyQualifiedName~EquipmentRecoveryTests`.
-No Python research/full profile or H3 run is required by this engine/asset-consumer slice.
+The clean-head default plan has no unclassified paths. Its engine interpretation uses
+`uv run sf2 verify plan --scope engine --base origin/main --head HEAD`: this is an equipment
+consumer/asset mount change, with no research extraction or harness semantics change. Engine,
+adapter, PrivateAdmission and LiveInspection builds and the selected public ruff/design-contracts/
+research-index checks passed. No normal Python research/full profile or H3 run is required here.
 
 The immutable `derived/issue2272/review-v1` registration holds `Boot.ps1`, `consumer/Verify.ps1`,
 runner, controlled seed and receipts. `derived/issue2272/equipment-v1` is the complete package;
