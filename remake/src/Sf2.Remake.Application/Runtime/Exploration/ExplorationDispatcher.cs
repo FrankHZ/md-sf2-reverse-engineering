@@ -121,7 +121,7 @@ internal static class ExplorationDispatcher
                     break;
                 case InterruptTextDelay interrupt:
                     if (current.Story.Wait is not FieldTextWait { Phase: FieldTextPhase.TextPause } delay ||
-                        delay.Token != interrupt.Wait || !(delay.InterruptibleDelay || interrupt.FromReadingConfirm))
+                        delay.Token != interrupt.Wait || delay.AutomaticDelay || !(delay.InterruptibleDelay || interrupt.FromReadingConfirm))
                         return Reject(current, "text-delay-unavailable", "wait");
                     var resumed = current.Story.Copy(current.Story.Cursor, delay with { Phase = FieldTextPhase.Tokens, Remaining = 0 },
                         typewriting: delay.SavedTypewriting);
@@ -161,6 +161,14 @@ internal static class ExplorationDispatcher
                     current = ExplorationMusicRunner.Finish(current, observations);
                     break;
                 case CompletePresentation completion:
+                    if (current.Story.Wait is ScenePaletteWait scenePalette)
+                    {
+                        if (scenePalette.Token != completion.Wait || completion.Kind != PresentationCueKind.ScenePalette || scenePalette.ActualDone || !scenePalette.LogicalDone)
+                            return Reject(current, "stale-or-wrong-presentation", "presentation");
+                        current = current.WithStory(current.Story.Copy(current.Story.Cursor, scenePalette with { ActualDone = true }));
+                        current = ScenePaletteRunner.Finish(current, observations);
+                        break;
+                    }
                     if (current.Story.Wait is NodWait nodCompletion)
                     {
                         if (nodCompletion.Token != completion.Wait || completion.Kind != PresentationCueKind.Gesture || (nodCompletion.ActualDone || nodCompletion.DeliverySkipped))
@@ -266,6 +274,8 @@ internal static class ExplorationDispatcher
                         return ProgramRunner.Run(definition, current, observations, rules);
                     if (current.Story.Wait is NodWait { LogicalDone: true })
                         return Reject(current, "nod-awaiting-presentation", "wait");
+                    if (current.Story.Wait is SceneEndWait or ScenePaletteWait { LogicalDone: true })
+                        return Reject(current, "scene-palette-awaiting-presentation", "wait");
                     if (current.Story.Wait is FullFadeWait { LogicalDone: true })
                         return Reject(current, "fade-awaiting-presentation", "wait");
                     if (current.Story.Wait is MusicWait { LogicalDone: true })
@@ -277,6 +287,13 @@ internal static class ExplorationDispatcher
                         current.Story.Cursor is null && current.Story.Wait is null;
                     for (int tick = 0; tick < advance.Ticks; tick++)
                     {
+                        if (current.Story.Wait is ScenePaletteWait)
+                        {
+                            current = ScenePaletteRunner.Tick(definition, current, observations);
+                            if (current.Story.Wait is null) return ProgramRunner.Run(definition, current, observations, rules);
+                            if (current.Story.Wait is ScenePaletteWait { LogicalDone: true }) break;
+                            continue;
+                        }
                         if (current.Story.Wait is MusicWait helper)
                         {
                             current = Service(definition, current, observations, "music-helper-service");

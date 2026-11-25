@@ -3,6 +3,7 @@
 REMAKE_PRODUCER_PATHS = frozenset(
     {
         "src/sf2tool/remake_exploration_content.py",
+        "src/sf2tool/remake_opening_scene.py",
         "src/sf2tool/remake_entry_content.py",
         "src/sf2tool/remake_localization.py",
         "src/sf2tool/remake_battle_scene_content.py",

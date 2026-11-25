@@ -107,7 +107,7 @@ internal static class ExplorationTextRunner
         for (int sourceToken = 0; sourceToken < tokens.Count; sourceToken++)
         {
             var part = tokens[sourceToken];
-            if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Delay3 or ExplorationTextTokenKind.Clear)
+            if (part.Kind is ExplorationTextTokenKind.Wait1 or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Newline or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Delay2 or ExplorationTextTokenKind.Delay3 or ExplorationTextTokenKind.Clear)
             { units.Add(new(part.Kind, part.Kind == ExplorationTextTokenKind.Newline ? "\n" : "", SourceToken: sourceToken)); continue; }
             int? member = part.Member;
             if (part.Kind == ExplorationTextTokenKind.ClassName) member = receipt?.Member ?? text.NameMember;
@@ -210,12 +210,18 @@ internal static class ExplorationTextRunner
                     Projection = string.Concat(wait.Units.Skip(following).Take(wait.End - following).Select(part => part.Text)) };
                 break;
             }
-            if (unit.Kind is ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Delay3)
+            if (unit.Kind is ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Delay2 or ExplorationTextTokenKind.Delay3)
             {
                 wait = wait with { Index = wait.Index + 1 };
-                if (story.TextSettings!.MouthControl != 0) continue;
-                // Both source delays save and clear typewriting. DBF starts at 21 or 119.
-                wait = wait with { Phase = FieldTextPhase.TextPause, Remaining = unit.Kind == ExplorationTextTokenKind.Delay3 ? 120 : 22, SavedTypewriting = story.Typewriting };
+                if (unit.Kind != ExplorationTextTokenKind.Delay2 && story.TextSettings!.MouthControl != 0) continue;
+                // D2 calls Sleep(119), independently of mouth/input control. D1/D3 use DBF.
+                int ticks = unit.Kind switch
+                {
+                    ExplorationTextTokenKind.Delay2 => 119,
+                    ExplorationTextTokenKind.Delay3 => 120,
+                    _ => 22,
+                };
+                wait = wait with { Phase = FieldTextPhase.TextPause, Remaining = ticks, SavedTypewriting = story.Typewriting };
                 story = story.Copy(story.Cursor, wait, typewriting: false);
                 break;
             }

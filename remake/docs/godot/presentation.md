@@ -105,6 +105,16 @@ F2's separate field command list and F3–F10 production migration remain with #
 
 ## Pre-title story presentation (#2247)
 
+The bounded #2250 controlled scene now uses the production presenter, normal text clock and optional
+terrain slot resource. `ExplorationPresentation.Palette` projects finite bank fades/pulses, retains
+actor/UI separation and a reduced steady pulse. `MapBlockTextures` reports the actual prepared pixel
+samples consumed by its cached blocks; the observer checks them against slot words. Source183/187
+sprites, fixed/blinking actors and existing mosaic projection use the ordinary actor renderer.
+[Scene agreement](../application/opening-session-lifecycle.md#bounded-scene-implementation-2250) ·
+[Native reproduction](../content/presentation-assets.md#controlled-opening-scene-package-2250).
+The four-scene startup/Skip integration below is still proposed.
+
+
 This is the [proposed startup lifecycle](../application/opening-session-lifecycle.md#proposed-opening-sequence-2247).
 Use the ordinary world viewport, scene actor projection, camera and story windows for the boot
 story. Use the existing fixed entry canvas for title and Witch. Display a compact localized Skip

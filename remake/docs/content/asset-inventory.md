@@ -30,6 +30,7 @@ together. The active package is the set selected in the launch process.
 
 | Selection | Purpose and resource boundary |
 | --- | --- |
+| **Controlled opening scenes** · `derived/issue2250/opening-scenes-v1` | Complete Map42 shrine and bounded Map65 storm prefix, optional slot-index terrain resources,183/187 effects, selected modern audio and81 accepted Chinese rows. Independent of ordinary startup and the campaign selection. [Preparation and native reproduction](presentation-assets.md#controlled-opening-scene-package-2250) |
 | **Pre-voyage** · `derived/issue2156/pre-voyage-map3-l1-v1` | Complete inline pre-voyage selection and source for the companion candidate. Provides [Map3 Original and L1 terrain](#complete-private-package-and-rebuild-2156), original cue 12 and the mounted pre-voyage spell rasters. Gameplay reach belongs to the [pre-voyage campaign](../application/pre-voyage-campaign.md). |
 | **Pre-voyage companion candidate** · `derived/issue2174/pre-voyage-map3-companion-v1` | Complete selection for the HD rollout. Carries the same Map3 L1 centers and neighborhoods in one world-relative file. [Rebuild, admission and native comparison](#map3-terrain-companion-2174) |
 | **Pre-voyage static terrain** · `derived/issue2175/pre-voyage-terrain-v1` | Complete field and tactical selection with twenty L1 banks and the original Map3 companion. [Production and live checks](#pre-voyage-static-terrain-2175) |

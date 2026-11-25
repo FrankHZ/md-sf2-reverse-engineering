@@ -77,7 +77,7 @@ public sealed partial class ExplorationSessionView
         // intent, while D3 retains its separate interruption and elapsed-time rules.
         for (int work = 0; work < 600 && _session!.Current.Story.Wait is FieldTextWait { LogicalDone: false } field; work++)
         {
-            if (field.InterruptibleDelay) return false;
+            if (field.InterruptibleDelay || field.AutomaticDelay) return false;
             Send(field.Phase == FieldTextPhase.TextPause
                 ? new InterruptTextDelay(field.Token) { FromReadingConfirm = true }
                 : new AdvanceSimulation(field.Token));

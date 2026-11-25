@@ -67,6 +67,17 @@ All209 historical world rows and six aliases still resolve in the isolated reade
 world targets differ from later full-corpus calibration. Neither that check nor corpus-wide glyph
 coverage expands runtime admission or completes pre-voyage Chinese coverage.
 
+### Controlled opening admission (#2250)
+
+The separate [scene package](../content/presentation-assets.md#controlled-opening-scene-package-2250)
+admits all81 source IDs4186–4266 from the sole accepted `source.jsonl`, plus existing ally display
+names0/5 from `names.zh-CN.jsonl`. Preparation verifies exact English identity and each D2/name
+control segment; the actual Content reader requires the matching repository/commit/ROM identity.
+This catalog is independent of the campaign overlays and does not replace or rewrite them.
+Native Chinese consumers cover the16 shrine and13 castle-prefix messages with automatic D2 and no
+fallback. The other52 rows are admitted preparation for later scene consumers, not new native reach.
+No full-corpus retranslation, name re-audit or human-reading approval is claimed.
+
 ### One authority and exact ownership
 
 A separately configured persistent private content root outside Git and removable worktrees owns:

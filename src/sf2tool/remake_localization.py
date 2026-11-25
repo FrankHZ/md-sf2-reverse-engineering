@@ -109,9 +109,9 @@ _CALIBRATED = (
 )
 _COMMIT = "c834c652b6862bc5679fd7f69a38a7093206efc6"
 _ROM = "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
-_CONTROL = re.compile(r"\{(?:N|W1|W2|D1|D3|CLEAR)\}")
+_CONTROL = re.compile(r"\{(?:N|W1|W2|D1|D2|D3|CLEAR)\}")
 _TOKEN = re.compile(r"\{[^{}]+\}")
-_SUPPORTED = re.compile(r"\{(?:N|W1|W2|D1|D3|CLEAR|LEADER|NAME(?:;[0-9]+)?|CLASS|ITEM)\}")
+_SUPPORTED = re.compile(r"\{(?:N|W1|W2|D1|D2|D3|CLEAR|LEADER|NAME(?:;[0-9]+)?|CLASS|ITEM)\}")
 
 
 def _require(ok: bool, message: str) -> None:

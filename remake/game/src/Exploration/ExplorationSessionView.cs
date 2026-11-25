@@ -891,6 +891,10 @@ public sealed partial class ExplorationSessionView : Control
             stepCounter = current?.Story.StepCounter, battleRequest = current?.Story.BattleRequest,
             egressMap = current?.Story.EgressMap?.Value, thinkingSeed = current?.Exploration?.Party.ThinkingSeed,
             display = current?.Story.Display, fade = current?.Story.Wait as FullFadeWait,
+            scenePaletteWait = current?.Story.Wait is ScenePaletteWait scene ? new
+            { token = scene.Token.Value, elapsed = scene.Elapsed, duration = scene.Duration,
+                logicalDone = scene.LogicalDone, actualDone = scene.ActualDone,
+                operation = scene.Operation.GetType().Name, previousTerrain = scene.Previous.Terrain } : null,
             warp = current?.Story.Warp, loadServices = (current?.Story.Wait as WarpLoadWait)?.Remaining,
             tickDebt = _tickTime, failureVisible = _failureLabel.IsVisibleInTree(),
             token = current?.Story.Wait?.Token.Value, failure = PresentationFailure?.Code, failureField = PresentationFailure?.Field, failureKind = PresentationFailure?.Kind.ToString(), spriteSize = current?.Exploration?.SpriteSize,

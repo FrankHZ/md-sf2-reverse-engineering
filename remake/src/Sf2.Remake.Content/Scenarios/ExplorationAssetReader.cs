@@ -31,7 +31,7 @@ internal static class ExplorationAssetReader
         var maps = new Dictionary<MapId, ExplorationMapVisual>();
         foreach (var map in Array(row, "maps"))
         {
-            ObjectOptional(map, "mapVisual", ["map", "atlas", "scale", "blocks"], "music", "hdBlocks", "hdBlockContexts", "hdTerrainFile", "tileAnimation");
+            ObjectOptional(map, "mapVisual", ["map", "atlas", "scale", "blocks"], "music", "hdBlocks", "hdBlockContexts", "hdTerrainFile", "tileAnimation", "scenePalette");
             var id = new MapId(Id(map, "map"));
             var blocks = Array(map, "blocks").Select(block =>
             {
@@ -53,7 +53,7 @@ internal static class ExplorationAssetReader
             }).ToArray() : [];
             var (hdBlocks, contexts) = HdTerrainBankReader.Read(map, id, blocks.Length, worldDirectory);
             Require(maps.TryAdd(id, new(id, atlas, scale, System.Array.AsReadOnly(blocks), System.Array.AsReadOnly(music),
-                hdBlocks, contexts, MapTileAnimationReader.Read(map, blocks))), "duplicate-map-visual", "presentation.maps");
+                hdBlocks, contexts, MapTileAnimationReader.Read(map, blocks), ScenePaletteReader.Resource(map))), "duplicate-map-visual", "presentation.maps");
         }
         var sprites = new Dictionary<int, ExplorationSpriteVisual>();
         foreach (var sprite in Array(row, "sprites"))

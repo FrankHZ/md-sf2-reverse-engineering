@@ -87,7 +87,7 @@ internal static class ProgramRunner
                     current = MapEventDispatcher.Finish(current, observations, fieldMoveToken);
                     if (current.Story.Wait is not null) continue;
                     if (current.Story.Display is { } display &&
-                        (display.Visibility != FullFadeVisibility.BaseRestored || display.Current != display.Base))
+                        (display.Scene is not null || display.Visibility != FullFadeVisibility.BaseRestored || display.Current != display.Base))
                         throw new BattleRuleException("field-display-not-visible", "story.display", true);
                     // WaitForEvent replaces the player's script on successful control return.
                     // Setup belongs to its next entity service; physical motion survives here.
@@ -218,6 +218,10 @@ internal static class ProgramRunner
                                 { Message = $"{rules.SourceStory.Identity}: {source.GetType().Name} at {cursor.Program}:{cursor.Instruction}; {failed.Failure.Message}" } });
                         }
                         break;
+                    case ScenePaletteOperation palette:
+                        story = ScenePaletteRunner.Begin(definition, current, palette, token); break;
+                    case EndScene:
+                        story = ScenePaletteRunner.End(current, token); break;
                     case EndProgram { SourceMapScript: true } when current.Story.TextSettings is not null:
                         if (current.Story.TextWindow is OpenTextWindow)
                         {
@@ -431,7 +435,7 @@ internal static class ProgramRunner
                             eventVisuals.Sprites.TryGetValue(eventSprite, out var eventVisual) && eventVisual.Portrait is null &&
                             definition.Exploration.TextTokens.TryGetValue(selectedText, out var tokens) &&
                             tokens.Any(part => part.Kind == ExplorationTextTokenKind.Wait1) &&
-                            tokens.All(part => part.Kind is not (ExplorationTextTokenKind.Unsupported or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Delay3) &&
+                            tokens.All(part => part.Kind is not (ExplorationTextTokenKind.Unsupported or ExplorationTextTokenKind.Wait2 or ExplorationTextTokenKind.Delay1 or ExplorationTextTokenKind.Delay2 or ExplorationTextTokenKind.Delay3) &&
                                 (part.Kind != ExplorationTextTokenKind.MemberName || part.Member < definition.Exploration.MemberNames.Count)))
                         {
                             story = current.Story.Copy(cursor, TextSpan(tokens, token, selectedText, 0),
@@ -779,7 +783,7 @@ internal static class ProgramRunner
         observations.Add(new(sequence, revision, kind, Detail: detail, Program: program));
         var reason = story.Wait switch
         {
-            FullFadeWait { LogicalDone: true } or FieldTextWait { LogicalDone: true } or NodWait { LogicalDone: true } or MusicWait { LogicalDone: true } => SessionStopReason.PresentationWait,
+            SceneEndWait or ScenePaletteWait { LogicalDone: true } or FullFadeWait { LogicalDone: true } or FieldTextWait { LogicalDone: true } or NodWait { LogicalDone: true } or MusicWait { LogicalDone: true } => SessionStopReason.PresentationWait,
             ChoiceWait { Work.Automatic: true } => SessionStopReason.SimulationWait,
             DialogueWait or W1TextWait or ChoiceWait or NameWait or ChurchWait or ShopWait or CaravanWait or PresentationWait or EntitySpriteWait or EntitySetSpriteWait => SessionStopReason.PresentationWait,
             EntityWait or PhysicalEntityWait or TickWait => SessionStopReason.SimulationWait,

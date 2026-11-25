@@ -9,6 +9,117 @@ The [asset inventory](asset-inventory.md) routes each resource family from its s
 version to the registered selection, actual consumer and bounded evidence. Use the
 [registered selections](asset-inventory.md#registered-selections) for current package identity.
 
+## Controlled opening scene package (#2250)
+
+The finite private selection is `derived/issue2250/opening-scenes-v1` beneath the configured
+`SF2_SHARED_INPUT_ROOT`. It is separate from the active campaign package. It contains the two scene
+starts, controlled party input, six opening definition inputs, scene-only world, matching Chinese
+catalog, command9 WAV and preparation receipt. No ROM, upstream checkout, full campaign world,
+producer scratch or entry/title assets are needed by its runtime route. It does not select ordinary
+startup. [Behavior and ownership](../application/opening-session-lifecycle.md#bounded-scene-implementation-2250)
+
+The producer reads the registered USA ROM, pinned c834c652 source, registered canonical map export,
+accepted #2242 package and the sole full-text authority. The latter remains read-only. Configure
+`$pinnedSource` and `$fullTextRoot` from their existing private-input/localization owners, then run
+from the explicit checkout root after loading `local/private-inputs.ps1`:
+
+```powershell
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2242/pre-voyage-brgn-v1'
+$destination = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2250/opening-scenes-v1'
+uv run python -m sf2tool.remake_opening_scene `
+    --base $base `
+    --canonical (Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/canonical-map-import.json') `
+    --upstream $pinnedSource `
+    --rom (Join-Path $env:SF2_SHARED_INPUT_ROOT 'roms/sf2-us.bin') `
+    --corpus $fullTextRoot --party remake/reference/inputs/map3-opening-party.json `
+    --output $destination
+```
+
+The output must be fresh; use another ignored candidate path to reproduce without overwriting the
+published package. The final content is about23.17MiB, including a4.43MiB world and18.34MiB existing
+intro WAV. Measured production took0.451s with284.58MiB peak working set. The native pilot reached
+about583MiB peak working set. These fit the selected20–32MiB output budget and a2GiB working-memory
+allowance; all failed candidates remain review scratch. Only two40KiB terrain index planes are
+added. Forty-two prepared sprite identities include the nine scene-used sprites and the existing
+population's required fallback/ally references. There is no frame-by-frame asset production.
+
+Run the actual controlled host with the published package. `$repo` is the explicit isolated checkout;
+`$run` is a fresh child of its ignored `local/issue2250/`; `$disposableSaveRoot` is the separately
+permitted external #2250 disposable namespace. Set `$scene` to1 or2 and `$locale` to`en` or`zh-CN`.
+
+```powershell
+. (Join-Path $repo 'local/private-inputs.ps1')
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+$pack = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2250/opening-scenes-v1'
+foreach ($name in @('SF2_PRIVATE_BATTLE01_DATA','SF2_PRIVATE_BATTLE01_SCENE',
+    'SF2_PRIVATE_BATTLE01_TERRAIN','SF2_PRIVATE_STATIC_DATA','SF2_PRIVATE_ENEMY_DATA',
+    'SF2_PRIVATE_ENEMY_GOLD')) {
+    [Environment]::SetEnvironmentVariable($name, (Join-Path $pack "opening-inputs/$name.json"), 'Process')
+}
+$env:SF2_PRIVATE_CONTROLLED_START = Join-Path $pack 'party.json'
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $pack 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = $null
+$env:SF2_DISPLAY_CATALOG = Join-Path $pack 'world.zh-CN.json'
+$env:SF2_SAVE_ROOT = $disposableSaveRoot
+$env:SF2_SAVE_NAMESPACE = 'opening-observation'
+$env:SF2_OPENING_SCENE = [string]$scene
+$env:SF2_OPENING_LOCALE = $locale
+New-Item -ItemType Directory -Path $run | Out-Null
+$env:SF2_OPENING_OUTPUT = Join-Path $run 'observation.json'
+$settings = Join-Path $run 'settings.json'
+@{formatVersion=1;language=$locale;reducedFlash=$reducedFlash;textMode='instant'} |
+    ConvertTo-Json | Set-Content -LiteralPath $settings -Encoding utf8
+& $env:DOTNET_BIN build (Join-Path $repo 'remake/game/Sf2.Remake.Godot.csproj') --no-restore
+& $env:GODOT_BIN --path (Join-Path $repo 'remake/game') --max-fps 60 `
+    --resolution 1920x1080 --script res://probes/engine_opening_scene_observation.gd -- `
+    --private-exploration-start (Join-Path $pack "scene-$scene.json") --input-settings $settings
+```
+
+The observer uses normal clock progression and no Confirm, completion injection or screenshots.
+Require `passed:true`, exit0, no script/C#/draw errors, all16 shrine or13 castle text IDs, selected
+locale without fallback, an actually drawn183/187 effect resource, actual indexed texture color
+proofs and unchanged party/gold. Castle requires six ten-service replacement/restore pairs; Reduced
+Flash must retain them. The terminal has no temporary bank and remains ineligible for field input
+or saves. Inspect the external disposable namespace for zero save writes. Remove producer candidates
+from their original paths before repeating both published starts; retained failed logs are not a
+runtime dependency. Native observations do not establish original natural timing or human quality.
+
+### Scene validation and retained failures
+
+**Confirmed:** the complete shrine finishes at logical tick5070 on the final controlled start,
+with16 source IDs in each locale. The castle prefix finishes at3974 with13 IDs and six restored
+pulses. The native English castle and Chinese Reduced Flash runs take about70.5s; the Chinese
+shrine about89.5s. These are remake observations, not original-game timing. The final shared-package
+runs use the same executable route after all producer candidates are moved off their original
+paths. Both report actual183/187 draws, palette texture proofs, unchanged party/gold and no native
+errors. No file is created in the external disposable save namespace. The actual reader admits
+81 messages and two display names; only the reached29 messages claim native consumer evidence.
+
+`AutomaticTextDelayTests` covers119 normal services, mouth-control independence and matching
+localization topology. `ScenePaletteTests` covers independent same-RGB slots, ten-service restore,
+source fade periods/masks, stale/early completion, transient-state exclusion from ordinary control
+and Battle Entry Skip retaining logical work plus its consequential flag. The selected existing
+entry/scene regression set passed94 cases with five private-input skips; the final palette file
+passed six cases; the final scene-load/scene-lifecycle selection passed24 cases. Release adapter and Debug native builds pass with zero warnings/errors. A skipped
+private-input case is not a scene observation.
+
+Retain the completed discovery results with the corresponding corrections:
+
+| Failure boundary | Correction and retained evidence |
+| --- | --- |
+| Scene load after a visible-base half-fade | A focused valid-state case exposed stale full-fade visibility after the scene bank reached black. Scene binding now uses that bank's actual black state, clears it and establishes the next black display; ordinary warp admission remains unchanged. The failed case and24-case corrected selection are retained. |
+| First three palette behavior cases rejected program admission | Add the finite terminal to Content's valid endings; the same three cases then pass. |
+| Producer indexed tile decoding | Consume the existing decoder's flat64 slots; the failed first pilot and subsequent packages remain separate. |
+| Native start admission and first draw | Preserve numeric gameplay revision, include the population's fallback sprite references, bind the initial actor and scene music. Failed `native-1` through`native-6` remain in ignored review output. |
+| Native first portrait | Use the existing map-initialization continuation for the scene caller, and bind required window/speech SFX. The `native-7` context failure and `native-8` audio failure remain retained. |
+| First Chinese projection | Supply the required private source identity in the catalog envelope. `shrine-zh-1` remains failed; the corrected complete run resolves all16 messages in Chinese. |
+| Added Skip behavior case setup | Correct the authored opcode and declared battle unlock flags; retain both failed focused runs. The corrected case passes without production weakening. |
+
+The committed dependency plan and actual public CI are recorded with the Draft PR. Private
+observations stay local; the public owner records commands and bounded conclusions. Human appearance,
+readability preference, original natural reach/timing and the four-scene ordinary startup remain
+**Unknown** or explicitly not implemented.
+
 ## Public localization pilot assets
 
 The game bundles one unmodified OFL 1.1 Noto Sans CJK SC Regular font and its
