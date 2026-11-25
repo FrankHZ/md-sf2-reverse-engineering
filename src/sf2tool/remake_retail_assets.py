@@ -557,6 +557,7 @@ def prepare(src, family, root, base, inventory, commands):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--gfx-root", type=Path)
     for name in ("root", "base"):
         parser.add_argument("--" + name, type=Path, required=True)
     for name in ("upstream", "listing", "inventory", "mount", "coverage", "canonical"):
@@ -583,6 +584,7 @@ def main():
             "phoenix-wave",
             "blaze",
             "blaze-2",
+            "flame-family",
             "blast-1",
             "indra",
             "static-equipment",
@@ -610,6 +612,7 @@ def main():
         "phoenix-wave",
         "blaze",
         "blaze-2",
+        "flame-family",
         "blast-1",
         "indra",
         "static-equipment",
@@ -632,6 +635,7 @@ def main():
             args.command,
             upstream=args.upstream,
             canonical_path=args.canonical,
+            gfx_root=args.gfx_root,
         )
         return
     if not all((args.upstream, args.listing, args.inventory)):

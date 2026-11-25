@@ -64,7 +64,7 @@ of recipients and actual reaction results follow the committed action.
 
 ## Graphics variants
 
-Prepared BLAZE1, BLAZE2, BLAST1, breath and wave rasters can select a complete optional HD
+Prepared BLAZE1–4, BLAST1, breath and wave rasters can select a complete optional HD
 frame group from the battle scene. The light fairy uses a single group for body, wings and
 dust. Partial groups use the complete Original art. Effect positions, mirroring, opacity
 and Reduced Flash read the existing playback state. Higher density keeps the Original
@@ -101,17 +101,17 @@ update controls subsequent movement, mirroring and dust. [Enemy family evidence]
 
 | Retail rows | Original selector | Gameplay, package and scene | Remaining owner |
 | --- | --- | --- | --- |
-| BLAZE 1 | BLAZE v1 | **Original assets bound** in the prepared Battles04–07 scene mount, with current caster, target, weapon and backdrop. Controlled native Kazin Battle04 and Galam Mage Battle05 witnesses cover both sides. Packages without the mount show the placeholder. | Maintain [prepared BLAZE1](#prepared-blaze1-presentation). Later mounts and naturally reached casts are bounded by their encounter owners. |
-| BLAZE 2 | BLAZE v2 | **Original assets bound** in the prepared Battles04–07 mount. Controlled Battle04 Kazin casts into a legal two-target area with the medium stacked flame and ten small meteors. Other packages retain the primitive effect. | [Prepared BLAZE2](#prepared-blaze2-presentation) covers the source side operands and bounded native cast. [#1926] owns Black Ring admission and Use. |
-| BLAZE 3 | BLAZE v3 | **Placeholder** in admitted private Magic, including the Battle19 repeat Wizard binding. FBALL1, KATON2 and equipment Use share original art selection with distinct action rules. | [#2104] later flame variants after [#2105]. [#1818] other equipment and encounter callers. |
-| BLAZE 4 | BLAZE v4 | **Placeholder** on learned private Magic. The rank hits one opponent. KATON3 shares the original selector and has its own neutral-damage rule. | [#2104] flame playback. [Battle26 witness](../development-and-verification.md#high-rank-elemental-magic-observation) |
+| BLAZE 1 | BLAZE v1 | **Original assets bound** in all26 admitted flame-successor scenes, with current caster, target, weapon and backdrop. Existing controlled Kazin Battle04 and Galam Mage Battle05 witnesses cover both sides. Packages without the mount retain the placeholder. | [Prepared BLAZE1](#prepared-blaze1-presentation) and [flame successor](#flame-family-playback-2293). Broader natural reach remains encounter-owned. |
+| BLAZE 2 | BLAZE v2 | **Original assets bound** across the 26 admitted scene mounts in the flame successor, including Black Ring/Heat Axe/Mage Staff consumers. Controlled learned Battle04 and Item Battle26 witnesses use ten small meteors. | [Flame family playback](#flame-family-playback-2293); natural reach remains encounter-owned. |
+| BLAZE 3 | BLAZE v3 | **Original assets bound** across admitted scenes: large flame and fourteen large meteors. Controlled Battle26 WIZ Kazin, Wizard enemy and Atlas Axe Use cover both factions and Item. | [Flame family playback](#flame-family-playback-2293). No new acquisition or encounter admission. |
+| BLAZE 4 | BLAZE v4 | **Original assets bound**: large flame, four large meteors and eight-part flame dragon. Controlled Battle26 WIZ casts hit one opponent. | [Flame family playback](#flame-family-playback-2293); modern clock and floating-point trajectory are distinct from original timing. |
 | FREEZE 1–2 | FREEZE v1–v2 | **Placeholder** on admitted learned/AI attack paths. Current bindings use ice shapes. Private caster reach and ordinary casts are bounded by each encounter's admitted books. | [#2104] later ice effects. Coordinate with [#2016] player ranks and BREZAD/Freeze Staff only where the original caller shares the selector. |
 | FREEZE 3–4 | FREEZE v3–v4 | **Placeholder** on learned private Magic. Both reach three cells. Rank 3 hits within radius 1 and rank 4 hits one opponent. Blizzard's BREZAD1 and Freeze Staff Use share the original v3 selector. | [#2104] ice playback; equipment Use admission is accepted under [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268). [Battle26 witness](../development-and-verification.md#high-rank-elemental-magic-observation) |
 | BOLT 1–2 | BOLT v1–v2 | **Placeholder**. Bowie BOLT1 in Battle26 and Taros Sword BOLT2 enemy Use in Battle18 have actual private combat witnesses. The lightning presenter is primitive. Taros's item-origin attack uses zero MP. Its class mask prevents ordinary player Use. | [#2104] later lightning effects. Keep actual cast versus sword origin, recipient order and payment. [Bowie witness](../application/church-promotion-design.md#current-battle-spells) · [Taros witness](../application/taros-caravan.md) |
 | BOLT 3–4 | BOLT v3–v4 | **Placeholder** on learned private Magic. Both reach three cells. Rank 3 hits within radius 2 and rank 4 hits one opponent. RAIJIN2/3 have independent neutral rules and share the original selectors. THUNDR1 uses v3 in the source table. | [#2104] lightning playback. [Battle26 witness](../development-and-verification.md#high-rank-elemental-magic-observation) |
 | BLAST 1 | BLAST v1 | **Original assets bound** in the prepared Battles04–07 mount. Controlled Sarah PRST level 10 casts on one adjacent enemy with current actors and backdrop. | [Prepared BLAST1](#prepared-blast1-presentation) owns the tileset-15 fragments, slashes, cues and observations. |
 | BLAST 2–4 | BLAST v2–v4 | **Placeholder**. All three ranks bind to the private wind rule. Battle19 repeat admits Dark Bishop BLAST3; Battle22 observes Sarah's BLAST4 single-target use. | [#2104] later wind variants after [#2106]. Compare their actual area/single-target behavior and setup variants. [Battle19](../application/battle19-repeat.md) · [Battle22](../application/desktop-battle22.md) |
-| KATON 1–3 | BLAZE v2–v4 | **Placeholder**. All three ranks bind to distinct learned neutral damage. Controlled private NINJ rank-1 input shows selector 33 and primitive fire; other ranks have engine coverage. | [#2104] reuse compatible art after flame variants. Preserve the recorded neutral rules. [Ninja evidence](../application/ordinary-promotion-classes.md#ninja-controlled-reproduction-and-ordinary-pilot) |
+| KATON 1–3 | BLAZE v2–v4 | **Original assets bound** through the actual selector, with neutral gameplay rules unchanged. Native NINJ rank1 uses v2; rank3 uses v4. Rank2 has production binding coverage, without a new native cast. | [Flame family playback](#flame-family-playback-2293). Natural learning/acquisition remain **Unknown**. |
 | RAIJIN 1–3 | BOLT v2–v4 | **Placeholder**. All three ranks bind to distinct learned neutral damage. Controlled private NINJ rank-1 input shows selector 39 and primitive lightning; other ranks have engine coverage. | [#2104] reuse compatible art after lightning variants. Preserve the recorded neutral rules. [Ninja evidence](../application/ordinary-promotion-classes.md#ninja-controlled-reproduction-and-ordinary-pilot) |
 | DAO 1–2 | DAO v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns original effect composition and playback. DAO1 native uses the existing modern fallback. |
 | APOLLO 1–2 | APOLLO v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns original effect composition and playback. DAO1 native uses the existing modern fallback. |
@@ -169,7 +169,7 @@ foreground visual acceptance remain **Unknown** where no named witness covers th
   the first DEBUFF consumer. The [DEBUFF family](#debuff-family-playback-2280) extends it to
   admitted SLOW/MUDDLE/SLEEP and two equipment callers. The [BUFF family](#buff-family-playback-2282) has its own no-tile mechanism and consumer acceptance. [#1456] governs foreground acceptance and [#1616] the wider design review.
 - **P3 for current later content.** [#2104] groups the remaining elemental variants and shared
-  KATON/RAIJIN art, then any additional support callers as admitted. Private allied AURA2–4
+  RAIJIN art, then any additional support callers as admitted. The [flame family](#flame-family-playback-2293) covers admitted KATON. Private allied AURA2–4
   has [controlled ordinary coverage](../domain/gameplay-rules.md#private-learned-aura-ranks).
   [#2016], [#1967] and [#1926] own missing gameplay and item admission. Keep item gestures where
   the original selector path calls for them. Schedule equipment effect reuse at its first legal
@@ -1267,3 +1267,128 @@ Reproduce the minimal refusal with `-Case aura -Seed old-aura.json` using the sa
 [#2295](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2295) owns the queued
 compatibility correction. No blanket validator weakening, new save format, campaign
 replay or compatibility repair is included in #2291.
+
+
+## Flame family playback #2293
+
+**Standard scope.** Close presentation for admitted BLAZE1–4, KATON1–3 and equipment
+BLAZE2/3 without new gameplay, acquisition, encounters or save semantics. Selection uses the
+actual action animation, not the spell name or gameplay rank. Consumable Shining Ball remains
+NONE. Application retains one action/result continuation; Item keeps its gesture and wear.
+
+The owned implementation paths are `remake/game/src/Battles/{BattleSceneView.cs,
+BattleSceneView.Rasters.cs,AttackSpellView.cs,BlazeMeteorEffect.cs}` (replacing
+`BlazeTwoEffect.cs`), `remake/src/Sf2.Remake.Application/Runtime/Battles/BattleSceneContinuation.cs`,
+`remake/src/Sf2.Remake.Content/Scenarios/{PrivateAttackSpellBindings.cs,BattleSceneContentReader.cs}`,
+`src/sf2tool/{remake_attack_spell_mount.py,remake_private_package.py,remake_retail_assets.py,
+remake_hd_battle_rasters.py}`, `remake/tests/Sf2.Remake.Engine.Tests/{AttackItemSessionTests.cs,
+EquipmentItemTests.cs}`, and `remake/game/probes/{BattleRasterObservation.cs,
+engine_flame_family_observation.gd}`. Documentation changes are confined to this family in
+this owner, battle-scenes, equipment-use-repair-design, asset-inventory, presentation-assets
+and capability-status. No schema, planner, language aggregate or save authority change.
+
+**Plan and budget.** Reuse prepared #2001 tileset2 and complete #2282 buff-v1. Generate a
+single representative scene first; extend all admitted scene bindings only after checking its
+size and retained resources. The input closure is about369MB; allow one <500MiB immutable
+successor plus atomic staging, <=2GiB scratch and peak RAM. Processing is linear in package
+bytes plus small raster groups; serial native samples use ordinary input, token/event boundaries
+and distinct mounted frame descriptors, without screenshots or bulk per-frame records. No new
+acquisition, model API or emulator run. Replan before expansion if these bounds are exceeded.
+Production-reader checks cover every mounted scene; native witnesses cover new variants, alias,
+Item and enemy side plus representative HD/fallback/reduced-flash/held-rate paths. Engine and
+adapter gates and the committed dependency planner select acceptance. Independent reproduction
+must use published inputs after producer scratch is moved aside.
+
+### Source composition and delivery
+
+**Confirmed source.** The USA identity and pinned commit at the top of this owner govern
+`getspellanimation.asm`, `createbattlesceneanimation.asm`, `animation/blaze.asm` and
+`animation/update/blaze.asm`. The action selector reads equipment Use from its spell row,
+while non-equipment consumables retain NONE. BLAZE selectors are1/33/65/97; KATON selectors
+are33/65/97. BLAZE remains Fire and KATON remains Neutral in the bound gameplay definitions.
+Equipment consumers retain Item gesture, zero MP and the existing selected-copy wear authority.
+
+The same prepared tileset2 supplies all variations. `table_1BE2A` selects v3/v4 stacked
+32×64 flames at tiles85+101 and117+133 (zero based). The +32-byte entries following
+`table_1BE42` select24×24 meteors172/181 and32×32 impacts190/206. `graphic_BlazeDragon`
+uses head17 (32×32), five body sprites8 (24×24), and tail4/0 (16×16).
+`table_1A594`/`table_1A5BC` place the large flame at(64,80)/(168,96), choose14 meteors
+for v3 and4 for v4, with meteor X-window starts80/48 and opposite travel/flip.
+`table_1BE82` supplies body history gaps3/3/3/3/3/2/2 ticks and offsets4/8.
+The dragon uses the source speed operands128,256,768 and16, angle steps8/256,
+six-tick straight intervals, side bounds X32–160 or128–256, Y32–112 and wall-heading table.
+
+**Modern presentation.** The adapter retains v2's deterministic meteor scheduling and uses
+1.67s for v3 and1.8s for v4. Each selected meteor slot flies and impacts once. Dragon motion
+uses floating-point trigonometry and a local deterministic visual RNG; it cannot consume
+session RNG. This is source composition/steering on the modern clock, not a reproduction of
+original fixed-point rounding, random streams, looping until scene-script stop, palette flashes,
+per-frame flicker or hardware timing. Reduced Flash holds the first flame/meteor/impact raster
+and uses smooth fading. Cast cue77 remains the existing audio boundary; original per-meteor
+hover/impact cues and exact audio timing are **Unknown**. None of these choices changes ordered
+reactions, death, rewards, payment, wear or continuation tokens.
+
+`AttackAnimationSelector` projects the committed caller's selector; `PrivateAttackSpellBindings`
+validates all four BLAZE rows. `BlazeMeteorEffect` extends the former v2 responsibility rather
+than creating another scene or result owner. Missing Original groups retain existing fallback;
+incomplete HD groups select the complete Original effect, including all ten resources for v4.
+
+### Reproduction and acceptance
+
+Select the complete immutable `derived/issue2293/flame-v1` plus independent #2252 opening,
+#2255 Witch/entry catalog and #2266 world catalog. The successor retains every predecessor
+file and existing Original/HD raster, actor, weapon, map, audio and prior spell family.
+The publication and resource comparison are owned by [presentation assets](../content/presentation-assets.md#flame-successor-2293).
+`derived/issue2293/review-v2` contains the controlled records, launchers, production reader and
+all completed receipts. Its seeds derive from #2274's recipe11 full-roster record, not the
+historical recipe10 AURA partition. They deliberately select legal classes/books, packs,
+HP, positions, active flags, queue and RNG. They do not establish natural reach.
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2293/review-v2'
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case blaze3 `
+  -Sample blaze3-review -SaveRoot $freshExternalSaveRoot
+# blaze4 -Graphics hd; katon1; ring -Graphics hd; axe; enemy; none; silenced.
+# katon3 -Graphics hd -Reduced -Fast; blaze4 -Graphics hd -Variant incomplete.
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+```
+
+**Confirmed in the remake.** Ordinary Magic, Item or Stay-to-enemy-AI input preserves the
+actual WIZ/NINJ/GLDT/Wizard actors, weapons and scenery. v3 covers14 large meteor slots;
+v4 covers4 and the eight-part dragon; KATON1 and Black Ring cover10 small slots.
+Early Confirm retains the animation token. Ordered two-target v3/alias/Item reactions include
+one lethal target and reward completion; v4 remains single target. Magic pays once; Item
+ignores silence, spends no MP and draws wear once; Shining Ball consumes one copy with no
+flame. Silenced Magic pays once with no flame or damage. Each completed sample opens the
+next ordinary action menu. HD, partial-group fallback, Reduced Flash and actual1.5× held
+acceleration have separate representative receipts, not a full permutation matrix.
+Production admission covers26 scenes,182 BLAZE/KATON bindings and156 equipment flame bindings.
+This is distinct from native playback in every scene. The public engine gate passed3378 tests
+with50 private-input skips; the skipped checks are not claimed as passed.
+
+**Retained failures.** The first adapter build found the old effect type name in
+`BattleRasterObservation`; the corrected adapter build passed. Private consumer setup first
+used an incorrect relative project reference, then an incorrect restore namespace; both were
+corrected directly. Initial controlled records were rejected for learned/progress spell,
+equipment-class, attack and current-membership mismatches; packed IDs, expanded rank lists,
+loadout and active flags were corrected before successful restoration. An early boot observer
+then dereferenced an absent slot view and emitted a misleading empty-success JSON; its native
+exit was1, so it is retained as failure. Subsequent rejected-entry receipts also remain.
+The initial Black Ring assertion used an unpromoted animation index; current WIZ Item is21.
+The initial enemy seed chose legal physical attack (category1), so it proved no flame;
+the explicit controlled main seed2000<<16 selects the spell branch. The first held-rate
+sample pressed before the animation and saw no acceleration; the corrected sample presses
+at the animation and observes1.5×. Existing ObjectDB exit warnings remain under #1716,
+separate from successful gameplay return; no cleanup or exit-framework change is included.
+
+**Unknown.** Natural original/player reach, native KATON2 and every equipment/encounter
+combination, exact original motion/audio/timing, and human visual acceptance. The owning
+Issue stops at a frozen Draft PR for independent integration.
+
+The independent publication check first attempted to parse the closure report as a save;
+that failed with `save-shape` after scene admission. Retained `review-v1` records this
+incomplete verification entry. `review-v2` selects only the explicitly named case records;
+all nine restore successfully. With producer scratch moved aside, its production reader
+and a fresh HD BLAZE4 ordinary-input cast both pass against the published flame package.
+An initial Ruff check reported only local import ordering; the corrected check passed.

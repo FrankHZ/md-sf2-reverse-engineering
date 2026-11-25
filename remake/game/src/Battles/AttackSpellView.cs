@@ -14,7 +14,7 @@ internal sealed partial class AttackSpellView : Node2D
     private int _drawCount;
     private Func<int, BattleSceneRaster>? _breath;
     private Func<int, BattleSceneRaster>? _blaze;
-    private BlazeTwoEffect? _blazeTwo;
+    private BlazeMeteorEffect? _blazeMeteors;
     private BlastOneEffect? _blast;
     private Vector2 _blazePosition;
     private bool _reducedFlash;
@@ -25,7 +25,7 @@ internal sealed partial class AttackSpellView : Node2D
         _scene = null;
         _breath = null;
         _blaze = null;
-        _blazeTwo = null;
+        _blazeMeteors = null;
         _blast = null;
     }
 
@@ -37,8 +37,8 @@ internal sealed partial class AttackSpellView : Node2D
         _scene = scene;
         if (scene.AttackSpell!.Spell.Value == "blast")
             _blast = new(frames, targetIsAlly, reducedFlash);
-        else if (scene.AttackSpell.Spell.Level == 2)
-            _blazeTwo = new(frames, targetIsAlly, reducedFlash);
+        else if (scene.AttackAnimationSelector is 33 or 65 or 97)
+            _blazeMeteors = new(frames, targetIsAlly, reducedFlash, (scene.AttackAnimationSelector.Value >> 5) + 1);
         else
         {
             _blaze = frames;
@@ -49,7 +49,7 @@ internal sealed partial class AttackSpellView : Node2D
         Show();
     }
 
-    internal double PreparedDuration => _blast is not null ? BlastOneEffect.Duration : _blazeTwo is null ? BlazeDuration : BlazeTwoEffect.Duration;
+    internal double PreparedDuration => _blast is not null ? BlastOneEffect.Duration : _blazeMeteors is null ? BlazeDuration : _blazeMeteors.Duration;
 
     internal void AdvancePrepared(double age)
     {
@@ -67,7 +67,7 @@ internal sealed partial class AttackSpellView : Node2D
         _elapsed = elapsed; QueueRedraw();
         return elapsed >= (_scene!.Phase is BattleScenePhase.ActionAnimation or BattleScenePhase.Reaction ? 0.6 : 0.2);
     }
-    private byte? Selector => _scene?.AttackSpell?.SourceAnimationSelector;
+    private byte? Selector => _scene?.AttackAnimationSelector;
     private int Variation => (Selector.GetValueOrDefault() >> 5) + 1;
 
     public override void _Draw()
@@ -78,7 +78,7 @@ internal sealed partial class AttackSpellView : Node2D
             if (blast.Draw(this, _elapsed)) _drawCount++;
             return;
         }
-        if (_blazeTwo is { } blazeTwo)
+        if (_blazeMeteors is { } blazeTwo)
         {
             if (blazeTwo.Draw(this, _elapsed)) _drawCount++;
             return;
@@ -144,7 +144,8 @@ internal sealed partial class AttackSpellView : Node2D
         variation = Selector.HasValue ? (int?)Variation : null, targets = _scene?.AttackTargets.Select(a => a.Value),
         target = _scene?.Target?.Value, amount = _scene?.Amount, modern = true, preparedBreath = _breath is not null,
         preparedBlast = _blast?.Observe(_elapsed),
-        preparedBlazeTwo = _blazeTwo?.Observe(_elapsed),
+        preparedBlazeTwo = _blazeMeteors?.Variation == 2 ? _blazeMeteors.Observe(_elapsed) : null,
+        preparedBlazeFamily = _blazeMeteors?.Observe(_elapsed),
         preparedBlaze = _blaze is null ? null : ObserveBlaze(),
     };
 

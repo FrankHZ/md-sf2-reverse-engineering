@@ -13,7 +13,7 @@ namespace Sf2.Remake.Engine.Tests;
 public sealed class AttackItemSessionTests
 {
     private static readonly AttackItemDefinition Fire = new(16, "Fire supply",
-        new(new("fire-supply", 1), 0, 20, 1, 1, 0, AttackSpellElement.Fire));
+        new(new("fire-supply", 1), 0, 20, 1, 1, 0, AttackSpellElement.Fire, 65));
     private static readonly AttackItemDefinition Ice = new(17, "Ice supply",
         new(new("ice-supply", 1), 0, 33, 1, 1, 0, AttackSpellElement.Ice));
 
@@ -46,6 +46,7 @@ public sealed class AttackItemSessionTests
         Assert.NotNull(Send(session, new Confirm()).Failure);
         Assert.Same(result.Snapshot, session.Current);
         Assert.Equal(item, session.Current.BattleScene!.AttackItem);
+        Assert.Equal((byte)0, session.Current.BattleScene.AttackAnimationSelector);
         Assert.Equal(new[] { Center }, session.Current.BattleScene.AttackTargets);
         Assert.True(session.Current.BattleScene.Critical);
         Assert.Equal(damage, session.Current.BattleScene.Amount);

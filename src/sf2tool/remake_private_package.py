@@ -434,7 +434,17 @@ def bind_field_item_icons(presentation, library, dest, scenes, items):
             path.write_text(json.dumps(chapter, separators=(",", ":")), encoding="utf-8")
 
 
-def mount(root, base, destination, families, commands, *, upstream=None, canonical_path=None):
+def mount(
+    root,
+    base,
+    destination,
+    families,
+    commands,
+    *,
+    upstream=None,
+    canonical_path=None,
+    gfx_root=None,
+):
     """Mount first-consumer operands into a new closed package; needs no production inputs."""
     permitted = {"walking", "icons", "sfx", "music", "pldn"}
     retained_families = {
@@ -459,6 +469,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         "indra",
         "blaze",
         "blaze-2",
+        "flame-family",
         "blast-1",
     }
     if "equipment" in families and upstream is None:
@@ -506,17 +517,22 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
             Path(row["battleScenes"]) for row in world.get("encounters", []) if row["battleScenes"]
         }
         spell_scenes = {}
-        spell_families = selected & {"blaze", "blaze-2", "blast-1"}
+        spell_families = selected & {"blaze", "blaze-2", "flame-family", "blast-1"}
         spell_only = selected == spell_families and bool(spell_families)
         if spell_families:
             for row in world["encounters"]:
                 battle = read_json(files[Path(row["placement"])])["battle"]["id"]
-                if 4 <= battle <= 7:
+                if "flame-family" in spell_families or 4 <= battle <= 7:
                     if battle in spell_scenes:
                         raise ValueError(f"duplicate attack-spell scene for Battle{battle:02d}")
                     spell_scenes[battle] = Path(row["battleScenes"])
-            if set(spell_scenes) != {4, 5, 6, 7} or len(set(spell_scenes.values())) != 4:
+            if "flame-family" not in spell_families and (
+                set(spell_scenes) != {4, 5, 6, 7} or len(set(spell_scenes.values())) != 4
+            ):
                 raise ValueError("attack-spell mount requires the four pre-voyage scenes")
+        if "flame-family" in spell_families:
+            main = read_json(base / "main-scenes.json")
+            spell_scenes[int(main["encounter"].split("-")[-1])] = Path("main-scenes.json")
         spell_paths = set(spell_scenes.values())
         if "blast-1" in spell_families:
             spell_paths.add(Path("world.json"))
@@ -541,7 +557,16 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
                     pass  # Different storage volumes require a real copy.
             shutil.copyfile(source, target)
         if spell_only:
-            mount_attack_spells(root / "effects", Path(temp), dest, spell_scenes, spell_families)
+            from sf2tool.remake_map3_ramp import load_filter
+
+            mount_attack_spells(
+                root / "effects",
+                Path(temp),
+                dest,
+                spell_scenes,
+                spell_families,
+                load_filter(gfx_root)[1] if gfx_root is not None else None,
+            )
             if "blast-1" in spell_families:
                 mount_prepared_audio(root / "sfx/114", 114, dest, world["world"]["presentation"])
                 (dest / "world.json").write_text(
@@ -655,7 +680,16 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
             }
             bind_field_item_icons(presentation, root, dest, scenes, items)
         if spell_scenes:
-            mount_attack_spells(root / "effects", Path(temp), dest, spell_scenes, spell_families)
+            from sf2tool.remake_map3_ramp import load_filter
+
+            mount_attack_spells(
+                root / "effects",
+                Path(temp),
+                dest,
+                spell_scenes,
+                spell_families,
+                load_filter(gfx_root)[1] if gfx_root is not None else None,
+            )
         if not indra_only:
             (dest / "world.json").write_text(
                 json.dumps(world, separators=(",", ":")), encoding="utf-8"

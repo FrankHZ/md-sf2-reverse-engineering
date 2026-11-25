@@ -405,6 +405,11 @@ DETOX 4 admits [area treatment in Battle and one recipient in Field](domain/deto
 [High-rank observation](development-and-verification.md#high-rank-elemental-magic-observation)
 Battles04–07 can mount the prepared BLAZE1 flame with the actual caster, target and scene art.
 Prepared Battles04–07 bind BLAZE2 and BLAST1 original assets. Controlled Sarah BLAST1 preserves the scene, cues, settlement and next control. [BLAST1 evidence and limits](godot/spell-presentation.md#prepared-blast1-presentation). [Pre-voyage implementation scope](godot/spell-presentation.md#pre-voyage-dispatch) · [BLAZE1 native observations](godot/spell-presentation.md#prepared-blaze1-presentation)
+The [flame-family successor](godot/spell-presentation.md#flame-family-playback-2293) binds
+BLAZE1–4/KATON1–3 and admitted equipment BLAZE2/3 across26 scene mounts. Controlled native
+higher ranks, KATON aliases, Item and enemy-side playback retain cost/wear, ordered damage,
+death/rewards and usable return. Shining Ball remains NONE; source steering/art and modern
+timing are documented separately. Static binding coverage does not imply native or natural reach.
 Natural pre-departure levels/opportunities and original presentation timing remain Unknown. The
 older completed private comparison failures remain with their evidence owners.
 

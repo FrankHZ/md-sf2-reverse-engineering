@@ -941,10 +941,10 @@ clears the damaged bit for 1,250 gold and refuses a worn cursed selection. Natur
 Black Ring wear and exact original presentation timing remain **Unknown**.
 
 **Confirmed (current presentation).** Black Ring uses the normal item gesture and delivers the
-BLAZE 2 damage, results and wear notices with zero MP cost. The equipment attack binding has no
-source animation selector and `BattleSceneView` excludes `AttackItem` from the spell overlay.
-The original BLAZE 2 overlay is a remaining presentation task under
-[#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
+BLAZE 2 damage, results and wear notices with zero MP cost. The [flame-family presentation](../godot/spell-presentation.md#flame-family-playback-2293)
+binds BLAZE2/3 Original/HD graphics by the actual equipment selector. Controlled Black Ring
+and Atlas Axe casts retain their Item sequence, selected-copy wear and ordered damage/reward
+return. Shining Ball remains a NONE consumable. Other families retain their own presentation boundaries.
 [Equipment effect reuse](../godot/spell-presentation.md#follow-up-order) ·
 [Scene consumer](../../game/src/Battles/BattleSceneView.cs)
 [Attack-item admission](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2ItemAction.cs) ·

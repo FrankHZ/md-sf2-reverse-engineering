@@ -1355,3 +1355,21 @@ rule/native-family evidence remains valid; no full campaign or per-key native re
 ## BUFF no-tile mechanism #2282
 
 BUFF1 loads no dedicated tiles. The [source/consumer owner](../godot/spell-presentation.md#buff-family-playback-2282) records selectors8/40, green cast flash and14 accelerating PSH cues. The complete `derived/issue2282/buff-v1` successor retains equipment-v2's rasters and adds prepared sound97 only:175 files,368,493,196 bytes. [Reproduction](presentation-assets.md#buff-successor).
+
+
+### Flame family #2293
+
+The complete [flame successor](presentation-assets.md#flame-successor-2293) uses the already
+registered #2001 tileset2 (7,104 bytes) and base palette, with its existing022e/028e/08ee
+replacements. Pinned source operands and zero-based tile/size mappings are in the
+[flame mechanism owner](../godot/spell-presentation.md#source-composition-and-delivery).
+The resource groups are `blaze-1` (two frames), `blaze-2` (six), `blaze-large` (six shared by
+v3/v4) and `blaze-dragon` (four resources composing eight sprites). These are18 unique rasters,
+with4× HD where missing; accepted predecessor variants are preserved. v4 selects the union
+of large and dragon groups atomically, so one missing HD part falls back to Original for all10.
+
+All26 current scene bindings pass the production reader. The complete175-file closure is
+369,705,232 bytes, maximum scene6,439,791 bytes. Existing maps, body/weapon variants, previous
+spell families, audio and opening inputs compare unchanged. Native bounded witnesses verify
+actual textures, draw extents, actor frames and return separately from these static checks.
+Natural acquisition, every encounter's playback and exact original timing remain Unknown.

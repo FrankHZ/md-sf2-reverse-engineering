@@ -1466,3 +1466,33 @@ retain the acceptance boundary. Private media is not redistributable.
 The BUFF group is optional. Existing equipment-v2 and authored content without selectable77/97
 retain their prior support messages/Item presentation; buff-v1 enables the original path.
 Declared corrupt media still fails admission. See the [complete-group boundary](../godot/spell-presentation.md#buff-optional-group-compatibility).
+
+
+### Flame successor #2293
+
+`derived/issue2293/flame-v1` extends the complete #2282 buff-v1 without dropping any earlier
+resource. Reuse #2001 `retail-v1` and the fixed clean graphics-filter checkout. Select world,
+main scene and six opening inputs from the same successor; #2252 opening, #2255 Witch/entry
+catalog and #2266 world catalog remain independent selections.
+
+```powershell
+uv run --with pillow python -m sf2tool.remake_retail_assets --root $library --base $base `
+  --mount $freshOutput --family flame-family --gfx-root $gfxRoot
+```
+
+This existing package publisher mounts prepared tileset2 in every admitted scene, retaining
+all existing HD entries and deriving missing variants through the accepted filter. No ROM
+capture or new asset acquisition is needed. Omitting `--gfx-root` publishes Original only
+while retaining previous HD; it does not claim complete new HD groups. The reader's actual
+8MiB scene limit governs this full-roster package. The representative Battle26 pilot was
+6,439,791 bytes and0.31s. Full publication has175 files and369,705,232 bytes;26 scenes change,
+all other files compare byte-for-byte, and every old scene field/resource is preserved.
+The size increase is1,212,036 bytes over buff-v1. Work is linear, serial, below the500MiB
+successor limit. Same-volume unchanged-file hardlinks are read-only; rewritten scenes receive
+independent files. Publication closes paths before moving producer scratch aside.
+
+The independent private `review-v2` production reader checks all26 scene mounts, source selectors,
+neutral/Fire rules and equipment bindings. The [spell owner](../godot/spell-presentation.md#flame-family-playback-2293)
+owns ordinary playback and retained failed runs. Native startup measured about1.30GB peak working
+set and direct reader about0.96GB, below the2GiB plan. These are observed host peaks, not a
+portable performance promise. Public files contain no generated graphics or private saves.
