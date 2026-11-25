@@ -113,8 +113,14 @@ The completed engine run had3374 passed,50 skipped and one new fixture failure:
 party/RNG test plus affected files passed24 tests. After the native AI finding, focused
 `LateEquipmentTests|TargetSelectionTests` passed73 tests. The completed broad failure is not
 relabelled interrupted or overwritten with a new aggregate. Final adapter compilation and the
-complete published production-reader check pass. CI and the clean-head planner are recorded
-with the frozen PR's exact Git objects.
+complete published production-reader check pass. The clean-head default planner additionally selects research/public and broad Python partitions
+because the new `remake_equipment_assets.py` is absent from its engine producer allowlist.
+The explicit `--scope engine` request rejects that path; this is retained as a classification gap,
+not a passed engine plan. Semantic review finds only remake prepared-asset production and no
+research extractor/fixture changes. Public Ruff, design-contract and research-index checks pass;
+the new-engine policy excludes testing this verification/production helper or rerunning the old
+aggregate. No shared planner/CI path was changed. Independent integration owns this remaining
+classification decision. CI and both planner results are recorded with the frozen PR's exact objects.
 
 Natural late recruitment/acquisition, later campaign, original full choreography #2104 and
 lifecycle #1716 remain separate. Chinese rendering reuses the registered catalog and existing
