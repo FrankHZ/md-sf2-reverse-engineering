@@ -925,7 +925,9 @@ binding changes. BUFF, DESOUL, other equipment effect families and Battle27+ are
   after `GetEquipmentType` returns weapon/ring. `createbattlesceneanimation.asm` then selects
   `BATTLEANIMATION_USE_ITEM`, and `animateaction.asm` forwards both operands. Thus Giant
   Knuckles31 (MUDDLE1) and Grand Cannon54 (DISPEL1) select9 with their Item gesture, not the
-  Magic pose. Ordinary consumables do not acquire an equipment overlay merely by name.
+  Magic pose. `battlescenes/battlesceneengine_0.asm:bsc01_animateAllyAction` passes the
+  selected operand through `sub_184B0`, which preserves nonzero selector9; the body animation
+  header does not replace it. Ordinary consumables do not acquire an equipment overlay merely by name.
 
 The existing source-bound SupportItem/SupportSpell definitions supply these effect identities.
 The adapter checks the complete Original group before mounting it and retains its prior fallback
