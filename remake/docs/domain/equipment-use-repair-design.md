@@ -1244,3 +1244,12 @@ the current snapshot. The v6 field fork allowed treatment followed by settled Sa
 Attempts to save immediately inside the Church could still meet pending ambient motion. The first shop path reached the correct merchant, but its observer
 read the wrong projection key for the owner row. Successful processes exited zero. Some emitted ObjectDB shutdown
 warnings under the existing [exit issue](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716).
+
+## DEBUFF equipment presentation
+
+The [shared family playback](../godot/spell-presentation.md#debuff-family-playback-2280)
+binds admitted Giant Knuckles31/MUDDLE1 and Grand Cannon54/DISPEL1 to original DEBUFF1
+clouds. Source equipment Use selects the spell effect while keeping the Item gesture.
+Controlled zero-MP, silenced holders observe ordered results, one selected-slot wear draw
+and subsequent input. Effect rules, Repair, acquisition and other families keep their
+existing owners; this is not blanket completion of equipment spell choreography.

@@ -205,7 +205,7 @@ consistent without consuming RNG again. Application pays the caster before react
 the target word only when the successful reaction plays. Physical and spell sleep share the packed
 counter, turn skip, wake and existing save representation. Godot reads the choices and projects the
 icon, effect text and resulting state. This keeps the learned rank, RNG and status in their existing
-owners. The DEBUFF1 cast animation remains separate presentation work under
+owners. The [shared DEBUFF1 presentation](../godot/spell-presentation.md#debuff-family-playback-2280) now covers learned SLEEP/MUDDLE and Giant Knuckles Use; broader presentation remains under
 [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
 [Resolution and playback](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) ·
 [Turn continuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAfterTurnContinuation.cs) ·
@@ -440,8 +440,9 @@ The private binding admits source slot 7, rank 1, DEBUFF1, 6 MP, range 1–2 and
 The learned book supplies the rank. The shared Support action stages an ordered STATUS draw
 for each opposing recipient, pays silenced and all-miss casts once, and delivers the packed
 word and status EXP through ordinary playback. The modern result, inspection status and
-expiry expose the effect in English and Chinese. Full original animation remains with
-[issue #2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
+expiry expose the effect in English and Chinese. The [shared DEBUFF family](../godot/spell-presentation.md#debuff-family-playback-2280)
+now supplies original cloud art for both ranks and Giant Knuckles Use. Exact original timing
+and human visual acceptance remain outside this bounded presentation claim.
 
 Reuse the [Kazin controlled setup](#controlled-kazin-input-and-cold-continue) from #1966
 zh-CN-learned01. Make the same position and queue swap, keeping both seeds and the original

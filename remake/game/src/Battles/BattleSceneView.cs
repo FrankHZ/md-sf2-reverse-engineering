@@ -54,12 +54,21 @@ internal sealed partial class BattleSceneView : Control
     private double _attackSpellStart;
     internal string? Error { get; private set; }
     private BattleSceneDefinition? Content => _session.ActiveBattleScenes;
-    private bool PreparedDispel(BattleSceneState state) =>
-        state is { IsSilencedCast: false, EquipmentItem: null, SupportSpell.Spell: { Value: "dispel", Level: 1 } } &&
+    // DEBUFF1 variation 2 still uses the same setup/update and palette. Equipment
+    // selects its Use spell effect, but retains the item gesture below.
+    private static int? DebuffSelector(BattleSceneState? state) => state is { IsSilencedCast: false, SupportSpell.Spell: var spell }
+        ? (spell.Value, spell.Level) switch
+        {
+            ("slow", 2) => 41,
+            ("slow" or "muddle", 1) or ("muddle", 2) or ("sleep" or "dispel", 1) => 9,
+            _ => null,
+        } : null;
+    private bool PreparedDebuff(BattleSceneState state) =>
+        DebuffSelector(state) is not null &&
         Content is { } content && DebuffEffectView.Resources.All(content.Rasters.ContainsKey);
 
     private bool UsesMessagePlayback(BattleSceneState state) =>
-        state.SupportSpell is not null && state.EquipmentItem is null && !PreparedDispel(state) || state.IsSilencedCast ||
+        state.SupportSpell is not null && state.EquipmentItem is null && !PreparedDebuff(state) || state.IsSilencedCast ||
         state.AttackSpell?.IsInstantDeath == true || state.MuddleActionMessage is not null;
 
     private bool Suppressed(BattleSceneState state) => _settings.SuppressBattleHitCoinMessages && state.CanSuppressHitCoinMessage;
@@ -232,11 +241,11 @@ internal sealed partial class BattleSceneView : Control
                 if (state.Phase == BattleScenePhase.ActionAnimation)
                 {
                     var sequences = (actor.IsAlly ? _allyVisual! : _enemyVisual!).Sequences;
-                    string sequence = state.Spell is not null || state.IsMonsterBreath || _preparedAttackSpell || PreparedDispel(state) ? "cast" : state.Item is not null || state.AttackItem is not null || state.EquipmentItem is not null ? "item" : "attack";
+                    string sequence = state.Spell is not null || state.IsMonsterBreath || _preparedAttackSpell || PreparedDebuff(state) && state.EquipmentItem is null ? "cast" : state.Item is not null || state.AttackItem is not null || state.EquipmentItem is not null ? "item" : "attack";
                     if (sequence == "attack" && state.SpecialPhysicalAnimation) sequence = "special";
                     // battlesceneScript_PerformAnimation selects the ordinary sequence for these
                     // casters. Earlier packages expose it as ally idle or enemy attack.
-                    if ((_preparedAttackSpell || PreparedDispel(state)) && !sequences.ContainsKey(sequence)) sequence = actor.IsAlly ? "idle" : "attack";
+                    if ((_preparedAttackSpell || PreparedDebuff(state)) && sequence == "cast" && !sequences.ContainsKey(sequence)) sequence = actor.IsAlly ? "idle" : "attack";
                     var animation = sequences[sequence];
                     _animationIndex = animation.Index;
                     int skippedFrames = actor.IsAlly ? 1 : 0;
@@ -246,7 +255,7 @@ internal sealed partial class BattleSceneView : Control
                         _attackSpellStart = _frames.Take(Math.Max(0, animation.Trigger - 1 - skippedFrames)).Sum(frame => frame.Ticks) / 60.0;
                         _attackSpell.PrepareAttackSpell(state, Frames(preparedResources!), target.IsAlly, _settings.ReducedFlash);
                     }
-                    if (PreparedDispel(state))
+                    if (PreparedDebuff(state))
                     {
                         int trigger = _frames.Take(Math.Max(0, animation.Trigger - 1 - skippedFrames)).Sum(frame => frame.Ticks);
                         _debuff.Begin(Frames(DebuffEffectView.Resources), trigger, target.IsAlly);
@@ -414,7 +423,7 @@ internal sealed partial class BattleSceneView : Control
             duration = 0.5;
             _audio?.FadeOut(_elapsed / duration);
         }
-        else if (PreparedDispel(state) && state.Phase == BattleScenePhase.TargetEnter) duration = 1.0 / 60;
+        else if (PreparedDebuff(state) && state.Phase == BattleScenePhase.TargetEnter) duration = 1.0 / 60;
         else if (!state.IsCurseRecoil && state.Phase is (BattleScenePhase.TargetExit or BattleScenePhase.TargetEnter or BattleScenePhase.ActorExit or BattleScenePhase.ActorEnter))
         {
             // bscWait $1E then bsc07/SwitchAllyBattlesprite: source coordinates
@@ -880,7 +889,7 @@ internal sealed partial class BattleSceneView : Control
         item = _state?.EquipmentItem?.ItemId ?? _state?.AttackItem?.ItemId ?? _state?.Item?.ItemId,
         equipmentWear = _state?.Wear.ToString(),
         spell = _state?.Spell?.Spell ?? _state?.AttackSpell?.Spell ?? _state?.SupportSpell?.Spell ?? _state?.SilencedSpell,
-        spellAnimationSelector = _state?.AttackItem is not null || _state?.EquipmentItem is not null ? 0 : _state?.AttackSpell is { } attack ? attack.SourceAnimationSelector : _state is { Spell.IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : _state is { } support && PreparedDispel(support) ? 9 : DetoxSelector(_state) ?? (_state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null),
+        spellAnimationSelector = DebuffSelector(_state) ?? (_state?.AttackItem is not null || _state?.EquipmentItem is not null ? 0 : _state?.AttackSpell is { } attack ? attack.SourceAnimationSelector : _state is { Spell.IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : DetoxSelector(_state) ?? (_state?.Spell is not null ? 4 : _state?.Item is not null ? 0 : (int?)null)),
         healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
             healing.LogicalComplete, healing.Delivered, healing.CastRequested, healing.CastFrame, healing.Fairy } : null,
         fairySprites = _fairyBodies.Concat(_fairyWings).Concat(_fairyDust).Where(sprite => sprite.Visible)
