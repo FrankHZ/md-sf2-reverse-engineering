@@ -1411,8 +1411,11 @@ scope and failures; updating the checkout does not turn the retained exit crash 
 
 ### Sorcerer promotion successor
 
-`derived/issue2266/pre-voyage-sorc-v1` extends the complete MMNK selection with Kazin
+`derived/issue2266/pre-voyage-sorc-v3` extends the complete MMNK selection with Kazin
 and Tyrin SORC growth, walking and battle bodies, cast poses and the four summon icons.
+The shared rod mount also refreshes the existing WIZ/VICR bindings for Iron Rod, Flail
+and Indra Staff, with explicit unarmed bodies. `consumer-v2/Verify.ps1` under the same
+issue checks all six member/class appearance sets across 26 loaded scenes.
 Use its world, main scene and six opening inputs with
 `derived/issue2266/catalogs-v1/world.zh-CN.json`. Keep #2252 opening and #2255 Witch entry
 selected separately as above. The catalog adds only accepted class18 and spell29–32 names.

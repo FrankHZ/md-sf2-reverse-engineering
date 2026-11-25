@@ -645,9 +645,10 @@ NEPTUN/ATLAS effects remain with #2104. Source-prepared containers are not a del
 
 ### Reproduce the SORC consumers
 
-Use registered `derived/issue2266/pre-voyage-sorc-v1`,
+The initial rite witness uses registered `derived/issue2266/pre-voyage-sorc-v1`,
 `derived/issue2266/catalogs-v1/world.zh-CN.json` and
-`derived/issue2266/review-v1/Boot.ps1`. Build the current Debug adapter first using the
+`derived/issue2266/review-v1/Boot.ps1`. For the current package and rod consumers, use
+[the v3 selection below](#current-rod-consumers). Build the current Debug adapter first using the
 locked workflow with `UseSharedCompilation=false` and `nodeReuse:false`. The runner
 copies only registered drivers into checkout-local scratch, selects current opening/witch
 inputs, and requires a fresh sample plus an external disposable save namespace. It uses
@@ -687,3 +688,57 @@ affected rerun above; no replacement full local suite was run. Debug and Release
 pass with shared compilation disabled. The selected Ruff, design-contract and research-index
 commands pass. Remote required-check results belong to the frozen PR handoff; local private
 native evidence is not a CI claim.
+
+### Current rod consumers
+
+**Confirmed in the remake.** The final selection is
+`derived/issue2266/pre-voyage-sorc-v3`, not the retained v1 or rejected v2.
+The current world's shop programs include Iron Rod (88) in `map9-entityevent5`,
+Flail (90) in `map9-entityevent11` and `loc-54b1a`, and Indra Staff (92) in
+`loc-5d2c4` and `map2-entityevent7` (Pacalon/Ketto). These agree with the pinned
+`disasm/data/stats/items/shopinventories.asm` weapon shops 7, 8/9 and 10/11.
+They are reachable stock consumers, not merely weapons present in the pilot seed.
+The final v1 package lacked these appearance keys for WIZ/VICR as well as SORC;
+its earlier reader checked only the smaller starting-rod subset.
+
+The shared prepared rod mount now supplies 85/86/87/88/89/90/92 plus a genuinely
+unarmed body for Kazin/Tyrin WIZ/SORC and Sarah/Karna VICR. Existing prepared body,
+weapon and animation operands are reused; the original Indra graphics selector and
+equipment/Use rules are unchanged. The successor refreshes battle appearances of the
+already admitted WIZ/VICR variants without replacing their existing walking assets or
+progression. The production reader verifies the exact key set, source body/palette,
+body-frame paths and weapon presence for all six member/class pairs in all 26 loaded
+scenes. Guardian Staff (91), although stocked and source-legal, remains outside the
+current equipment admission because `PrivateBattleActionBindings.HasSupportedWeaponEffects`
+does not admit its additional `INCREASE_DEF` effect. The older Karna receipt is
+[Power Stick 89, not Guardian Staff](ordinary-promotion-classes.md#vicar-ordinary-reproduction).
+No Guardian capability is claimed; future mixed-effect weapon admission belongs to
+[the equipment rule owner](../domain/equipment-use-repair-design.md).
+
+The short native witness starts from a labeled copy of the prior `road01` battle-ready
+slot, changing only Kazin's carried slot 3 from Medical Herb to bare Indra Staff in both
+loadout records. It does not claim a new purchase or natural custody observation.
+Ordinary Equip changes `[213,0,17,92]` to `[85,0,17,220]`, giving ATT 43. At (5,22),
+Kazin physically attacks enemy-12 for 7 damage, gains 8 EXP, and returns to Movement.
+The scene projects `ally15-palette0/frame0` separately from `weapon92/frame0` with
+no scene error. Independent cold Continue and re-save preserve the complete decoded
+battle data, including unrelated party/custody. Both processes exit 0; the action run
+retains the existing ObjectDB warning. This does not add a SORC-specific Indra Use,
+Repair or destruction observation; those rules retain their earlier WIZ evidence.
+
+Reproduce with `derived/issue2266/rod-review-v1/Boot.ps1 -Repo <checkout> -Mode strike
+-Sample <fresh> -Journey <fresh> -Language zh-CN -SaveRoot <disposable-root>`; the default
+seed is the explicitly controlled carried-Indra copy. Then run `-Mode battle-cold` with
+the same journey and a fresh sample. This runner selects v3 and the accepted opening/Witch
+inputs. `derived/issue2266/consumer-v2/Verify.ps1 -Repo <checkout>` verifies the published
+selection, opening/catalog, all rod keys, saved histories and illegal spell rejection.
+The successful run used the published closure after producer staging was moved aside.
+
+Retained correction evidence: the expanded reader rejects v1's missing Iron Rod key.
+The first v2 candidate completed gameplay but its scene observation exposed a producer
+local-variable collision that replaced body frames with weapon frames; it is rejected,
+not an accepted successor. The corrected v3 passes explicit body-path assertions and
+the repeated short native/cold route. Initial mount failures (relative output selection,
+local directory-variable collision and unnecessary walking-asset refresh) and all native
+receipts remain under the registered `rod-review-v1` failures/receipts. No full engine
+suite or full promotion route was repeated for this packaging correction.

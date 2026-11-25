@@ -587,6 +587,17 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
                 root, Path(temp), world["world"], scene, retained_promotions
             )
             promotions.update(retained_promotions)
+        if "sorc" in selected:
+            # Refresh the already admitted rod users from the shared weapon mount;
+            # their existing progression remains owned by the base package.
+            mount_promotion_appearances(
+                root,
+                Path(temp),
+                world["world"],
+                scene,
+                {4: "WIZ", 17: "WIZ", 1: "VICR", 15: "VICR"},
+                mount_field=False,
+            )
         if "indra" in selected:
             mount_indra_staff(root, Path(temp), scene)
         if "monster" in selected:

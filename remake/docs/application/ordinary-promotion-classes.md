@@ -287,7 +287,7 @@ controlled setup can prove the rite or a downstream consumer while leaving natur
 | WIZ | Chinese Kazin MAGE 29 became WIZ 1 with his retained book and rod. Independent Battle26 forks exercised a rod strike and paid BLAZE 2, followed by cold Continue and ordinary EGRESS. Tyrin's initial Creed join was played and his promotion has controlled engine coverage. [WIZ reproduction](#wiz-ordinary-reproduction) |
 | GLDT, BDBT | English Pacalon Jaha promoted in reserve and used Short Axe with an independent Power Ring. Fallen Luke promoted, was raised, then used Middle Sword, Broad Sword and Unarmed in separate Battle26 forks. Field and battle Continue and EGRESS retained both classes. Randolf's rite has controlled coverage. A controlled carried Warrior Pride also exercises the GLDT fallback at the ordinary priest. [Baron reproduction](church-promotion-design.md#baron-promotion) · [Melee reproduction](#gladiator-and-bird-battler-ordinary-reproduction) |
 | SNIP, BWNT | Chinese Pacalon Elric and Janet kept Steel Arrow. Fallen May became BWNT, was raised and used Wooden Arrow. Battle26 exercised all three body variants, adjacent target rejection, Unarmed and 3-cell Assault Shell and Great Shot attacks. Cold Continue and EGRESS kept all three classes. The controlled Silver Tank fork now exercises native SNIP fallback. [Special rite](church-promotion-design.md#brass-gunner-promotion) [Ranged reproduction](#sniper-and-bow-knight-ordinary-reproduction) |
-| VICR | Chinese Pacalon Sarah and Karna preserved their different books. In Battle26 Sarah used HEAL 1 and full-recovery HEAL 4. Karna used HEAL 3 and attacked with Guardian Staff. Controlled VICR leveling and AURA targeting preserve Karna's later learned ranks. [Vicar reproduction](#vicar-ordinary-reproduction) |
+| VICR | Chinese Pacalon Sarah and Karna preserved their different books. In Battle26 Sarah used HEAL 1 and full-recovery HEAL 4. Karna used HEAL 3 and attacked with Power Stick. Controlled VICR leveling and AURA targeting preserve Karna's later learned ranks. [Vicar reproduction](#vicar-ordinary-reproduction) |
 | WFBR, PHNX | Chinese Pacalon Gerhalt and Peter promoted and attacked unarmed in Battle26. Peter had 44 additional reachable destinations on his first turn. Both classes and portraits persisted through cold Continue and EGRESS. Selector 61 also played its separate waves and returned to Movement. [Wolf Baron and Phoenix reproduction](#wolf-baron-and-phoenix-ordinary-reproduction) |
 | NINJ | Ordinary English Battle26 pilot reached THIF 12 with 43 EXP. Controlled engine and native coverage exercises the rite, equipment and learned casts. [Ninja reproduction](#ninja-controlled-reproduction-and-ordinary-pilot) |
 | MNST | An ordinary Chinese Battle26 pilot reached TORT 15 with 19 EXP and stopped. Controlled rites and both Attack results use the admitted private class and presentation. [Monster reproduction](#monster-controlled-reproduction-and-ordinary-pilot) |
@@ -518,11 +518,18 @@ seed names and checkpoints.
 
 | Boundary | Observed result |
 | --- | --- |
-| Church | Sarah PRST 40 and Karna PRST 28 became VICR 1 with 0 EXP. Sarah kept Short Rod, HEAL 4, DETOX 3, BLAST 4 and SLOW 2. Karna kept Guardian Staff, HEAL 3, BLAST 3 and BOOST 1. Both retained HP, MP and earned stats. The finite rite cue finished and Castle music resumed. |
+| Church | Sarah PRST 40 and Karna PRST 28 became VICR 1 with 0 EXP. Sarah kept Short Rod, HEAL 4, DETOX 3, BLAST 4 and SLOW 2. Karna kept Power Stick, HEAL 3, BLAST 3 and BOOST 1. Both retained HP, MP and earned stats. The finite rite cue finished and Castle music resumed. |
 | Sarah HEAL 1 and HEAL 4 | HEAL 1 spent 3 MP and restored 18 HP (Bowie 17→35 of 60), earning 10 EXP. The full-recovery HEAL 4 fork spent 20 MP and restored all 43 missing HP (17→60), earning 17 EXP. Sarah projected field sprite 3 and body 25 palette 1 with Short Rod. |
-| Karna HEAL 3 and staff | HEAL 3 spent 10 MP and restored 37 HP (Bowie 18→55 of 60), earning 15 EXP. Karna projected field sprite 37 and body 25 palette 2 with Guardian Staff. The separate staff branch committed an adjacent Guardian Staff attack for 6 HP and returned to Movement. |
-| Persistence and return | The ready and post-action v4 cold saves reproduced all decoded battle data for HEAL 1, HEAL 3, HEAL 4 and Guardian Staff. EGRESS from the HEAL 4 branch returned to Map36. Field v3 cold Continue kept both Vicar cards, books and loadouts, including Sarah's 17 EXP. |
+| Karna HEAL 3 and staff | HEAL 3 spent 10 MP and restored 37 HP (Bowie 18→55 of 60), earning 15 EXP. Karna projected field sprite 37 and body 25 palette 2 with Power Stick. The separate staff branch committed an adjacent Power Stick attack for 6 HP and returned to Movement. |
+| Persistence and return | The ready and post-action v4 cold saves reproduced all decoded battle data for HEAL 1, HEAL 3, HEAL 4 and Power Stick. EGRESS from the HEAL 4 branch returned to Map36. Field v3 cold Continue kept both Vicar cards, books and loadouts, including Sarah's 17 EXP. |
 | Vigor Ball | On the independent Chinese Elven Village Search history, Sarah PRST 37 carried the Vigor Ball in slot 3 (zero-based) with F221 set. Return by Caravan to Hassan, decline the special offer and confirm ordinary VICR. Sarah became VICR 1/0 with the same book and pack. Hassan Save and cold Continue preserved the held word and F221. |
+
+The retained `derived/issue1956/vicar-review/receipts/vicar-karna01/karna-promoted-slot.json`,
+`vicar-rod02/after-action-slot.json` and `vicar-rod02-cold/after-action-cold-slot.json`
+all carry word 217 (`89 | 128`, equipped Power Stick). The attack scene selects
+`weapon89/frame0` and records 6 damage; earned ATT 28 plus Power Stick 15 gives 43.
+This corrects the earlier prose name Guardian Staff: these receipts do not establish
+item 91 or its DEF effect. [Current rod admission and bindings](church-promotion-design.md#current-rod-consumers)
 
 Karna's controlled VICR growth learns BOOST 2 at stored level 10 (effective 30) and
 AURA 1 at stored level 13 (effective 33). The controlled AURA 1 has range 0–3 and

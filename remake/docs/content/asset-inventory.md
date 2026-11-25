@@ -1064,18 +1064,22 @@ remain explicit; this does not establish original timing or distribution rights.
 
 ## Sorcerer promotion (#2266)
 
-The registered complete successor `derived/issue2266/pre-voyage-sorc-v1` contains 174
-files and 361,106,631 bytes, an 86,631-byte increase over the MMNK package. This includes
+The registered complete successor `derived/issue2266/pre-voyage-sorc-v3` contains 174
+files and 361,155,769 bytes, a 135,769-byte increase over the MMNK package. This includes
 Kazin/Tyrin SORC walking/body variants, source body 15 palettes 0/1, cast poses and source
-spell 29–32 normal/selected icons. Current mounted appearance choices are unarmed and
-rods 85/86/87/89; wider equipment eligibility does not establish an unmounted appearance.
+spell 29–32 normal/selected icons. Current mounted appearance choices are explicitly unarmed and
+rods 85/86/87/88/89/90/92 for both SORC/WIZ actors and both VICR actors in all 26
+loaded scenes. The production reader checks body, palette and separate weapon frames.
+Guardian Staff (91) remains outside the admitted equipment rules because of its DEF effect.
 The five accepted translated names live in `derived/issue2266/catalogs-v1/world.zh-CN.json`.
 
 Preparation used one serial bounded pass; 1 GiB RAM and 1 GiB scratch/publication allowances
-were sufficient. Compact pilot receipts are 3,537,931 bytes before the final reader receipt.
+were sufficient for the initial pass. The corrective run retains v1 and rejected v2 alongside
+v3; allow 2 GiB for these complete packages and local staging, with prepared immutable
+dependencies reused and only changed JSON copied. Compact pilot receipts are 3,537,931 bytes before the final reader receipt.
 No new ROM-derived animation capture was needed. The complete output was copied and
 checked through dependency closure, with no producer-scratch dependency. After moving
-producer scratch aside, fresh field and battle Continue re-saves matched complete decoded
+producer scratch aside, the initial field/battle witnesses and corrective v3 battle Continue matched complete decoded
 data. The production reader checks both actors across 26 encounter scenes and rejects
 illegal saved books. Tyrin native playback and higher-rank spells remain Unknown.
 
