@@ -433,6 +433,27 @@ def pgnt_weapon_layers(library, scratch, scene, member):
     return rows
 
 
+def brn_weapon_layers(library, scratch, scene):
+    directory = library / "weapons"
+    index = read_json(directory / "index.json")["records"]
+    selectors = index["items"]
+    layers = {
+        tuple(selectors[str(row["item"])]): row["weaponFrames"]
+        for row in scene["actors"]
+        if row["side"] == "ally" and row["sprite"] in (18, 22, 24) and row["item"] is not None
+    }
+    rows = [{"item": None, "weaponFrames": []}]
+    # Use the axes and swords admitted by the current campaign's equipment catalog.
+    for item in (*range(33, 39), *range(57, 61), 62, 63, 64, 71):
+        selector = tuple(selectors[str(item)])
+        if selector not in layers:
+            layers[selector] = shared_color_weapon_frames(
+                directory, index, scratch, scene, item, scale=2
+            )
+        rows.append({"item": item, "weaponFrames": layers[selector]})
+    return rows
+
+
 def mount_promotion_appearances(
     library: Path, scratch: Path, world: dict, scene: dict, promotions: dict[int, str]
 ) -> None:
@@ -443,6 +464,7 @@ def mount_promotion_appearances(
         "WIZ": (17, {85, 86, 87, 89}),
         "VICR": (19, {85, 86, 87, 89}),
         "GLDT": (15, {33, 34, 35, 36}),
+        "BRN": (16, set()),
         "BDBT": (23, {57, 58, 59, 71}),
         "SNIP": (21, {45, 46, 47}),
         "BWNT": (25, {45, 46, 47}),
@@ -510,6 +532,8 @@ def mount_promotion_appearances(
         class_code = promotions[member]
         if class_code == "PGNT":
             mounted_weapons = pgnt_weapon_layers(library, scratch, scene, member)
+        elif class_code == "BRN":
+            mounted_weapons = brn_weapon_layers(library, scratch, scene)
         elif class_code == "NINJ":
             mounted_weapons = ninja_weapon_layers(scene)
         else:
@@ -689,6 +713,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
     permitted = {"walking", "icons", "sfx", "music", "pldn"}
     retained_families = {
         "pgnt": {14: "PGNT"},
+        "brn": {3: "BRN", 16: "BRN"},
         "wiz": {4: "WIZ", 17: "WIZ"},
         "melee": {3: "GLDT", 16: "GLDT", 10: "BDBT"},
         "ranged": {13: "SNIP", 18: "SNIP", 8: "BWNT"},
@@ -706,8 +731,9 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         "blast-1",
     }
     selected = permitted | (set(families) & optional) if "all" in families else set(families)
-    if "pgnt" in selected and len(selected) != 1:
-        raise ValueError("mount the PGNT increment on a prepared ordinary promotion package")
+    special_promotions = {"pgnt", "brn"}
+    if selected & special_promotions and not selected <= special_promotions:
+        raise ValueError("mount special promotions on a prepared ordinary promotion package")
     shrine = "south-shrine" in selected
     if shrine and (upstream is None or canonical_path is None):
         raise ValueError("south-shrine needs --canonical and --upstream")
@@ -719,7 +745,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
     }
     if retained_promotions and upstream is None:
         raise ValueError(
-            "Mounting ordinary promotion metadata requires the pinned -Upstream checkout"
+            "Mounting promotion metadata requires the pinned --upstream checkout"
         )
     parts = (
         ("pldn-party", "pldn-eric")
@@ -728,7 +754,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
     )
     if not selected <= (permitted | {"pldn-party", "pldn-eric"} | optional):
         raise ValueError(
-            "select walking, icons, sfx, music, pldn, wiz, melee, "
+            "select walking, icons, sfx, music, pldn, pgnt, brn, wiz, melee, "
             "ranged, vicar, innate, ninja, monster, phoenix-wave, indra, south-shrine, "
             "blaze, blaze-2 or blast-1"
         )
@@ -772,7 +798,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
             target.parent.mkdir(parents=True, exist_ok=True)
             if (
                 (selected == {"south-shrine"} and rel not in scenes)
-                or ((indra_only or selected == {"pgnt"}) and rel != battle26_scene)
+                or ((indra_only or selected <= special_promotions) and rel != battle26_scene)
                 or (spell_only and rel not in spell_paths)
             ):
                 # Immutable external battle/audio/entry inputs. Rewritten scenes get private files.

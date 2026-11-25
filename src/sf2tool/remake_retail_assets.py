@@ -569,6 +569,7 @@ def main():
             "pldn-party",
             "pldn-eric",
             "pgnt",
+            "brn",
             "wiz",
             "melee",
             "ranged",
@@ -590,6 +591,7 @@ def main():
     args = parser.parse_args()
     if {
         "pgnt",
+        "brn",
         "wiz",
         "melee",
         "ranged",

@@ -54,6 +54,8 @@ def ally_sprites(compiler) -> list[dict[str, Any]]:
         "TORT": "MNST",
     }
 
+    special = {"KNTE": "PGNT", "WARR": "BRN"}
+
     def class_sprite(table_sprite, role):
         # GetAllyMapsprite's offsets are relative to the member's table entry.
         if role == compiler.equates["CLASS_HERO"] or role >= compiler.equates["CLASS_BDBT"]:
@@ -73,8 +75,8 @@ def ally_sprites(compiler) -> list[dict[str, Any]]:
         sprite = class_sprite(table_sprite, role)
         bindings = {}
         for destination in promoted.get(character, ()):
-            if (ordinary.get(classes[character]) != destination
-                    and (classes[character], destination) != ("KNTE", "PGNT")):
+            base = classes[character]
+            if destination not in (ordinary.get(base), special.get(base)):
                 raise ValueError("unsupported promotion mapsprite")
             class_id = compiler.number("CLASS_" + destination)
             if class_id in bindings:

@@ -913,3 +913,23 @@ uv run --with pillow python -m sf2tool.remake_dispel_art `
 The [resource inventory](asset-inventory.md#debuff1-family-2238) records source mapping and
 volume. [Playback and reproduction](../godot/spell-presentation.md#dispel-playback-implementation-2238)
 record the accepted caller boundary and pending independent acceptance.
+
+### Baron promotion successor
+
+`derived/issue2240/pre-voyage-brn-v1` extends the complete DISPEL package with Jaha’s and
+Randolf’s BRN variants. It also mounts Eric’s accepted PGNT variant, which was absent
+from the DISPEL predecessor. Use the same world, main scene, entry and six opening
+inputs selection as a unit. Select the registered prepared retail library and the
+pinned source checkout read-only. [Resource and closure evidence](asset-inventory.md#baron-promotion-2240)
+
+```powershell
+. ./local/private-inputs.ps1
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2238/pre-voyage-dispel-v1'
+uv run python -m sf2tool.remake_retail_assets --root $registeredRetailLibrary `
+    --base $base --upstream $pinnedSource --mount $freshAbsolutePackage --family pgnt --family brn
+```
+
+Select `derived/issue2240/catalogs-v1/world.zh-CN.json` for the Chinese names. It retains
+the accepted PGNT catalog’s 2,221 messages and 190 names and adds `name.class/16` from
+the registered `names.zh-CN.jsonl`. The private review’s `runner/prepare.py catalog`
+reproduces the addition from the PGNT catalog and the registered name source.

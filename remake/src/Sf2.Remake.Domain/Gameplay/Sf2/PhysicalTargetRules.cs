@@ -94,6 +94,7 @@ internal static class PhysicalTargetRules
         14 => table switch { PhysicalPriorityTable.Regular => 11, PhysicalPriorityTable.Flying => 23,
             PhysicalPriorityTable.Archer => 3, _ => 30 },
         15 => table == PhysicalPriorityTable.Mage ? 6 : table == PhysicalPriorityTable.Flying ? 11 : 28,
+        16 => table == PhysicalPriorityTable.Mage ? 7 : table == PhysicalPriorityTable.Flying ? 10 : 27,
         17 => table == PhysicalPriorityTable.Mage ? 22 : table == PhysicalPriorityTable.Archer ? 7 : 4,
         19 => table == PhysicalPriorityTable.Mage ? 26 : table == PhysicalPriorityTable.Archer ? 9 : 6,
         21 => table == PhysicalPriorityTable.Mage ? 18 : table == PhysicalPriorityTable.Flying ? 29 : 17,

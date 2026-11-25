@@ -999,3 +999,23 @@ is learned DISPEL1 and admitted enemy DISPEL, with SLOW/MUDDLE/SLEEP consumer ac
 [Publication](presentation-assets.md#dispel-successor) and
 [scope, source, budgets and reproduction](../godot/spell-presentation.md#dispel-playback-implementation-2238)
 own further details. Private media remains outside Git.
+
+## Baron promotion #2240
+
+The prepared Jaha/Randolf rows use walking sprites 10 and 41 and battle body 22 with
+palettes 1 and 2. They reuse the actors’ existing portraits. The mount selects six walking
+strips and ten body frames. The axe and sword layers reuse the mounted selectors shared
+with GLDT and HERO, with four prepared Large Axe frames at 128×128 for the additional
+selector. BRN attack/item select 22 and dodge selects 62. Both unarmed rows have no
+weapon layer. Palette slots 1 and 2 match `$0EEE` and `$0000` for BRN, GLDT and HERO in
+the registered ROM’s `pt_AllyBattlesprites` (0x18001C). [Battle sprite evidence](../../../docs/design/contracts/graphics/battle-sprite-graphics-data.md)
+
+The single-member pilot added nine battle rasters and about 42 KB of compact scene
+data. The complete successor includes 30 BRN rows and restores the ten Eric PGNT rows,
+with 22 new battle rasters in total. The combined logical additions were 23,368 bytes
+to a compact world encoding and 101,763 bytes to Battle26. The closure has 174 files
+and 360,915,362 bytes. Only the world and Battle26 files differ from the DISPEL base.
+The production reader admitted both palettes and every supported weapon binding in
+all 26 scenes. Eric’s PGNT growth, actor rows and referenced rasters match the accepted
+PGNT package. [Mount and catalog](presentation-assets.md#baron-promotion-successor) ·
+[Ordinary observations](../application/church-promotion-design.md#baron-promotion)
