@@ -24,12 +24,12 @@ internal sealed partial class ExplorationPresentation : IDisposable
         if (mode == "hd" && _visuals.Maps.TryGetValue(map, out var visual)) _mapTextures.PrepareHd(visual);
         ExplorationRasterImages.PrepareActors(_visuals, mode == "hd");
     }
-    private bool Painted(MapId map) => _settings.GraphicsMode == "hd" &&
+    private bool Painted(MapId map) => _scenePalette is null && _settings.GraphicsMode == "hd" &&
         _visuals?.Maps.GetValueOrDefault(map)?.HdBlocks is not null;
     internal UI.StoryDialoguePanel? DialoguePanel { get; set; }
     private readonly ExplorationVisuals? _visuals;
     private readonly MapBlockTextures _mapTextures = new();
-    private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift, int Orientation, int Size, bool Hd, bool Shadowless, string? Graphics), ImageTexture> _sprites = [];
+    private readonly Dictionary<(int Sprite, int Direction, int Half, bool Nod, int HeadShift, int Orientation, int Size, bool Hd, bool Shadowless, string? Graphics, int PaletteOffset), ImageTexture> _sprites = [];
     private readonly HashSet<(MapId Map, int Slot, long Request)> _blankSprites = [];
     private readonly HashSet<(MapId Map, int Slot, long Request)> _wipedSprites = [];
     private readonly Dictionary<(int Portrait, bool Mirror, bool Eyes, bool Mouth, bool Hd), ImageTexture> _portraits = [];
@@ -145,6 +145,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
         mosaic = _mosaic?.Value, mosaicOut = _mosaicOut,
         paletteBrightness = PaletteBrightness, whiteOpacity = WhiteOpacity, reducedFlash = _reducedFlash,
         paletteColors = _palette.Projection,
+        terrainPalette = _mapTextures.PaletteProjection,
+        scenePalette = _scenePalette is null ? null : new { actorOffset = SceneActorOffset, terrain = _scenePalette.Terrain, projectedTerrain = _sceneTerrain },
         whiteVisible = _white.IsVisibleInTree(), ownerVisible = _owner.IsVisibleInTree(),
         flashPulses = FlashPulses, flashRestorations = FlashRestorations, flashPulse = _flashPulse,
     };
@@ -155,7 +157,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
         if (Error is not null) return completions;
         try
         {
-            _palette.Project(current.Story.Display?.Colors, current.Story.SimulationTick);
+            _palette.Project(current.Story.Display?.Scene is null ? current.Story.Display?.Colors : null, current.Story.SimulationTick);
             _spriteGraphics = current.Exploration?.SpriteGraphics ?? new Dictionary<int, string>();
             bool skipping = current.Story.EntrySkip is not null;
             if (!skipping && current.Story.Wait is MusicWait helper &&
@@ -181,6 +183,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                     completions.Add(new EntitySpriteReady(entity.Slot, entity.SpriteRequest));
                 }
             }
+            if (ProjectScenePalette(current, completions)) return completions;
             if (current.Story.Wait is NodWait nod)
             {
                 _cue = nod.Token; _gesture = nod.Entity; _shivering = false; _mosaic = null;
@@ -424,7 +427,12 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 _mapTextures.PrepareAnimation(visual.TileAnimation);
                 _terrainMap = world.Map;
             }
-            _terrainPhase = visual.TileAnimation?.PhaseAt(story.SimulationTick - _terrainStart) ?? -1;
+            if (_mapTextures.PaletteChanged(_scenePalette?.Resource, _sceneTerrain))
+            {
+                foreach (var texture in _mapTextures.Textures) _resourceSelectors.Remove(texture);
+                _mapTextures.SetPalette(_scenePalette?.Resource, _sceneTerrain);
+            }
+            _terrainPhase = _scenePalette is not null ? -1 : visual.TileAnimation?.PhaseAt(story.SimulationTick - _terrainStart) ?? -1;
             if (Painted(world.Map)) _mapTextures.PrepareHd(visual);
             var viewport = _owner.GetViewportRect().Size;
             _scale = WorldViewportLayout.PixelScale;
@@ -454,7 +462,9 @@ internal sealed partial class ExplorationPresentation : IDisposable
             // The clamped modern camera can differ from an explicit source view;
             // using its screen rectangle exposes packed rooms beyond this area.
             _screen = _viewport.ScreenAt(actorOrigin);
-            var backdrop = world.Layout.BlankBlockZero ? Colors.Black : new Color(0.03f, 0.04f, 0.06f);
+            var backdrop = SceneBackdrop ?? (world.Layout.BlankBlockZero ? Colors.Black : new Color(0.03f, 0.04f, 0.06f));
+            // Scene palette changes belong inside the scene; its exterior stays black.
+            var exterior = visual.ScenePalette is not null ? Colors.Black : backdrop;
             if (!prepare) _owner.DrawRect(_screen, backdrop);
             var overlay = new MapOverlayOffset(0, 0);
             if (view is null)
@@ -600,7 +610,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 sessionId = current.SessionId, revision = current.Revision, observationSequence = current.ObservationSequence,
                 simulationTick = story.SimulationTick, token = story.Wait?.Token.Value, cue = CueProjection,
                 map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null,
-                x = 0, y = 0, width = viewport.X, height = viewport.Y,
+                x = 0, y = 0, width = viewport.X, height = viewport.Y, exteriorColor = exterior.ToHtml(),
                 legalScreen = new { x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y },
                 cameraX = _camera.X, cameraY = _camera.Y, legalBounds = Battles.BattleMapViewport.Rectangle(_viewport.Bounds),
                 scale = _scale, windows, background = backgroundDraw, foreground = foregroundDraw, backgroundHigh, foregroundHigh, actors, occlusionDraws };
@@ -608,7 +618,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 sessionId = current.SessionId, revision = current.Revision, observationSequence = current.ObservationSequence,
                 simulationTick = story.SimulationTick, token = story.Wait?.Token.Value, cue = CueProjection,
                 map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null,
-                x = 0, y = 0, width = viewport.X, height = viewport.Y,
+                x = 0, y = 0, width = viewport.X, height = viewport.Y, exteriorColor = exterior.ToHtml(),
                 legalScreen = new { x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y },
                 cameraX = _camera.X, cameraY = _camera.Y, legalBounds = Battles.BattleMapViewport.Rectangle(_viewport.Bounds),
                 scale = _scale, windows, background = backgroundDraw?.Geometry(), foreground = foregroundDraw?.Geometry(),
@@ -621,7 +631,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 new Rect2(0, _screen.End.Y, viewport.X, viewport.Y - _screen.End.Y),
                 new Rect2(0, _screen.Position.Y, _screen.Position.X, _screen.Size.Y),
                 new Rect2(_screen.End.X, _screen.Position.Y, viewport.X - _screen.End.X, _screen.Size.Y) })
-                if (border.Size.X > 0 && border.Size.Y > 0) _owner.DrawRect(border, backdrop);
+                if (border.Size.X > 0 && border.Size.Y > 0) _owner.DrawRect(border, exterior);
             int? portraitId = (story.PortraitWindow as OpenPortraitWindow)?.Portrait;
             PortraitResourceProjection = null;
             object? portraitUse = null;
@@ -869,8 +879,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
         var original = graphics is null ? visual.Directions :
             visual.Graphics?.GetValueOrDefault(graphics) ?? throw new InvalidOperationException("shared-sprite-graphics-binding");
         var variant = graphics is null ? visual.HdDirections : visual.HdGraphics?.GetValueOrDefault(graphics);
-        bool hd = _settings.GraphicsMode == "hd" && variant is not null;
-        var key = (sprite, direction, half, nod, headShift, orientation, size, hd, shadowless, graphics);
+        bool hd = _scenePalette is null && _settings.GraphicsMode == "hd" && variant is not null;
+        var key = (sprite, direction, half, nod, headShift, orientation, size, hd, shadowless, graphics, SceneActorOffset);
         if (_sprites.TryGetValue(key, out var texture)) return texture;
         var directions = hd ? variant! : original;
         using var sheet = ExplorationRasterImages.Open(directions[direction]);
@@ -891,6 +901,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
             image.BlitRect(head, new(0, 0, head.GetWidth(), head.GetHeight()), new(7 * density, density));
             image.FillRect(new(0, 0, 24 * density, density), Colors.Transparent);
         }
+        OffsetSprite(image, SceneActorOffset);
         _sprites[key] = texture = ImageTexture.CreateFromImage(image);
         _resourceSelectors[texture] = new { kind = "entity", sprite, graphics, direction, half, nod, orientation, size, pixels = image.GetWidth() };
         List<Rect2> ink = [];

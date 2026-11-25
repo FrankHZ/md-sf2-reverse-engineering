@@ -83,6 +83,7 @@ public static class BattleEntrySkip
             if (current.Exploration?.AllEntities.Any(entity => entity.WaitingForSprite && entity.SpriteReady != entity.SpriteRequest) == true) break;
             SessionCommand? next = current.Story.Wait switch
             {
+                SceneEndWait or ScenePaletteWait { LogicalDone: true } => null,
                 PresentationWait or EntitySpriteWait or EntitySetSpriteWait => null,
                 NodWait { LogicalDone: true } or FullFadeWait { LogicalDone: true } or MusicWait { LogicalDone: true } => null,
                 FieldTextWait { Revealed: false, LogicalDone: true } text => new CompleteTextReveal(text.Token),

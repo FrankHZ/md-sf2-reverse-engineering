@@ -47,7 +47,7 @@ internal static class ExplorationContentReader
             Require(programIds.Add(id), "duplicate-program", "program.id");
             var instructions = Array(row, "instructions").Select(instruction => ReadInstruction(instruction, battle.Definition.PrivateDefinitions)).ToArray();
             Require(instructions.Length is >= 1 and <= 65536, "program-length", "program.instructions");
-            Require(instructions[^1] is EndProgram or ReturnProgram or JumpProgram or UnsupportedInstruction,
+            Require(instructions[^1] is EndProgram or EndScene or ReturnProgram or JumpProgram or UnsupportedInstruction,
                 "unresolved-program-fallthrough", "program.instructions");
             string? source = row.TryGetProperty("source", out _) ? Text(row, "source") : null;
             // Earlier pre-voyage exports encoded both source commands as reloads.
@@ -544,6 +544,7 @@ internal static class ExplorationContentReader
     private static StoryInstruction ReadInstruction(JsonElement row, PrivateBattleDefinitions? source)
     {
         string opcode = Text(row, "op");
+        if (ScenePaletteReader.Instruction(row, opcode) is { } palette) return palette;
         switch (opcode)
         {
             case "caravan": Object(row, opcode, "op"); return new OpenCaravan();

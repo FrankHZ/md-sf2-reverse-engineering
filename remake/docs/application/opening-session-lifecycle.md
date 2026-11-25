@@ -315,9 +315,9 @@ on the ROM checkout at runtime. [Private reader](../../src/Sf2.Remake.Content/Sc
 
 The existing compiler and runtime already express reload/reset, scene actors, camera targets and
 waits, clone binding, movement/actions, ordinary fades, block copies, quake and white effects.
-Start with that vocabulary and require complete lowering of the selected scripts. The known gaps
-are `{D2}` in the text lexer, logical timed text work and translation topology, half-black/tint
-presentation, and the temporary storm-bank effect. Bind `{D2}` to the source's timed wait with
+Require complete lowering of the selected scripts. The #2250 controlled slice supplies `{D2}`
+text/translation topology, half-black/tint and the temporary storm-bank effect described below.
+Bind `{D2}` to the source's timed wait with
 typewriting inactive and no demand for acknowledgement, using the normal text clock. The Skip
 input remains independently live. Admit only any other reached action/effect operand that a
 compiler/consumer check shows is missing, including the fixed/transparent actors and the
@@ -332,6 +332,57 @@ instead of running the rest of the montage at high speed. Its only successor is 
 Battle Entry Skip must still execute consequential instructions. Reuse its release and ownership
 principles, retaining the separate completion semantics. [Battle-entry skip agreement](session-and-programs.md#battle-entry-skip-agreement) ·
 [Presentation and audio handoff](../godot/presentation.md#pre-title-story-presentation-2247).
+
+#### Bounded scene implementation (#2250)
+
+The controlled scene uses the existing map-initialization continuation, StoryProgram call stack,
+scene-map/scene-entities operations, actor services and presentation clock. Its map definitions have
+no campaign setup, events or persistent-party actions. The initial population supplies the existing
+player sprite binding until the original scene entity list replaces it. `EndScene` retains a terminal
+wait and releases temporary palette state; it does not return field control or enable saving.
+Ordinary startup and the four-scene pre-title/Skip owner remain the next slice.
+
+`Delay2` waits for 119 normal logical services independently of mouth control and modern instant
+reveal. Reading Confirm cannot shorten this delay. Automatic text then continues and closes through
+the existing window services. Localization admission preserves the delay and name topology.
+
+Palette state belongs to the scene. The finite `FadeScenePalette` operation applies source-selected
+absolute color-level offsets with bank mask 1 (terrain) or 15 (terrain and actors); the existing clock
+services each source period and waits for actual presentation completion. `PulseScenePalette`
+replaces terrain bank 0 for ten services, restores its exact previous sixteen words, and waits ten
+more. Battle Entry Skip still services this logical work before omitting the delivery wait.
+
+The original RGBA atlas loses palette slot identity: equal RGB values in distinct slots cannot be
+replaced correctly by a global color lookup. Only the selected maps therefore carry an optional
+128×320 byte index plane and sixteen base words. `MapBlockTextures` reconstructs its existing blocks
+with these slot colors. No whole-map migration or frame atlas is needed. Actor half-fade uses the
+same absolute channel offset on the existing source sprite; terrain-only tint/storm does not affect
+actors or UI. During scene palette work, existing Original resources supply the fallback for HD.
+Reduced Flash holds a smaller presentation change for a pulse; logical replacement/restoration and
+wait completion remain unchanged.
+
+`ScenePaletteRunner` owns the transient state and wait. `ScenePaletteReader` owns finite resource and
+operand admission; the scene compiler reads the pinned fade tables and storm palette. Scene reload
+preserves the current bank, whereas a black scene-map load binds the new base resource. Ordinary
+warp and return-to-field keep their existing full-fade contract and reject transient scene palettes.
+Existing busy/cursor save eligibility excludes the running scene and its terminal; there is no save
+schema or persistent palette change. `SettledFieldSnapshot` remains read-only.
+
+The private producer `python -m sf2tool.remake_opening_scene` selects the complete IntroCutscene1 and
+the unchanged IntroCutscene2 prefix ending after the first post-tint storm pair restores. It prepares
+Map65 and effects 183/187, reuses selected prepared actors/portraits and command9 PCM, and derives all
+81 IDs4186–4266 from the accepted full-text Chinese authority. The source/default SFX bindings reuse
+accepted modern recordings; this does not claim original C4 synthesis parity. The package has no
+reference to producer scratch or the full campaign world at runtime.
+
+**Confirmed:** the complete shrine and castle prefix run automatically in English and Chinese;
+Reduced Flash retains the six storm restoration pairs. Both published starts reproduce after
+producer candidates are moved away, without party/gold changes or save writes. Actual state,
+indexed texture samples, actor/effect projection and error checks support this bounded result.
+[Commands, package and validation limits](../content/presentation-assets.md#controlled-opening-scene-package-2250).
+Independent integration is still required. Source structure does not prove original natural timing
+or human presentation quality; those remain **Unknown**. The original behavior owner remains
+[special screens](../../../docs/research/presentation/special-screens.md#boot-story-sequence).
 
 #### Implementation order and acceptance
 

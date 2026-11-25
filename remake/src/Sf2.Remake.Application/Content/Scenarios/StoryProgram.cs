@@ -6,7 +6,7 @@ namespace Sf2.Remake.Application.Content.Scenarios;
 public readonly record struct EntityRef(string Value);
 public readonly record struct ProgramLocation(string Program, int Instruction);
 public enum TextDisplayMode { Continued, Single }
-public enum PresentationCueKind { FadeIn, FadeOut, FlashWhite, RestorePalette, CameraPosition, CameraEntity, Sound, Gesture, EntityEffect, CameraWait, SoundFade, BattleLoad, SoundWait, PreviousMusic, SoundCut }
+public enum PresentationCueKind { FadeIn, FadeOut, FlashWhite, RestorePalette, CameraPosition, CameraEntity, Sound, Gesture, EntityEffect, CameraWait, SoundFade, BattleLoad, SoundWait, PreviousMusic, SoundCut, ScenePalette }
 public enum MapLoadMode { Rebuild, Preserve, ScrollHorizontal, ScrollVertical }
 
 public sealed record RaftBerth(MapId Map, MapPosition Position);

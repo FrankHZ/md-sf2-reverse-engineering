@@ -47,7 +47,7 @@ public sealed record ExplorationMapVisual(MapId Map, ExplorationRaster Atlas, in
     IReadOnlyList<IReadOnlyList<ushort>> Blocks, IReadOnlyList<ExplorationMapMusic> Music,
     IReadOnlyList<ExplorationRaster>? HdBlocks = null,
     IReadOnlyDictionary<BlockNeighborhood, ExplorationRaster>? HdBlockContexts = null,
-    MapTileAnimation? TileAnimation = null);
+    MapTileAnimation? TileAnimation = null, ScenePaletteDefinition? ScenePalette = null);
 public sealed record ExplorationSpriteVisual(int Sprite, IReadOnlyList<ExplorationRaster> Directions, int? Portrait, int Speech,
     IReadOnlyList<ExplorationRaster>? HdDirections = null,
     IReadOnlyDictionary<string, IReadOnlyList<ExplorationRaster>>? Graphics = null,
@@ -137,7 +137,7 @@ public sealed record PalettePair(ushort Color2, ushort Color3)
 }
 public enum FullFadeVisibility { Black, BaseRestored, Transitioning, White }
 public sealed record ExplorationDisplay(byte Period, PalettePair Base, PalettePair Current, FullFadeVisibility Visibility,
-    Runtime.Exploration.PaletteColorTransition? Colors = null);
+    Runtime.Exploration.PaletteColorTransition? Colors = null, Runtime.Exploration.ScenePaletteState? Scene = null);
 
 internal readonly record struct FieldMapBody(MapId Map, MapSetupId? Setup);
 
@@ -236,7 +236,7 @@ public sealed class ExplorationProvenance
     public string ControlledBoundary { get; }
 }
 
-public enum ExplorationTextTokenKind { Literal, Newline, MemberName, Wait1, Wait2, Unsupported, Delay1, ClassName, Clear, Delay3, ItemName }
+public enum ExplorationTextTokenKind { Literal, Newline, MemberName, Wait1, Wait2, Unsupported, Delay1, ClassName, Clear, Delay3, ItemName, Delay2 }
 public sealed record ExplorationTextToken(ExplorationTextTokenKind Kind, string Value, int? Member = null);
 
 public sealed class ExplorationDefinition

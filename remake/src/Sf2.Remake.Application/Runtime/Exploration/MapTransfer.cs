@@ -73,7 +73,7 @@ internal static class MapTransfer
 
     internal static void ValidateDisplay(ExplorationDisplay? display)
     {
-        if (display is not { Period: > 0, Base.Valid: true, Current.Valid: true } ||
+        if (display is not { Period: > 0, Base.Valid: true, Current.Valid: true, Scene: null } ||
             !Enum.IsDefined(display.Visibility) ||
             display.Visibility == FullFadeVisibility.Transitioning ||
             (display.Visibility switch
@@ -311,7 +311,7 @@ internal static class MapTransfer
         ExplorationTextRunner.ValidateContext(current);
         var story = current.Story;
         var world = current.Exploration!;
-        ValidateDisplay(story.Display);
+        if (story.Display?.Scene is null) ValidateDisplay(story.Display);
         if ((story.Warp is { } warp && warp.Map != world.Definition.Map) || story.TextWindow is not ClosedTextWindow ||
             story.PortraitWindow is not ClosedPortraitWindow || story.LogicalText is not { Open: false })
             throw new BattleRuleException("scene-reload-context", "story.windows", true);
@@ -338,17 +338,26 @@ internal static class MapTransfer
         if (story.PortraitWindow is not ClosedPortraitWindow || story.Wait is not null || story.Typewriting ||
             (story.TextWindow is OpenTextWindow) != (story.LogicalText is { Open: true }))
             throw new BattleRuleException("scene-load-windows", "story.windows", true);
-        ValidateDisplay(story.Display);
+        if (story.Display?.Scene is { } scene)
+        {
+            if (scene.ActorOffset != -7 || scene.Terrain.Any(color => color != 0))
+                throw new BattleRuleException("scene-load-black", "story.display", true);
+        }
+        else
+        {
+            ValidateDisplay(story.Display);
+            if (story.Display!.Visibility != FullFadeVisibility.Black)
+                throw new BattleRuleException("scene-load-black", "story.display", true);
+        }
         // The source replaces PALETTE_1_BASE without copying it into current CRAM.
         // A settled black load is representable; visible base/current divergence is
         // outside this admission. Validate everything before publishing the scene.
-        if (story.Display!.Visibility != FullFadeVisibility.Black)
-            throw new BattleRuleException("scene-load-black", "story.display", true);
         if (next.Definition.BasePalette is not { Valid: true } palette)
             throw new BattleRuleException("scene-load-palette-binding", "map.basePalette", true);
         return story.Copy(story.Cursor, logicalView: ExplorationViewRunner.LoadScene(next, load.Camera, story.LogicalView!),
             logicalText: new(), textWindow: new ClosedTextWindow(),
-            display: story.Display with { Base = palette, Colors = null }, clearCameraEntity: true, clearCameraTarget: true);
+            display: story.Display! with { Base = palette, Current = new(0, 0), Visibility = FullFadeVisibility.Black,
+                Colors = null, Scene = null }, clearCameraEntity: true, clearCameraTarget: true);
     }
 
     internal static SessionSnapshot Apply(ScenarioDefinition definition, SessionSnapshot current, MapId map,

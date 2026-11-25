@@ -206,6 +206,43 @@ def scene_operation(compiler, op, args):
     )
 
 
+def scene_palette_operation(compiler, op, args):
+    fades = {
+        "fadeInFromBlackHalf": (15, 14),
+        "fadeOutToBlackHalf": (15, 15),
+        "tintMap": (1, 9),
+    }
+    if op in fades:
+        banks, setting = fades[op]
+        compiler.sources.add("disasm/code/common/scripting/map/mapscriptengine_1.asm")
+        compiler.sources.add("disasm/code/common/tech/interrupts/fadingcommands.asm")
+        values = [
+            compiler.number(value)
+            for row in compiler.source_operations(
+                "disasm/data/tech/fadingdata.asm", "table_FadingData"
+            )
+            if row["opcode"] == "dc.b"
+            for value in _tokens(row["operandText"])
+        ]
+        tail = values[(setting - 1) * 8 :]
+        offsets = [value if value < 128 else value - 256 for value in tail[: tail.index(128)]]
+        if not 0 < len(offsets) <= 8 or any(not -7 <= value <= 7 for value in offsets):
+            raise ValueError("scene palette fade binding changed")
+        return {"op": "scene-palette-fade", "banks": banks, "offsets": offsets, "period": 6}
+    if op == "executeSubroutine" and args == ["ApplyStormEffect"]:
+        path = "disasm/data/scripting/map/cs_intro_stormeffect.asm"
+        colors = [
+            compiler.number(value)
+            for row in compiler.source_operations(path, "palette_IntroStormEffect")
+            if row["opcode"] == "dc.w"
+            for value in _tokens(row["operandText"])
+        ]
+        if len(colors) != 16:
+            raise ValueError("storm palette binding changed")
+        return {"op": "scene-palette-pulse", "bank": 0, "colors": colors, "ticks": 10}
+    return None
+
+
 def sound_operation(command):
     control = {"SOUND_COMMAND_FADE_OUT": "SoundFade", "SOUND_COMMAND_CUT_OUT": "SoundCut"}.get(
         command

@@ -45,7 +45,8 @@ public sealed partial class ExplorationSessionView
     private static bool NeedsTicks(SessionSnapshot current) =>
         current.NeedsFieldWindowService || (current.Story.Wait switch
         {
-            FieldSearchWait => false,
+            FieldSearchWait or SceneEndWait => false,
+            ScenePaletteWait palette => !palette.LogicalDone,
             MusicWait music => !music.LogicalDone,
             PresentationWait { Cue.Kind: PresentationCueKind.Sound or PresentationCueKind.PreviousMusic or
                 PresentationCueKind.SoundFade or PresentationCueKind.SoundCut } when current.Story.TextSettings is not null => false,

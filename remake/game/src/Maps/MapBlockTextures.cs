@@ -12,6 +12,19 @@ internal sealed class MapBlockTextures : IDisposable
     private readonly Dictionary<ExplorationRaster, ImageTexture> _variants = [];
     private readonly Dictionary<(MapId Map, int Block, ExplorationRaster? Variant), Bitmap> _blockInk = [];
 
+    private ScenePaletteDefinition? _scenePalette;
+    private IReadOnlyList<ushort>? _sceneColors;
+    private readonly Dictionary<int, object> _paletteSamples = [];
+    internal object PaletteProjection => new { active = _scenePalette is not null,
+        colors = _sceneColors, blocks = _blocks.Count, slots = _paletteSamples.Values.ToArray() };
+    internal bool PaletteChanged(ScenePaletteDefinition? resource, IReadOnlyList<ushort>? colors) =>
+        !ReferenceEquals(_scenePalette, resource) || !ReferenceEquals(_sceneColors, colors);
+    internal void SetPalette(ScenePaletteDefinition? resource, IReadOnlyList<ushort>? colors)
+    {
+        Dispose();
+        _scenePalette = resource; _sceneColors = colors;
+    }
+
     private ExplorationMapVisual? _checkedBank;
     private MapTileAnimation? _checkedAnimation;
 
@@ -112,6 +125,8 @@ internal sealed class MapBlockTextures : IDisposable
 
     private Image OpenOriginalBlock(ExplorationMapVisual visual, int block)
     {
+        if (_scenePalette is not null && !ReferenceEquals(_scenePalette, visual.ScenePalette))
+            throw new InvalidOperationException("scene-palette-map-binding");
         if (!_atlases.TryGetValue(visual.Map, out var atlas))
         {
             atlas = visual.Atlas.Format == "rgba8"
@@ -132,8 +147,26 @@ internal sealed class MapBlockTextures : IDisposable
                 for (int x = 0; x < 8; x++)
                 {
                     int sx = (word & 0x800) != 0 ? 7 - x : x, sy = (word & 0x1000) != 0 ? 7 - y : y;
-                    image.SetPixel(tile % 3 * 8 + x, tile / 3 * 8 + y,
-                        atlas.GetPixel((index % 16 * 8 + sx) * visual.Scale, (index / 16 * 8 + sy) * visual.Scale));
+                    int ax = index % 16 * 8 + sx, ay = index / 16 * 8 + sy;
+                    Color pixel;
+                    if (_scenePalette is not null)
+                    {
+                        int slot = _scenePalette.Slot(ax, ay), color = _sceneColors![slot];
+                        pixel = slot == 0 ? Colors.Transparent : new((color & 14) / 14f,
+                            ((color >> 4) & 14) / 14f, ((color >> 8) & 14) / 14f);
+                    }
+                    else pixel = atlas.GetPixel(ax * visual.Scale, ay * visual.Scale);
+                    image.SetPixel(tile % 3 * 8 + x, tile / 3 * 8 + y, pixel);
+                    if (_scenePalette is not null)
+                    {
+                        int slot = _scenePalette.Slot(ax, ay);
+                        if (!_paletteSamples.ContainsKey(slot))
+                        {
+                            Color actual = image.GetPixel(tile % 3 * 8 + x, tile / 3 * 8 + y);
+                            _paletteSamples.Add(slot, new { slot, word = _sceneColors![slot],
+                                r = actual.R, g = actual.G, b = actual.B, a = actual.A });
+                        }
+                    }
                 }
         }
         return image;
@@ -141,7 +174,8 @@ internal sealed class MapBlockTextures : IDisposable
 
     public void Dispose()
     {
-        _checkedBank = null; _checkedAnimation = null;
+        _checkedBank = null; _checkedAnimation = null; _scenePalette = null; _sceneColors = null;
+        _paletteSamples.Clear();
         foreach (var texture in _blocks.Values) texture.Dispose();
         foreach (var atlas in _atlases.Values) atlas.Dispose();
         foreach (var texture in _variants.Values) texture.Dispose();

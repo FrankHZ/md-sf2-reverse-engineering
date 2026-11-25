@@ -19,6 +19,7 @@ from sf2tool.remake_exploration_scene import (
     raft_placement,
     scene_entities,
     scene_operation,
+    scene_palette_operation,
     sound_operation,
 )
 from sf2tool.remake_exploration_view import counted_view_loop, view_operation
@@ -194,6 +195,8 @@ class OriginalPrograms:
             if found := inventory_operation(self, relative, op, args, registers, rows, index):
                 operation, index = found
                 result.extend(operation if isinstance(operation, list) else [operation])
+            elif palette := scene_palette_operation(self, op, args):
+                result.append(palette)
             elif lowered_view := view_operation(self, op, args):
                 result.append(lowered_view)
             elif op == "flashScreenWhite" and 24 <= self.number(args[0]) < 32:
