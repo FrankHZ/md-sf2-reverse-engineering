@@ -467,6 +467,7 @@ def mount_promotion_appearances(
         "BRN": (16, set()),
         "BDBT": (23, {57, 58, 59, 71}),
         "SNIP": (21, {45, 46, 47}),
+        "BRGN": (22, {45, 46, 47}),
         "BWNT": (25, {45, 46, 47}),
         "WFBR": (24, {None}),
         "PHNX": (26, {None}),
@@ -475,7 +476,12 @@ def mount_promotion_appearances(
     }
     # Additional source-legal weapons already mounted for another promoted member.
     # Arrows and shells use only the selected body animation (weapon selector FF).
-    promoted_weapons = {"BDBT": (0, {62}), "SNIP": (11, {48, 49, 50}), "BWNT": (11, {48, 49, 50})}
+    promoted_weapons = {
+        "BDBT": (0, {62}),
+        "SNIP": (11, {48, 49, 50}),
+        "BWNT": (11, {48, 49, 50}),
+        "BRGN": (11, {48, 49, 50}),
+    }
     walking = read_json(library / "walking/index.json")["records"]
     variants = {
         row["member"]: row
@@ -714,6 +720,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
     retained_families = {
         "pgnt": {14: "PGNT"},
         "brn": {3: "BRN", 16: "BRN"},
+        "brgn": {13: "BRGN", 18: "BRGN"},
         "wiz": {4: "WIZ", 17: "WIZ"},
         "melee": {3: "GLDT", 16: "GLDT", 10: "BDBT"},
         "ranged": {13: "SNIP", 18: "SNIP", 8: "BWNT"},
@@ -731,7 +738,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         "blast-1",
     }
     selected = permitted | (set(families) & optional) if "all" in families else set(families)
-    special_promotions = {"pgnt", "brn"}
+    special_promotions = {"pgnt", "brn", "brgn"}
     if selected & special_promotions and not selected <= special_promotions:
         raise ValueError("mount special promotions on a prepared ordinary promotion package")
     shrine = "south-shrine" in selected

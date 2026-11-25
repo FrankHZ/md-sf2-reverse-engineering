@@ -933,3 +933,19 @@ Select `derived/issue2240/catalogs-v1/world.zh-CN.json` for the Chinese names. I
 the accepted PGNT catalog’s 2,221 messages and 190 names and adds `name.class/16` from
 the registered `names.zh-CN.jsonl`. The private review’s `runner/prepare.py catalog`
 reproduces the addition from the PGNT catalog and the registered name source.
+
+### Brass Gunner promotion successor
+
+`derived/issue2242/pre-voyage-brgn-v1` extends the complete #2240 package with Elric and
+Janet BRGN growth, walking sprites and six current legal weapon bindings each. Select its
+world, main scene, entry and six opening inputs together with the registered prepared retail
+library and `derived/issue2240/catalogs-v1/world.zh-CN.json`. The catalog already contains
+BRGN's registered Chinese name. [Closure and budget](asset-inventory.md#brass-gunner-promotion-2242) ·
+[Native reproduction](../application/church-promotion-design.md#brass-gunner-promotion)
+
+```powershell
+. ./local/private-inputs.ps1
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2240/pre-voyage-brn-v1'
+uv run python -m sf2tool.remake_retail_assets --root $registeredRetailLibrary `
+    --base $base --upstream $pinnedSource --mount $freshAbsolutePackage --family brgn
+```

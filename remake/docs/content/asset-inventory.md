@@ -1019,3 +1019,23 @@ The production reader admitted both palettes and every supported weapon binding 
 all 26 scenes. Eric’s PGNT growth, actor rows and referenced rasters match the accepted
 PGNT package. [Mount and catalog](presentation-assets.md#baron-promotion-successor) ·
 [Ordinary observations](../application/church-promotion-design.md#baron-promotion)
+
+### Brass Gunner promotion (#2242)
+
+The prepared retail-v1 walking/class table binds Elric to map sprite32, battle11/palette0,
+and Janet to map sprite47, battle11/palette2. The BRGN family reuses the accepted archer
+and Rohde weapon rows for items45–50. Each member has six bindings and the shared unarmed
+fallback. The source-based growth merge preserves SNIP alongside BRGN and preserves the
+predecessor's PGNT, BRN and DISPEL selections.
+
+The single-scene pilot took 0.05 seconds and added 12 actor records, eight unique rasters
+and 35,424 compact scene bytes. Preparation is linear in package bytes plus selected
+records. The pre-run serial budget was 1.5 GiB temporary disk, 2 GiB peak memory and one
+roughly 345 MiB published package, with no downloads or model/API cost. The complete
+successor contains 360,965,435 bytes, 50,073 above the 360,915,362-byte predecessor.
+No unchanged duplicate package was generated. Scene closure directly compares every
+predecessor actor/raster and retains all of them. Native production loading, both rites,
+Elric's three physical range variants and cold Continue passed. Original animation timing
+and Janet's BRGN battle action remain **Unknown**.
+[Package and rebuild](presentation-assets.md#brass-gunner-promotion-successor) ·
+[Observed controls and failures](../application/church-promotion-design.md#brass-gunner-promotion)
