@@ -79,17 +79,17 @@ listed by rank below. [Binding contract](../content/asset-inventory.md#battle-ra
 | --- | --- | --- | --- |
 | HEAL 1–4 | HEALING_FAIRY v1–v4 | **Original assets bound** for private allied self/teammate casts. The private cast/idle, light fairy, live target and 77/113 cues are described in [HEAL spell scenes](#heal-spell-scenes). Native private HEAL1–3 settings cases and Sarah's Battle26 HEAL4 cover allied delivery. Enemy HEAL1 is observed with authored Mage/Cleric content, and a controlled private Battle19 Master Monk uses HEAL3 on itself. **Original assets bound** for the controlled pre-voyage enemy HEAL1 through the shared faction selector and evil-fairy group. | [Enemy healing acceptance](#enemy-healing-family-2227) covers a legal Dark Cleric recovery. Other higher-rank enemy playback and exact timing remain **Unknown** beyond named cases. [Enemy witness](../development-and-verification.md#enemy-spell-observation) · [Battle19 comparison](../application/battle19-repeat.md#controlled-comparisons) |
 | AURA 1 | HEALING_FAIRY v1 | **Original assets bound** for admitted private allied content through the HEAL light-fairy path. Karna's allied ordered recovery has engine evidence and ordinary native campaign casting is **Unknown**. The private Battle19 Dark Bishop shares the faction selector and evil-fairy group; actual enemy AURA delivery remains **Unknown**. Authored AURA uses its own pulse, recipient cards and one EXP delivery. | [#2104] recovery follow-up after pre-voyage priorities. Reuse the same enemy fairy decision and verify actual area recipients when needed. [Current spells](../application/church-promotion-design.md#current-battle-spells) · [Battle19 private binding](../application/battle19-repeat.md) · [Authored AURA](battle-scenes.md#authored-aura-recovery) |
-| AURA 2–4 | HEALING_FAIRY v2–v4 | **Original assets bound** for learned private allied Magic through the existing fairy path. Controlled Battle26 input covers ranks2/3 and VICR rank4, one payment and ordered return. | [Recovery and reproduction](../domain/gameplay-rules.md#private-learned-aura-ranks). Equipment consumers remain with #1818. |
+| AURA 2–4 | HEALING_FAIRY v2–v4 | **Original assets bound** for learned private allied Magic through the existing fairy path. Controlled Battle26 input covers ranks2/3 and VICR rank4, one payment and ordered return. | [Recovery and reproduction](../domain/gameplay-rules.md#private-learned-aura-ranks). Equipment Use rules and consumers are accepted under [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268); their original effect presentation is tracked separately. |
 | DETOX 1–3 | DETOX v1–v3 | **Original assets bound** for admitted private Magic in the [DETOX successor](../content/presentation-assets.md#detox-successor). The same mote/trail composition plays for effective and paid no-effect casts and is suppressed by silence. Field Magic and Antidote/Fairy Powder have distinct delivery. Rune Axe Use selects DETOX2 in the original. | [#2232] delivers the [controlled native presentation](#prepared-detox-presentation). [#1965] owns rank-2/3 gameplay and equipped curse. Natural ordinary acquisition and casts remain **Unknown**. |
 | DETOX 4 | DETOX v4 | **Original assets bound** for private learned Magic with one cast and one end wait around the ordered area results. | [Area rules and controlled Battle26 playback](../domain/detox-ranks-design.md#detox-4-area-and-field-admission) |
 | BOOST 1 | BUFF1 v1 | **Partial**. Ordinary private Karna cast has AGI/DEF, no-effect recast, cards and return on the support scene. Protect Ring uses the same effect rules with an equipment gesture, slot wear and result notices. | [#2104] later BUFF effect work. Share the asset setup with ATTACK where source operands agree and verify Magic/Item independently. [Support evidence](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Ring witness](../domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction) |
 | BOOST 2 | BUFF1 v2 | **Partial**. Private Magic uses the shared cast scene, ordered AGI/DEF and ineffective messages, and return to battle input. Enemy SUPPORT still rejects the packed rank. | [#2104] retail BUFF1 v2 effect. [Battle26 observation](../domain/support-spell-status-design.md#boost-2-admission-and-observation) |
-| SLOW 1–2 | DEBUFF1 v1–v2 | **Partial**. Both Sarah ranks have private Battle26 witnesses with actual AGI/DEF reactions, expiry/state rules and the black support scene. The original visual effect is absent. | [#2104] later DEBUFF work with DISPEL. [Support evidence](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) |
-| ATTACK 1 | BUFF1 v1 | **Partial** through Power Ring Use with item gesture, target ATT, durability and subsequent control. The current private Magic binding omits ATTACK. Battle25 Dark Soldier holds the spell and its ordinary AI rejects it. | [#2104] BUFF effect after the primary spell work. [#1818] other eligible equipment or learned callers as admitted. [Item-use rules and evidence](../domain/equipment-use-repair-design.md) · [Battle25](../application/battle25-north-cave.md) |
-| DISPEL 1 | DEBUFF1 v1 | **Original assets bound** for learned Kazin and existing Dark Smoke AI in the [DISPEL successor](../content/presentation-assets.md#dispel-successor). Controlled mixed results, paid silence and Original/HD fallback use ordinary input and completion. | [DISPEL playback](#dispel-playback-implementation-2238) records the source, responsibilities and reproduction. Natural learning/reach and hardware timing remain **Unknown**. Grand Cannon Use remains with [#1818]. |
-| MUDDLE 1–2 | DEBUFF1 v1 for both | **Partial**. Private learned Kazin Magic uses both ranks and the support scene's result delivery. Controlled Battle25 rank-2 automatic actions and cold Continue have gameplay witnesses. The DEBUFF art remains pending. Giant Knuckles Use points to rank 1 in the source. | [#2104] DEBUFF playback. [Accepted MUDDLE evidence](../domain/hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25) |
-| DESOUL 1–2 | DESOUL v1–v2 | **Learned Magic bound.** Controlled Battle26 Kazin casts both ranks with spell-8 icons and localized cast, instant-death, ineffective and reward messages on black. Dark Sword Use selects rank 1 in the source and has no binding here. | [#2104] owns original effects and timing. [DESOUL reproduction](../domain/hostile-spells-design.md#controlled-kazin-input-and-cold-continue) |
-| SLEEP 1 | DEBUFF1 v1 | **Partial**. A controlled Tyrin 25 Battle26 slot exercises private Magic, both original icons, localized result/no-effect feedback and cold Continue with an active sleep count. The support scene uses its existing message presentation. Natural Tyrin progression to a cast remains **Unknown**. | [#2104] DEBUFF playback. [SLEEP boundary](../domain/hostile-spells-design.md#sleep-1-implementation-and-evidence) |
+| SLOW 1–2 | DEBUFF1 v1–v2 | **Original assets bound**. Both Sarah ranks use the shared gray cloud group with actual AGI/DEF and ordered effective/ineffective results. Variation2 retains selector41 but does not select the separate DEBUFF2 palette. | [DEBUFF family playback](#debuff-family-playback-2280). [Support evidence](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) |
+| ATTACK 1 | BUFF1 v1 | **Partial** through Power Ring Use with item gesture, target ATT, durability and subsequent control. The current private Magic binding omits ATTACK. Battle25 Dark Soldier holds the spell and its ordinary AI rejects it. | [#2104] BUFF effect after the primary spell work. Accepted equipment Use retains the [#2268 rules](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268); private learned ATTACK remains outside this binding. [Item-use rules and evidence](../domain/equipment-use-repair-design.md) · [Battle25](../application/battle25-north-cave.md) |
+| DISPEL 1 | DEBUFF1 v1 | **Original assets bound** for learned Kazin and existing Dark Smoke AI in the [DISPEL successor](../content/presentation-assets.md#dispel-successor). Controlled mixed results, paid silence and Original/HD fallback use ordinary input and completion. | [DISPEL playback](#dispel-playback-implementation-2238) records the source, responsibilities and reproduction. Natural learning/reach and hardware timing remain **Unknown**. Grand Cannon Use has [controlled Item-gesture playback](#debuff-family-playback-2280). |
+| MUDDLE 1–2 | DEBUFF1 v1 for both | **Original assets bound**. Both learned Kazin ranks share DEBUFF1; controlled Battle26 mixed-result casts and Giant Knuckles Use mount the same clouds. Item retains its own gesture and wear. Controlled Battle25 rank-2 automatic actions and cold Continue retain their gameplay witnesses. | [DEBUFF family playback](#debuff-family-playback-2280). [Accepted MUDDLE evidence](../domain/hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25) |
+| DESOUL 1–2 | DESOUL v1–v2 | **Learned Magic bound.** Controlled Battle26 Kazin casts both ranks with spell-8 icons and localized cast, instant-death, ineffective and reward messages on black. Dark Sword Use is admitted by the accepted equipment effect rules; original DESOUL presentation remains pending. | [#2104] owns original effects and timing. [DESOUL reproduction](../domain/hostile-spells-design.md#controlled-kazin-input-and-cold-continue) |
+| SLEEP 1 | DEBUFF1 v1 | **Original assets bound**. A controlled Tyrin 25 Battle26 slot exercises private Magic, both original icons, localized result/no-effect feedback and cold Continue with an active sleep count. The shared DEBUFF cloud scene now carries ordered effective/ineffective results. Natural Tyrin progression to a cast remains **Unknown**. | [DEBUFF family playback](#debuff-family-playback-2280). [SLEEP boundary](../domain/hostile-spells-design.md#sleep-1-implementation-and-evidence) |
 | EGRESS 1 | NONE | **Modern presentation**. Eligible retreat uses the same text, pulse, tone and fade for spell and Angel Wing, with different payment. Battle02 native witnesses cover cancellation, return and walking retry. Later encounters supply their own retreat destinations. | Preserve the accepted [retreat delivery](battle-scenes.md#authored-egress-delivery). Encounter admission belongs to [#1818]. Original visual/audio parity is **Unknown**. |
 
 **Confirmed in the pinned setup/update source.** Both sides load healing tileset 6 and its
@@ -166,10 +166,10 @@ foreground visual acceptance remain **Unknown** where no named witness covers th
   support. The [enemy healing family](#enemy-healing-family-2227) covers its bounded HEAL1
   recovery. Enemy AURA delivery remains **Unknown**. The [DETOX successor](#prepared-detox-presentation)
   covers learned ranks 1–3. [DISPEL playback](#dispel-playback-implementation-2238) supplies
-  the bounded first DEBUFF consumer. SLOW/MUDDLE/SLEEP and BUFF consumers retain their
-  individual follow-up acceptance. [#1456] governs foreground acceptance and [#1616] the wider design review.
+  the first DEBUFF consumer. The [DEBUFF family](#debuff-family-playback-2280) extends it to
+  admitted SLOW/MUDDLE/SLEEP and two equipment callers. BUFF retains separate acceptance. [#1456] governs foreground acceptance and [#1616] the wider design review.
 - **P3 for current later content.** [#2104] groups the remaining elemental variants and shared
-  KATON/RAIJIN art, then BUFF/DEBUFF as actual callers need them. Private allied AURA2–4
+  KATON/RAIJIN art, then BUFF and any additional DEBUFF callers as admitted. Private allied AURA2–4
   has [controlled ordinary coverage](../domain/gameplay-rules.md#private-learned-aura-ranks).
   [#2016], [#1967] and [#1926] own missing gameplay and item admission. Keep item gestures where
   the original selector path calls for them. Schedule equipment effect reuse at its first legal
@@ -806,7 +806,7 @@ the Draft PR handoff.
 admitted enemy DISPEL consumer using prepared DEBUFF1, with ordered effective/ineffective
 results and paid silence suppression. Domain owns rolls, cost, status and rewards.
 Application owns reaction order and completion tokens. Godot owns cast pose, scene actors,
-clouds and presentation time. SLOW, MUDDLE and SLEEP retain their pending art acceptance.
+clouds and presentation time. The [family extension](#debuff-family-playback-2280) covers SLOW, MUDDLE and SLEEP.
 
 **Confirmed source structure.** At SF2DISASM c834c652, animation/debuff.asm selects
 DEBUFF tileset 9, overrides palette slots 9/13/14 with 0888/0BBB/0DDD, and initializes
@@ -898,5 +898,105 @@ blocked placement, then left Smoke outside its activation region or allowed ATTA
 Their receipts remain in local issue2238. Some exited with the existing ObjectDB warning.
 The mixed success recipe deliberately sets initial seed and sleeping targets. These are
 controlled states, with natural acquisition and natural encounter reach **Unknown**.
-SLOW/MUDDLE/SLEEP art, equipment consumers, hardware timing and human visual acceptance remain
-open under their existing owners.
+The family extension below covers the admitted SLOW/MUDDLE/SLEEP and equipment consumers.
+Hardware timing and human visual acceptance remain open under their existing owners.
+
+
+## DEBUFF family playback #2280
+
+**Standard; implemented for independent acceptance.** This bounded extension reuses
+`DebuffEffectView`, its cosmetic clock/PRNG, completion tokens and complete-group fallback.
+`BattleSceneView` selects SLOW1/2, MUDDLE1/2, SLEEP1 and DISPEL1 from the actual support
+action. Domain/Application retain payment, rolls, effect success, ordered reactions, wear,
+expiry and next control. No gameplay rule, new enemy admission, resource bytes or package
+binding changes. BUFF, DESOUL, other equipment effect families and Battle27+ are out of scope.
+
+**Confirmed source structure.** At SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, relative to `disasm/`:
+
+- `data/stats/spells/spelldefs.asm` selects9 for SLOW1, both MUDDLE ranks, SLEEP1 and DISPEL1;
+  SLOW2 selects41 (`DEBUFF1|VARIATION2`).
+- `code/gameflow/battle/battlescenes/battlesceneengine_2.asm:SetupSpellanimation` splits the
+  variant from the low-five-bit setup index. Both9 and41 dispatch `spellanimationSetup_Debuff1`.
+  `animation/debuff.asm` and `animation/update/debuff.asm` do not branch on variation;
+  both use the gray palette and four-cloud update described above. The separately indexed
+  `Debuff2`/`Debuff3` setup palettes are not SLOW2's variant.
+- `code/gameflow/battle/battleactions/getspellanimation.asm` reads an equipment Use spell
+  after `GetEquipmentType` returns weapon/ring. `createbattlesceneanimation.asm` then selects
+  `BATTLEANIMATION_USE_ITEM`, and `animateaction.asm` forwards both operands. Thus Giant
+  Knuckles31 (MUDDLE1) and Grand Cannon54 (DISPEL1) select9 with their Item gesture, not the
+  Magic pose. Ordinary consumables do not acquire an equipment overlay merely by name.
+
+The existing source-bound SupportItem/SupportSpell definitions supply these effect identities.
+The adapter checks the complete Original group before mounting it and retains its prior fallback
+when absent. All three HD frames must exist to use HD. SLOW2 exposes selector41 even though
+its art is identical. Source selector, mounted assets and observed caller are separate facts.
+
+**Confirmed bounded remake observations.** The probe
+`remake/game/probes/engine_debuff_family_observation.gd` uses ordinary Continue/Magic/Item
+and real Sprite2D/state readback. Every final named case reaches the next ordinary action menu.
+
+| Controlled input | Observed delivery |
+| --- | --- |
+| Battle26 Sarah SLOW1/2 |3/6 MP once; Wizard then Dark Bishop; both succeed from clear words. With Wizard already slowed, ordered ineffective/effective results preserve its slowed stats. Selector9/41, VICR cast25, three cloud frames. |
+| Battle26 MAGE25 Kazin MUDDLE1/2 |6/11 MP once; seed123456789 produces ineffective Wizard then Bishop status48/56; cast4 and three frames. Seed0 retains two ineffective results. |
+| Battle26 MAGE25 Tyrin SLEEP1 |4 MP once; the same mixed seed gives Bishop status192 after an ineffective Wizard; cast4 and later control. |
+| Battle26 MMNK Sarah, bare Giant Knuckles |Zero MP with Silence; Item19, two ineffective results, exactly one wear draw, selected31→287. |
+| Battle26 BRGN Rohde, bare Grand Cannon |Zero MP with Silence; Item11, two ineffective results, exactly one wear draw, selected54→310. |
+| DISPEL regression |Allied Kazin cast4 and existing Battle07 Dark Smoke SUPPORT both mount clouds. Enemy recipients Sarah then Kazin use origin(168,48); one5 MP debit and return. No new AI family is admitted. |
+| SLOW2 settings representatives |Original, complete4× HD with Reduced Flash/held Shift, and HD request missing frame2 with hit/coin suppression all finish. Missing HD falls back for the whole cloud group. Gameplay event order, HP/MP, status, stats, inventory, EXP and both RNG seeds agree across the three runs. |
+
+Original clouds retain32×32 logical extent and foreground layer4. Both actors/scenery stay
+mounted, early Confirm cannot complete the cast token, the cast sound occurs once, result
+messages name the actual recipient and clouds retire before return. Suppressed hit/coin text
+does not suppress these status-result acknowledgements. Modern timing and cosmetic RNG remain
+the accepted DISPEL policy; natural acquisition/reach, exact retail timing and human visual
+acceptance remain **Unknown**. Existing rule/expiry/cold-save evidence is reused, not recertified
+by this presentation-only slice.
+
+### Family reproduction and retained failures
+
+Use immutable `derived/issue2274/equipment-v2` (174 files,368,469,461 bytes), independent
+#2252 opening, #2255 Witch/entry catalog and #2266 world catalog under `SF2_SHARED_INPUT_ROOT`.
+No new asset successor is published. `derived/issue2280/review-v1` contains the controlled
+records, launchers and compact receipts; it needs no producer checkout. Build the Debug adapter
+with the [locked SDK environment](../development-and-verification.md#locked-net-workflow).
+From a configured isolated checkout, select a fresh sample and disposable external save root:
+
+```powershell
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2280/review-v1'
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case slow2 `
+  -Seed slow2-recast.json -Sample slow2-review -SaveRoot $disposableSaveRoot
+# Other exact inputs: slow1-recast.json, muddle1-mixed.json, muddle2-mixed.json,
+# sleep-mixed.json, cannon.json, knuckles.json, dispel.json (matching -Case).
+# -Enemy with -Case dispel exercises the existing Battle07 SUPPORT route.
+# -Graphics hd -Reduced -Fast and -Graphics hd -Fallback -Skip use slow2.json.
+```
+
+Records derive from the accepted #2273 Grand Cannon seed. Each moves the named holder to
+Kazin's known square, puts Wizard/Bishop at(5,24)/(4,24), and swaps that holder to the first
+queue slot. Sarah retains the accepted learned book; Kazin uses legal MAGE25 entries
+[139,71,6,8]. Tyrin replaces Karna's deployment/queue/flags and adds learned SLEEP at25.
+The MMNK witness replaces Sarah's equipment with a bare Giant Knuckles and no weapon layer.
+SLOW recast uses version5 with explicit class terms and Wizard status0x0C00. These are legal
+controlled states, not unchanged campaign histories. The launcher stages records locally and
+never modifies registered inputs. Fallback makes one complete local copy and removes only
+Battle26 `hdRasters["debuff-1/frame-2"]`.
+
+Work is linear in one selected package read plus bounded scene input. The fallback copy is
+under500MiB; no full trajectory or frame captures exist. The2GiB scratch budget includes the
+single disposable package and local build/import/cache state; native cases are serial. No new
+asset acquisition/API cost, schema, planner, framework or engine test is introduced. Selected
+adapter/build and direct document checks own this diff; exact head/CI are in the frozen PR.
+
+**Completed failures retained:** the first Continue probe outran asynchronous loading; adding
+bounded wall time fixed the probe. Initial Grand Cannon attempts selected an empty slot, then
+used typed Array.find against JSON floats; integer slot matching corrected the observer. The
+first Tyrin record omitted the joined/deployed flag transfer and its process ended in the
+existing Godot finalizer access violation (0xC0000005); the corrected record admits normally,
+but causation of that native crash remains **Unknown**. The old enemy probe started gameplay
+under the independent opening overlay and could not acknowledge; the family probe now skips
+opening through ordinary input first. One intermediate observer quit before awaiting its
+verification coroutine and emitted script errors despite a success JSON; that run is failed.
+Final runs have no session/presenter/script error, but several retain6–8 ObjectDB exit warnings.
+These warnings and the finalizer failure remain with #1716; this slice claims no lifecycle fix.

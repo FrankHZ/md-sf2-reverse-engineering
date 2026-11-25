@@ -205,7 +205,7 @@ consistent without consuming RNG again. Application pays the caster before react
 the target word only when the successful reaction plays. Physical and spell sleep share the packed
 counter, turn skip, wake and existing save representation. Godot reads the choices and projects the
 icon, effect text and resulting state. This keeps the learned rank, RNG and status in their existing
-owners. The DEBUFF1 cast animation remains separate presentation work under
+owners. The [shared DEBUFF1 presentation](../godot/spell-presentation.md#debuff-family-playback-2280) now covers learned SLEEP/MUDDLE and Giant Knuckles Use; broader presentation remains under
 [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
 [Resolution and playback](../../src/Sf2.Remake.Domain/Battles/Rules/BattleActionResolution.cs) ·
 [Turn continuation](../../src/Sf2.Remake.Application/Runtime/Battles/BattleAfterTurnContinuation.cs) ·

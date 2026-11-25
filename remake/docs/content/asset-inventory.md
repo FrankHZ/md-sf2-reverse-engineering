@@ -997,7 +997,10 @@ pin is 172662709b31cb296b55f51894754ce810c30f6c.
 The successor has 174 files and 361,637,333 bytes, including 26 mounted scenes. Its largest
 scene is 3,193,914 bytes. The three-frame pilot serialized group is 5,614 bytes. Complete HD
 and missing-frame fallback were observed through actual native sprites. The executable consumer
-is learned DISPEL1 and admitted enemy DISPEL, with SLOW/MUDDLE/SLEEP consumer acceptance pending.
+includes learned SLOW1/2, MUDDLE1/2, SLEEP1, DISPEL1, admitted enemy DISPEL, and
+Giant Knuckles/Grand Cannon Use in the [family extension](../godot/spell-presentation.md#debuff-family-playback-2280).
+SLOW2 variation2 uses the same gray group; no additional palette or asset package is required.
+The current complete equipment-v2 successor retains these bytes and all equipment/HD/map/audio content.
 [Publication](presentation-assets.md#dispel-successor) and
 [scope, source, budgets and reproduction](../godot/spell-presentation.md#dispel-playback-implementation-2238)
 own further details. Private media remains outside Git.

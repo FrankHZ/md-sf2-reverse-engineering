@@ -354,7 +354,7 @@ The [rules](domain/gameplay-rules.md#finite-dispel-support-and-silence),
 [native recipe](development-and-verification.md#silence-observation) own details. The
 [silence-watch package](../content/authored/silence-watch.json) has English/Chinese ordinary-input
 witnesses of SUPPORT → silence → paid suppressed spell → expiry → effective next cast → movement.
-Functional messages/cards project the actual state. [Prepared DISPEL](godot/spell-presentation.md#dispel-playback-implementation-2238) adds original DEBUFF1 art, cast pose and scene delivery for controlled Kazin and Dark Smoke consumers. Hardware timing remains Unknown.
+Functional messages/cards project the actual state. [Prepared DISPEL](godot/spell-presentation.md#dispel-playback-implementation-2238) adds original DEBUFF1 art, cast pose and scene delivery for controlled Kazin and Dark Smoke consumers. The [shared family](godot/spell-presentation.md#debuff-family-playback-2280) also delivers SLOW1/2, MUDDLE1/2 and SLEEP1, plus Giant Knuckles/Grand Cannon Item gestures with unchanged effect/wear rules. Hardware timing remains Unknown.
 Pinned Dark Smoke definitions independently reach shared action admission in a controlled existing
 encounter. The selected Battle07 placement/story and reached silence/suppressed-cast continuation
 are observed above. Natural original casts/criticals/repeated lifetime, broader statuses and full

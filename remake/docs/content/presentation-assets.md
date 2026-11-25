@@ -1227,7 +1227,10 @@ uv run --with pillow python -m sf2tool.remake_dispel_art `
 
 The [resource inventory](asset-inventory.md#debuff1-family-2238) records source mapping and
 volume. [Playback and reproduction](../godot/spell-presentation.md#dispel-playback-implementation-2238)
-record the accepted caller boundary and pending independent acceptance.
+record the original caller boundary. The [family extension](../godot/spell-presentation.md#debuff-family-playback-2280)
+reuses these exact rasters from the current `derived/issue2274/equipment-v2` publication,
+with independent #2252 opening, #2255 Witch and #2266 catalog selections. It publishes no
+new asset successor; `derived/issue2280/review-v1` holds only independent review inputs/receipts.
 
 ### Baron promotion successor
 
