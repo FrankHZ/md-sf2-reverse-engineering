@@ -23,8 +23,7 @@ successful critical against nonimmune targets. Native controlled NINJ Equip/cuto
 Chinese cold Continue pass, with separate weapon109/body26. Natural late acquisition and original
 CUTOFF animation remain Unknown; exhaustive legal class/body keys remain E. [Slice C](domain/equipment-use-repair-design.md#equipped-turn-recovery-2272) admits Holy Staff97,
 Mystery Staff100 and Life Ring124. Their capped turn recovery precedes poison through the existing
-continuation; controlled native Holy/Life notices and cold Continue pass without extra recovery. New equipment Use remains D; remaining legal class/body/weapon tuples
-remain E. Iron Knuckles29 and Great Axe39 still need their explicit appearance rows.
+continuation; controlled native Holy/Life notices and cold Continue pass without extra recovery. [Slice D](domain/equipment-use-repair-design.md#whole-table-equipment-use-2273) binds all25 nonempty equipment Use rows through shared spell effects and selected-slot wear, including healing/cure, hostile status and later attack ranks. Controlled native AURA2, failed DISPEL1, BOLT2 and continuous Repair/cold pass; books and Field eligibility are unchanged. Remaining legal class/body/weapon tuples remain E. Iron Knuckles29 and Great Axe39 still need their explicit appearance rows.
 
 Five serial implementation outcomes own signed stats/weapon curses, prowess/cutoff, turn recovery,
 all equipment Use, and final legal class/resource consumers. RBT/GLM/RDBN mappings and necessary

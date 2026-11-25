@@ -202,7 +202,8 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         Require(Inaction is null || action.Kind == BattleActionKind.Physical && Silenced is null);
         Require(CasterCostStatus == (action.Kind == BattleActionKind.SupportSpell && SupportSpell is not null
             ? before.GetActor(actor).Status : (ushort?)null));
-        byte? wornItem = admission.AttackItem is { Breakable: true } gear ? gear.ItemId : admission.SupportItem?.ItemId;
+        byte? wornItem = admission.AttackItem is { Breakable: true } gear ? gear.ItemId : admission.SupportItem?.ItemId ??
+            (admission.Item?.EquipmentEffect is not null ? admission.Item.ItemId : (byte?)null);
         Require(EquipmentUse?.ItemId == wornItem && (EquipmentUse is null || action.Kind == BattleActionKind.Item));
         Require(AttackItem == admission.AttackItem && (AttackItem is null || action.Kind == BattleActionKind.Item));
         if (Silenced is { } blocked)
@@ -563,15 +564,29 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
         Require(slot >= 0 && slot < loadout.Items.Count && (loadout.Items[slot] & 127) != 127 &&
             before.Definition.HealingItems.TryGetValue((byte)(loadout.Items[slot] & 127), out var admitted) && item == admitted &&
             Item == item && Spell is null && Retreat is null && CompletionEffects.Count == 0);
-        var items = loadout.Items.ToList(); items.RemoveAt(slot); items.Add(127);
-        ValidateState(before, actorRef, destination, new(items, loadout.Spells));
         var targets = HealingTargetRules.ResolveItem(before, actorRef, destination, item, targetRef);
-        Require(Reactions.SequenceEqual(targets.Select(target => Sf2ItemAction.Reaction(actorRef, item, target))));
+        Require(Reactions.SequenceEqual(targets.Select(target => Sf2ItemAction.Reaction(actor, item, target))));
+        List<BattleEffect> cureEffects = [];
+        var checkedBattle = item.CuresPoison ? PoisonCureRules.PrepareIneffective(before, actorRef, Reactions, cureEffects) : before;
+        Require(ConstructionEffects.Take(cureEffects.Count).SequenceEqual(cureEffects));
+        int cursor = cureEffects.Count;
+        if (item.EquipmentEffect is not null)
+        {
+            Require(EquipmentUse?.Slot == slot);
+            var inventory = ValidateWear(before, actor, checkedBattle.MainSeed, ref cursor);
+            ValidateState(before, actorRef, destination, inventory: inventory);
+        }
+        else
+        {
+            var items = loadout.Items.ToList(); items.RemoveAt(slot); items.Add(127);
+            ValidateState(before, actorRef, destination, new(items, loadout.Spells));
+            Require(cursor < ConstructionEffects.Count && ConstructionEffects[cursor++] ==
+                new BattleEffect("item-consumed", actorRef, loadout.Items[slot], slot));
+        }
+        Require(ConstructionEffects.Skip(cursor).All(effect => effect.Actor == actorRef && effect.Target is null &&
+            effect.Kind is "rng-exp-plus" or "rng-exp-minus"));
         ValidateReward(before, actorRef);
-        ValidateRandom(before, effect => effect.Kind == "item-consumed"
-            ? effect == new BattleEffect("item-consumed", actorRef, loadout.Items[slot], slot)
-            : effect.Kind.StartsWith("rng-", StringComparison.Ordinal) && effect.Actor == actorRef && effect.Target is null);
-        Require(ConstructionEffects.Count(effect => effect.Kind == "item-consumed") == 1);
+        ValidateRandom(before, _ => true);
     }
 
     // The finite healing authority boundary: construction may move only the selected

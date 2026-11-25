@@ -93,7 +93,8 @@ public enum BattleOutcomeKind { Victory, Defeat, Retreat }
 public enum HealingItemEffect { RestoreHp, FullHp, RestoreMp, FullPartyHp }
 
 public sealed record HealingItemDefinition(byte ItemId, string Name, ushort Power, byte MinimumRange, byte MaximumRange,
-    bool CuresPoison = false, HealingItemEffect Effect = HealingItemEffect.RestoreHp);
+    bool CuresPoison = false, HealingItemEffect Effect = HealingItemEffect.RestoreHp,
+    HealingSpellDefinition? EquipmentEffect = null);
 
 public sealed record RetreatSpellDefinition(SpellRef Spell, byte MpCost);
 

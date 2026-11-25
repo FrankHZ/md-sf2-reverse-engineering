@@ -12,7 +12,7 @@ internal sealed record BattleActionArea(int? Radius, IReadOnlyList<BattleActorSt
     {
         var attack = admission.AttackItem?.Effect ?? admission.AttackSpell;
         var support = admission.SupportItem?.Effect ?? admission.SupportSpell;
-        var spell = admission.Spell;
+        var spell = admission.Spell ?? admission.Item?.EquipmentEffect;
         bool allSide = spell?.Targets == HealingTargets.AuraAllAllies || admission.Item?.Effect == HealingItemEffect.FullPartyHp;
         int? radius = allSide ? null : attack?.Radius ?? support?.Radius ?? spell?.Radius ?? 0;
         bool suppressed = SilenceRules.Present(battle.GetActor(actor).Status) && SilenceRules.Cost(action, admission).HasValue;

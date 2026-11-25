@@ -71,8 +71,7 @@ internal static class PrivateBattleDefinitionReader
             items = items.Concat(Array(core, "items").Where(row => Text(row, "itemTypeExpression").Split('|')
                 .Any(type => type is "WEAPON" or "RING")).Select(Item)).DistinctBy(item => item.Id).ToArray();
             classes = Array(core, "classes").Select(Class).ToArray();
-            AddSpell("SPOIT", 1); // Existing Indra Use binding.
-            AddSpell("BLAZE", 2); // Existing Black Ring Use binding.
+            foreach (var item in items) AddSpell(item.UseSpell, item.UseSpellLevel);
         }
         var spells = spellKeys.OrderBy(key => key.Id).ThenBy(key => key.Level).Select(key =>
         {

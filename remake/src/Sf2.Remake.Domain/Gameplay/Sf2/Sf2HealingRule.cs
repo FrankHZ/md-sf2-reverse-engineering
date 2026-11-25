@@ -61,14 +61,7 @@ internal sealed class Sf2HealingRule : IHealingRule
         var spell = RequireSpell(battle, actorRef, spellRef);
         var actor = battle.GetActor(actorRef);
         var targets = HealingTargetRules.Resolve(battle, actorRef, destination, spell, targetRef);
-        BattleReaction[] reactions = targets.Select(target =>
-        {
-            if (spell.CuresPoison) return PoisonCureRules.Reaction(actorRef, target, "heal", PoisonCureRules.SpellMask(spellRef.Level));
-            int power = RecoveryLimit(actor, spell) ?? target.MaxHp;
-            int recovery = Math.Min(power, target.MaxHp - target.Hp);
-            return new BattleReaction(actorRef, target.Actor, "heal", BattleReactionKind.Recovery, target.Hp,
-                (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery);
-        }).ToArray();
+        BattleReaction[] reactions = targets.Select(target => Reaction(actor, spell, target, "heal")).ToArray();
         List<BattleEffect> effects = [];
         var checkedBattle = spell.CuresPoison ? PoisonCureRules.PrepareIneffective(battle, actorRef, reactions, effects) : battle;
         var award = actor.IsAlly ? BattleProgressionRules.Award(progression, checkedBattle, actor, BattleActionKind.Healing, reactions)
@@ -78,4 +71,14 @@ internal sealed class Sf2HealingRule : IHealingRule
             ? a.With(position: destination) : a), mainSeed: award.Seed);
         return new(prepared, actorRef, destination, reactions, actor.IsAlly ? new(actorRef, award.Amount) : null, effects.AsReadOnly(), [], Spell: spell);
     }
+    internal static BattleReaction Reaction(BattleActorState actor, HealingSpellDefinition spell,
+        BattleActorState target, string action, bool item = false)
+    {
+        if (spell.CuresPoison) return PoisonCureRules.Reaction(actor.Actor, target, action, PoisonCureRules.SpellMask(spell.Spell.Level));
+        int power = item ? spell.Power : RecoveryLimit(actor, spell) ?? target.MaxHp;
+        int recovery = Math.Min(power, target.MaxHp - target.Hp);
+        return new(actor.Actor, target.Actor, action, BattleReactionKind.Recovery, target.Hp,
+            (ushort)(target.Hp + recovery), target.Mp, target.Mp, Amount: recovery);
+    }
+
 }

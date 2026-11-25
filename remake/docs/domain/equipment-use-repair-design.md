@@ -11,7 +11,7 @@ recruitment, maps, smithing and other acquisition services remain with the campa
 legal detached inputs can validate their equipment before those routes exist. No real save
 or backup is an acceptance workspace. This section owns the implementation sequence;
 the [complete item reconciliation](../content/campaign-items.md#whole-game-equipment-reconciliation)
-owns individual rows. Slices A/B/C implement static equipment, physical prowess and turn recovery below; whole-game support is still incomplete
+owns individual rows. Slices A/B/C/D implement static equipment, physical prowess, turn recovery and equipment Use below; whole-game support is still incomplete
 and this does not close [#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
 
 The current successor is `derived/issue2272/equipment-v1`, built from the accepted slice-B package.
@@ -189,12 +189,113 @@ policy. Documentation-only design uses document checks, not those runtime gates.
   campaign boundary; original animation-only gaps remain explicitly with #2104. Neither
   boundary licenses claiming natural acquisition or original animation from controlled play.
 
+## Whole-table equipment Use (#2273)
+
+**Confirmed (static and production admission).** The fixed `c834c652` item table has94 equipment
+rows and25 nonempty Use rows. Every such row now binds in all26 encounter definitions: ATTACK1,
+BOOST1, SPOIT1, BLAZE2/3, BOLT1/2, FREEZE3, MUDDLE1, DISPEL1, DESOUL1, HEALIN1, DETOX2 and AURA2.
+The source spell definitions are selected independently of possession, while actors' learned books
+are unchanged. Attack and support items reuse their existing spell numerical/resistance/reward
+rules. Healing equipment carries the existing `HealingSpellDefinition` through `HealingItemDefinition`;
+`Sf2HealingRule.Reaction` and `HealingTargetRules` own its healing/cure computation and recipient order.
+No second effect engine, save representation or Magic-book grant is introduced.
+
+**Confirmed (engine behavior).** Current class eligibility applies to bare, worn and damaged Use.
+MP and Silence do not block or pay for Item actions. HEALIN1 restores at most10 HP; equipment AURA2
+uses raw15, range0–3/radius2, with source-order living allies. DETOX2 clears poison and stun, preserving
+other status bits; an ineffective cure takes its existing effect RNG. Each action constructs all
+effects, invokes `EquipmentItemUse` exactly once for the selected slot, then computes its existing
+reward. Intact equipment takes one range4 draw; an already damaged item is removed/compacted without
+that draw. Other copies retain their words. Canceled/stale/refused actions publish no wear or effects.
+The scene sequences every healing recipient and displays the common damage/destruction notice before
+reward, including English healing-item feedback. Hostile status Item scenes use opposing sides.
+
+**Confirmed (static).** `AdjustSpellPower` in
+`code/gameflow/battle/battleactions/calculatespelldamage.asm` applies promoted scaling only to
+`BATTLEACTION_CAST_SPELL`; Item healing and offensive effects retain raw source power. The
+`rjt_FieldItemEffects` table in `code/common/menus/item/fielditemeffects.asm` contains3,5,9–15,
+not equipment. The existing Field capability table is unchanged and the production consumer checks
+that no equipment Use leaks into it. Iron Ball102 and Taros Sword110 retain mask NONE and reject
+player Use before effect/wear; the accepted enemy Taros actual-slot/zero-MP/no-wear path is unchanged.
+This does not add a future enemy AI or campaign route for Iron Ball.
+
+### D reproduction and retained boundaries
+
+Reuse `derived/issue2272/equipment-v1` directly, with the #2266 catalog, #2252 opening and #2255
+Witch selections. No asset successor is needed for this rule slice. The registered
+`derived/issue2273/review-v1` holds `Boot.ps1`, `consumer/Verify.ps1`, ordinary-input drivers,
+controlled seeds and receipts. Boot stages helpers into the caller's own checkout and requires a
+fresh disposable save namespace. It never writes the registered package or seed. Build the Debug
+adapter through the protected SDK environment before native use; Release `verify adapter` alone
+does not refresh Debug playback. All source changes remain below1,000 lines per file.
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2273/review-v1'
+& (Join-Path $review 'consumer/Verify.ps1') -Repo (Get-Location).Path
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Mode use `
+    -Sample aura-review -Journey aura-review -SaveRoot $freshExternalSaveRoot `
+    -Seed (Join-Path $review 'seeds/aura.json') -Target ally-1
+# Repeat only the two other representative families when reviewing them:
+# seeds/dispel.json, Target enemy-1, Language zh-CN; seeds/bolt.json, Target enemy-1.
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Mode repair `
+    -Sample repair-review -Journey repair-review -SaveRoot $freshExternalSaveRoot -Language zh-CN `
+    -Seed (Join-Path $review 'receipts/aura02/after-action-slot.json')
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Mode field-cold `
+    -Sample cold-review -Journey cold-review -SaveRoot $freshExternalSaveRoot `
+    -Seed (Join-Path $review 'receipts/repair03/repaired-slot.json')
+```
+
+The three seeds derive from C's registered `controlled-vicar-recovery.json`, retaining the source
+class, book and equipped weapon. Only slot2 becomes bare23 for VICR Sarah,54 for BRGN Rohde or25
+for SORC Kazin; the selected holder has MP0/Silence0x200 and is swapped into queue position0, main
+seed0. The two hostile witnesses place enemy1 at(5,24). These are legal **controlled** late holdings
+and arranged turns, not natural acquisition. Native input confirms the existing tile, Item, slot2,
+then the selected recipient; state and projection are observed without screenshots.
+
+- `aura02`: seven recipients, including full-HP targets; Sarah HP10→25 from AURA, then accepted
+  Holy/Life after-turn recovery to33. MP stays0; bare White Ring23→279 once;25 EXP. The projected
+  item and wear messages precede reward. Chinese `cold-battle01` re-saves identical complete decoded
+  battle `data`, without replaying Use or recovery.
+- `dispel01`: Rohde's Grand Cannon54→310 despite the spell failing against enemy1; MP0 remains0,
+  enemy status stays0 and1 EXP is awarded. Chinese item/ineffective/damage feedback completes.
+- `bolt01`: Kazin's Evil Ring uses BOLT2, enemy1 HP37→17, MP remains0, ring25 remains intact.
+  The retained ordinary Item gesture is not original BOLT choreography.
+- Repair continues from the actual AURA save through normal Stay turns, Bowie's EGRESS to Map36,
+  and the Pacalon merchant. Canceling the1250 quote preserves8747 gold and279. `repair03` confirms
+ 7497 gold and23, saves in the castle, and English `cold-field01` re-saves identical complete
+  decoded field `data`. `repair02` preserved the canceled quote but its driver reselected an intact
+  slot, so it did **not** repair; the corrected run starts from that retained field save.
+
+Verification: the initial engine project run passed3353 tests with50 existing private-input skips.
+The affected equipment/healing/Taros run passes56 cases after correcting its one test-input failure;
+two additional mask-NONE cases pass separately. Adapter Release/Debug builds pass. The production
+reader checks all94 rows/25 Use bindings in26 encounters, field exclusion, inherited A/B/C appearance
+keys, SORC books, independent opening/catalog and prior field/battle saves. The owning reconciliation
+command passes128 pinned item rows/94 equipment/439 static class pairs, and the registered ROM verifier
+passes. These checks do not perform E's exhaustive legal member/class/body verification.
+
+Retained failures: `equipment-first.log` contains one DESOUL test-definition failure (the test supplied
+MP cost0 instead of source8); the corrected targeted run passes while Item still pays no MP.
+`consumer-all.log` contains the observer's incorrect expected Use count24; source enumeration is25
+and corrected admission passes. The first native launcher failed before Godot because of an unset
+local path variable. `repair01` could not resolve the observer's relative LegacyFight script and was
+explicitly stopped before action; the fixed observer uses its own script directory. Successful Use
+and Repair processes exit0 with two or four ObjectDB warnings; both cold-only runs exit0 without
+warnings. Retain these logs and the earlier #1716 access-violation evidence; this slice does not
+investigate or close lifecycle behavior.
+
+**Unknown / remaining:** natural original equipment Use at these seams was not newly observed;
+source-static evidence remains distinct from controlled remake input. Independent original effect
+choreography remains #2104. Legal late holders and exhaustive body/weapon keys remain E, with future
+acquisition/recruitment/maps owned by the campaign. Whole-game equipment #2268 stays open.
+
 ## Equipped turn recovery (#2272)
 
 **Confirmed (implemented and bounded remake observation).** All85 weapons and nine rings now
 have passive definition admission, including the two player-refused mask-NONE weapons. Holy
 Staff97 adds ATT29/HP3, Mystery Staff100 ATT39/MP2, and Life Ring124 HP5. Existing class masks,
-equipped words and source nonbreakable constraints apply. New equipment Use remains D and
+equipped words and source nonbreakable constraints apply. Equipment Use is implemented by D below;
 exhaustive legal body/class closure remains E; this slice does not close #2268.
 
 The Domain `EquipmentRecoveryRules` calculates each capped delta from the live equipped weapon
@@ -495,7 +596,7 @@ and turn fixtures give the ROM, emulator and controlled boundaries for those obs
 | Black Ring (24) | Battle26 drop, once bit 10. WIZ/SORC only, including bare BLAZE 2 Use. Ordinary WIZ promotion is available. | Equip, BLAZE 2 Item Use, wear and Repair are admitted. [Worn equipment and physical curse](ring-equipment-design.md#black-ring-admission-and-physical-curse). |
 | Indra Staff (92) | Pacalon weapon shop 10 sells it for 3,200. WIZ/SORC/VICR, weapon ATT +25, physical range 1, BREAKABLE, SPOIT 1 on Use. A legally promoted Kazin or Sarah can use it in the original at this frontier. | The remake admits Equip and battle Use from WIZ/VICR/SORC. The [SORC successor](../application/church-promotion-design.md#current-rod-consumers) supplies the shared current-rod appearance closure and its separate Equip/physical/cold witness; the Use/Repair observations below retain their original WIZ scope. |
 
-**Open current-caller gap: Guardian Staff (91).** The current SORC v3 world stocks it in
+**Audit baseline before slice A: Guardian Staff (91).** The current SORC v3 world stocks it in
 `loc-54b1a` (Map06 `s2_entityevents_701.asm`), `loc-5d2c4` (Map25
 `s2_entityevents.asm`) and `map2-entityevent7` (Map02 `s2_entityevents.asm`). It is not
 merely a future source definition. Inspection of this package's world, ally start rows
