@@ -275,7 +275,20 @@ campaign is not their fixture. The exact nodes and completed log remain in
 A narrow rerun of those35 nodes with private selections absent skipped all35, as in public CI;
 it is not a private acceptance pass. Affected scene palette/full-fade/Battle Entry Skip behavior
 passed20 with1 private skip. Release adapter and admission/inspection builds, Ruff, design contracts
-and research-index checks passed. Committed plan and actual CI are recorded below after publication.
+and research-index checks passed. The first focus probe used an embedded subwindow and therefore
+failed to produce OS focus loss; the native-window correction passed. The first seeded control
+selected a file inside a player namespace and the existing guard rejected it; a byte-identical
+ignored copy outside that namespace restored successfully. Both failed controls remain retained.
+
+On clean implementation commit `a6418e838bc954830bc1303c37b002fa7c613b27`,
+`uv run sf2 verify plan --scope engine --base origin/main --head HEAD` selected
+`private-admission-build`, `live-inspection-build`, `engine-unit`, `adapter-build` and
+`research-public`, with no unclassified paths. This producer diff is engine-only; it changes no
+research extraction or evidence semantics. [Public checks run45555538206](https://github.com/FrankHZ/md-sf2-reverse-engineering/actions/runs/45555538206)
+passed scope, engine-unit (**3,292 passed /50 private skipped /0 failed**), adapter-build,
+private-admission-build and research-public. Remote live-inspection-build and h4-comparison-build
+were skipped by the actual workflow. The planner's extra live-inspection build passed locally;
+H4 was not selected by the plan. This receipt update changes documentation only.
 Independent main-gate acceptance, physical-device coverage, hardware timing and human visual/audio
 approval remain separate.
 
