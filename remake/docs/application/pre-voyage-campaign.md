@@ -305,6 +305,47 @@ closure and human/aesthetic acceptance remain separate. The #1541 presentation a
 additional battle-art prerequisite for this chapter; its modern battle-effect and human-review
 limits remain with the existing presentation owners.
 
+### Castle and tower fissure expectation (#2288)
+
+**Confirmed** user report: town fissures appear after leaving the castle; the question is
+why the castle and Ancient Tower have none. The bounded
+[source finding](../../../docs/research/chapters/grans-opening/post-tower-return-through-earthquake-entry.md#castle-and-tower-fissure-boundary-2288)
+identifies castle Maps19/20/21 and tower Maps40/57/58/60. Their first post-Battle07 setup,
+flag and layout consumers contain no persistent earthquake-fissure variant. Map57's F506
+copy belongs to earlier progress, Map60's F999 copies to later progress, and Map58's battle
+scene copies are not its reloaded exploration layout. Map4 is the distinct earthquake town.
+
+**Confirmed** static comparison at accepted `af1030857dc0df6f80e63fb158ec5f74c66c3b59`:
+`content/private/pre-voyage-opening.json` selects all eight maps and their event tables.
+The complete private `derived/issue2282/buff-v1/world.json` binds the same upstream pin and
+USA ROM identity as the research owner. Its `world.maps` records preserve empty flag-copy
+tables on Maps19/20/21/40/58, F506's single copy on57, F999's two on60, and F624's two on4.
+Map19 retains its two door copies. The selected setup definitions route Map19/F507,
+Map20/F506, Map21/F506 and Map40/F507 to the source-matching init tails; `cs-53fd8` has only
+Sound, FadeIn and end-map-script. Map40's F507 route deliberately returns to the default
+setup, so it does not need a separately materialized `ms-map40-flag507` definition.
+
+Each of these eight maps has an Original atlas/block bank and an existing HD terrain-file
+reference in that package. Presence verifies the supplied selection, not pixel fidelity or
+which mode the earlier player was viewing. This newer package's Map4 HD reference must not
+be confused with the older #2167 package's Original-only Map4 described below. No missing
+postbattle fissure selector or layout record was found; no configuration or renderer change
+is justified by this report. This is not a recurrence of the town handoff issue.
+
+Reproduce with a read-only package selection `$worldPath`: parse its JSON, select
+`world.maps` by ids `map-4`, `map-19`, `map-20`, `map-21`, `map-40`, `map-57`, `map-58`,
+`map-60`, and inspect `layoutEvents.flags`, `layoutEvents.doors`, `setup.variants` and
+`setups[].onLoad`. Resolve those programs in `world.programs`; select
+`world.presentation.maps` by `map` to check Original `atlas`/`blocks` and relative
+`hdTerrainFile` existence. The approximately 99 MB world file is read once per check in
+memory; no media export, content rebuild or runtime acquisition is needed.
+
+**Inferred:** the user's castle/tower observation matches the original persistent-layout
+boundary. **Unknown:** the exact earlier Continue frame and hardware-exact audiovisual
+behavior. The later Map40(15,13) capture does not reconstruct that earlier frame. This
+follow-up did not read/change the actual save slot, capture a new player scene, change flags,
+launch Godot or publish assets. Existing #2167 runtime evidence below remains independent.
+
 ### Castle-to-quake handoff from a player save (#2167)
 
 This bounded check starts at an ordinary v6 slot saved after Battle07 and ends at usable docks

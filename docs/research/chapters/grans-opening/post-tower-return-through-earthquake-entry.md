@@ -215,6 +215,66 @@ authored Map4 zone scene behind that default. The next outward event owner is
 belongs to a later evacuation slice, not proof that Bowie can cross the chasms, reach the docks,
 board a ship or enter Battle08. Stop before consuming that outgoing request.
 
+## Castle and tower fissure boundary (#2288)
+
+**Confirmed** by direct review of the pinned USA source on 2026-11-25: the first
+Battle07 return does not select a persistent earthquake/fissure layout for the castle or
+Ancient Tower. The town is a separate case: F640 substitutes Map3 with Map4, whose first
+scene and F624 reconstruction are described above. This conclusion concerns the stable
+postbattle return with F506/F507/F74/F640 set and F543/F982/F999 clear; it does not say that
+the tower's battle aftermath has no earthquake animation.
+
+This is a **Light** bounded follow-up to
+[Issue #2288](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2288): distinguish
+expected original behavior from a missing map configuration, using the seven return-route
+maps and Map4 as the control. The existing Standard agreement above remains the owner of
+the broader route. Acceptance is direct source, selected configuration/package and document
+review. No new runtime, fixtures, renderer, producer, asset publication or campaign scope
+is admitted. The companion [application finding](../../../../remake/docs/application/pre-voyage-campaign.md#castle-and-tower-fissure-expectation-2288)
+records the remake comparison separately.
+
+| Exact location | Static persistent-layout boundary at this story point |
+| --- | --- |
+| Castle 2F/1F/3F: Maps19/20/21 | Their `3-flag-events.asm` tables are empty. Map19's two `4-step-events.asm` copies are the armory/guard-quarter one-block operations already listed above; Maps20/21 have no step copies. F507 selects Map19's evacuation setup and is tested by the shared init tails of Maps20/21. Those tails call `cs_53FD8`, which only requests boss music, `fadeInB` and script end. Map19's F622/F623 zone scripts only deliver the warning/safe-place dialogue. None supplies a quake fissure copy. |
+| Tower exterior: Map40 | F507 selects `ms_map40` after the F506 wounded-Lemon setup. Both flag/step tables are empty; init uses the same `cs_53FD8` presentation tail. There is no F507/F640 cracked exterior variant. |
+| Tower entrance: Map57 | The sole flag copy is F506: `(17,0)`, size `2x1`, to `(7,4)`. It predates Battle07. No map setup or step copy adds a postbattle fissure. |
+| Tower underground room: Map58 | No setup entry, flag copy or step copy reconstructs the battle scene's temporary edits. F999 can substitute Map59, but is clear at this first escape. |
+| Tower stairway: Map60 | No setup entry or step copy. Its two flag copies require F999 and are not first-escape earthquake damage. |
+
+The finite source set is `sf2enums.asm`, `data/maps/mapsetups.asm`,
+`data/maps/global/flagswitchedmaps.asm`, and each listed map's `3-flag-events.asm` and
+`4-step-events.asm`, plus the selected setup/init/zone bodies described above. In particular,
+Maps20/21 `pointertable_506.asm` select `ms_map20_flag501_InitFunction` and
+`ms_map21_flag609_InitFunction`; Map19 selects `s6_initfunction_507.asm`. These are the
+actual selected bodies, not every script physically stored in those directories.
+
+**Confirmed:** `data/battles/entries/battle07/cs_afterbattle.asm:abcs_battle07` does contain
+six `setBlocks` operations: three `1x2` staging copies from `(7,23)` to `(13,22)`, `(13,24)`
+and `(13,29)`, then three `3x3` animation copies from `(0,39)`, `(0,43)` and `(0,47)` to
+`(12,4)`. It also issues `setQuake` commands. Its final `warp` requests Map58 `(13,35)`,
+Down before setting F74/F640. The victory caller establishes F507; `MainLoop` takes the
+exploration branch, and `code/common/maps/mapload.asm:LoadMap`'s nonnegative-map branch
+reloads blocks/layout. Empty Map58 flag-copy/setup tables do not reapply those six scene
+edits. See the [battle aftermath return consumer](./battle07-outcomes-and-aftermath-handoff.md#persistent-effects-and-actual-return-consumer).
+Do not retain transient scene copies as permanent damage, or infer a castle/tower crack
+requirement from the dialogue about an earthquake.
+
+**Inferred:** the reported absence of castle/tower fissures is consistent with these
+selectors and writes, rather than evidence of a missing postbattle map variant.
+**Unknown:** hardware-exact shaking, animation completion and the earlier player's exact
+rendered frame. A later Map40 observation cannot establish the screen immediately after
+Continue. This static conclusion does not promote those observations to original runtime
+evidence and does not reopen the independently verified Map4 handoff as a regression.
+
+To reproduce, select a clean checkout at the provenance pin, verify its HEAD/status, then
+read the named tables and selected bodies. Compare all three rows of `flagswitchedmaps.asm`:
+F640 changes only Map3; the other rows are Map71/F530 and Map58/F999. Search the Battle07
+after script for `setBlocks`, `setQuake`, `warp`, `setF 74` and `setF 640`; follow its return
+through `code/gameflow/battle/battleloop_2.asm`, `code/gameflow/mainloop.asm`,
+`code/gameflow/exploration/explorationfunctions_2.asm` and `LoadMap` rather than treating the last
+scene frame as the exploration layout. Direct source review suffices for this finding;
+the retained-payload recipe below describes the earlier route research, not a new run.
+
 ## Coverage and gap disposition
 
 Fixture paths below are under `tests/fixtures/h2/`; commands have prefix `uv run sf2 h2`.
