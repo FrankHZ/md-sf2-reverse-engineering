@@ -400,7 +400,7 @@ or decline it and separately confirm SNIP, through first Pacalon. The existing c
 transaction, Rohde BRGN rules, class-aware growth, equipment and save consumers own this
 behavior. Acceptance covers both members through the production reader and priest, then
 one ordinary battle route with changed equipment and independent field/battle Continue.
-Battle27+, SORC and the shutdown investigation #1716 remain deferred. MMNK uses the separate boundary below.
+Battle27+ and the shutdown investigation #1716 are outside this BRGN slice. MMNK uses the separate boundary below; SORC is admitted under [Sorcerer promotion](#sorcerer-promotion).
 
 **Confirmed** from pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`.
 `promotions.asm` maps ACHR plus Silver Tank (120) to BRGN (22). Class definitions give

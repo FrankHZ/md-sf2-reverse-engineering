@@ -90,7 +90,7 @@ and placeholder choices explicit where they share a semantic ID.
   [#1818 campaign](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1818)
 - Check original cue 12 continuous playback across ordinary invaded-house stairs through
   audio handoff ownership. [#2165 audio initialization](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2165)
-- Take placeholder attack effects and unsupported private summons through their specific
+- Take placeholder attack effects and missing original summon presentation through their specific
   rank and encounter owners. Keep asset selection, gameplay admission and native
   presentation evidence distinct. [#2104 spell presentation](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104) ·
   [Spell family table](../godot/spell-presentation.md#attack-magic)
