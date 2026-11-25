@@ -217,9 +217,9 @@ reproduction belong to the [entry observation](../verification/host.md#title-and
 #### Title lifecycle investigation (#1447)
 
 **Standard rigor, investigation only:** distinguish ordinary first entry, Witch, return and idle
-using the accepted consumers and prepared package. Production/assets remain read-only. A static
-title or finite score is not itself a defect; this investigation recommends retaining current
-behavior pending independent review, not adding idle motion or changing the title score to a loop.
+using the accepted consumers and prepared package. Production/assets remain read-only. The
+[independently accepted investigation](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1467)
+retains the short entrance, static idle title and finite score.
 
 **Confirmed structure:** `EntryBackdrop` advances its instance-lifetime elapsed counter in
 `_Process`. The numeral reaches full opacity and its final position after0.9s, from a24px offset;
@@ -240,7 +240,8 @@ limit above. No new original-game runtime observation is made.
 whether a return should replay the entrance. No software playback flag proves listening approval.
 If replay is later chosen, the minimal proposed boundary is resetting the existing backdrop entrance
 when title becomes visible, with first-entry/return/reduced-flash acceptance; it needs no new art,
-idle animation or audio service. #1447 remains open for independent investigation acceptance.
+idle animation or audio service. Player visual and listening acceptance remains **Unknown** under
+[#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456).
 
 ### Proposed opening sequence (#2247)
 
