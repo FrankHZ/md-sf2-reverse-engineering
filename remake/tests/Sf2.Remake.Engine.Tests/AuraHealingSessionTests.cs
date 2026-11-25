@@ -179,7 +179,22 @@ public sealed class AuraHealingSessionTests
         Assert.Equal(20, action.Spell!.MpCost);
     }
 
-    private static EngineBattleState VicarBattle()
+    [Theory]
+    [InlineData("heal", 1, 3, 18)]
+    [InlineData("aura", 3, 15, 37)]
+    public void MasterMonkUsesPromotedHealingPowerAndHealerExperience(string spell, byte rank, int cost, int power)
+    {
+        var battle = VicarBattle(BattleClassRule.MasterMonk);
+        var caster = battle.GetActor(Caster);
+        var action = new Sf2HealingRule().Prepare(battle, Caster, caster.Position!, new(spell, rank), Caster,
+            new Sf2BattleProgressionRule());
+        Assert.Equal(cost, action.Spell!.MpCost);
+        Assert.Equal(Math.Min(power, caster.MaxHp - caster.Hp), action.Reactions.Single(r => r.Target == Caster).Amount);
+        Assert.Contains(action.ConstructionEffects, e => e.Kind == "healing-exp-contribution" && e.After > 0);
+        Assert.Equal(caster.Mp - cost, action.ApplySpellCost(action.Prepared).GetActor(Caster).Mp);
+    }
+
+    private static EngineBattleState VicarBattle(BattleClassRule rule = BattleClassRule.Vicar)
     {
         var admitted = Admitted("aura-healing");
         var original = admitted.Definition.Encounters.Values.Single();
@@ -191,7 +206,7 @@ public sealed class AuraHealingSessionTests
             var actor = row.Definition;
             return row with
             {
-                Definition = new(actor.Actor, BattleClassRule.Vicar, 13, actor.MaxHp, actor.MaxMp,
+                Definition = new(actor.Actor, rule, 13, actor.MaxHp, actor.MaxMp,
                     actor.Attack, actor.Defense, actor.Agility, false, 5,
                     heals.Select(heal => heal.Spell).Concat(Enumerable.Range(1, 4).Select(rank => new SpellRef("aura", (byte)rank))),
                     new(PhysicalCriticalRule.BrassGunner, Promoted: true, Leader: false, Gold: 0), BattleMover.Healer),

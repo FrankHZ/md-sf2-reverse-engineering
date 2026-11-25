@@ -18,7 +18,7 @@ internal sealed class Sf2HealingRule : IHealingRule
     {
         if (spell.Targets == HealingTargets.AuraAllAllies ||
             spell.Spell is { Value: "heal", Level: 4 } && spell.Power == 255) return null;
-        return caster.Definition.ClassRule == BattleClassRule.Vicar || caster.Deployment.SourceEnemy.HasValue
+        return caster.Definition.ClassRule is BattleClassRule.Vicar or BattleClassRule.MasterMonk || caster.Deployment.SourceEnemy.HasValue
             ? caster.Definition.CastPower(spell.Power) : spell.Power;
     }
 

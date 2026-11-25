@@ -219,9 +219,13 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             bool archerBonus = ArcherBonus(attacker.Definition.Mover, defender.Definition.Mover);
             ushort dodgeRange = MuddleRules.Present(attacker.Status) ? (ushort)2 :
                 !archerBonus && defender.Definition.Mover is (BattleMover.Hovering or BattleMover.Flying) ? (ushort)8 : (ushort)32;
+            // CreateBattlesceneAnimation rolls before dodge on each first/second/counter hit.
+            // A successful MMNK animation still consumes the ordinary critical draw at range 1.
+            bool special = attacker.Definition.ClassRule == BattleClassRule.MasterMonk &&
+                Roll("monk-special", 16, attacker.Actor, defender.Actor) == 0;
             var strike = PhysicalStrikeRules.Resolve(attacker.Attack, defender.Defense,
                 hp, multiplier, seed, dodgeRange,
-                profile.Critical.ChanceDenominator,
+                special ? (ushort)1 : profile.Critical.ChanceDenominator,
                 profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (status & 0xC1) != 0,
                 ineffective: !counter && ineffective, silenceCritical: profile.Critical.InflictsSilence, poisonCritical: profile.Critical.InflictsPoison,
                 stunCritical: profile.Critical.InflictsStun, archerBonus: archerBonus);
@@ -233,7 +237,8 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
                 strike.SleepInflicted ? (ushort)(status | 0xC0) : null,
                 InflictedStun: strike.StunInflicted ? (ushort)(status | 1) : null,
                 InflictedPoison: strike.PoisonInflicted ? (ushort)(status | 2) : null,
-                InflictedSilence: strike.SilenceInflicted && SilenceRules.HasSpells(defender) ? (ushort)(status | SilenceRules.Mask) : null));
+                InflictedSilence: strike.SilenceInflicted && SilenceRules.HasSpells(defender) ? (ushort)(status | SilenceRules.Mask) : null,
+                SpecialAnimation: special));
             seed = strike.Seed;
             effects.Add(new(kind, attacker.Actor, Target: defender.Actor));
             AddRolls(strike.Rolls, attacker.Actor, defender.Actor);
