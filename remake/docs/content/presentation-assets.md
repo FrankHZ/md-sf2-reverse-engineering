@@ -115,8 +115,18 @@ Retain the completed discovery results with the corresponding corrections:
 | First Chinese projection | Supply the required private source identity in the catalog envelope. `shrine-zh-1` remains failed; the corrected complete run resolves all16 messages in Chinese. |
 | Added Skip behavior case setup | Correct the authored opcode and declared battle unlock flags; retain both failed focused runs. The corrected case passes without production weakening. |
 
-The committed dependency plan and actual public CI are recorded with the Draft PR. Private
-observations stay local; the public owner records commands and bounded conclusions. Human appearance,
+The committed dependency plan uses `uv run sf2 verify plan --scope engine --base origin/main --head HEAD`:
+the sole shared registry change admits this producer and does not change research semantics. Its six
+partitions are `private-admission-build`, `live-inspection-build`, `h4-comparison-build`, `engine-unit`,
+`adapter-build` and `research-public`, with no unclassified paths. The implementation commit's local
+engine gate passes 3,290 cases with 50 private-input skips. All four builds pass with zero warnings or
+errors; Ruff, design-contract traceability and research-index checks pass. This selection does not
+require the normal research aggregate or a full private profile. Public checks on implementation
+commit `f2a6778b0934b0057edaf414660b754daf33a58e` completed successfully in
+[run 45547177318](https://github.com/FrankHZ/md-sf2-reverse-engineering/actions/runs/45547177318):
+scope plus all six selected jobs passed. Draft PR #2251 records the final exact-head result after this
+documentation-only receipt. Private observations stay local; the public owner records commands and
+bounded conclusions. Human appearance,
 readability preference, original natural reach/timing and the four-scene ordinary startup remain
 **Unknown** or explicitly not implemented.
 
