@@ -530,6 +530,10 @@ animation selection, forced critical draw and dodge independently of native timi
 
 ### Reproduce the MMNK consumers
 
+The [combined opening selection and short reader check](../content/presentation-assets.md#mmnk-campaign-with-the-accepted-four-scene-opening)
+retain accepted four-scene startup alongside this campaign. The reader-only command is suitable
+for independent integration checks; it does not replay the complete native journey below.
+
 Use the complete [MMNK successor](../content/presentation-assets.md#master-monk-promotion-successor)
 and `derived/issue2244/review-v1/Boot.ps1`, after the locked Debug adapter build. Select a
 fresh disposable namespace and sample. `special`/`fallback` prepare the explicit controlled
