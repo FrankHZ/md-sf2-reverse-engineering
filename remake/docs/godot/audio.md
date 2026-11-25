@@ -660,3 +660,7 @@ error. No source clock claim follows from the profile or actual callback. Field-
 PCM duration cannot supply an original clock binding. The accepted
 [fast-text speech omission](#accepted-fast-text-speech-policy) retains its separate deviation report,
 same-semantic-Wait/acknowledgement comparison and bounded actual coverage limits.
+
+## BUFF PSH delivery
+
+[BUFF playback](spell-presentation.md#buff-family-playback-2282) emits one77 and fourteen accelerating97 cues. Pinned `sounddriver.asm:sfx_21` type2 activates only YM5; SessionAudio admits97 in the existing replacement group. Its prepared Timer CB clip uses the existing sole-variant fallback in battle Timer C6. This is modern bounded playback, not a hardware timing claim. The original missing-command and missing-slot failures remain in the consumer owner.

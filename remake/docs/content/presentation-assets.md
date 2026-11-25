@@ -1435,3 +1435,30 @@ uv run python -m sf2tool.remake_retail_assets --root $registeredRetailLibrary `
 Use `sf2tool.remake_private_package` to copy its complete dependency closure to a fresh
 registered `derived/` selection. [Budget and validation](asset-inventory.md#sorcerer-promotion-2266)
 · [Ordinary reproduction and limits](../application/church-promotion-design.md#reproduce-the-sorc-consumers).
+
+## BUFF successor
+
+`derived/issue2282/buff-v1` is the complete equipment-v2 successor for BUFF playback.
+It contains175 files/368,493,196 bytes. Only `world.json` gains the97 audio binding and
+`audio-61-cb/command-61-timer-cb.wav` is added; all other files byte-match equipment-v2.
+The world apart from that audio row is semantically identical. Existing maps, class/equipment
+HD, old effects and music remain intact. Opening #2252, Witch #2255 and world catalog #2266
+remain independent selections. No new raster group exists for BUFF.
+
+Reproduce using already registered prepared inputs and a fresh absolute output:
+
+```powershell
+. ./local/private-inputs.ps1
+$derived = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived'
+uv run --locked python -m sf2tool.remake_retail_assets `
+  --root (Join-Path $derived 'issue2001/retail-v1') `
+  --base (Join-Path $derived 'issue2274/equipment-v2') `
+  --mount $freshAbsolutePackage --family sfx --command 97
+```
+
+The existing mount verifies prepared WAV identity, copies the complete dependency closure,
+adds the one binding and publishes atomically. The pilot reads5865 stereo samples (23,504-byte
+WAV), before the full serial publication. One output/staging each below500MiB and2GiB total
+scratch/RAM are the initial budget. No source capture or new producer code is required.
+[Mechanism, native reproduction, retained failures and Unknowns](../godot/spell-presentation.md#buff-family-playback-2282)
+retain the acceptance boundary. Private media is not redistributable.

@@ -1351,3 +1351,7 @@ isolated local candidate and one immutable publication; previous review scratch 
 The `redbaron-hd` native receipt confirms selected Great Sword64 frames0–2 use256px HD textures
 through ordinary input, then settle/save and exit0 (four retained #1716 warnings). Original late
 rule/native-family evidence remains valid; no full campaign or per-key native rerun was made.
+
+## BUFF no-tile mechanism #2282
+
+BUFF1 loads no dedicated tiles. The [source/consumer owner](../godot/spell-presentation.md#buff-family-playback-2282) records selectors8/40, green cast flash and14 accelerating PSH cues. The complete `derived/issue2282/buff-v1` successor retains equipment-v2's rasters and adds prepared sound97 only:175 files,368,493,196 bytes. [Reproduction](presentation-assets.md#buff-successor).

@@ -235,3 +235,5 @@ For code acceptance, run `uv run sf2 verify engine` with the new behavior cases 
 The [DEBUFF family presentation](../godot/spell-presentation.md#debuff-family-playback-2280)
 mounts the original gray clouds for both SLOW ranks, including ordered ineffective recasts.
 It changes no counter, stat-refresh, payment, RNG or expiry rule described here.
+
+The [BUFF presentation](../godot/spell-presentation.md#buff-family-playback-2282) supplies the no-tile source flash/PSH mechanism for both learned BOOST ranks. Controlled effective/ineffective results and actual return are observed without changing this owner's rules.

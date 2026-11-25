@@ -1004,3 +1004,5 @@ The presenter supplies the ordinary cast pose and opposing actor/scenery project
 focused cloud component uses the parent clock and current graphics group. Application keeps
 ordered result commits and completion authority. Other support families retain their existing
 presentation until their own consumer acceptance.
+
+The [BUFF family](spell-presentation.md#buff-family-playback-2282) now mounts learned BOOST1/2 and admitted ATTACK/BOOST equipment Use with source Magic/Item poses, green backdrop flashes, accelerating PSH and ordered support results. It consumes the unchanged rule and completion authorities.
