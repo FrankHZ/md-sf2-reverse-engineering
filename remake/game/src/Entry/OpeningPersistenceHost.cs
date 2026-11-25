@@ -69,11 +69,6 @@ public sealed partial class GameRoot
                         actions.Actions.SequenceEqual(entity.Actions!.Actions)) }) });
     }
 
-    private OpeningRestoreReader RestoreSource() => new(Selected("SF2_PRIVATE_EXPLORATION_CONTENT"),
-        Selected("SF2_PRIVATE_BATTLE01_DATA"), Selected("SF2_PRIVATE_BATTLE01_SCENE"), Selected("SF2_PRIVATE_BATTLE01_TERRAIN"),
-        Selected("SF2_PRIVATE_STATIC_DATA"), Selected("SF2_PRIVATE_ENEMY_DATA"), Selected("SF2_PRIVATE_ENEMY_GOLD"),
-        System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE_SCENE_CONTENT"));
-
     private void ConfigureSaveFiles(Dictionary<string, string> options)
     {
         if (!options.ContainsKey("--load-save") && !options.ContainsKey("--save-output")) return;
@@ -137,7 +132,9 @@ public sealed partial class GameRoot
             var admission = new Lazy<ScenarioReadResult>(source.Read);
             var store = Store(record => admission.Value is ExplorationReadAccepted admitted
                 ? ValidateRecord(admitted.Definition, record) : "save-content-required");
-            return Task.Run(store.HasContinuablePrimary);
+            var pending = Task.Run(store.HasContinuablePrimary);
+            _ = pending.ContinueWith(task => { _ = task.Exception; }, TaskContinuationOptions.OnlyOnFaulted);
+            return pending;
         }
         catch (ArgumentException) { return Task.FromResult(false); }
     }
@@ -476,7 +473,13 @@ public sealed partial class GameRoot
         try
         {
             if (_entryLoading || !EnsureWindowSupport()) return;
-            var read = await LoadEntry(() => store.Read(slot));
+            var content = RestoreSource();
+            var read = await LoadEntry(() =>
+            {
+                if (content.Read() is not ExplorationReadAccepted current || !ReferenceEquals(current.Definition, definition))
+                    throw new ArgumentException("save-content-changed");
+                return store.Read(slot);
+            });
             if (!read.Matches(seen)) { SaveError("save-record-changed"); return; }
             if (read.Primary is { } primary) { RestoreRecord(primary, definition, witch: witch); return; }
             if (read.Backup is { } backup && read.CanRecover)
@@ -510,7 +513,13 @@ public sealed partial class GameRoot
         try
         {
             if (_entryLoading || !EnsureWindowSupport()) return;
-            var result = await LoadEntry(() => SaveRecordRestore.Restore(definition, saved, RuleCompositions.ForGame()));
+            var content = RestoreSource();
+            var result = await LoadEntry(() =>
+            {
+                if (content.Read() is not ExplorationReadAccepted current || !ReferenceEquals(current.Definition, definition))
+                    throw new ArgumentException("save-content-changed");
+                return SaveRecordRestore.Restore(definition, saved, RuleCompositions.ForGame());
+            });
             if (result is SessionStartFailed failed) { SaveError(failed.Failure.Code); return; }
             // The admitted initial recipe runs ordinary on-load and starts fresh-map playback.
             // Settled savepoints instead restore their saved music/history generation.

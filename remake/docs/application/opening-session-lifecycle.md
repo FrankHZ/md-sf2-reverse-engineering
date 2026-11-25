@@ -47,13 +47,16 @@ use Standard once their state boundary is fixed. No unresolved aesthetic choice 
 **Standard rigor** for [#1605](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1605):
 the bounded outcome is responsive title New Game/Continue confirmation, slot/name return and
 failure recovery, with continuous entry music. The existing High-rigor save/recovery agreement
-above still applies. No source cache, save format, gameplay rule or finite-track policy changes.
+above still applies. The current host reuses admitted content through
+[startup preparation](#startup-content-preparation-2283); it does not cache slot availability or
+restored sessions. Save format, gameplay rules and finite-track policy remain unchanged.
 
-The host presents loading feedback before detached content admission and slot validation. Fresh
-source admission occurs on each slot-list entry; New Game preparation, slot re-read, restoration,
-publication and explicit backup recovery retain their existing validators. Background work touches
-detached content/session data and disk only; display binding, nodes, audio and publication to the
-live host remain on the Godot thread. One entry operation runs at a time. Repeated confirmation is
+The host presents loading feedback while awaiting detached content preparation and slot validation.
+Slot-list entry reuses the prepared definition while its selected inputs remain unchanged; changed
+inputs require fresh admission. New Game still performs full party/name/seed initialization, and
+slot re-read, restoration, publication and explicit backup recovery retain their existing validators.
+Background work touches detached content/session data and disk only; display binding, nodes, audio
+and publication to the live host remain on the Godot thread. One entry operation runs at a time. Repeated confirmation is
 ignored. Cancel acknowledges a return request immediately and returns after the in-flight read;
 publication/recovery cannot be cancelled halfway through their atomic disk operation. Window-close
 requests visibly wait for that operation before applying the existing quit policy.
@@ -249,6 +252,131 @@ the mapped release barrier through attachment. Start still skips the shared gree
 `--load-save` path keeps its existing bypass. Ordinary primary Continue is read-only.
 
 [Private bank, commands and observation](../content/presentation-assets.md#witch-continue-entry-bank-2255).
+
+#### Startup content preparation (#2283)
+
+**Standard rigor.** The bounded outcome is to prepare campaign content during ordinary startup
+and reuse its admission for Witch default selection, Continue and New Game slot inspection.
+The High-rigor storage/restore boundary above still owns records, backups and publication.
+No save-format, campaign, asset, dialogue or gameplay admission changes are included.
+
+`GameRoot` starts one detached read after launch configuration/preferences are accepted and before
+opening/title. [`EntryPreparationHost`](../../game/src/Entry/EntryPreparationHost.cs) captures the
+selected paths on the host thread. [`EntryContentPreparation`](../../game/src/Entry/EntryContentPreparation.cs)
+serializes readers and retains one successfully admitted immutable definition. Menu checks still
+read current primaries, stop at the first valid record and return only a focus choice; neither
+slot availability nor restored sessions are cached. Reopening the menu therefore sees external
+slot changes. The existing `LoadEntry` owns loading feedback, cancellation and main-thread
+publication. Godot nodes, textures, localization binding and audio stay on that thread.
+
+Reuse requires the same selected paths and unchanged file names/lengths/UTC modification times.
+The selected world directory is the package root for relative encounter JSON, HD terrain and PCM;
+its recursive file metadata and explicitly selected external input files are compared before
+reuse and before/after admission. This conservatively invalidates on unrelated package-file
+changes too. Keep immutable inputs together and writable outputs outside that package, as required
+by the [input owner](../../../docs/operations/local-private-inputs.md). No new manifest, watcher,
+persistent cache or change-detection digest is introduced. This is an ordinary file-change check,
+not protection against an adversary deliberately preserving size and timestamps.
+
+Continue rereads the chosen slot and checks that its definition is still the current prepared
+content before detached restoration. Changed content refuses the old candidate with
+`save-content-changed`; changed slot bytes retain `save-record-changed`. Backup recovery retains
+its explicit confirmation and atomic store checks. Failed admissions are not retained, so transient
+read failures remain retryable. Cancel abandons the UI candidate, leaving reusable content only;
+quit/host disposal releases the retained definition and prevents a late read from retaining or
+mounting a result. Detached faults are observed even if their view exits. Full New Game still
+performs fresh party/name/seed initialization and its confirmed initial save; that independent
+read is serialized with preparation, rather than reusing a restored session.
+
+**Resource plan and measured limits.** The selected `derived/issue2282/buff-v1` package has 175 files,
+368,493,196 bytes including the roughly 99 MB world. Admission is linear in input size and decoded
+content; metadata inspection is O(package files), with sorting O(F log F). Run one process/read at
+a time. The initial 1 GiB single-read / 1.5 GiB overlapping-opening estimate was revised after the
+baseline reached about 2 GiB across repeated reads. The bounded runs use a 2.5 GiB observation
+budget, under 1 MiB per receipt, and only small copied save/static inputs. No network/model costs
+or full-campaign route are involved. Replan if the package expands materially or a run exceeds
+that budget. Continue now peaks around 1.1–1.25 GiB in these samples; the separate full New Game
+initialization reached 1,618 MiB. Empty/corrupt-only histories now incur one early campaign read
+that their default-focus check previously avoided. A fast Skip can still expose its remaining
+latency; background preparation is not a guarantee of zero startup delay.
+
+**Confirmed, bounded software observations.** Baseline `af1030857dc0df6f80e63fb158ec5f74c66c3b59`
+was instrumented at the existing `OpeningRestoreReader.Read` calls with the same stopwatch/read
+counter now exposed by `ReadEntryPreparationObservationJson`. The actual Main scene was driven
+at 1920×1080, headless Godot 4.7.2, 120 fps cap, instant English text. The valid input was a read-only
+copy of the registered v6 slot4 backup (sequence 1, gameplay revision 4), not the player's runtime.
+The route opens slots, cancels, opens them again, selects slot4 and acknowledges 226/224.
+The 226 samples include the deliberate held-key/release check (ten frames); they are upper bounds
+on recognition availability. Times below are single-process samples, not distribution estimates or OS-cache-flushed results.
+“Warm” means a subsequent launch with the same inputs; all sessions themselves start fresh.
+
+| Route / version | Process startup → default menu | First 225 acknowledgement → slots | Selection → 226 | World read/admission count across route | Peak working set |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Fast Skip, baseline warm | 2,793 ms | 1,726 ms | 301 ms | 4 | 2,035 MiB |
+| Fast Skip, prepared warm | 2,476 ms | 65 ms | 284 ms | 1 | 1,147 MiB |
+| Four-second opening dwell, baseline | 7,065 ms | 1,694 ms | 197 ms | 4 | 1,736 MiB |
+| Four-second opening dwell, prepared | 4,857 ms | 55 ms | 202 ms | 1 | 1,274 MiB |
+| Corrupt-only, baseline | 693 ms | 2,459 ms | refused | 1 | 1,159 MiB |
+| Corrupt-only, prepared | 655 ms | 1,752 ms | refused | 1 | 1,005 MiB |
+
+A final pair sampled the first observed 226 before the held-key test: baseline/prepared were
+2,821/2,482 ms to default menu, 1,684/72 ms from 225 acknowledgement to slots, and **241/238 ms
+from selection to recognition availability**. That isolates the benefit to preparation/menu reuse,
+not a claim that session resource attachment itself became faster.
+
+The first process samples gave 2,727/2,655 ms to menu, 1,706/67 ms to slots and 306/286 ms to 226
+for baseline/prepared respectively. These do not establish cold-disk performance. With four seconds
+of opening dwell, preparation completed while `MUSIC_INTRO` advanced to 3.63 seconds; 457 frames
+advanced between the startup samples. Maximum observed frame gaps were 207 ms baseline and 232 ms
+prepared, including existing resource publication. Human audibility and absence of visible hitches
+remain **Unknown**; this optimization does not close those claims.
+
+The copied slot restored Map19 (4,3), Left with usable field control. Ordinary cancel/reopen kept one
+admission; 225/226/224, held-key/echo barriers and no pre-farewell mount passed. Empty and corrupt
+histories chose New Game; corrupt-primary/valid-backup offered explicit recovery, and incompatible
+primary stayed refused. Controlled slot mutation and an independently copied static-input mutation
+refused attachment. A temporary exclusive lock on a disposable static-input copy failed the first
+admission; releasing it without changing file bytes/metadata allowed the next ordinary menu check
+to retry successfully. Disposing during the first read let detached work finish without retaining
+content or publishing. Fresh New Game still initialized, saved and mounted in an isolated namespace.
+The first baseline name assertion used `Bowie` instead of the actual `BOWIE`; that failed receipt
+is preserved, and the corrected run passed. Some baseline and candidate Godot exits reported two
+ObjectDB instances leaked; the retained-definition disposal observation passes, but the cause of
+that existing/intermittent native shutdown warning is **Unknown**.
+
+Reproduce with the [locked environment](../development-and-verification.md#locked-net-workflow),
+[ordinary host/input selection](../verification/host.md#ordinary-host-startup) and
+[Witch bank recipe](../content/presentation-assets.md#witch-continue-entry-bank-2255). Select the
+accepted full world plus its six `opening-inputs`, `main-scenes.json`, the independent
+`derived/issue2252/pre-voyage-opening-v1/opening/opening.json`, and
+`derived/issue2255/witch-entry-v1/entry.json`. Use a fresh authorized disposable save namespace
+outside checkouts, never the real player namespace. The existing observer now records stage
+milliseconds, frame gaps, read counts, GC counts, memory and retired-owner state:
+
+```powershell
+$env:SF2_WITCH_CONTINUE_CASE = 'valid' # also empty, corrupt, abnormal, changed, content-changed, newgame
+$env:SF2_WITCH_CONTINUE_LOCALE = 'en'
+$env:SF2_WITCH_CONTINUE_HERO = 'BOWIE'
+$env:SF2_WITCH_CONTINUE_SLOT_INDEX = '2' # slot1/2 rows, then copied slot4; default remains slot2 index1
+$env:SF2_WITCH_CONTINUE_DWELL = '0' # use 4 for opening/BGM overlap
+$env:SF2_WITCH_CONTINUE_OUTPUT = Join-Path $runRoot 'witness.json'
+& $env:GODOT_BIN --headless --path remake/game --max-fps 120 --quit-after 5400 `
+    --log-file (Join-Path $runRoot 'godot.log') `
+    --script res://probes/engine_witch_continue_observation.gd -- --input-settings $settings
+```
+
+`changed` requires `SF2_WITCH_CONTINUE_CHANGE_FILE` to name the disposable slot4 copy: the observer
+corrupts it after listing. Also set `SF2_WITCH_CONTINUE_MUTATION_NAMESPACE` equal to the explicit
+disposable `SF2_SAVE_NAMESPACE`; the probe restricts mutation to that namespace's `sf2-opening`.
+`content-changed` requires that variable and `SF2_PRIVATE_STATIC_DATA`
+to name the same independent disposable static JSON copy under this checkout's `local/`: it appends whitespace after listing.
+Never point either mutation case at a registered input or real save. `corrupt` uses malformed slot1;
+`retry` uses a valid copied slot and an independent `SF2_PRIVATE_STATIC_DATA` copy under `local/`;
+the helper holds that copy read-only/exclusive for the first admission, then releases it before the
+menu check. `abnormal` uses malformed slot1 plus a compatible slot1 backup, and incompatible slot2, as in the
+existing Witch recipe. `newgame` requires an empty disposable namespace and writes its initial save.
+Keep each completed receipt/log and compare source/copy bytes for read-only cases. No screenshot,
+full campaign run, engine-test expansion or research/full gate is required for this host-only change.
 
 #### Title lifecycle investigation (#1447)
 

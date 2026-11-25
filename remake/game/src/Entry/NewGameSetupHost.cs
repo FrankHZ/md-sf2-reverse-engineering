@@ -96,7 +96,9 @@ public sealed partial class GameRoot
                     Selected("SF2_PRIVATE_STATIC_DATA"), Selected("SF2_PRIVATE_ENEMY_DATA"), Selected("SF2_PRIVATE_ENEMY_GOLD"),
                     _newMainSeed.Value, _newThinkingSeed!.Value, System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE_SCENE_CONTENT"));
                 var name = new NewGameOptions(_nameDraft);
-                _preparedNewGame = await LoadEntry(() => GameSession.PrepareNewGame(source, name, RuleCompositions.ForGame()));
+                var initializedSource = new EntrySource(() => MeasureEntryRead(source.Read));
+                _preparedNewGame = await LoadEntry(() => _entryPreparation.Exclusive(() =>
+                    GameSession.PrepareNewGame(initializedSource, name, RuleCompositions.ForGame())));
                 if (_preparedNewGame.Failure is { } failure)
                 { _preparedNewGame = null; NewGameError(failure.Code); return; }
                 _preparedAudio = new SessionAudio(this, _preparedNewGame.Started!.Session.Definition.Exploration!);

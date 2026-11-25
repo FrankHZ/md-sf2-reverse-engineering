@@ -9,6 +9,19 @@ public partial class OpeningStartupControl : Node
 {
     private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
     private object? _retiredOwner;
+    private GameRoot? _entryHost;
+    private System.IO.FileStream? _entryInputLock;
+    public void HoldEntryInput()
+    {
+        string path = System.IO.Path.GetFullPath(System.Environment.GetEnvironmentVariable("SF2_PRIVATE_STATIC_DATA")!);
+        string local = System.IO.Path.GetFullPath(ProjectSettings.GlobalizePath("res://../../local/"));
+        if (!path.StartsWith(local, StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Disposable local input required");
+        _entryInputLock = new(path, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.None);
+    }
+    public void ReleaseEntryInput() { _entryInputLock?.Dispose(); _entryInputLock = null; }
+    public void RetainEntryHost(Node host) => _entryHost = (GameRoot)host;
+    // Only managed observation fields are read after the native node has left the tree.
+    public string RetiredEntryPreparation() => _entryHost!.ReadEntryPreparationObservationJson();
     public void RetainOwner(Node host) => _retiredOwner = typeof(GameRoot).GetField("_opening", Private)!.GetValue(host);
     public void DeliverRetiredCompletion(Node host)
     {
