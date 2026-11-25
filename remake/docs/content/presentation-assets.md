@@ -219,7 +219,7 @@ automatic text and state/resource/audio readback; no screenshots or per-frame ou
 `SF2_OPENING_NEW_GAME=1` only with disposable slots to follow natural title completion through
 ordinary slot/name/confirmation using controlled comparison seeds. The short
 `engine_opening_startup_observation.gd` uses `SF2_OPENING_CONTROL` values `load`, `delay`, `motion`,
-`pointer`, `focus`, `absent`, `bad`, `empty`, `newgame`, `continue` or`seeded`. The absent control
+`pointer`, `focus`, `back`, `absent`, `bad`, `empty`, `newgame`, `continue` or`seeded`. The absent control
 unselects the opening; bad/empty select a fresh malformed/zero-byte manifest. Seeded uses an explicit
 `--load-save` copy outside every player namespace, as required by the existing seed-path guard.
 Late completion and controlled seeds use the bounded
@@ -291,6 +291,34 @@ were skipped by the actual workflow. The planner's extra live-inspection build p
 H4 was not selected by the plan. This receipt update changes documentation only.
 Independent main-gate acceptance, physical-device coverage, hardware timing and human visual/audio
 approval remain separate.
+
+**Independent review and Back synchronization:** at frozen `f3d30f71`, main-gate's loading and
+Chinese pointer controls passed. Loading reported4 ObjectDB shutdown warnings; pointer reported
+none. Its rebuilt Debug `ScenePaletteTests|FullFadeTests|BattleEntrySkipTests` selection passed18
+with1 private skip; the earlier Release `--no-build` result is not its acceptance evidence.
+The native `main-gate-focus` run completed in9,829ms with only “Witch Back returns without replay”
+failing. Real focus recovery, Skip/title and fresh Witch menu had passed, with no engine errors.
+Its retained `witch` receipt shows `stage=menu`, `latched=true`: the observer sent Back without
+establishing that the prior Start release had reached the entry's normal neutral-input boundary.
+**Inferred:** the existing latch guard suppressed that Back; the old probe did not retain a
+post-Back input receipt. The release-edge control below directly confirms the pending-release state.
+
+The probe now records physical/mapped held state, host release barrier, entry latch/stage and focus
+before Back, then waits at most2s for their actual neutral state. It sends one ordinary Back and
+requires the returned title and inactive opening owner; it never retries Back or relaxes that
+assertion. The focused `back` control releases held Start immediately before this check. Native
+`witch-back-release-edge` passed in1,814ms: Start/held/latch were initially true, cleared after35ms,
+and the single fresh Back returned to title. The corrected native focus run passed in9,989ms.
+Both logs had no errors or shutdown warnings. This is a probe input-synchronization correction;
+production code, private package and the completed full-play observation are unchanged. No
+eight-minute replay was performed. The original failed receipt remains available beside these
+short controls under `local/issue2252/`.
+
+Reproduce after the ordinary selection above, with a fresh output path and disposable namespace:
+set `SF2_OPENING_CONTROL=back` (or`focus`) and launch
+`& $env:GODOT_BIN --path remake/game --script res://probes/engine_opening_startup_observation.gd`.
+The owning checkout's prepared equivalent is
+`./local/issue2252/run.ps1 -Run <fresh-name> -Control back -Namespace main-gate-controls`.
 
 ## Public localization pilot assets
 

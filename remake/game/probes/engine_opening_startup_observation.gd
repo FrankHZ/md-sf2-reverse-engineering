@@ -111,15 +111,45 @@ func run() -> void:
     var voices := host.find_children("*","AudioStreamPlayer",true,false)
     check(voices.size() == 1,"Only title music owner remains")
     check(entry().get("audio",{}).get("musicCue") == "MUSIC_TITLE","Title owns command28")
-    await press(KEY_ENTER); await frames(8); await press(KEY_E)
+    await press(KEY_ENTER); await frames(8)
+    if case_name == "back":
+        edge(KEY_E,true); await frames(2)
+        check(entry().get("latched",false),"Held Start latches Witch menu before release")
+        edge(KEY_E,false)
+    else: await press(KEY_E)
     check(entry().get("stage") == "menu","Fresh input reaches Witch menu")
     samples.append({"label":"witch","entry":entry()})
+    if not await wait_entry_neutral("menu","before-back"):
+        finish(""); return
     await press(KEY_ESCAPE)
+    if not await wait_entry_neutral("title","after-back"):
+        finish(""); return
     check(entry().get("title",false) and not opening().active,"Witch Back returns without replay")
     if case_name in ["newgame","continue"]:
         await press(KEY_ENTER); await press(KEY_E)
         await journey()
     finish("")
+
+func wait_entry_neutral(stage: String, label: String) -> bool:
+    var started := Time.get_ticks_msec()
+    var before := entry_boundary()
+    var current := before
+    while Time.get_ticks_msec()-started < 2000:
+        if current.entry.get("stage") == stage and not current.entry.get("latched",true) and not current.entry.get("activated",true) and not current.input.held and not current.input.releaseBarrier and current.focused:
+            samples.append({"label":label,"before":before,"ready":current,"elapsedMs":Time.get_ticks_msec()-started})
+            return true
+        await process_frame
+        current = entry_boundary()
+    samples.append({"label":label,"before":before,"last":current,"elapsedMs":Time.get_ticks_msec()-started})
+    check(false,"Entry did not reach released " + stage + " at " + label)
+    return false
+
+func entry_boundary() -> Dictionary:
+    var input_state: Dictionary = JSON.parse_string(host.call("ReadSettingsHostObservationJson"))
+    return {"entry":entry(),"opening":opening(),"focused":root.has_focus(),
+        "input":{"held":input_state.held,"releaseBarrier":input_state.releaseBarrier,
+        "enter":Input.is_physical_key_pressed(KEY_ENTER),"start":Input.is_physical_key_pressed(KEY_E),
+        "back":Input.is_physical_key_pressed(KEY_ESCAPE)}}
 
 func focus_control(view: Node) -> void:
     root.gui_embed_subwindows = false
