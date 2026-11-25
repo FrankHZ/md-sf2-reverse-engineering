@@ -180,7 +180,7 @@ internal static class FieldService
         var members = PartyDetailsQuery.Query(definition, current)!.Members;
         var member = members.Single(m => m.Carried.Actor == candidate.Member);
         var destination = member.Deployment!.ResolveClass(classId).Definition;
-        var loadout = PromotionLoadout(member, destination);
+        var loadout = FieldInventory.Loadout(member);
         List<BattleActorStartInput> updates = [];
         if (item is not null)
         {
@@ -194,6 +194,7 @@ internal static class FieldService
         }
         if (!PoisonTurnRules.SupportedPhysicalStatus(member.Carried.Status) || member.Carried.Progress is not { } progress)
             throw new BattleRuleException("promotion-refresh", "party.progress", true);
+        loadout = PromotionLoadout(member, destination, loadout);
         BattleEquipment.ValidateLoadout(destination, loadout);
         var changed = member.Carried with { Exp = 0,
             SourceLoadout = member.Carried.SourceLoadout is null ? null : loadout, Progress = progress with
@@ -213,10 +214,11 @@ internal static class FieldService
         return (field, party);
     }
 
-    private static BattleSourceLoadout PromotionLoadout(PartyMemberDetails member, BattleActorDefinition destination)
+    private static BattleSourceLoadout PromotionLoadout(PartyMemberDetails member, BattleActorDefinition destination,
+        BattleSourceLoadout? loadout = null)
     {
-        var loadout = FieldInventory.Loadout(member);
-        if (destination.ClassRule != BattleClassRule.Ninja) return loadout;
+        loadout ??= FieldInventory.Loadout(member);
+        if (destination.ClassRule is not (BattleClassRule.Ninja or BattleClassRule.MasterMonk)) return loadout;
         // The source rite removes the worn weapon independently of the ring and its slot.
         int slot = BattleEquipment.EquippedSlot(member.Deployment!.Definition, loadout);
         return slot == BattleEquipment.UnarmedChoice ? loadout :

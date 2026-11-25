@@ -11,6 +11,7 @@ REMAKE_PRODUCER_PATHS = frozenset(
         "src/sf2tool/remake_retail_assets.py",
         "src/sf2tool/remake_retail_audio.py",
         "src/sf2tool/remake_private_package.py",
+        "src/sf2tool/remake_promotion_appearances.py",
         "src/sf2tool/remake_private_inventory.py",
         "src/sf2tool/remake_attack_spell_mount.py",
         "src/sf2tool/remake_enemy_healing.py",
@@ -96,7 +97,8 @@ def engine_partitions_for_path(path: str) -> tuple[str, ...]:
     wiring = path in ENGINE_WIRING_PATHS or path == ".github/workflows/public-checks.yml"
     comparison = (
         ("h4-comparison-build",)
-        if path in {
+        if path
+        in {
             "src/sf2tool/verification_plan.py",
             "src/sf2tool/verification_engine_paths.py",
             "src/sf2tool/verification_partitions.py",
@@ -108,7 +110,10 @@ def engine_partitions_for_path(path: str) -> tuple[str, ...]:
         return ()
     if wiring:
         return comparison + (
-            "engine-unit", "adapter-build", "research-public", "private-admission-build",
+            "engine-unit",
+            "adapter-build",
+            "research-public",
+            "private-admission-build",
             "live-inspection-build",
         )
     if path.startswith("remake/tools/Sf2.Remake.PrivateAdmission/"):

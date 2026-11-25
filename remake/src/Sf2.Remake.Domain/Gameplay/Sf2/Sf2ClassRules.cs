@@ -27,6 +27,7 @@ internal static class Sf2ClassRules
     {
         1 => BattleClassRule.PegasusKnight,
         2 => BattleClassRule.Baron,
+        4 => BattleClassRule.MasterMonk,
         5 => BattleClassRule.BrassGunner,
         _ => null,
     };
@@ -40,7 +41,7 @@ internal static class Sf2ClassRules
     }
 
     internal static bool PlayerHealer(BattleClassRule rule) =>
-        rule is BattleClassRule.UnpromotedPriest or BattleClassRule.Vicar;
+        rule is BattleClassRule.UnpromotedPriest or BattleClassRule.Vicar or BattleClassRule.MasterMonk;
 
     internal static byte? PromotionItem(byte? sourceClass) => sourceClass switch
     {
@@ -55,7 +56,7 @@ internal static class Sf2ClassRules
         BattleClassRule.UnpromotedBirdman => 6, BattleClassRule.UnpromotedWolfman => 7, BattleClassRule.UnpromotedRanger => 8, BattleClassRule.UnpromotedPhoenix => 9,
         BattleClassRule.UnpromotedThief => 10, BattleClassRule.UnpromotedTortoise => 11, BattleClassRule.Hero => 12, BattleClassRule.Paladin => 13,
         BattleClassRule.PegasusKnight => 14, BattleClassRule.Gladiator => 15, BattleClassRule.Baron => 16, BattleClassRule.Wizard => 17, BattleClassRule.Vicar => 19, BattleClassRule.Sniper => 21,
-        BattleClassRule.BrassGunner => 22, BattleClassRule.BirdBattler => 23, BattleClassRule.WolfBaron => 24,
+        BattleClassRule.MasterMonk => 20, BattleClassRule.BrassGunner => 22, BattleClassRule.BirdBattler => 23, BattleClassRule.WolfBaron => 24,
         BattleClassRule.BowKnight => 25, BattleClassRule.Phoenix => 26, BattleClassRule.Ninja => 27, BattleClassRule.Monster => 28, _ => null,
     };
 

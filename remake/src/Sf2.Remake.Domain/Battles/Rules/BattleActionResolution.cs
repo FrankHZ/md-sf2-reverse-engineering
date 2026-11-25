@@ -8,7 +8,7 @@ internal sealed record BattleReaction(ActorRef Actor, ActorRef Target, string Ac
     BattleReactionKind Kind, ushort HpBefore, ushort HpAfter, byte MpBefore, byte MpAfter,
     bool Critical = false, int Amount = 0, ushort? StatusWrite = null, ushort? InflictedSleep = null,
     BattleItemReceipt? Receipt = null, ushort? InflictedSilence = null, ushort? InflictedPoison = null, ushort? InflictedStun = null,
-    ushort ClearedStatus = 0);
+    ushort ClearedStatus = 0, bool SpecialAnimation = false);
 internal sealed record BattleActionReward(ActorRef Actor, int Amount);
 internal sealed record PhysicalInaction(ActorRef Target, bool DueToCurse);
 internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects,
@@ -462,6 +462,19 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             while (cursor < ConstructionEffects.Count && ConstructionEffects[cursor] != facts[^1]) cursor++;
             Require(cursor < ConstructionEffects.Count);
             var impact = ConstructionEffects.Skip(impactStart).Take(cursor++ - impactStart).ToArray();
+            var specialRolls = impact.Where(effect => effect.Kind == "rng-monk-special").ToArray();
+            bool monk = attacker.Definition.ClassRule == BattleClassRule.MasterMonk;
+            Require(specialRolls.Length == (monk ? 1 : 0) &&
+                reaction.SpecialAnimation == (monk && specialRolls[0].RandomValue == 0));
+            if (monk)
+            {
+                var special = specialRolls[0];
+                Require(impact[0] == special && special.RandomRange == 16 &&
+                    special.Actor == attacker.Actor && special.Target == defender.Actor);
+                var critical = impact.SingleOrDefault(effect => effect.Kind == "rng-critical");
+                Require(reaction.Kind == BattleReactionKind.Dodge ? critical is null :
+                    critical is not null && critical.RandomRange == (reaction.SpecialAnimation ? 1 : profile.Critical.ChanceDenominator));
+            }
             var recoilRolls = impact.Where(effect => effect.Kind == "rng-curse-recoil").ToArray();
             bool canRecoil = CurseRules.CanRecoil(attacker, reaction.Kind == BattleReactionKind.Dodge, reaction.HpAfter);
             Require(recoilRolls.Length == (canRecoil ? 1 : 0));

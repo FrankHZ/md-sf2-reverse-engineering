@@ -12,9 +12,11 @@ def promotion_sprite_fields(bindings: dict[int, int]) -> dict:
         role, sprite = next(iter(bindings.items()))
         return {"promotionClass": role, "promotionSprite": sprite}
     if bindings:
-        return {"promotionSprites": [
-            {"classId": role, "sprite": sprite} for role, sprite in sorted(bindings.items())
-        ]}
+        return {
+            "promotionSprites": [
+                {"classId": role, "sprite": sprite} for role, sprite in sorted(bindings.items())
+            ]
+        }
     return {}
 
 
@@ -54,7 +56,7 @@ def ally_sprites(compiler) -> list[dict[str, Any]]:
         "TORT": "MNST",
     }
 
-    special = {"KNTE": "PGNT", "WARR": "BRN", "ACHR": "BRGN"}
+    special = {"KNTE": "PGNT", "WARR": "BRN", "PRST": "MMNK", "ACHR": "BRGN"}
 
     def class_sprite(table_sprite, role):
         # GetAllyMapsprite's offsets are relative to the member's table entry.
@@ -113,11 +115,13 @@ def raft_placement(compiler, args, tail):
 
 def scene_operation(compiler, op, args):
     if op == "setSize":
-        return [{
-            "op": "resize-entity",
-            "entity": compiler.entity(args[0]),
-            "size": compiler.number(args[1]),
-        }]
+        return [
+            {
+                "op": "resize-entity",
+                "entity": compiler.entity(args[0]),
+                "size": compiler.number(args[1]),
+            }
+        ]
     if op == "setQuake":
         word = compiler.number(args[0])
         amount = word & 0x3FFF

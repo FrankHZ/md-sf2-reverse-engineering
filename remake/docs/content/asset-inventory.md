@@ -1041,3 +1041,23 @@ Elric's three physical range variants and cold Continue passed. Original animati
 and Janet's BRGN battle action remain **Unknown**.
 [Package and rebuild](presentation-assets.md#brass-gunner-promotion-successor) ·
 [Observed controls and failures](../application/church-promotion-design.md#brass-gunner-promotion)
+
+### Master Monk promotion (#2244)
+
+Pinned class/growth/appearance sources and the prepared retail library select Sarah map4,
+battle19/palette1 and Karna map38, battle19/palette2. Each member has unarmed and item26–28
+rows, with no independent weapon layer, plus ordinary cast and special animation83. The
+existing preparation owner mounts these onto the accepted BRGN package without changing
+previous class rows, rasters or growth. The production reader checks both members in every
+scene. Current item admission excludes Iron Knuckles29 and rare fists30–32.
+
+The serial pre-run budget was 1.5 GiB temporary disk, 2 GiB peak memory and one approximately
+345 MiB successor; processing is O(package bytes + selected records), without downloads or
+API/model cost. The single-member pilot took 0.028 seconds and added five rasters and
+21,560 compact scene bytes, including an item29 row subsequently excluded by production
+admission. The final complete successor has 174 files and 361,020,000 bytes, a 54,565-byte
+increase over BRGN. Only world and Battle26 scene differ. It adds eight actor rows and ten
+rasters; direct comparison preserves every predecessor actor/raster/growth row. The
+[published mount](presentation-assets.md#master-monk-promotion-successor) supports both
+rites and published-input cold Continue. [Observed actions, failed exits and Unknowns](../application/church-promotion-design.md#master-monk-promotion)
+remain explicit; this does not establish original timing or distribution rights.

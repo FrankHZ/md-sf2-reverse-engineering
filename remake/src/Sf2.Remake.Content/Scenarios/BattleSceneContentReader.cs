@@ -86,7 +86,7 @@ internal static class BattleSceneContentReader
             var sequences = new Dictionary<string, BattleSceneAnimation>(StringComparer.Ordinal);
             foreach (var sequence in row.GetProperty("sequences").EnumerateObject())
             {
-                Require(sequence.Name is "idle" or "attack" or "dodge" or "item" or "cast", "scene-sequence", "battleScenes.sequences");
+                Require(sequence.Name is "idle" or "attack" or "dodge" or "item" or "cast" or "special", "scene-sequence", "battleScenes.sequences");
                 var value = sequence.Value;
                 Object(value, "sceneSequence", "index", "trigger", "spell", "terminate", "idleWeapon", "frames");
                 var entries = Array(value, "frames").Select(frame =>
@@ -104,6 +104,9 @@ internal static class BattleSceneContentReader
             }
             Require(new[] { "idle", "attack", "dodge" }.All(sequences.ContainsKey) &&
                 (side != "ally" || sequences.ContainsKey("item")), "scene-required-sequence", "battleScenes.sequences");
+            Require(side != "ally" || sprite != 19 ||
+                sequences.ContainsKey("cast") && sequences.TryGetValue("special", out var special) && special.Index == 83,
+                "scene-monk-sequence", "battleScenes.sequences");
             foreach (var weapon in sequences.Values.SelectMany(sequence => sequence.Frames.Select(frame => frame.Weapon)
                 .Append(sequence.IdleWeapon)).OfType<BattleSceneWeaponFrame>())
                 Require((weapon.Frame & 7) < weapons.Length, "scene-weapon-frame-index", "battleScenes.weaponFrames");
@@ -112,12 +115,12 @@ internal static class BattleSceneContentReader
                 row.TryGetProperty("idleTicks", out _) ? Number(row, "idleTicks", 1, 65535) : 0);
             if (side == "ally")
             {
-                Require(sprite is >= 0 and <= 14 or 17 or 18 or 21 or 22 or 24 or 25 or 26 or 27 or 28 or 29 or 30 or 31, "scene-class", "battleScenes.actors", true);
+                Require(sprite is >= 0 and <= 14 or 17 or 18 or 19 or 21 or 22 or 24 or 25 or 26 or 27 or 28 or 29 or 30 or 31, "scene-class", "battleScenes.actors", true);
                 var kind = sprite switch { 0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedPriest,
                     2 => BattleClassRule.UnpromotedKnight, 3 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedThief, 6 => BattleClassRule.UnpromotedTortoise,
                     7 => BattleClassRule.UnpromotedPhoenix, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedWolfman, 11 => BattleClassRule.BrassGunner, 12 => BattleClassRule.UnpromotedArcher, 13 => BattleClassRule.Paladin,
                     14 => BattleClassRule.BirdBattler, 17 => BattleClassRule.PegasusKnight, 18 => BattleClassRule.Gladiator, 21 => BattleClassRule.Wizard,
-                    22 => BattleClassRule.Baron, 24 => BattleClassRule.Hero,
+                    19 => BattleClassRule.MasterMonk, 22 => BattleClassRule.Baron, 24 => BattleClassRule.Hero,
                     25 => BattleClassRule.Vicar, 26 => BattleClassRule.Ninja, 27 => BattleClassRule.Monster, 28 => BattleClassRule.Phoenix, 29 => BattleClassRule.BowKnight, 30 => BattleClassRule.WolfBaron,
                     31 => BattleClassRule.Sniper, _ => BattleClassRule.UnpromotedBirdman };
                 if (row.TryGetProperty("members", out _))

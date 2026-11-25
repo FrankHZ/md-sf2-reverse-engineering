@@ -318,6 +318,7 @@ public sealed class BattleSceneState
         : IsCurseRecoil ? Action.Reactions[ReactionIndex - 1].Target
         : AbsorbsMp ? Action.Reactions[0].Target : Action.Prepared.GetActor(Actor).IsAlly ? Target : Actor;
     public bool Critical => HasReaction && Reaction.Critical;
+    public bool SpecialPhysicalAnimation => HasReaction && Reaction.SpecialAnimation;
     public int HpChange => !HasReaction ? 0 : Reaction.HpAfter - Reaction.HpBefore;
     public int MpChange => !HasReaction ? 0 : Reaction.MpAfter - Reaction.MpBefore;
     public int Amount => IsPoisonTurn ? 2 : !HasReaction ? 0 : Reaction.Amount;

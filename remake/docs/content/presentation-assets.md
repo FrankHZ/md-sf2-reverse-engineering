@@ -1264,3 +1264,65 @@ $base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2240/pre-voyage-brn-v
 uv run python -m sf2tool.remake_retail_assets --root $registeredRetailLibrary `
     --base $base --upstream $pinnedSource --mount $freshAbsolutePackage --family brgn
 ```
+
+### Master Monk promotion successor
+
+`derived/issue2244/pre-voyage-mmnk-v1` extends the complete BRGN successor with Sarah and
+Karna MMNK growth, walking sprites, unarmed and current item26–28 battle bindings, cast and
+special-critical animation83. Select its world, main scene, entry and six opening inputs
+together; retain the registered prepared retail library. It preserves all predecessor
+PGNT/BRN/BRGN and spell content. [Closure and budget](asset-inventory.md#master-monk-promotion-2244) ·
+[Consumer acceptance and reproduction](../application/church-promotion-design.md#master-monk-promotion)
+
+```powershell
+. ./local/private-inputs.ps1
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2242/pre-voyage-brgn-v1'
+uv run python -m sf2tool.remake_retail_assets --root $registeredRetailLibrary `
+    --base $base --upstream $pinnedSource --mount $freshAbsolutePackage --family mmnk
+```
+
+Select `derived/issue2244/catalogs-v1/world.zh-CN.json`. The successor preserves the BRN
+catalog and adds the registered `name.class/20` translation 武僧. Existing item26–28 names
+remain unchanged. `derived/issue2244/review-v1/runner/prepare.py catalog <base-catalog>
+<fresh-output> <registered-names-source>` reproduces this from the sole `names.zh-CN.jsonl`.
+The production catalog reader and independent native Continue accept it. Generating scratch
+was moved aside before the published-package field and battle Continue checks.
+
+
+#### MMNK campaign with the accepted four-scene opening
+
+The MMNK campaign and [four-scene startup](#four-scene-startup-package-2252) remain separate
+runtime selections. Keep the MMNK world, main scene, entry and six opening-battle inputs
+selected as above, then add the accepted opening selection and its independent entry catalog:
+
+```powershell
+$opening = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2252/pre-voyage-opening-v1'
+$env:SF2_PRIVATE_OPENING_CONTENT = Join-Path $opening 'opening/opening.json'
+$env:SF2_ENTRY_DISPLAY_CATALOG = Join-Path $opening 'catalogs/entry.zh-CN.json'
+$env:SF2_DISPLAY_CATALOG = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2244/catalogs-v1/world.zh-CN.json'
+```
+
+`OpeningSequenceReader` reads its own bounded world, scripts, catalog and six inputs beneath
+`opening/`; the journey reader consumes the MMNK campaign. Do not replace the MMNK world with
+the opening publication's BRGN-based campaign, or replace the MMNK name catalog with its older
+campaign catalog. Both registered directories are required for this combined selection. No asset
+copy or regenerated campaign is needed: all 174 MMNK campaign paths exist in the accepted
+opening publication, and all except the intended world and Battle26 scene differences are
+byte-identical, including entry and opening-battle inputs. The original closed MMNK package
+remains unchanged; it does not itself contain the independent four-scene payload.
+
+A short read-only production-consumer check builds in the explicit checkout's ignored scratch
+and admits both selections, both Chinese catalogs, each member's destination growth/book and
+current unarmed/fist appearance in every campaign scene. Run from any working directory:
+
+```powershell
+. (Join-Path $repo 'local/private-inputs.ps1')
+$consumer = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2244/consumer-v1/Verify.ps1'
+& $consumer -Repo $repo
+```
+
+Require exit0, two member rows with `scenes:26`, and `Independent opening selection and Chinese
+catalog: PASS`. This checks production admission, not complete opening playback, title controls
+or saved-game continuity. It launches no Godot instance and reads or writes no save slots.
+Accepted opening observations and the earlier MMNK native/cold-save results retain their own
+scope and failures; updating the checkout does not turn the retained exit crash into a pass.
