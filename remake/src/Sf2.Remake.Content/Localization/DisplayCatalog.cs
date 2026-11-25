@@ -33,10 +33,21 @@ public sealed class DisplayCatalog
         custom is not null ? new(custom, Locale, null) : index is null ? new(canonical, "en", "display-operands") :
         _names.TryGetValue((space, index.Value), out var value) ? new(value, Locale, null) :
         new(canonical, "en", "missing-name-translation");
-    public DisplayResult ResolveEntry(int text, EntryPresentation source) =>
-        source.Dialogue.TryGetValue(text.ToString(System.Globalization.CultureInfo.InvariantCulture), out var original)
-            ? ResolveRange(text, ExplorationTextTokens.Read(original), [], 0, int.MaxValue)
-            : new("Text unavailable (display-operands).", "en", "display-operands");
+    public static DisplayResult CanonicalEntry(int text, EntryPresentation source, string? leader = null)
+    {
+        var result = English.ResolveEntry(text, source, leader);
+        return result.Reason == "missing-translation" ? result with { Reason = null } : result;
+    }
+    public DisplayResult ResolveEntry(int text, EntryPresentation source, string? leader = null)
+    {
+        if (!source.Dialogue.TryGetValue(text.ToString(System.Globalization.CultureInfo.InvariantCulture), out var original))
+            return new("Text unavailable (display-operands).", "en", "display-operands");
+        var tokens = ExplorationTextTokens.Read(original);
+        DisplayNameBinding[] names = leader is null ? [] : tokens.Select((token, index) => (token, index))
+            .Where(pair => pair.token is { Kind: ExplorationTextTokenKind.MemberName, Member: 0 })
+            .Select(pair => new DisplayNameBinding(pair.index, 0, leader, leader)).ToArray();
+        return ResolveRange(text, tokens, names, 0, int.MaxValue);
+    }
     public static DisplayResult Canonical(FieldTextWait wait, ExplorationDefinition source, bool reflow = false)
     {
         var result = English.Resolve(wait, source, reflow);

@@ -177,7 +177,8 @@ retains its existing Enter/Escape semantics. These presentation changes preserve
 publication, backup and session-replacement contract; final human visual acceptance remains pending.
 
 `SessionEntryView` owns only presentation/input and disposable resources; `GameRoot` retains
-session construction/replacement. Continue uses the existing slot/backup diagnostics. Replacement
+session construction/replacement. Continue uses the existing slot/backup diagnostics and
+[Witch continuation](#witch-continue-dialogue-and-default-selection). Replacement
 opens on Cancel; failed admission preserves the paused old session. Entry music uses `SessionAudio`;
 the old session's players pause during entry and resume on Cancel. Successful mounting releases
 entry textures/audio and the old session through their existing hooks. Held mapped actions require
@@ -213,6 +214,41 @@ seam avoids an arbitrary30s cutoff. The current candidate retains capture sample
 and loops279,419–1,561,247 relative to that retained PCM. This is a reviewed modern loop, not a claim
 of sample-exact YM phase, an original interrupt boundary or natural menu reach. Preparation and native
 reproduction belong to the [entry observation](../verification/host.md#title-and-witch-entry-observation).
+
+#### Witch Continue dialogue and default selection
+
+**Standard rigor** for [#2255](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2255).
+The existing High-rigor contract governs save admission, backup publication and attachment.
+The slice covers the ordinary Witch menu, selected Continue and the handoff to the admitted
+snapshot. Keep the established modern slot history, Settings, Quit, New Game and direct
+diagnostic entries. The startup sequence still runs once per ordinary launch.
+
+**Confirmed source structure.** The pinned USA SF2DISASM `witchstart.asm` shares 216–220 at
+both occupancies and dispatches after 221 using `SAVE_FLAGS`. `witchMenuAction_Load` uses
+225 → selection and `LoadGame` → 226 with member 0 → 224. This slice does not establish
+original runtime timing or restore the retail two-slot action menu.
+
+| Current local storage at the action menu | Default action | Continue path |
+| --- | --- | --- |
+| At least one primary accepted by the current content and record validator | Continue | Existing numbered history and fresh validation of the chosen record |
+| Empty history or only damaged, incompatible, unsupported or backup-only records | New Game | The same history stays accessible for diagnosis and explicit compatible-backup recovery |
+
+Persistence checks the numbered primaries in the background and stops on the first accepted
+record. Empty and structurally invalid files require no campaign admission. The detached check
+only chooses initial focus. The slot flow still rereads and validates the selected record with its
+existing ownership and version checks. The menu displays loading feedback while the default is
+being resolved. Back from the question or slot/recovery pane returns to the Witch action menu.
+
+The Witch displays 225 before the slots. The restore owner constructs the detached session and
+prepares its resources, including existing battle/settled-field attachment and explicit backup
+publication when chosen. Only then does the Witch display 226 with the restored story's member-0
+display name, followed by 224. The same prepared session mounts after the final acknowledgement.
+Cancel before acceptance and restore failures lead to the existing menu or diagnostic without
+recognition or farewell. The final two lines use fresh reading acknowledgements and retain
+the mapped release barrier through attachment. Start still skips the shared greeting. The direct
+`--load-save` path keeps its existing bypass. Ordinary primary Continue is read-only.
+
+[Private bank, commands and observation](../content/presentation-assets.md#witch-continue-entry-bank-2255).
 
 #### Title lifecycle investigation (#1447)
 
@@ -292,8 +328,8 @@ owns the independent integration disposition.
   battle, legacy and diagnosed backup paths. Neither action starts the boot story after the Witch.
   Boot completion and Skip have identical persistence consequences: zero writes, no allocation of a
   journey slot or gameplay seed, and no change to a selected or paused journey. The loaded save
-  remains the sole authority for progress. The [Witch Continue dialogue follow-up](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456#issuecomment-7150145598)
-  retains the separate 225/226/224 scope.
+  remains the sole authority for progress. The [Witch Continue dialogue](#witch-continue-dialogue-and-default-selection)
+  follows the startup handoff and uses the accepted restore candidate.
 
 A pre-title scene keeps the source order and isolates startup effects from save publication.
 Placing it after name/slot confirmation would tie a discardable presentation to a committed

@@ -16,11 +16,11 @@ internal sealed class EntryPresentationAssets : IDisposable
     internal SessionAudio? Audio { get; private set; }
     private readonly DisplayCatalog? _display;
     private readonly string? _displayError;
-    internal DisplayResult Dialogue(int id)
+    internal DisplayResult Dialogue(int id, string? leader = null)
     {
-        var original = new DisplayResult(Content.Dialogue[id.ToString(System.Globalization.CultureInfo.InvariantCulture)], "en", null);
+        var original = DisplayCatalog.CanonicalEntry(id, Content, leader);
         var display = GameText.Language == "en" ? original :
-            _display?.ResolveEntry(id, Content) ?? original with { Reason = _displayError };
+            _display?.ResolveEntry(id, Content, leader) ?? original with { Reason = _displayError };
         return display with { Text = SourceTextLayout.EntryLines(display.Text, display.EffectiveLocale) };
     }
 

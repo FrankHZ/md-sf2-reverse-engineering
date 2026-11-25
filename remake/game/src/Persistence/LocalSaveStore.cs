@@ -67,17 +67,9 @@ internal sealed class LocalSaveStore
     {
         if (_output is not null) return new(0, 1, [(1, Read(1))], null);
         const int pageSize = 6;
-        var slots = new SortedSet<int> { 1, 2 };
         try
         {
-            var comparison = OperatingSystem.IsWindows() ? RegexOptions.IgnoreCase : RegexOptions.None;
-            InspectDirectory(path =>
-            {
-                var name = Path.GetFileName(path);
-                var match = Regex.Match(name, @"^slot([1-9][0-9]*)\.(json|bak)$", comparison | RegexOptions.CultureInvariant);
-                if (match.Success && int.TryParse(match.Groups[1].Value, CultureInfo.InvariantCulture, out int slot))
-                    slots.Add(slot);
-            });
+            var slots = NumberedSlots();
             int pages = (slots.Count - 1) / pageSize + 1;
             page = Math.Clamp(page, 0, pages - 1);
             int next = slots.Max == int.MaxValue ? slots.First(slot => slot < int.MaxValue && !slots.Contains(slot + 1)) + 1 : slots.Max + 1;
@@ -86,7 +78,30 @@ internal sealed class LocalSaveStore
         catch (Exception error) when (StorageFailure(error)) { throw new ArgumentException("save-storage-unavailable", error); }
     }
 
-    internal SlotRead Read(int slot) => new(ReadFile(PathFor(slot, "json"), _output is null ? slot : null, _validate),
+    internal bool HasContinuablePrimary()
+    {
+        if (_output is not null) return ReadPrimary(1).Record is not null;
+        try { return NumberedSlots().Any(slot => ReadPrimary(slot).Record is not null); }
+        catch (Exception error) when (StorageFailure(error)) { return false; }
+    }
+
+    private SortedSet<int> NumberedSlots()
+    {
+        var slots = new SortedSet<int> { 1, 2 };
+        var comparison = OperatingSystem.IsWindows() ? RegexOptions.IgnoreCase : RegexOptions.None;
+        InspectDirectory(path =>
+        {
+            var name = Path.GetFileName(path);
+            var match = Regex.Match(name, @"^slot([1-9][0-9]*)\.(json|bak)$", comparison | RegexOptions.CultureInvariant);
+            if (match.Success && int.TryParse(match.Groups[1].Value, CultureInfo.InvariantCulture, out int slot))
+                slots.Add(slot);
+        });
+        return slots;
+    }
+
+    private SaveFile ReadPrimary(int slot) => ReadFile(PathFor(slot, "json"), _output is null ? slot : null, _validate);
+
+    internal SlotRead Read(int slot) => new(ReadPrimary(slot),
         ReadFile(PathFor(slot, "bak"), _output is null ? slot : null, _validate));
 
     internal static SaveFile ReadSeed(string path) => ReadFile(path, null, null);

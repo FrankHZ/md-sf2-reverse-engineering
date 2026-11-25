@@ -1,5 +1,7 @@
 using System.Reflection;
 using Godot;
+using Sf2.Remake.Application.Runtime;
+using Sf2.Remake.Content.Persistence;
 using Sf2.Remake.GodotAdapter;
 
 // Controlled verification operands only. The ordinary executable has no seed override.
@@ -15,6 +17,15 @@ public partial class OpeningStartupControl : Node
     }
     public bool RetiredLoadCompleted() => _retiredOwner?.GetType().GetField("Loading", Private)!.GetValue(_retiredOwner)
         is not Task task || task.IsCompleted;
+    public string CaptureSettledField(Node host)
+    {
+        var session = (GameSession)typeof(GameRoot).GetField("_session", Private)!.GetValue(host)!;
+        var state = session.Current;
+        var capture = session.CaptureFieldSnapshot(state.SessionId, state.Revision);
+        if (capture.Data is null) throw new InvalidOperationException(capture.Error);
+        return System.Text.Encoding.UTF8.GetString(OpeningSaveJson.WriteRecord(
+            new FieldSnapshotRecord(1, 1, DateTimeOffset.UnixEpoch, capture.Data)));
+    }
     public void SetNewGameSeeds(Node host)
     {
         if (host.FindChild("NameEntryView", true, false) is null)

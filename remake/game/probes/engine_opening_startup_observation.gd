@@ -117,24 +117,23 @@ func run() -> void:
         check(entry().get("latched",false),"Held Start latches Witch menu before release")
         edge(KEY_E,false)
     else: await press(KEY_E)
-    check(entry().get("stage") == "menu","Fresh input reaches Witch menu")
-    samples.append({"label":"witch","entry":entry()})
     if not await wait_entry_neutral("menu","before-back"):
         finish(""); return
+    samples.append({"label":"witch","entry":entry()})
     await press(KEY_ESCAPE)
     if not await wait_entry_neutral("title","after-back"):
         finish(""); return
     check(entry().get("title",false) and not opening().active,"Witch Back returns without replay")
     if case_name in ["newgame","continue"]:
         await press(KEY_ENTER); await press(KEY_E)
-        await journey()
+        if await wait_entry_neutral("menu","before-journey"): await journey()
     finish("")
 
 func wait_entry_neutral(stage: String, label: String) -> bool:
     var started := Time.get_ticks_msec()
     var before := entry_boundary()
     var current := before
-    while Time.get_ticks_msec()-started < 2000:
+    while Time.get_ticks_msec()-started < (30000 if stage == "menu" else 2000):
         if current.entry.get("stage") == stage and not current.entry.get("latched",true) and not current.entry.get("activated",true) and not current.input.held and not current.input.releaseBarrier and current.focused:
             samples.append({"label":label,"before":before,"ready":current,"elapsedMs":Time.get_ticks_msec()-started})
             return true
@@ -183,8 +182,10 @@ func wait_slot(expected: String) -> bool:
     check(false,"Slot boundary " + expected); return false
 
 func journey() -> void:
-    if case_name == "continue": await press(KEY_DOWN)
+    var selected := "Continue" if case_name == "continue" else "NewGame"
+    if entry().get("selectedAction") != selected: await press(KEY_DOWN if case_name == "continue" else KEY_UP)
     await press(KEY_ENTER)
+    if entry().get("continueText") == 225: await press(KEY_ENTER)
     if not await wait_slot("continue-slots" if case_name == "continue" else "new-game-slots"): return
     await press(KEY_ENTER)
     if case_name == "newgame":
@@ -195,6 +196,8 @@ func journey() -> void:
         await press(KEY_DOWN); await press(KEY_ENTER)
     var deadline := Time.get_ticks_msec()+60000
     while Time.get_ticks_msec() < deadline:
+        if entry().get("continueText") in [226, 224]:
+            await press(KEY_ENTER)
         var view := host.find_child("ExplorationSessionView",true,false)
         if view != null:
             samples.append({"label":"journey","state":view.call("ReadCaptureState",true,false),

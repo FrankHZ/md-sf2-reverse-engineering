@@ -10,7 +10,9 @@ namespace Sf2.Remake.GodotAdapter.Entry;
 public sealed partial class SessionEntryView : Control
 {
     internal Action? NewGame, Cancel, Continue, Quit, Settings;
-    internal bool CanOpenSettings => _page == -2 && !_setup && !_activated && Revealed;
+    internal Func<Task<bool>>? CheckContinueDefault { get; init; }
+    internal bool CanOpenSettings => _page == -2 && !Reading && !_setup && !_activated && !CheckingSaves && Revealed;
+    internal bool HasContinueDialogue => _assets?.Content.Dialogue.ContainsKey("225") == true;
     internal bool Replacement { get; init; }
     private EntryPresentationAssets? _assets;
     private EntryBackdrop _backdrop = null!;
@@ -23,6 +25,9 @@ public sealed partial class SessionEntryView : Control
     private readonly MenuPointer _pointer = new();
     private GameInput? _input;
     private int _page = -1, _selection;
+    private int _continueText;
+    private Task<bool>? _continueDefault;
+    private Action? _farewellAcknowledged;
     private double _revealed;
     private bool _latched, _activated, _failed, _setup;
     private string? _assetError;
@@ -30,7 +35,10 @@ public sealed partial class SessionEntryView : Control
     private SessionFailure? _failure;
     private bool _canRetry;
     private bool Revealed => _dialogue.Body.VisibleCharacters < 0 || _dialogue.Body.VisibleCharacters >= _dialogue.Body.GetTotalCharacterCount();
-    private string Stage => _page == -1 ? "title" : _page >= 0 ? "dialogue" : "menu";
+    private bool Reading => _page >= 0 || _continueText != 0;
+    private bool CheckingSaves => _continueDefault is not null;
+    private string Stage => _page == -1 ? "title" : _continueText != 0 ? "continue-dialogue" :
+        _page >= 0 ? "dialogue" : CheckingSaves ? "checking-saves" : "menu";
 
     public override void _Ready()
     {
@@ -47,7 +55,7 @@ public sealed partial class SessionEntryView : Control
         actions.AddThemeConstantOverride("separation", 12); _actionScroll.AddChild(actions);
         _read = new Button { Name = "ReadDialogue", Text = GameText.Get("entry.continue"), CustomMinimumSize = new(0, 76),
             FocusMode = FocusModeEnum.None, Visible = false };
-        _read.Pressed += () => { if (_page == -2) ReadMenu(); else Advance(); }; actions.AddChild(_read);
+        _read.Pressed += () => { if (Reading) Advance(); else ReadMenu(); }; actions.AddChild(_read);
         StoryTheme.EntryChoice(_read); StoryTheme.Select(_read, true);
         _hint = new Label { Name = "EntryHint", Position = new(1216, 900), Size = new(640, 160),
             HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
@@ -103,7 +111,7 @@ public sealed partial class SessionEntryView : Control
         _start.TooltipText = input.CompactHint(GameAction.Confirm) + " / " + input.CompactHint(GameAction.Equipment);
         foreach (var button in _buttons)
             button.TooltipText = GameText.Get("entry.choose-tooltip", input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel));
-        if (_page == -2)
+        if (_page == -2 && !Reading)
         {
             _entryDisplay = Replacement || _assetError is not null || _failure is not null ? null : _assets?.Dialogue(221);
             string text = _failure is not null ? FailureText() : _assetError is not null ? GameText.Get("entry.assets") :
@@ -115,12 +123,22 @@ public sealed partial class SessionEntryView : Control
     }
     internal void Setup(bool active)
     {
+        _continueText = 0;
         _pointer.Suspend();
         _activated = active; _setup = active;
         foreach (var button in _buttons) button.Visible = !active;
         _dialogue.Visible = !active; _hint.Visible = !active;
     }
     internal void ReturnFromSetup() { _activated = _setup = false; ShowMenu(); }
+    internal void ShowContinueFarewell(string leader, Action acknowledged)
+    {
+        _activated = _setup = false;
+        _pointer.Suspend();
+        _farewellAcknowledged = acknowledged;
+        _continueText = 226;
+        EntryMessage(_continueText, leader);
+        Latch();
+    }
     internal void PauseAudio(bool paused) => _assets?.Audio?.SetPaused(paused);
     public override void _ExitTree()
     {
@@ -131,6 +149,12 @@ public sealed partial class SessionEntryView : Control
         _pointer.ReleaseIfNeutral();
         if (_input?.GameplayHeld == false) _latched = false;
         if (!IsVisibleInTree()) return;
+        if (_continueDefault is { IsCompleted: true } check)
+        {
+            _continueDefault = null;
+            if (check.IsFaulted) GD.PushWarning("entry-save-default: " + check.Exception!.GetBaseException().GetType().Name);
+            if (_page == -2 && !_failed) Select(check.IsCompletedSuccessfully && check.Result ? 1 : 0);
+        }
         if (!Revealed)
         {
             _revealed = Math.Min(_dialogue.Body.GetTotalCharacterCount(), _revealed + delta * (_input?.Settings.CharactersPerSecond ?? 40));
@@ -155,13 +179,15 @@ public sealed partial class SessionEntryView : Control
             if (action is GameAction.Confirm or GameAction.Equipment) Advance();
             return;
         }
-        if (_page >= 0)
+        if (Reading)
         {
-            if (action == GameAction.Equipment) { Latch(); ShowMenu(); }
+            if (action == GameAction.Equipment && _continueText == 0) { Latch(); ShowMenu(); }
             else if (action == GameAction.Confirm) Advance();
-            else if (action == GameAction.Cancel) { Latch(); ShowTitle(); }
+            else if (action == GameAction.Cancel && _continueText == 225) { Latch(); ShowMenu(); }
+            else if (action == GameAction.Cancel && _continueText == 0) { Latch(); ShowTitle(); }
             return;
         }
+        if (CheckingSaves && action != GameAction.Cancel) return;
         if (action == GameAction.Up) Select((_selection + _buttons.Count - 1) % _buttons.Count);
         else if (action == GameAction.Down) Select((_selection + 1) % _buttons.Count);
         else if (action == GameAction.Cancel) { Latch(); if (Replacement) Cancel?.Invoke(); else ShowTitle(); }
@@ -183,14 +209,19 @@ public sealed partial class SessionEntryView : Control
         }
         if (!Revealed) { _dialogue.Body.VisibleCharacters = -1; return; }
         if (_dialogue.ReadMore()) return;
+        if (_continueText == 225) { Continue?.Invoke(); return; }
+        if (_continueText == 226) { _continueText = 224; EntryMessage(_continueText); return; }
+        if (_continueText == 224) { _activated = true; _farewellAcknowledged?.Invoke(); return; }
         if (++_page >= 5) { ShowMenu(); return; }
         _backdrop.Arrival = false; EntryMessage(216 + _page);
     }
     private void ShowMenu(bool startMusic = true)
     {
         _failure = null; _canRetry = false;
+        _continueText = 0;
         _page = -2; _start.Hide(); _backdrop.Witch = true; _backdrop.Arrival = false;
-        foreach (var button in _buttons) button.Show();
+        if (!Replacement && !_failed && _assetError is null)
+            _continueDefault ??= CheckContinueDefault?.Invoke();
         if (startMusic && _assets is not null) _assets.Audio!.Play("MUSIC_WITCH");
         if (_assetError is not null) Message(GameText.Get("entry.assets"));
         else if (Replacement) Message(GameText.Get("entry.replacement"));
@@ -211,21 +242,21 @@ public sealed partial class SessionEntryView : Control
         _dialogue.Body.VisibleCharacters = _input?.Settings.TextMode == "adjustable" ? 0 : -1;
         _dialogue.Present(true, false, false, new(), ""); RefreshHint();
     }
-    private void EntryMessage(int id)
+    private void EntryMessage(int id, string? leader = null)
     {
-        var display = _assets!.Dialogue(id);
+        var display = _assets!.Dialogue(id, leader);
         Message(display.Text); _entryDisplay = display; RefreshHint();
     }
     private void RefreshHint()
     {
         if (_setup) { _hint.Hide(); _read.Hide(); return; }
-        _read.Visible = _page >= 0 || _page == -2 && _dialogue.MoreBelow;
-        foreach (var button in _buttons) button.Visible = _page == -2 && !_read.Visible;
+        _read.Visible = Reading || _page == -2 && _dialogue.MoreBelow;
+        foreach (var button in _buttons) button.Visible = _page == -2 && !_read.Visible && !CheckingSaves;
         _actionScroll.Visible = _page != -1;
         _read.Text = !Revealed ? GameText.Get("entry.reveal") : _dialogue.MoreBelow ? GameText.Get("entry.more") : GameText.Get("entry.continue");
         _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
-        string info = _page == -2 && !_read.Visible && _selection == 0 && !_buttons[0].Disabled
-            ? GameText.Get("entry.normal") : "";
+        string info = _page == -2 && !Reading && CheckingSaves ? GameText.Get("entry.loading") :
+            _page == -2 && !_read.Visible && _selection == 0 && !_buttons[0].Disabled ? GameText.Get("entry.normal") : "";
         if (_input?.Settings.ShowDebugDiagnostics == true)
         {
             if (GameText.Language != "en" && _entryDisplay?.Reason is { } reason)
@@ -240,8 +271,10 @@ public sealed partial class SessionEntryView : Control
         _hint.Position = new(EntryLayout.Window.Position.X, EntryLayout.Window.End.Y - hintHeight);
         _actionScroll.Size = new(640, _hint.Position.Y - 24 - _actionScroll.Position.Y);
         if (_input is null) return;
-        _dialogue.SetHint(!Revealed ? GameText.Get("entry.reveal-hint", _input.CompactHint(GameAction.Confirm)) : _dialogue.MoreBelow
-            ? GameText.Get("entry.more-hint", _input.CompactHint(GameAction.Confirm)) : _page >= 0
+        _dialogue.SetHint(CheckingSaves ? "" :
+            !Revealed ? GameText.Get("entry.reveal-hint", _input.CompactHint(GameAction.Confirm)) : _dialogue.MoreBelow
+            ? GameText.Get("entry.more-hint", _input.CompactHint(GameAction.Confirm)) : _continueText != 0
+            ? GameText.Get("story.continue", _input.CompactHint(GameAction.Confirm)) : _page >= 0
             ? GameText.Get("entry.read-hint", _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Equipment))
             : GameText.Get("entry.choose-hint", _input.CompactHint(GameAction.Confirm), _input.CompactHint(GameAction.Cancel)));
     }
@@ -254,13 +287,17 @@ public sealed partial class SessionEntryView : Control
     }
     private void Activate(int index)
     {
-        if (_page != -2 || _activated || _latched) return;
+        if (_page != -2 || Reading || CheckingSaves || _activated || _latched) return;
         if (index != _buttons.Count - 1 && ReadMenu()) return;
         if (_buttons[index].Disabled) return;
         Select(index); Latch();
         if (index == _buttons.Count - 1) { Settings?.Invoke(); return; }
         if (index == 0) { _activated = true; NewGame?.Invoke(); }
-        else if (index == 1) Continue?.Invoke();
+        else if (index == 1)
+        {
+            if (!HasContinueDialogue) Continue?.Invoke();
+            else { _continueText = 225; _pointer.Suspend(); EntryMessage(_continueText); }
+        }
         else Quit?.Invoke();
     }
     private bool ReadMenu()
@@ -283,6 +320,7 @@ public sealed partial class SessionEntryView : Control
     {
         title = _page == -1, stage = Stage, replacement = Replacement,
         selectedAction = _page == -2 && _buttons[_selection].IsVisibleInTree() ? _buttons[_selection].Name.ToString() : null,
+        continueText = _continueText == 0 ? (int?)null : _continueText,
         failure = _failure, canRetry = _canRetry,
         titleSelection = _selection, page = _page, message = _dialogue.Body.Text, visibleCharacters = _dialogue.Body.VisibleCharacters,
         totalCharacters = _dialogue.Body.GetTotalCharacterCount(), latched = _latched, activated = _activated, assetError = _assetError,
