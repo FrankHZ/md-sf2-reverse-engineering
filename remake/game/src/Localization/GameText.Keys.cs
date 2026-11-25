@@ -584,6 +584,8 @@ internal static partial class GameText
         ["save.details"] = 1,
         ["save.offer"] = 1,
         ["slot.record"] = 4,
+        ["slot.level"] = 1,
+        ["slot.level-unknown"] = 0,
         ["slot.output"] = 1,
         ["slot.create"] = 1,
         ["slot.previous"] = 0,

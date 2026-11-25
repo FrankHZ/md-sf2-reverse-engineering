@@ -570,7 +570,13 @@ msgid "save.offer"
 msgstr "Save current progress. Continue returns to this visit at {0}."
 
 msgid "slot.record"
-msgstr "Slot {0} · {1}\n{2} · {3} UTC"
+msgstr "Slot {0} · {1}\n{2} · {3}"
+
+msgid "slot.level"
+msgstr "Lv. {0}"
+
+msgid "slot.level-unknown"
+msgstr "Level unknown"
 
 msgid "slot.output"
 msgstr "Output file: {0}"

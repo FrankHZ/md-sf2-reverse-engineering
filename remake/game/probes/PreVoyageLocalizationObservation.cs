@@ -10,6 +10,23 @@ namespace Sf2.Remake.GodotAdapter;
 
 public sealed partial class GameRoot
 {
+    // Read-only, local controlled records: observe the production formatter without mounting or rewriting a save.
+    public string ReadSaveSummaryObservationJson(string inputPath, string savedAt = "")
+    {
+        string local = Path.GetFullPath(Path.Combine(Godot.ProjectSettings.GlobalizePath("res://"), "..", "..", "local")) + Path.DirectorySeparatorChar;
+        if (!Path.IsPathFullyQualified(inputPath) || !Path.GetFullPath(inputPath).StartsWith(local, StringComparison.OrdinalIgnoreCase) ||
+            new FileInfo(inputPath).Length > Sf2.Remake.Content.Persistence.OpeningSaveJson.MaximumBytes)
+            throw new ArgumentException("observation-input");
+        Sf2.Remake.Content.Persistence.SaveRecord record;
+        try { record = Sf2.Remake.Content.Persistence.OpeningSaveJson.ReadRecord(File.ReadAllBytes(inputPath), null); }
+        catch (Sf2.Remake.Content.Persistence.SaveFormatException error) { return JsonSerializer.Serialize(new { error = error.Code }); }
+        if (savedAt != "") record = record with { SavedAt = DateTimeOffset.Parse(savedAt, System.Globalization.CultureInfo.InvariantCulture) };
+        var definition = _session?.Definition ?? ((ExplorationReadAccepted)RestoreSource().Read()).Definition;
+        return JsonSerializer.Serialize(new { kind = record.GetType().Name, level = SavedLevel(record, definition),
+            time = SavedTime(record), zone = TimeZoneInfo.Local.Id,
+            label = Label(record.Slot, new(new(record, null), new(null, null)), definition) });
+    }
+
     // Controlled observation startup, before any gameplay session exists. Uses the ordinary
     // private admission and mount; no active snapshot setters, overlay injection or source edits.
     public string StartPreVoyageLocalizationObservation(string inputPath)

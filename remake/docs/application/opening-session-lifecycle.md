@@ -1753,9 +1753,11 @@ and its readback, content and resource checks. In-flight services or field recei
 The [gameplay window agreement](../godot/presentation.md#gameplay-save-and-quit-windows-1450)
 uses the same SaveSlotView for field Save, Church Save, overwrite/result/error, backup and Quit.
 Gameplay retains the paused scene beneath a translucent scrim and a centered shared-style window;
-entry retains its Witch-safe arrangement. Slots show the saved character, destination and UTC
-timestamp. V6 takes the display map and coordinates from the saved physical player. Old slots use
-their recipe destination labels. A backup's presence alone never promises recovery:
+entry retains its Witch-safe arrangement. Ordinary slots show their number, saved protagonist name
+and level, and the saved instant converted to the user's local date/time.
+The [shared history contract](battle-save-and-continue.md#manual-save-history-and-developer-files)
+owns typed level selection, the explicit unknown-level label and DST/date-boundary conversion.
+Destination details belong to save-offer context rather than history rows. A backup's presence alone never promises recovery:
 only Continue labels it as an offered action, using the same existing compatibility/storage/music
 exclusions as the recovery consumer. Save and New Game describe backup presence without that action.
 Readable refusal/storage/uncertain-publication messages keep full diagnostic codes secondary.

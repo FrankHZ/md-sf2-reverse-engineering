@@ -232,6 +232,25 @@ Each player slot has a positive numeric identity in its filename and record head
 keep their original paths. The list also discovers backup-only slots. Each page validates at most
 six pairs. New Game and Save offer a fresh number, even when the existing slots are occupied.
 
+Ordinary rows show only slot number, protagonist name, saved protagonist level and local save
+time (`yyyy-MM-dd HH:mm`). The shared Witch/New Game/field/battle history resolves party member 0
+to its actor identity, then reads the record's `SavedAlly.Level` (legacy field), saved party
+(field snapshot), or actor `Progress.Level` (battle). A protagonist outside the battle actor list
+uses the saved retained-allies list. Content definitions identify the protagonist; their default
+level is never a progress fallback. Missing battle progress displays “Level unknown” / “等级未知”.
+Legacy field level is required by the existing codec; an omitted field remains a malformed record.
+`SavedAt.ToLocalTime()` converts the stored instant using the host's local time-zone rules at that
+instant, including date changes and DST. It does not reinterpret UTC as a local wall time or alter
+the persisted format. Map, encounter, round and acting-unit details remain in save-offer context,
+not ordinary history rows. Empty, damaged, incompatible and recoverable-backup states keep their
+separate labels, refusal/recovery explanation and diagnostic details.
+
+[#2285](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2285) is a bounded presentation
+change under this agreement: no storage, cache, snapshot, game-rule or restore-policy change.
+Acceptance covers both languages, maximum-length and ordinary names, typed record variants,
+known local-time boundaries, paging/focus, cancellation and one ordinary Continue.
+[Native summary reproduction](../godot/host-ui.md#slot-summary-observation) owns the direct checks.
+
 The listing and each player publication enumerate the directory once. Listing sorts numeric IDs
 and decodes only the selected page. A write checks the observed primary and backup under the slot
 lock, validates the candidate, flushes and verifies a sibling temp, then atomically publishes and

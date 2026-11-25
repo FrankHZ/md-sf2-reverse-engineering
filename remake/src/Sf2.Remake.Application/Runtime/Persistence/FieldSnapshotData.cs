@@ -18,6 +18,8 @@ public sealed class FieldSnapshotData
     }
 
     public IReadOnlyDictionary<string, string> Names => Snapshot.Registers.Names;
+
+    public byte? SavedLevel(string actor) => Snapshot.Party.Allies.FirstOrDefault(ally => ally.Actor == actor)?.Level;
 }
 
 public sealed record FieldSnapshotOffer(Guid SessionId, long Revision, FieldReturnAnchor? Landing, string? Error)
