@@ -219,6 +219,31 @@ and no-autosave contracts remain authoritative. Native engineering observations 
 integration are distinct from **Unknown** human visual/discoverability approval and original timing,
 media, natural reach and SRAM parity. This bounded change does not close #438 or start #1447.
 
+## Opening sequence coverage (#2247)
+
+The pinned USA boot story is before the title. The Witch's New Game leads to Map3 without a
+second prologue call. [Source order and exit routes](../../../docs/research/presentation/special-screens.md#boot-story-sequence).
+
+| Boundary | Current production and selected input | Disposition |
+| --- | --- | --- |
+| Boot logo | **Missing** as a game-owned retail logo stage. Ordinary `GameRoot._Ready` loads preferences/window support and calls `ShowEntry`. The private entry resources are title and Witch layers. | Independent optional startup branding; the story proposal starts without a logo prerequisite. |
+| Four pre-title story scenes | **Missing integration and content.** In the selected #2242 successor, Map42, English texts 4186–4266 and command 9 are prepared. There is no Map65, no compiled intro program and no sprite rows for effects 183/187. The selected zh-CN overlays have zero of the 81 scene text IDs. `{D2}` is unsupported by the current text lexer. | Primary #2247 gap. See [entry lifecycle and implementation order](../application/opening-session-lifecycle.md#proposed-opening-sequence-2247) and [presentation dependencies](../godot/presentation.md#pre-title-story-presentation-2247). |
+| Title | **Implemented, abbreviated.** A short numeral entrance stands in for the multi-phase source title. The current title has an operable Start, settles static and uses a finite cue. Source copyright/scroll/prompt/timeout choreography remains absent. | Preserve the bounded #1447 result, including the finite score and return behavior. Its native investigation exercised the short title/Witch path. [Merged investigation](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/1467). |
+| Witch and slot actions | **Implemented, bounded.** Both empty and occupied journeys enter the same greeting and adapted menu. New Game owns slot/name/explicit first save. Continue owns load and recovery. The retail Load dialogue at 225 → slot → 226 → 224 lacks a current consumer. | Treat the missing Load dialogue as the [#1456 follow-up](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456#issuecomment-7150145598). Intro work leaves slot and recovery ownership with the existing flows. |
+| New Game → exploration | **Implemented.** Ordinary New Game starts the admitted Map3 house/exploration route. A loaded journey restores its admitted field or battle landing. | Preserve the [Map3 start and save agreement](../application/opening-session-lifecycle.md#implemented-new-game-boundary). #2245 covers a demonstration of the current route. |
+
+**Confirmed (inspection).** The above current-state comparison is against accepted repository
+`c05be9100863ea0e9f3b0108add3881194affe23` and the [composed package selections](opening-loop-acceptance.md#pre-voyage-showcase-2245).
+Read the current `world.maps`, `world.programs`, `world.texts`, `world.presentation` and entry resource
+metadata, then compare the same IDs with the selected `world.text` and `entry.text` catalogs.
+[Host source](../../game/src/GameRoot.cs) ·
+[Entry reader](../../src/Sf2.Remake.Content/Scenarios/EntryPresentationReader.cs).
+
+**Unknown.** Player experience, exact source timing and the final quality of Original/HD
+projection at the new scene boundaries. Future engineering acceptance uses bounded runs of the
+ordinary entry, state/input/projection and audio receipts. Human timing, appearance and
+listening acceptance can use the existing review or authorized showcase route.
+
 ## Dialogue and cutscene matrix
 
 | ID / flow and trigger | Existing behavior and delivery state | Gap and user impact | Evidence and limits | Priority / dependencies / suggested slice and Issue |
