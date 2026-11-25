@@ -1,6 +1,6 @@
 # Church promotion
 
-**Ordinary church promotion.** Bowie can become HERO from SDMN at stored level 20 or higher. The current class travels with his earned progress through field play, combat, level-up, saves and return. The campaign retains High rigor because this change crosses growth, equipment, presentation and both save recipes. The ordinary class pairs and Eric’s Pegasus Wing route are playable through first Pacalon. The other special families remain open. [Campaign agreement](remaining-campaign-risk-baseline.md) · [Design assignment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945)
+**Ordinary church promotion.** Bowie can become HERO from SDMN at stored level 20 or higher. The current class travels with his earned progress through field play, combat, level-up, saves and return. The campaign retains High rigor because this change crosses growth, equipment, presentation and both save recipes. The ordinary class pairs, Eric’s Pegasus Wing route and the Warrior Pride route for Jaha and Randolf are admitted through first Pacalon. Brass Gunner, Sorcerer and Master Monk remain with [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957). [Campaign agreement](remaining-campaign-risk-baseline.md) · [Design assignment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945)
 
 ## Playable HERO and reproduction
 
@@ -181,7 +181,7 @@ Each slice requires independent acceptance before its dependent work starts. Pai
 
 **2. Special item and the first PGNT.** Depends on the accepted class/save/refresh path and KNTE→PLDN admission. Extend the same campaign selection, generator, class/scene readers, `FieldService.cs`, `FieldInventory.cs`, `ChurchServiceView.cs`, bilingual catalogs and `FieldServiceTests.cs`. Use `Domain/Battles/Rules/BattleInventory.cs` for slot compaction. Bind the source mapping and PGNT class, flying movement/terrain, weapon and member-specific appearances. Test empty/depot-only, first of multiple matching holders and reverse slot precedence, reserve/fallen holder, same member in both roles, stale slot after Give, special No → regular No/Yes, and unsupported destination. Distinguish Wing consumption from F175, including after a fresh castle visit. On separate branches from ordinary Search, decline and retain the Wing, or accept and remove exactly one Wing. Check candidate, actual other holder, rest of pack, F175, zero EXP, menu exit, flight and a legal battle action, Save, cold Continue and attempted repeat. Use the English Eric history for both UI languages and the original Chinese save for low-level refusal and unchanged item custody, as specified under [party selection](#which-parties-can-exercise-it). Show the full-pack acquisition refusal where the receipt itself is at issue. Preserve any failed run.
 
-**Subsequent special rows.** Reuse slice 2’s files per actor/class pair. For BRN or BRGN, first observe ordinary pickup and holder for Warrior Pride or Silver Tank. SORC/MMNK require Map23 Search admission for the Secret Book/Vigor Ball in the current selection. SORC must exercise warning No (no spend, no book change), final Yes (DAO-only), a later destination spell, and cold book restore. MMNK and ordinary NINJ must keep the weapon carried, clear its contribution and leave an independent ring alone where supported. Accept changed valid states with and without an equipped weapon. Treat spell and equipment actions beyond the mounted cases as explicit dependencies. The item index distinguishes confirmed placement, selection and actual pickup for each item. [Promotion item lifecycle](../content/campaign-items.md)
+**Subsequent special rows.** Reuse slice 2’s files per actor/class pair. Use a legal ordinary history or a labeled controlled copy to reach the rite with a carried promotion item. Keep natural acquisition, current placement and custody during promotion as separate observations. Use Map23 Search for Secret Book or Vigor Ball when its own acquisition is under review. SORC must exercise warning No (no spend, no book change), final Yes (DAO-only), a later destination spell, and cold book restore. MMNK and ordinary NINJ must keep the weapon carried, clear its contribution and leave an independent ring alone where supported. Accept changed valid states with and without an equipped weapon. Treat spell and equipment actions beyond the mounted cases as explicit dependencies. The item index distinguishes confirmed placement, selection and actual pickup for each item. [Promotion item lifecycle](../content/campaign-items.md)
 
 For each delivered behavior, update its row in [campaign items](../content/campaign-items.md), [characters](../content/campaign-characters.md), [locations](../content/campaign-locations.md), the applicable [flag ledger](../content/campaign-flags.md) and the [capability trace](../capability-status.md#campaign-feature-trace). Describe the actual reach, remaining unsupported cases, owning tests and ordinary receipt. The implementation ticket should reserve those exact rows and affected files against concurrent work before editing.
 
@@ -213,7 +213,7 @@ Copy-Item -LiteralPath $seed -Destination (Join-Path $slotDirectory 'slot1.json'
 & $env:GODOT_BIN --path $game -- --input-settings $settings
 ```
 
-Read the existing exploration/battle `ReadObservationJson`, scene projection, church wait, item words, save/entry observations and native errors. Use mapped controls; keep screenshots, frame capture, manually edited saves and public private-content attachments out of acceptance. Compare decoded progress before/after across all actors, flags, gold, depot, seeds and actual slot/class/book; check stale input after reentry and successful ordinary control return. Compare level-up outcomes against an uninterrupted run from the same state/RNG. Separate existing shutdown failures from new action/restore errors. Use the clean committed planner and record actual PR checks. [Engine/adapter verification](../development-and-verification.md) · [Native save and control](battle-save-and-continue.md) · [Known Pacalon shutdown evidence](pacalon-first-visit.md#reproduction)
+Read the existing exploration/battle `ReadObservationJson`, scene projection, church wait, item words, save/entry observations and native errors. Use mapped controls; keep screenshots, frame capture and public private-content attachments out of acceptance. Compare decoded progress before/after across all actors, flags, gold, depot, seeds and actual slot/class/book; check stale input after reentry and successful ordinary control return. Compare level-up outcomes against an uninterrupted run from the same state/RNG. Separate existing shutdown failures from new action/restore errors. Use the clean committed planner and record actual PR checks. [Engine/adapter verification](../development-and-verification.md) · [Native save and control](battle-save-and-continue.md) · [Known Pacalon shutdown evidence](pacalon-first-visit.md#reproduction)
 
 ## PGNT pilot ownership and compatibility
 
@@ -310,3 +310,85 @@ scratch held aside.
 ### Review boundary
 
 The pinned sources, retained inputs and current code resolve the design questions without new emulator acquisition. For a static recheck in a pinned SF2DISASM checkout, use `git show c834c652:disasm/code/common/stats/newgame.asm` and follow the named symbols in the source links above. The actor/class/weapon combinations for future destinations require their own content and observations. Map23 Search remains a dependency for the Secret Book and Vigor Ball routes. The English Pacalon save already supplies the eligible knight and separate Wing holder for PGNT.
+
+## Baron promotion
+
+**Confirmed** in the pinned USA source. The special pair is WARR (2) → BRN (16) with
+Warrior Pride (119). The same joined-member scan used by PGNT selects the first holder
+in member-index order and the last matching slot in that holder’s pack. The rite uses
+current custody. F143 belongs to the independent Map7 Search and does not enter the rite.
+Special No offers GLDT separately. Final special Yes compacts the selected pack and
+publishes both refreshed actors together. A successful BRN keeps earned bases, vitals
+and legal gear, at level 1 and 0 EXP. [Promotion tables and church caller](#selection-and-custody)
+
+BRN and GLDT use Regular terrain costs and no innate resistance. BRN’s base MOV is 6
+and GLDT’s is 5. BRN has base critical 1/8 with 50% bonus, double 1/32 and counter
+1/16. The zero-based physical AI ranks are 27 Regular, 10 Flying, 27 Archer and 7
+Mage. Jaha and Randolf both have empty books and their own destination growth.
+The BRN DEF/AGI level-30 projections are 96/59 for Jaha and 94/57 for Randolf,
+compared with 106/54 and 104/52 as GLDT. [Class definitions](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/classes/classdefs.asm) ·
+[AI priority](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/aipriority.asm) ·
+[Jaha growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats03.asm) ·
+[Randolf growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats16.asm)
+
+**Confirmed in the remake.** The production reader resolves both members’ BRN growth
+and battle bodies across all 26 encounter scenes. Each has 15 appearances, covering
+Unarmed, axes 33–38 and swords 57–60, 62–64 and 71. The pinned class mask reserves
+Achilles Sword for SDMN/HERO. Great Axe is BRN-eligible in the source and lies outside
+the current item admission. Mithril, rare weapon effects and late recruits have their
+own admission boundaries. [Prepared appearances and package](../content/asset-inventory.md#baron-promotion-2240) ·
+[Source item masks](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/items/itemdefs.asm)
+
+The ordinary Pacalon review uses a labeled copy of the English castle save with Warrior
+Pride in Kazin’s slot 1 (zero-based), Jaha’s carried Power Ring equipped and Broad Sword
+carried. F143 stays clear. The clean castle copy exercises the no-material route, and the
+private appearance-refusal engine case proves that a missing battle binding cannot spend
+the item. Shared engine cases cover the reverse slot scan, both holder roles, stale
+answers, repeated confirmation, legal weapon classes and different class priorities.
+
+| Ordinary input from the controlled copy | Observed result |
+| --- | --- |
+| Church and no-material fork | Cancel returned to services. Special No opened regular confirmation. Regular No preserved the party, and regular Yes produced GLDT with Kazin’s four words unchanged. The no-material fork offered GLDT directly and declined it. |
+| Special Yes and cold field Continue | Jaha changed from WARR 21/88 to BRN 1/0 with the same HP, gear and ring. Kazin’s pack changed from `[213,119,118,123]` to `[213,118,123,127]` with his other progress retained. The Chinese offer and member card displayed 男爵. The save and independent field v6 re-save matched in complete decoded data. |
+| Caravan Relief, Battle26 and growth | Ordinary walking and Relief took Jaha from reserve to the Battle26 repeat. A separate copy set only his EXP to 99. He moved from (5,25) to (6,23) with Regular MOV 6, equipped Broad Sword and kept Power Ring. The adjacent hit on the Lesser Demon displayed body 22/palette 1 and Sword 62, dealt 24 HP on a critical and earned 31 EXP. BRN 2/30 gained 1 HP, 1 base ATT, 2 DEF and 1 AGI. The equipped ATT after growth was 57. |
+| Cold battle Continue and field return | The post-action v4 slot and independent cold re-save matched in complete decoded data. Bowie’s paid EGRESS returned to Map36. The independent v6 return-slot re-save also matched complete decoded data, including BRN 2/30 and the equipped sword and ring. |
+
+Use `derived/issue2240/review-v1/Boot.ps1` with the [complete successor package](../content/presentation-assets.md#baron-promotion-successor).
+The driver stages writable state under the isolated checkout and selects an explicitly
+disposable external save root. Build the Debug adapter from that checkout first. Use a
+fresh sample and journey for each fork. Field equality uses the existing slow-time
+observation to hold ambient ticks during re-save, then returns to normal time before
+ordinary traversal. No screenshots are used.
+
+```powershell
+. ./local/private-inputs.ps1
+$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
+& $env:DOTNET_BIN build remake/game/Sf2.Remake.Godot.csproj -c Debug --no-restore
+$repo = (Get-Location).Path
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2240/review-v1'
+$run = Join-Path $review 'Boot.ps1'
+$prefix = [Guid]::NewGuid().ToString('N').Substring(0, 8)
+foreach ($mode in 'special', 'road', 'fallback', 'no-material') {
+    $journey = if ($mode -in 'special', 'road') { "$prefix-special" } else { "$prefix-$mode" }
+    & $run -Repo $repo -Mode $mode -Sample "$prefix-$mode" -Journey $journey -SaveRoot $disposableSaveRoot
+    if ($LASTEXITCODE) { throw "Inspect $mode receipts" }
+}
+$ready = Join-Path $repo "local/issue2240/review/receipts/$prefix-road/battle-ready-slot.json"
+$growth = Join-Path $repo "local/issue2240/review/$prefix-growth.json"
+uv run python "$review/runner/prepare.py" growth $ready $growth
+if ($LASTEXITCODE) { throw 'Controlled EXP copy failed' }
+foreach ($mode in 'strike', 'battle-cold', 'egress', 'field-cold') {
+    $seed = if ($mode -eq 'strike') { $growth } else { $null }
+    & $run -Repo $repo -Mode $mode -Sample "$prefix-$mode" -Journey "$prefix-strike" -Seed $seed -SaveRoot $disposableSaveRoot
+    if ($LASTEXITCODE) { throw "Inspect $mode receipts" }
+}
+```
+
+**Retained failures.** The legacy v3 visit refused Save with `field-visit-actor-origin`
+before the first input. Ordinary exit and re-entry restored the writable visit. The
+initial driver also failed its inherited Quit check after a successful Save. The first
+BRN-only package exposed the missing PGNT row in the DISPEL predecessor and rejected the
+Chinese catalog with `overlay-unavailable`. The complete successor reinstates the accepted
+PGNT bindings and admits the catalog. Some successful exits emitted ObjectDB warnings.
+A connection to [#1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
+remains **Unknown**, as do natural Warrior Pride pickup and Randolf’s native BRN playthrough.
