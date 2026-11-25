@@ -88,13 +88,14 @@ func decision_geometry(label: String) -> bool:
     if m.commandList.visible:
         var commands: Array = m.commands
         var column: Dictionary = m.commandList.rect
+        var content: Dictionary = m.commandList.content
         if not expect(commands.size() == 4 and commands.filter(func(row):return row.selected).size() == 1 and
                 card.rect.y+card.rect.height <= column.y and column.y+column.height <= m.description.y,
                 label+": four Main rows with one focus clear the card and reader"): return false
-        var bottom: float = column.y
+        var bottom: float = content.y
         for row in commands:
             if not expect(row.visible and not row.label.is_empty() and within(row.rect,bounds) and within(row.caption,row.rect) and
-                    row.rect.x == column.x and row.rect.width == column.width and row.rect.y >= bottom,
+                    row.rect.x == content.x and row.rect.width == content.width and row.rect.y >= bottom and within(row.rect,content),
                     label+": labeled row matches its full hit area"): return false
             bottom = row.rect.y+row.rect.height
     if m.listVisible and not expect(within(m.list,bounds) and m.list.y >= card.rect.y+card.rect.height and
@@ -279,6 +280,8 @@ func public_cursor() -> bool:
     if not await decision_geometry("Public Main"): return false
     while state().menu.command != 2: await act("down")
     var main := state()
+    if not expect(main.menu.layout.commands[0].rect.height > 80,
+            "Long localized Attack caption grows its row inside the Main frame"): return false
     await act("right")
     if not expect(main.menu.layout.reader.hint != null and state().menu.layout.reader.scroll > 0 and
         state().menu.command == main.menu.command and signature(state()) == signature(main),
@@ -341,6 +344,8 @@ func run() -> void:
         var chinese := OS.get_environment("SF2_CURSOR_LANGUAGE") != "en"
         var catalog: Translation = load("res://localization/zh_CN.po" if chinese else "res://localization/en.po")
         var long_text := "在确认前请查看所选行动的说明。" if chinese else "Read the selected action description before confirming. "
+        catalog.add_message("battle.command.attack", str(catalog.get_message("battle.command.attack")) + " " +
+            ("受控长标签".repeat(8) if chinese else "Controlled long command caption ".repeat(3)))
         for key in ["battle.range", "battle.no-items"]:
             catalog.add_message(key, str(catalog.get_message(key)) + "\n" + long_text.repeat(24))
     host = load("res://Main.tscn").instantiate(); root.add_child(host); root.grab_focus()

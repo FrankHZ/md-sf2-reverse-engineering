@@ -176,7 +176,8 @@ func battle_case() -> bool:
         var s := record("battle-resize-"+str(window))
         var layout: Dictionary = s.menu.layout
         var rows: Array = layout.commands
-        var list_rect: Dictionary = layout.commandList.rect
+        var frame: Dictionary = layout.commandList.rect
+        var content: Dictionary = layout.commandList.content
         var stretch := root.get_stretch_transform()
         var fits := func(rect: Dictionary) -> bool:
             var top_left: Vector2 = stretch * Vector2(rect.x,rect.y)
@@ -184,13 +185,22 @@ func battle_case() -> bool:
             return top_left.x >= 0 and top_left.y >= 0 and bottom_right.x <= window.x+1 and bottom_right.y <= window.y+1
         if not expect(root.size == window,"Actual client reached the requested size"): return false
         if not expect(layout.commandList.visible and rows.size() == 4,"Four visible Main rows"): return false
+        var terrain: Dictionary = layout.terrainPanel.rect
+        if not expect(fits.call(frame) and frame.x == layout.actor.x and frame.width == layout.actor.width and
+                frame.x == layout.description.x and frame.width == layout.description.width and
+                layout.terrainPanel.visible and terrain.y == layout.actor.y + layout.actor.height + 12 and
+                frame.y >= terrain.y + terrain.height + 12 and frame.y + frame.height + 12 <= layout.description.y,
+                "Main frame aligns with the card and reader and clears terrain and reader"): return false
+        if not expect(content.x == frame.x + 16 and content.y == frame.y + 16 and
+                content.width == frame.width - 32 and content.height == frame.height - 32,
+                "Native panel pads the command list on every side"): return false
         var labels: Array = rows.map(func(row): return row.label)
         if not expect(labels in [["Attack","Magic","Item","Stay"],["攻击","魔法","道具","待机"]],
                 "Localized command captions are always visible in source command order"): return false
-        var row_top: float = layout.actor.y+layout.actor.height
+        var row_top: float = content.y
         for row in rows:
             if not expect(row.visible and fits.call(row.rect) and fits.call(row.caption) and
-                    row.rect.x == list_rect.x and row.rect.width == list_rect.width and row.rect.y >= row_top and
+                    row.rect.x == content.x and row.rect.width == content.width and row.rect.y >= row_top and
                     row.caption.y >= row.rect.y and row.caption.y+row.caption.height <= row.rect.y+row.rect.height,
                     "Full hit row and caption fit without intersecting the card or another row"): return false
             if not expect(row.art.mounted != authored and row.art.filter == "Nearest" and
@@ -198,7 +208,7 @@ func battle_case() -> bool:
                     "Main reuses admitted command art or its authored fallback"): return false
             row_top = row.rect.y+row.rect.height
         if not expect(fits.call(layout.actor) and fits.call(layout.description) and
-                row_top <= layout.description.y and layout.reader.rect.height > 0,
+                row_top == content.y + content.height and layout.reader.rect.height > 0,
                 "All rows clear the measured acting card and the scrollable footer"): return false
         if not expect(layout.navigation.all(func(control): return control.id != "Back"),
                 "Main lists actions and leaves cancellation to input"): return false
@@ -231,6 +241,16 @@ func battle_case() -> bool:
     if not expect((state().menu.layout.help == opened.menu.layout.help or route == "pad") and resources(state()) == baseline,
             "Mouse restores keyboard/mouse cues without changing gameplay"): return false
     var first: Dictionary = state().menu.layout.commands[0].rect
+    var second: Dictionary = state().menu.layout.commands[1].rect
+    var frame: Dictionary = state().menu.layout.commandList.rect
+    var border := Vector2(frame.x+3, frame.y+3)
+    var gap := Vector2(first.x+48, (first.y+first.height+second.y)/2)
+    var inside_row := Vector2(second.x+48,second.y+48)
+    await mouse(border,true); await mouse(border,false)
+    await mouse(gap,true); await mouse(inside_row,false)
+    await mouse(inside_row,true); await mouse(gap,false)
+    if not expect(state().menu.page == "Main" and state().menu.command == initial_focus and state().revision == opened.revision,
+            "Frame border and row gaps never activate or retain a command press"): return false
     await mouse(Vector2(first.x+48,first.y+48),true)
     root.size = Vector2i(2560,1440); await frames(4)
     root.size = Vector2i(1920,1080); await frames(4)
@@ -239,11 +259,11 @@ func battle_case() -> bool:
             "Relayout cancels incomplete command click"): return false
     if opened.menu.layout.commands[0].enabled:
         await click(state().menu.layout.commands[0].caption)
-        if not expect(state().menu.page == "Target","Attack caption opens the legal targets"): return false
+        if not expect(state().menu.page == "Target" and not state().menu.layout.commandList.visible,
+                "Attack caption opens the legal targets and hides the Main frame"): return false
         await act("cancel")
         if not expect(state().menu.page == "Main" and state().menu.command == 0,"Attack Target Back keeps the parent row"): return false
-    for i in range(posmod(1-state().menu.command,4)): await act("down")
-    await act("confirm"); await frames(4)
+    await click(state().menu.layout.commands[1].rect)
     var magic := record("magic-child")
     if not expect(magic.menu.page == "Magic" and not magic.menu.layout.commandList.visible,"Child replaces Main rows"): return false
     if not expect(abs(magic.menu.layout.list.x-opened.menu.layout.commandList.rect.x) < 1
@@ -269,11 +289,14 @@ func battle_case() -> bool:
     var hit := Vector2(item.rect.x+item.rect.width-4,item.rect.y+item.rect.height/2)
     var item_motion := InputEventMouseMotion.new(); item_motion.position = hit; item_motion.relative = Vector2(4,3)
     Input.parse_input_event(item_motion); await frames(3)
-    if not expect(state().menu.page == "Main" and state().menu.command == 2,"Hover focuses the entire Item row"): return false
+    if not expect(state().menu.page == "Main" and state().menu.command == 2 and state().menu.layout.commands[2].surfaceColor == "204c76",
+            "Hover focuses and highlights the entire Item row"): return false
     await mouse(hit,true)
-    if not expect(state().menu.page == "Main","Press alone does not open a child"): return false
+    if not expect(state().menu.page == "Main" and state().menu.layout.commands[2].surfaceColor == "354c64",
+            "Press highlights the captured row without opening a child"): return false
     await mouse(Vector2(item.caption.x+8,hit.y),false)
-    if not expect(state().menu.page == "Items","Full click from row edge to caption opens Item"): return false
+    if not expect(state().menu.page == "Items" and not state().menu.layout.commandList.visible,
+            "Full click from row edge to caption opens Item and hides the Main frame"): return false
     if authored:
         await act("down")
         var item_row: int = state().menu.row
@@ -293,6 +316,11 @@ func battle_case() -> bool:
     if not await settled(): return false
     if not expect(not state().inspection.active,"Root Back returns only to Movement"): return false
     record("battle-returned-movement")
+    await act("confirm")
+    await click(state().menu.layout.commands[3].rect)
+    if not expect(state().stage != "ActionChoice" and state().revision > opened.revision,
+            "One complete click on Stay advances the turn"): return false
+    record("battle-stay-clicked")
     return true
 
 func search_case() -> bool:

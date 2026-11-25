@@ -303,7 +303,7 @@ func remounted_command_menu() -> bool:
     await roster_pointer(row, MOUSE_BUTTON_LEFT, true)
     if not check(state().menu.layout.commands[3].surfaceColor == "354c64", "Reparented row receives press"): return false
     root.mouse_exited.emit(); await frames(2)
-    if not check(state().menu.layout.commands[3].surfaceColor == "102c50", "Window exit clears captured row"): return false
+    if not check(state().menu.layout.commands[3].surfaceColor == null, "Window exit clears captured row"): return false
     await roster_pointer(row, MOUSE_BUTTON_LEFT, false)
     return check(state().menu.page == "Main", "Release after window exit cannot commit Stay")
 

@@ -83,10 +83,10 @@ internal sealed partial class CompactCommandList : Control
         QueueRedraw();
     }
 
-    private string SurfaceColor(int index)
+    private string? SurfaceColor(int index)
     {
         if (!_icons[index].Available) return StoryTheme.ActionDisabled;
-        if (index != _hovered) return StoryTheme.ActionNormal;
+        if (index != _hovered) return null;
         return _pressed ? StoryTheme.ActionPressed : StoryTheme.ActionHover;
     }
 
@@ -94,7 +94,7 @@ internal sealed partial class CompactCommandList : Control
     {
         if (!DrawActionSurfaces) return;
         for (int i = 0; i < _rows.Count; i++)
-            DrawRect(_rows[i].GetRect(), new Color(SurfaceColor(i)));
+            if (SurfaceColor(i) is { } color) DrawRect(_rows[i].GetRect(), new Color(color));
     }
 
     internal (int Index, Rect2 Rect) Hit(Vector2 position)

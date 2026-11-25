@@ -127,12 +127,13 @@ labels. The public schematic uses text when art is unavailable. Private art stay
 The [asset inventory](../content/presentation-assets.md#ordinary-menu-publication-and-coverage-1666)
 owns resource identity.
 
-Battle Main sits directly over the board. Each vertical row fills its existing hit rectangle
-with the action surface behind both the icon and caption. The gaps stay clear. A selected row
-keeps its gold marker, caption and selected art. An unavailable row uses the muted caption and
-disabled blue (`142235`) even when focused or pointed at. The pressed color follows the current
-captured gesture and ends on release or cancellation. Church, field Prepare and battle inspection
-Options use their enclosing panels as the action surface.
+Battle Main uses one shared blue-and-gold panel for all four vertical rows. The panel aligns
+with the acting card and reader. Its blue interior shows through idle rows, padding and gaps.
+A selected row keeps its gold marker, caption and selected art. An unavailable row uses the
+muted caption and disabled blue (`142235`) even when focused or pointed at. Hover and pressed
+feedback fill the row's hit rectangle, and pressing ends on release or cancellation. Panel
+padding and gaps cover the board without activating a row. Church, field Prepare and battle
+inspection Options continue to use their enclosing panels as the action surface.
 
 In [DesignPreview](../../game/probes/previews/README.md), enter F4 and confirm the starting tile
 to see normal, selected and disabled rows. Hover over Magic and hold the left button to see
