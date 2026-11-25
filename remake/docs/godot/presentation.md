@@ -110,6 +110,10 @@ terrain slot resource. `ExplorationPresentation.Palette` projects finite bank fa
 actor/UI separation and a reduced steady pulse. `MapBlockTextures` reports the actual prepared pixel
 samples consumed by its cached blocks; the observer checks them against slot words. Source183/187
 sprites, fixed/blinking actors and existing mosaic projection use the ordinary actor renderer.
+The optional scene-palette visual also selects a pure-black exterior mask outside the legal scene
+rectangle, independent of the changing in-scene backdrop bank. The existing renderer draws this mask
+before UI and exposes its actual color in camera projection. It uses no map identity condition;
+ordinary exploration keeps its existing backdrop and dialogue/menu colors remain unchanged.
 [Scene agreement](../application/opening-session-lifecycle.md#bounded-scene-implementation-2250) ·
 [Native reproduction](../content/presentation-assets.md#controlled-opening-scene-package-2250).
 The four-scene startup/Skip integration below is still proposed.

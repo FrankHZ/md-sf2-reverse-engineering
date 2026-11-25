@@ -15,6 +15,7 @@ var pulses := 0
 var recovered := false
 var palette_proofs: Dictionary = {}
 var effects: Dictionary = {}
+var exterior_proofs := 0
 
 func _initialize() -> void:
     create_timer(240).timeout.connect(func(): finish("240-second scene deadline"))
@@ -92,6 +93,10 @@ func run() -> void:
         var palette: Variant = s.get("scenePaletteWait")
         var draw: Variant = s.get("cameraProjection")
         if draw != null:
+            if draw.get("exteriorColor") != "000000ff":
+                finish("Scene exterior draw is not opaque black")
+                return
+            exterior_proofs += 1
             for actor in draw.get("actors",[]):
                 if actor.visible and actor.sprite in [183,187] and not effects.has(str(actor.sprite)):
                     effects[str(actor.sprite)] = true
@@ -128,6 +133,7 @@ func run() -> void:
             if scene == "2" and pulses != 6: failures.append("Restored storm pulse count: " + str(pulses))
             if s.display.Scene != null: failures.append("Terminal retained temporary palette")
             if palette_proofs.is_empty(): failures.append("No actual palette texture proof")
+            if exterior_proofs == 0: failures.append("No actual exterior draw proof")
             if not effects.has("183" if scene == "1" else "187"): failures.append("Required effect sprite was not drawn")
             finish("")
             return
@@ -140,7 +146,7 @@ func finish(reason: String) -> void:
     var output := FileAccess.open(OS.get_environment("SF2_OPENING_OUTPUT"),FileAccess.WRITE)
     if output != null:
         output.store_string(JSON.stringify({"passed":failures.is_empty(),"failures":failures,
-            "elapsedMs":Time.get_ticks_msec()-began,"texts":texts.keys(),"restoredPulses":pulses,"paletteTextureProofs":palette_proofs.size(),"effectSprites":effects.keys(),
+            "elapsedMs":Time.get_ticks_msec()-began,"texts":texts.keys(),"restoredPulses":pulses,"paletteTextureProofs":palette_proofs.size(),"effectSprites":effects.keys(),"exteriorProofs":exterior_proofs,
             "samples":samples},"  "))
         output.close()
     else: push_error("Missing observation output")

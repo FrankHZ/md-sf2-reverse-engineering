@@ -130,6 +130,17 @@ bounded conclusions. Human appearance,
 readability preference, original natural reach/timing and the four-scene ordinary startup remain
 **Unknown** or explicitly not implemented.
 
+The exterior-color correction keeps the scene's outer mask opaque black independently of its
+palette backdrop; ordinary exploration and dialogue/menu styling are unchanged. The native observer
+checks `cameraProjection.exteriorColor == "000000ff"` on every observed draw and requires at least one
+such proof. The focused corrected shrine run recorded 704 matching draws, the first automatic text
+and effect 183 before losing OS focus at 14.917s; it is a background-projection observation, not a
+completed scene rerun. Preserve that interrupted result and the independent review's earlier
+37.340s focus-loss result as environment interruptions, not product logic failures. Release adapter
+and Debug builds pass without warnings/errors. Independent review retains the two complete published
+native routes after this correction; the earlier completed scene results above remain separately
+identified.
+
 ## Public localization pilot assets
 
 The game bundles one unmodified OFL 1.1 Noto Sans CJK SC Regular font and its

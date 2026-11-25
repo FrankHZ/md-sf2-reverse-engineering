@@ -463,6 +463,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
             // using its screen rectangle exposes packed rooms beyond this area.
             _screen = _viewport.ScreenAt(actorOrigin);
             var backdrop = SceneBackdrop ?? (world.Layout.BlankBlockZero ? Colors.Black : new Color(0.03f, 0.04f, 0.06f));
+            // Scene palette changes belong inside the scene; its exterior stays black.
+            var exterior = visual.ScenePalette is not null ? Colors.Black : backdrop;
             if (!prepare) _owner.DrawRect(_screen, backdrop);
             var overlay = new MapOverlayOffset(0, 0);
             if (view is null)
@@ -608,7 +610,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 sessionId = current.SessionId, revision = current.Revision, observationSequence = current.ObservationSequence,
                 simulationTick = story.SimulationTick, token = story.Wait?.Token.Value, cue = CueProjection,
                 map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null,
-                x = 0, y = 0, width = viewport.X, height = viewport.Y,
+                x = 0, y = 0, width = viewport.X, height = viewport.Y, exteriorColor = exterior.ToHtml(),
                 legalScreen = new { x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y },
                 cameraX = _camera.X, cameraY = _camera.Y, legalBounds = Battles.BattleMapViewport.Rectangle(_viewport.Bounds),
                 scale = _scale, windows, background = backgroundDraw, foreground = foregroundDraw, backgroundHigh, foregroundHigh, actors, occlusionDraws };
@@ -616,7 +618,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 sessionId = current.SessionId, revision = current.Revision, observationSequence = current.ObservationSequence,
                 simulationTick = story.SimulationTick, token = story.Wait?.Token.Value, cue = CueProjection,
                 map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null,
-                x = 0, y = 0, width = viewport.X, height = viewport.Y,
+                x = 0, y = 0, width = viewport.X, height = viewport.Y, exteriorColor = exterior.ToHtml(),
                 legalScreen = new { x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y },
                 cameraX = _camera.X, cameraY = _camera.Y, legalBounds = Battles.BattleMapViewport.Rectangle(_viewport.Bounds),
                 scale = _scale, windows, background = backgroundDraw?.Geometry(), foreground = foregroundDraw?.Geometry(),
@@ -629,7 +631,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 new Rect2(0, _screen.End.Y, viewport.X, viewport.Y - _screen.End.Y),
                 new Rect2(0, _screen.Position.Y, _screen.Position.X, _screen.Size.Y),
                 new Rect2(_screen.End.X, _screen.Position.Y, viewport.X - _screen.End.X, _screen.Size.Y) })
-                if (border.Size.X > 0 && border.Size.Y > 0) _owner.DrawRect(border, backdrop);
+                if (border.Size.X > 0 && border.Size.Y > 0) _owner.DrawRect(border, exterior);
             int? portraitId = (story.PortraitWindow as OpenPortraitWindow)?.Portrait;
             PortraitResourceProjection = null;
             object? portraitUse = null;
