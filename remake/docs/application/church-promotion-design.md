@@ -678,3 +678,12 @@ Its later save-check extension initially lacked a namespace import. Two native b
 used old fixed key sequencing against current asynchronous Witch Continue and failed before
 play; the corrected state-driven ordinary-input driver passed. Successful native processes
 exit 0; some report existing ObjectDB leaks. No shutdown repair is claimed under #1716.
+
+The clean-head planner uses `uv run sf2 verify plan --base origin/main --head HEAD --scope engine`:
+the four Python edits only mount remake class resources; they change no research harness or
+original-evidence semantics. Its selection is engine, adapter and research-public, with no
+unclassified paths. Engine validation retains the completed initial failure and uses the 129-case
+affected rerun above; no replacement full local suite was run. Debug and Release adapter builds
+pass with shared compilation disabled. The selected Ruff, design-contract and research-index
+commands pass. Remote required-check results belong to the frozen PR handoff; local private
+native evidence is not a CI claim.

@@ -597,7 +597,7 @@ def main():
         "brn",
         "brgn",
         "mmnk",
-            "sorc",
+        "sorc",
         "wiz",
         "melee",
         "ranged",
