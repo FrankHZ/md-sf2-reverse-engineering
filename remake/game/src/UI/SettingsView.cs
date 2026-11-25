@@ -96,7 +96,7 @@ internal sealed partial class SettingsView : Control
         _pointer.ReleaseIfNeutral();
     }
 
-    private List<Choice> Choices() => _page switch
+    private List<Choice> PageChoices() => _page switch
     {
         Page.Root => [new("display", S("display")), new("assist", S("assist")), new("input", S("input")), new("debug", S("debug")),
             new("apply", T("ui.settings.apply"), ReadOnly || IncompleteAction(_draft) != null, true)],
@@ -106,12 +106,11 @@ internal sealed partial class SettingsView : Control
             new("speed", T("ui.settings.speed", _draft.CharactersPerSecond), ReadOnly)],
         Page.Assist => [new("flash", T("ui.settings.flash", Toggle(_draft.ReducedFlash)), ReadOnly),
             new("guidance", T("ui.settings.guidance", Toggle(_draft.ModernGuidance)), ReadOnly),
-            new("acceleration", T("ui.settings.acceleration", _draft.AccelerationMultiplier), ReadOnly),
-            new("defaults", T("ui.settings.defaults"), ReadOnly)],
+            new("acceleration", T("ui.settings.acceleration", _draft.AccelerationMultiplier), ReadOnly)],
         Page.Debug => [new("diagnostics", T("ui.settings.debug", Toggle(_draft.ShowDebugDiagnostics)), ReadOnly),
             new("victory", T("ui.settings.auto-victory", Toggle(_draft.DebugAutoVictory)), ReadOnly)],
         Page.Controls => [new("convention", T("ui.settings.confirm", T(_draft.ConfirmCancel == "standard" ? "ui.settings.standard" : "ui.settings.swapped")), ReadOnly),
-            new("edit", S("edit"), ReadOnly), new("help", T("ui.settings.help")), new("reset", S("reset"), ReadOnly)],
+            new("edit", S("edit"), ReadOnly), new("help", T("ui.settings.help"))],
         Page.Battle => [new("battle-speed", T("battle.speed.value", _draft.BattleSpeed?.ToString() ?? T("battle.speed.custom", _draft.CharactersPerSecond)), ReadOnly),
             new("messages", T("battle.speed.messages", Toggle(!_draft.SuppressBattleHitCoinMessages)), ReadOnly)],
         _ => EditorRows()
@@ -174,7 +173,7 @@ internal sealed partial class SettingsView : Control
         _title.Text = _page switch { Page.Root => T("ui.settings.title"), Page.Display => S("display"),
             Page.Assist => S("assist"), Page.Controls => S("input"), Page.Debug => S("debug"), Page.Battle => T("battle.speed.title"),
             Page.Actions => S("edit"), _ => S(_action) };
-        string message = _status != "" ? _status : _page switch {
+        string message = _status != "" ? _status : id == "reset-page" ? ResetDescription : _page switch {
             Page.Root => Notice ?? (IncompleteAction(_draft) is { } name ? S("required", S(name)) : ""),
             Page.Display when id == "graphics" =>
                 T(BattleContext ? "ui.settings.battle-graphics" : "ui.settings.graphics-coverage"),
@@ -190,7 +189,7 @@ internal sealed partial class SettingsView : Control
         _message.Visible = message.Length != 0;
         _diagnostics.Visible = diagnostics; _diagnostics.Text = GameText.Coverage;
         RefreshDetailsHint();
-        _hint.Text = BattleOnly ? T("battle.speed.hint", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right),
+        _hint.Text = BattleOnly && id != "reset-page" ? T("battle.speed.hint", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right),
                 Input.CompactHint(GameAction.Attack), Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel)) :
             T("ui.settings.hint", Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Cancel));
     }
@@ -200,7 +199,7 @@ internal sealed partial class SettingsView : Control
 
     internal void RefreshInputHints()
     {
-        if (_page == Page.Alternatives) RefreshCaptions();
+        RefreshCaptions();
         Paint(); _help?.RefreshInputHints();
     }
 
@@ -215,6 +214,7 @@ internal sealed partial class SettingsView : Control
         _pointer.Suspend();
         if (_help is not null) { _help.Handle(action); return; }
         if (action == GameAction.Cancel) { Back(); return; }
+        if (action == GameAction.Spell && HasReset) { ResetPage(); return; }
         if (action == GameAction.Target && _details.GetVScrollBar() is { Visible: true } reading)
         {
             _details.ScrollVertical = reading.Value + reading.Page >= reading.MaxValue
@@ -227,7 +227,7 @@ internal sealed partial class SettingsView : Control
             focused.FindValidFocusNeighbor(action == GameAction.Up ? Side.Top : Side.Bottom)?.GrabFocus();
             return;
         }
-        if (BattleOnly && action is GameAction.Confirm or GameAction.Attack) { Save(); return; }
+        if (BattleOnly && (action == GameAction.Attack || action == GameAction.Confirm && focused.Id != "reset-page")) { Save(); return; }
         if (action == GameAction.Confirm) Activate(focused.Id, 1, input);
         else if (action is GameAction.Left or GameAction.Right)
         {
@@ -275,8 +275,7 @@ internal sealed partial class SettingsView : Control
                 _pointer.Suspend(); _panel.Hide(); _help = new ControlsHelpView { Name = "ControlsHelpView", Input = Input, Gesture = _pointer, Back = CloseHelp };
                 AddChild(_help); return;
             case "apply": Save(); return;
-            case "defaults": _draft = _draft.Draft(defaults: true); _reset = true; _status = T("ui.settings.staged"); break;
-            case "reset": _draft.Bindings.Clear(); break;
+            case "reset-page": ResetPage(); return;
             case "text": _draft.TextMode = _draft.TextMode == "instant" ? "adjustable" : "instant"; break;
             case "speed": _draft.CharactersPerSecond = Math.Clamp(_draft.CharactersPerSecond + direction * 10, 1, 240); break;
             case "convention": _draft.ConfirmCancel = _draft.ConfirmCancel == "standard" ? "swapped" : "standard"; break;
@@ -313,6 +312,7 @@ internal sealed partial class SettingsView : Control
     public string ReadSettingsObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
     { draft = _draft, applied = Input.Settings, selected = _buttons.FindIndex(b => b.Id == FocusId), focus = FocusId, page = _page.ToString(), rows = _buttons.Select(b => b.Id),
         readOnly = ReadOnly, battleOnly = BattleOnly, reset = _reset, message = _message.Text,
+        footer = _buttons.Where(b => b.GetParent() == _footer).Select(b => b.Id), hint = _hint.Text,
         locale = GameText.Language, coverage = GameText.Coverage, diagnostics = GameText.Diagnostics,
         debugVisible = _diagnostics.IsVisibleInTree(), debugText = _diagnostics.Text,
         labels = _buttons.Select(button => button.Text), help = _help is not null, scroll = _scroll.ScrollVertical, bindings = Enum.GetValues<GameAction>().ToDictionary(action => action.ToString(), Input.Hint) });

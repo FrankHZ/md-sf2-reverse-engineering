@@ -22,8 +22,8 @@ static func setting(view: Node, id: String) -> bool:
     var tree := view.get_tree()
     var obs: Dictionary = JSON.parse_string(view.call("ReadSettingsObservationJson"))
     var sections := {"language":"display","graphics":"display","text":"display","speed":"display",
-        "guidance":"assist","flash":"assist","defaults":"assist","convention":"input","help":"input",
-        "edit":"input","reset":"input","diagnostics":"debug","victory":"debug"}
+        "guidance":"assist","flash":"assist","convention":"input","help":"input",
+        "edit":"input","diagnostics":"debug","victory":"debug"}
     if not id in obs.rows:
         if obs.page != "Root": await tap(tree, "cancel")
         if sections.has(id):

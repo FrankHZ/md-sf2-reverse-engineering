@@ -3004,3 +3004,25 @@ msgstr "{0} will forget all current spells. Become a Sorcerer?"
 
 msgid "battle.scene.cutoff"
 msgstr "{0} was cut down!"
+
+msgid "settings.reset-all"
+msgstr "{0} · Reset all settings"
+
+msgid "settings.reset-page"
+msgstr "{0} · Reset this page"
+
+msgid "settings.reset-all-detail"
+msgstr "Resets every preference and control binding in this draft. Apply saves; Cancel discards. Saved journeys are untouched."
+
+msgid "settings.reset-page-detail"
+msgstr "Only this page is reset. Return to Settings to Apply or Cancel."
+
+msgid "settings.reset-staged"
+msgstr "Reset staged; installed controls remain active."
+
+
+msgid "settings.reset-controls-detail"
+msgstr "Bindings and confirm/cancel only. Apply or Cancel in Settings."
+
+msgid "settings.reset-battle-detail"
+msgstr "Battle speed and hit/coin messages only. Confirm applies; Cancel discards."
