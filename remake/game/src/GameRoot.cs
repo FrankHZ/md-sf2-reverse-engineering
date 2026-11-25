@@ -196,10 +196,13 @@ public sealed partial class GameRoot : Node
     private void ShowEntry()
     {
         if (_entry is not null) return;
-        _entry = new SessionEntryView { Name = "SessionEntryView", Replacement = _session is not null,
-            NewGame = BeginNewGame, Cancel = CloseEntry, Continue = ShowContinue, Quit = RequestQuit, Settings = ShowSettings };
-        _hostUi.AddChild(_entry);
-        if (_input is not null) _entry.ConfigureHints(_input);
+        var entry = new SessionEntryView { Name = "SessionEntryView", Replacement = _session is not null,
+            NewGame = BeginNewGame, Cancel = CloseEntry, Quit = RequestQuit, Settings = ShowSettings,
+            CheckContinueDefault = SeedOnly || _input is null ? null : CheckContinueDefault };
+        entry.Continue = () => ShowContinue(loadSeed: SeedOnly, witch: entry.HasContinueDialogue ? entry : null);
+        _entry = entry;
+        _hostUi.AddChild(entry);
+        if (_input is not null) entry.ConfigureHints(_input);
         CoverSystemMenu();
         ApplyHostPause(); DisarmInput();
     }
@@ -250,7 +253,8 @@ public sealed partial class GameRoot : Node
     }
 
     private async Task MountSession(SessionStarted started, SessionAudio? preparedAudio = null,
-        bool restoring = false, bool settledField = false, Func<Task<Persistence.SlotWrite>>? recover = null)
+        bool restoring = false, bool settledField = false, Func<Task<Persistence.SlotWrite>>? recover = null,
+        SessionEntryView? witch = null)
     {
         GameText.Bind(started.Session.Definition, System.Environment.GetEnvironmentVariable("SF2_DISPLAY_CATALOG"));
         SessionAudio? candidateAudio = preparedAudio;
@@ -260,7 +264,7 @@ public sealed partial class GameRoot : Node
             if (candidateAudio.Error is { } error)
             {
                 candidateAudio.Dispose();
-                if (restoring) SaveError(error);
+                if (_slots is not null && (restoring || witch is not null)) SaveError(error);
                 else Fail(error, "Selected private audio content is unavailable.");
                 return;
             }
@@ -322,6 +326,11 @@ public sealed partial class GameRoot : Node
                 published = true;
             }
             finally { if (!published) DisposeCandidate(); }
+        }
+        if (witch is not null && !await PresentContinueFarewell(witch, started))
+        {
+            DisposeCandidate();
+            return;
         }
         // Only the validated candidate can release the current session.
         ReleaseSession();

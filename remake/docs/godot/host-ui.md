@@ -86,7 +86,7 @@ finished animation never establishes save eligibility.
 
 | Current boundary | Settings/help | Save and return / Save and Quit |
 | --- | --- | --- |
-| Witch action menu | Ordinary preferences, or read-only values/help with `--input-settings`. Back keeps the entry phase. | Continue reads paged history; New Game can choose a fresh numbered destination. |
+| Witch action menu | Ordinary preferences, or read-only values/help with `--input-settings`. Back keeps the entry phase. | Initial focus is Continue with an admitted primary and New Game otherwise. Continue reads paged history after the Witch's question; New Game can choose a fresh numbered destination. |
 | Settled walking field, no Party/service/story owner | Preferences and help available. | Only an admitted finite recipe after stable player/followers, story, display and music checks. |
 | Moving field/followers | The existing menu-entry settlement runs first; no new timeout or settlement rule. | The same bounded settlement may admit Save; failure keeps its reason and no queued write. |
 | Text, choices, services, story motion, fades, transfer or outcome programs | Conditional rows remain unavailable until their real owner returns control. Party/preparation prevents system entry until closed. | Busy state or missing recipe refuses Save. Church's explicit Save caller retains its own completed-parent return. |

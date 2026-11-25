@@ -54,7 +54,8 @@ func mark(label: String) -> void:
         check(board.failure == null and board.scene.error == null, "No battle error at " + label)
     else:
         row.entry = {"stage": page.get("stage"), "selected": page.get("selectedAction"),
-            "failure": page.get("failure"), "asset_error": page.get("assetError"), "slot_page": panel().get("state")}
+            "failure": page.get("failure"), "asset_error": page.get("assetError"), "slot_page": panel().get("state"),
+            "continue_text": page.get("continueText")}
         check(page.get("failure") == null and page.get("assetError") == null, "No entry error at " + label)
     samples.append(row)
 
@@ -88,19 +89,33 @@ func play() -> void:
     mark("witch")
     await hold(6)
     await key(KEY_E)
-    if not accept(entry().get("selectedAction") == "NewGame", "Witch action list has focus"):
-        return
-    await key(KEY_DOWN)
-    if not accept(entry().get("selectedAction") == "Continue", "Continue selected before confirmation"):
+    if not await ready(func(): return entry().get("selectedAction") == "Continue", 600,
+            "Witch defaults to Continue for the admitted slot"):
         return
     mark("continue-action")
     await hold(4)
     await key(KEY_ENTER)
+    if entry().get("continueText") == 225:
+        mark("continue-question")
+        await hold(3)
+        await key(KEY_ENTER)
     if not await ready(func(): return panel().get("state") == "continue-slots", 300, "Continue opens the slot list"):
         return
     mark("continue-slots")
     await hold(4)
     await key(KEY_ENTER)
+    if not await ready(func(): return movement_ready() or entry().get("continueText") == 226, 600,
+            "Slot 1 restores its admitted candidate"):
+        return
+    if entry().get("continueText") == 226:
+        mark("continue-recognition")
+        await hold(3)
+        await key(KEY_ENTER)
+        if not accept(entry().get("continueText") == 224, "Recognition leads to farewell"):
+            return
+        mark("continue-farewell")
+        await hold(3)
+        await key(KEY_ENTER)
     if not await ready(movement_ready, 600, "Slot 1 mounts stable battle Movement"):
         return
     var first := state()

@@ -150,9 +150,9 @@ The closed private successor is `derived/issue2252/pre-voyage-opening-v1` beneat
 shared input root. It reuses the accepted #2242 campaign, #2240 world catalog and registered Witch
 catalog; its `opening/` subdirectory independently contains both scene maps, all four scripts,
 all81 English/Chinese opening rows, default names, selected actors/portraits, finite audio and inputs.
-Startup reads only `opening/opening.json` and its bounded dependencies. It does not admit the full
-campaign world until the player chooses an existing journey action. No ROM/upstream/scratch is a
-runtime dependency. Private use does not authorize redistribution.
+Startup reads only `opening/opening.json` and its bounded dependencies. The Witch's subsequent
+compatibility check admits campaign content only if it has a candidate primary to validate.
+No ROM/upstream/scratch is a runtime dependency. Private use does not authorize redistribution.
 
 From the owning checkout with private configuration loaded, prepare a **fresh** destination using
 the registered pinned source and full-text corpus roots. `$witchCatalog` is the existing registered
@@ -1310,6 +1310,88 @@ copy or regenerated campaign is needed: all 174 MMNK campaign paths exist in the
 opening publication, and all except the intended world and Battle26 scene differences are
 byte-identical, including entry and opening-battle inputs. The original closed MMNK package
 remains unchanged; it does not itself contain the independent four-scene payload.
+
+#### Witch Continue entry bank (#2255)
+
+The current bounded entry selection is `derived/issue2255/witch-entry-v1` beneath
+`SF2_SHARED_INPUT_ROOT`. Use its bank and catalog together alongside the same MMNK world, world
+catalog, six opening-battle inputs and #2252 four-scene startup above:
+
+```powershell
+. ./local/private-inputs.ps1
+$pack = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2244/pre-voyage-mmnk-v1'
+$opening = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2252/pre-voyage-opening-v1'
+$witch = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2255/witch-entry-v1'
+$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $witch 'entry.json'
+$env:SF2_ENTRY_DISPLAY_CATALOG = Join-Path $witch 'entry.zh-CN.json'
+```
+
+The producer selects 224–226 from the registered `source.jsonl` using the pinned Witch script
+and checks both source agreement and accepted translation control topology. It retains the
+member-0 token for the existing name resolver and projects the line breaks and waits onto the
+shared entry reading control. The existing six greeting rows and all Original/HD images and two
+PCM tracks were directly compared with their predecessors. Preparation reads and writes one
+10.42 MiB bank of 14 files and reads the existing text corpus once. Use an 11 MiB output allowance
+and one serial preparation. The campaign and four-scene packs remain the existing selected directories.
+Six-row legacy entry banks retain their direct slot route and the current default selection rule.
+
+Use a fresh output directory and the registered pinned checkout and full-text root:
+
+```powershell
+uv run python -m sf2tool.remake_witch_continue --upstream $pinnedSource --corpus $fullTextRoot `
+    --entry (Join-Path $pack 'entry/entry.json') `
+    --catalog (Join-Path $opening 'catalogs/entry.zh-CN.json') --output $freshAbsoluteBank
+```
+
+For the native check, select the complete combination and a fresh namespace under an authorized
+external disposable root. Use the [showcase's Map16 v6 witness](../evidence/opening-loop-acceptance.md#launch-and-checkpoints)
+as the source for slot 2. In a controlled copy, add `ally-0 = WWWWWWW` to `data.registers.names`
+inside the Base64 payload, serialize UTF-8 and update the envelope's uppercase SHA-256. The direct
+seed control takes the same bytes from a path outside the selected namespace. The abnormal fixture
+uses malformed slot 1 with an admitted backup (the same payload with slot header 1) and slot 2
+with a different `data.compatibility.gameplayRevision`. Use an empty separate namespace for the
+empty case. Retain a byte copy of the inputs for before/after comparison.
+
+Run the actual Debug adapter with the [locked SDK/settings selection](../development-and-verification.md#locked-net-workflow),
+the configured Godot binary, worktree-local APPDATA/LOCALAPPDATA/TEMP and a fresh receipt path.
+Set `$case` to `empty`, `valid`, `abnormal` or `seeded` and use language `en` or `zh-CN`
+with instant text in the read-only settings file. These checks use the full 1920×1080 headless
+Godot canvas and drive Main with mapped keys.
+
+```powershell
+$env:SF2_WITCH_CONTINUE_CASE = $case
+$env:SF2_WITCH_CONTINUE_LOCALE = $locale
+$env:SF2_WITCH_CONTINUE_HERO = 'WWWWWWW'
+$env:SF2_WITCH_CONTINUE_OUTPUT = Join-Path $runRoot 'witness.json'
+$gameArgs = @('--headless', '--path', (Join-Path $repo 'remake/game'), '--max-fps', '120',
+    '--quit-after', '5400', '--log-file', (Join-Path $runRoot 'godot.log'),
+    '--script', 'res://probes/engine_witch_continue_observation.gd', '--', '--input-settings', $settings)
+if ($case -eq 'seeded') { $gameArgs += @('--load-save', $disposableSeed) }
+& $env:GODOT_BIN @gameArgs
+```
+
+**Confirmed, bounded in Godot 4.7.2.** Short ordinary startup Skip reached the shared greeting
+and expected default in all three occupancy cases. Cancel from the slots returned to Continue
+focus. The corrupt slot offered backup recovery; Cancel kept the corrupt primary and backup.
+The incompatible slot offered diagnostics. Both ordinary successful runs showed 225 → slot →
+226 with the seven-character custom name → 224, with direct English and Chinese bindings.
+Recognition occupied one line at 30px in both locales and fit the existing body viewport.
+Held Confirm and echo stayed at recognition and the gameplay release barrier. Release returned
+usable control. At revision 0 the decoded `data` of each first captured settled field record
+equaled the controlled slot's complete `data`, including the visit, party and registers.
+Direct seeded Continue bypassed the Witch and captured the same state. The primary and backup
+bytes were unchanged. Human rendering and original hardware cadence remain **Unknown**.
+
+The first adapter build failed on the name token's property name. The first ordinary probes
+incorrectly used an unchanged revision as the held-input assertion even though settled field
+simulation advances revisions. Those receipts are retained. The corrected probe checks the
+mapped release barrier, legal landing and continued field control across echo and release.
+The first seeded attempt picked a path inside its active namespace and the existing guard
+reported `invalid-save-paths`. The corrected seed is outside that namespace.
+
+[Witch lifecycle and slot policy](../application/opening-session-lifecycle.md#witch-continue-dialogue-and-default-selection)
+
+#### Combined resource admission check
 
 A short read-only production-consumer check builds in the explicit checkout's ignored scratch
 and admits both selections, both Chinese catalogs, each member's destination growth/book and

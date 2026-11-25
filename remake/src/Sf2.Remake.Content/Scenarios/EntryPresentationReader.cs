@@ -61,12 +61,23 @@ public static class EntryPresentationReader
             return result;
         }
         var dialogue = new Dictionary<string, string>();
-        ScenarioJson.Object(root.GetProperty("dialogue"), "entry-dialogue", "216", "217", "218", "219", "220", "221");
-        for (int id = 216; id <= 221; id++)
+        var textRows = root.GetProperty("dialogue");
+        string[] ids = ["216", "217", "218", "219", "220", "221"];
+        if (textRows.TryGetProperty("225", out _)) ids = [.. ids, "224", "225", "226"];
+        ScenarioJson.Object(textRows, "entry-dialogue", ids);
+        foreach (string id in ids)
         {
-            string text = root.GetProperty("dialogue").GetProperty(id.ToString()).GetString()!;
+            string text = textRows.GetProperty(id).GetString()!;
             if (string.IsNullOrWhiteSpace(text) || text.Length > 300) throw new ArgumentException("entry-dialogue");
-            dialogue.Add(id.ToString(), text);
+            if (id is "224" or "225" or "226")
+            {
+                var parameters = ExplorationTextTokens.Read(text)
+                    .Where(token => token.Kind != ExplorationTextTokenKind.Literal)
+                    .Select(token => token.Value);
+                string[] expected = id == "226" ? ["{NAME;0}"] : [];
+                if (!parameters.SequenceEqual(expected)) throw new ArgumentException("entry-dialogue-parameters");
+            }
+            dialogue.Add(id, text);
         }
         var audio = ExplorationAssetReader.Read(root.GetProperty("presentation")).Audio;
         if (audio.Count != 2 || !audio.TryGetValue("MUSIC_TITLE", out var title) || title.Command != 28 ||
