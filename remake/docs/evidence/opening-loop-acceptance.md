@@ -90,11 +90,13 @@ No original reset, hardware restart, menu raster, exhausted-sprite or timing cla
 ## Pre-voyage showcase (#2245)
 
 **Standard rigor.** [#2245](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2245)
-uses the accepted opening to plan a short feature reel and the same ordinary-input route for a
-functional smoke. The continuous journey runs from New Game through a Battle01 action, Save and
-Quit, and playable Continue in a new process. Magic and boarding have independent starts. The
-60–90 second pilot covers one Continue and one battle decision. Full editing, release review and
-distribution belong to [#1825](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1825).
+uses the accepted opening to plan a short feature reel and an ordinary-input functional smoke.
+The planned continuous journey runs from New Game through a Battle01 action, Save and Quit,
+and playable Continue in a new process. Magic and boarding have independent starts.
+[#2257](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2257) targets a compact
+30–45 second pilot from ordinary opening Skip through Continue and one Battle01 decision.
+Full editing, release review and distribution belong to
+[#1825](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1825).
 
 ### Launch and checkpoints
 
@@ -105,13 +107,12 @@ the launch process. Set `DOTNET_ROOT_X64` to the same value because Windows x64 
 selection first. The registered installation was checked for the locked SDK, `hostfxr.dll` and the
 .NET 8 runtime family used by Godot. [Godot host resolver at `ed1daf0bf`](https://github.com/godotengine/godot/blob/ed1daf0bf/modules/mono/editor/hostfxr_resolver.cpp#L269-L308)
 
-Load the ignored worktree input configuration in the launching process. Select the complete
-[BRGN publication](../content/presentation-assets.md#brass-gunner-promotion-successor), including
-its entry and all six opening inputs. Use the catalog from that publication and the registered
-[#1941 entry catalog](../application/pacalon-first-visit.md#continue-after-worktree-cleanup) for Simplified
-Chinese. Resolve selections from the configured shared root and read them in place. Select a fresh
-absolute external disposable save root and namespace, and fresh worktree-local application-data,
-TEMP and log paths. Keep the same namespace for the two processes in the continuous sequence.
+Load the ignored worktree input configuration in the launching process. Select the MMNK campaign
+publication (#2244), its world catalog and all six opening inputs, alongside the Witch entry and
+entry catalog from #2255 and the four-part opening from #2252. Resolve these together from the
+configured shared root and read them in place. Select a fresh namespace under the absolute
+external disposable save root, and fresh worktree-local application-data, TEMP and log paths.
+Keep the same namespace for the two processes in the planned continuous sequence.
 
 These three read-only primary copies are byte-identical to their source slots. Resolve each path
 from `SF2_SHARED_INPUT_ROOT`. Copy only the selected checkpoint into a fresh disposable namespace
@@ -130,12 +131,14 @@ $shared = $env:SF2_SHARED_INPUT_ROOT
 $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
 $env:DOTNET_ROOT = Split-Path -Parent $env:DOTNET_BIN
 $env:DOTNET_ROOT_X64 = $env:DOTNET_ROOT
-$package = Join-Path $shared 'derived/issue2242/pre-voyage-brgn-v1'
+$package = Join-Path $shared 'derived/issue2244/pre-voyage-mmnk-v1'
+$entry = Join-Path $shared 'derived/issue2255/witch-entry-v1'
 $env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $package 'world.json'
 $env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $package 'main-scenes.json'
-$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $package 'entry/entry.json'
-$env:SF2_DISPLAY_CATALOG = Join-Path $shared 'derived/issue2240/catalogs-v1/world.zh-CN.json'
-$env:SF2_ENTRY_DISPLAY_CATALOG = Join-Path $shared 'handoffs/issue1941/content/catalog-final/entry.zh-CN.json'
+$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $entry 'entry.json'
+$env:SF2_DISPLAY_CATALOG = Join-Path $shared 'derived/issue2244/catalogs-v1/world.zh-CN.json'
+$env:SF2_ENTRY_DISPLAY_CATALOG = Join-Path $entry 'entry.zh-CN.json'
+$env:SF2_PRIVATE_OPENING_CONTENT = Join-Path $shared 'derived/issue2252/pre-voyage-opening-v1/opening/opening.json'
 foreach ($file in Get-ChildItem -LiteralPath (Join-Path $package 'opening-inputs') -Filter 'SF2_PRIVATE_*.json' -File) {
     [Environment]::SetEnvironmentVariable($file.BaseName, $file.FullName, 'Process')
 }
@@ -155,7 +158,7 @@ if ($checkpoint) {
     [IO.File]::Copy($source.FullName, $destination)
     (Get-Item -LiteralPath $destination).IsReadOnly = $false
 }
-$runRoot = Join-Path $repoRoot "local/issue2245/$runName"
+$runRoot = Join-Path $repoRoot "local/issue2257/$runName"
 $env:APPDATA = Join-Path $runRoot 'appdata'
 $env:LOCALAPPDATA = Join-Path $runRoot 'localappdata'
 $env:TEMP = Join-Path $runRoot 'temp'
@@ -190,10 +193,12 @@ read-only state and projection calls.
 ### Pilot and recording boundary
 
 Use a fresh copy of Battle01 slot 1 from the checkpoint table. At Chester's first turn, the nearest
-living enemy starts beyond one move plus attack range. The pilot shows the title and Witch,
-Continue, inspection and Back, a move preview, the Main command list and Stay. Verify that
-inspection returns to the unspent turn, Stay commits the chosen tile, and the next player can move.
-The continuous opening route above separately covers a physical attack and Save and Quit.
+living enemy starts beyond one move plus attack range. Use the normal opening Skip key, wait for
+release at the title, then proceed through the Witch greeting, default Continue, question 225,
+Slot 1, recognition 226 and farewell 224. Inspect the battlefield and return to the unspent
+turn. Preview a legal move, open the Main command list, submit Stay and preview a move on the next
+player's turn. The pilot's continuous range ends at that preview. A physical attack and Save and
+Quit belong to the planned continuous journey above.
 
 Godot Movie Maker in the installed 4.7.2 .NET editor build emits OGV with Theora video and Vorbis
 audio. It writes the game viewport and engine mix to the specified file at a fixed 60 fps. Rendered
@@ -202,14 +207,19 @@ and physical audio playback remain **Unknown**. The earlier Game Bar option rema
 capture isolation. [Godot Movie Maker](https://docs.godotengine.org/en/stable/tutorials/animation/creating_movies.html)
 
 Use the [showcase observer](../../game/probes/pre_voyage_showcase.gd). It reuses the existing native
-input helper and drives the production Main scene with the same key sequence in either mode. Frame
-checks wait for input ownership. The recording holds confirmed states for reading and writes a
-small receipt with actual phase, key, frame, actor, queue, preview, audio and error samples.
+input helper and drives the production Main scene with the same key presses and releases in either
+mode. It waits for the opening, title handoff, Continue stages and legal battle input states.
+Recording pauses at settled shots for a total of 30.5 seconds. The Continue menu and return from
+inspection use about 0.6 seconds, the title, first battle view, inspection and command list about
+2 seconds each, and the four greeting and Continue text shots 3–4 seconds each. The functional
+check uses six frames at the same points. Both modes write a small receipt with the phase, key,
+frame, actor, queue, preview, audio and errors.
 
 For each take, apply [Launch and checkpoints](#launch-and-checkpoints) through the directory setup
-with `handoffs/issue2245/battle01/slot1.json`, a separate fresh namespace and a fresh run name. Use
-a desktop that admits a visible 1920×1080 client. Replace the final launch line with this block.
-Set `$record` to `$false` for the short functional check and `$true` for the recorded take.
+with `handoffs/issue2245/battle01/slot1.json`, a separate fresh namespace and a fresh run name.
+Replace the final launch line with this block. Set `$record` to `$false` for the background
+functional check. For `$true`, reserve the foreground on a desktop that admits a visible
+1920×1080 client and use the normal audio configuration.
 
 ```powershell
 $settings = Join-Path $runRoot 'settings.json'
@@ -223,16 +233,26 @@ $gameArgs = @('--path', (Join-Path $repoRoot 'remake/game'), '--position', '0,0'
 if ($record) {
     $gameArgs += @('--write-movie', (Join-Path $runRoot 'pilot.ogv'), '--fixed-fps', '60')
 } else {
-    $gameArgs += @('--max-fps', '60')
+    $gameArgs += @('--headless', '--max-fps', '60')
 }
 & $env:GODOT_BIN @gameArgs -- --input-settings $settings
 ```
 
 Require exit 0, a complete receipt through `next-player-preview`, and no script, engine,
 presentation or audio errors. Verify the published source slot remains byte-identical to the
-disposable input. For recording, verify an elapsed movie duration of 60–90 seconds, 1920×1080 at
-60 fps and decodable picture and mixed audio. The writer finalizes at normal exit. Budget 250 MiB
-for the pilot and 20 MiB for receipts. Longer takes remain a later decision under #2245 and #1825.
+disposable input. For recording, compare the keys and sampled states with the background receipt.
+Verify about 30–45 seconds at 1920×1080 and 60 fps, with decodable picture, mixed audio and enough
+time to read the dialogue. The writer finalizes at normal exit. Budget 250 MiB per take and 20 MiB
+for receipts. Retain failed takes and allow at most one adjustment take. Publish an accepted compact
+take to `handoffs/issue2257/pilot-compact-1080p60.ogv` under the shared root and keep it private.
+
+The background check sets the headless root extent before Main attaches so the same production
+window validation can run. The first background attempt left Godot's 64×64 headless default and
+stopped before Skip. With the supported extent the route exited 0 and left the slot unchanged.
+That run warned about four ObjectDB instances at exit. A targeted verbose repeat completed the
+route with zero errors and did not reproduce the warning.
+
+### Retained BRGN pilot evidence (#2245)
 
 **Confirmed with the BRGN inputs.** A five-second title sample produced 300 frames at 60 fps and
 530,543 bytes. Its 1920×1080 picture and non-silent audio decoded in Godot. The pilot then produced
