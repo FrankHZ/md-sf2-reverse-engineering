@@ -242,6 +242,114 @@ If replay is later chosen, the minimal proposed boundary is resetting the existi
 when title becomes visible, with first-entry/return/reduced-flash acceptance; it needs no new art,
 idle animation or audio service. #1447 remains open for independent investigation acceptance.
 
+### Proposed opening sequence (#2247)
+
+**Standard rigor** for the pre-title presentation and its Content, Application and Godot handoff.
+The existing High-rigor save boundary still governs New Game and Continue. The objective is to
+present the four boot-story scenes with an ordinary, skippable route to the current title.
+[Original chronology](../../../docs/research/presentation/special-screens.md#boot-story-sequence) ·
+[Current coverage](../evidence/opening-ui-gaps.md#opening-sequence-coverage-2247) ·
+[#2247](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2247).
+
+#### Lifecycle decision
+
+- On ordinary process launch, load preferences and prepare the selected opening scene set through
+  Content. Play it once before the title, regardless of slot occupancy. Show a responsive loading
+  surface and allow Skip during preparation. An entry package without opening scenes goes straight
+  to the title. A selected scene set that fails admission or delivery reports a bounded diagnostic
+  and reaches the same usable title when the existing title assets are valid.
+- Natural finish and Skip converge on one title handoff. The pre-title sequence owns input
+  while active. A fresh mapped Start (the entry action currently routed as `Equipment`) or an explicit
+  pointer Skip cancels the remaining sequence even during timed dialogue, motion or fade. Keep
+  Confirm for reading controls where applicable. Clear the outgoing work, release mapped actions
+  and finish pointer capture before the title accepts a new Start/Confirm/click. Late events from
+  a cancelled or replaced owner have no successor to advance.
+- The title starts its current finite score when presented. Witch Back returns to the title under
+  the existing #1447 behavior. Menus, idle title, in-process return from play, Settings and window
+  recovery do not rerun startup. A fresh ordinary process can play it again. Keep diagnostic/start
+  overrides, preview and explicit seeded Continue on their direct routes.
+- Witch New Game keeps slot selection, naming, explicit replacement consent, candidate admission
+  and the initial save in their current sequence. Mount the same Map3 start once after successful
+  publication. Continue remains the same detached validation and restore, including settled field,
+  battle, legacy and diagnosed backup paths. Neither action starts the boot story after the Witch.
+  Boot completion and Skip have identical persistence consequences: zero writes, no allocation of a
+  journey slot or gameplay seed, and no change to a selected or paused journey. The loaded save
+  remains the sole authority for progress. The [Witch Continue dialogue follow-up](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456#issuecomment-7150145598)
+  retains the separate 225/226/224 scope.
+
+A pre-title scene keeps the source order and isolates startup effects from save publication.
+Placing it after name/slot confirmation would tie a discardable presentation to a committed
+journey and would remove it from the ordinary startup route for players with existing saves. An
+authored movie would simplify playback but add a media/localization branch and lose live language,
+input, palette and art-mode projection. Use the existing runtime and script content. A licensed
+or project-authored branding screen and any later revision to the title phases are independent
+presentation decisions. The initial slice uses the current title and omits the source title's
+idle-reset attract cycle.
+
+#### Runtime and content boundary
+
+Give the intro one disposable pre-title owner, separate from the durable session. Application runs
+its data-selected sequence with `StoryProgram`/`ProgramRunner`, scene-map and scene-actor binding,
+existing actor/view, text, tick and projection waits and one explicit completion to the host.
+Use the existing scene transfers that bypass ordinary map init and population when the script
+supplies its actors. In particular, Map42's campaign setup is a different caller. Use scene-local
+actor identities and the admitted default-name data for Slade. Keep save, battle admission, other
+field interactions and persistent party/progress mutations unavailable in this entry context.
+The host selects and releases the scene, routes input, presents it and mounts the title. Scene order,
+actor setup, camera operands and cues belong to Content. Opening New Game and Continue stay their
+own entry modes. [Application scene/window contract](session-and-programs.md#bound-before-battle-scene-and-windows) ·
+[Scene transfer](../../src/Sf2.Remake.Application/Runtime/Exploration/MapTransfer.cs) ·
+[Story runner](../../src/Sf2.Remake.Application/Runtime/Exploration/ProgramRunner.cs).
+
+Use the existing private package composition with a bounded pre-title content selection. Compose
+only the required maps, script, text/name rows and projection assets in preparation, then admit
+through the existing Content readers and validators. Extend their composition seam where needed.
+The ordinary `PrivateExplorationReader` ties its approximately 95 MiB world file in the selected
+package to party and encounter admission, so calling it from startup would bring campaign
+validation and bulk resource loading forward. Keep the working-set selection explicit, load it
+off the Godot thread using the existing detached entry-loading pattern, and bind its Godot objects
+on the host thread. Reuse selected assets and external WAVs in the closed package. No dependency
+on the ROM checkout at runtime. [Private reader](../../src/Sf2.Remake.Content/Scenarios/PrivateExplorationReader.cs) ·
+[Closed package preparation](../content/presentation-assets.md#reuse-a-closed-private-package).
+
+The existing compiler and runtime already express reload/reset, scene actors, camera targets and
+waits, clone binding, movement/actions, ordinary fades, block copies, quake and white effects.
+Start with that vocabulary and require complete lowering of the selected scripts. The known gaps
+are `{D2}` in the text lexer, logical timed text work and translation topology, half-black/tint
+presentation, and the temporary storm-bank effect. Bind `{D2}` to the source's timed wait with
+typewriting inactive and no demand for acknowledgement, using the normal text clock. The Skip
+input remains independently live. Admit only any other reached action/effect operand that a
+compiler/consumer check shows is missing, including the fixed/transparent actors and the
+mosaic/pose actions. Use a typed finite presentation operation if the existing palette path needs
+an extension. Review default-name and portrait/speech operands before admission. Never silently
+drop an unsupported row. [Compiler](../../../src/sf2tool/remake_exploration_programs.py) ·
+[Text tokens](../../src/Sf2.Remake.Content/Scenarios/ExplorationTextTokens.cs) ·
+[Text clock](../../src/Sf2.Remake.Application/Runtime/Exploration/ExplorationTextRunner.cs).
+
+For Skip, discard the whole scene owner and its outstanding waits, actor/camera work and audio
+instead of running the rest of the montage at high speed. Its only successor is the title. Existing
+Battle Entry Skip must still execute consequential instructions. Reuse its release and ownership
+principles, retaining the separate completion semantics. [Battle-entry skip agreement](session-and-programs.md#battle-entry-skip-agreement) ·
+[Presentation and audio handoff](../godot/presentation.md#pre-title-story-presentation-2247).
+
+#### Implementation order and acceptance
+
+Effort is person-days for one worker with the existing private preparation tools and accepted
+inputs. Ranges assume ordinary native state/input/audio observations and one independent review
+pass per slice. They exclude new art commissions, new emulator acquisition and human sign-off.
+
+| Slice in dependency order | Owned increment and estimate | Acceptance at the slice boundary |
+| --- | --- | --- |
+| 1. Prepare the finite scene input and pilot the missing primitives | Use Map42 and scene actors for one complete shrine segment under the existing controlled route. Prepare Map65's exact scene resources, verify the 81 source rows and selected zh-CN bindings, and resolve audio roles. Implement the confirmed D2 and required finite effect/actscript additions in their current owners. About **3–6 days**, including **1–2 days** for resource preparation and display review if the existing producer and translation corpus suffice. | Probe one shrine segment and a bounded castle storm passage using admitted content. Inspect initial actors/planes, a camera wait, automatic bilingual text delay, transient effect/restore and audio receipt. Required missing-resource or unsupported-op failures identify the binding. No automatic startup rollout in this slice. |
+| 2. Connect the four scenes to ordinary startup | Finish the sequence as one Content selection and install the pre-title owner and shared completion/skip path. Integrate the complete private successor candidate. About **3–6 days**, including short normal/skip/restore observations. | One normal launch reaches all four ordered boundaries and the usable title. Repeat with fresh Skip during load, timed text and active effect/motion, plus held-key/release and pointer handoff. Check one Reduced Flash launch, in-process Witch/title return, missing optional content and a failed selected input. Use a disposable slot and a fresh-process Continue control: first title may follow the intro, and restoring the slot lands at its saved field or battle state without new initialization, save writes or prologue effects. Compare fresh New Game starts after normal finish and Skip with the same controlled seeds and verify one explicit initial commit and the same Map3 first control. |
+| 3. Optional logo or title enhancement | Only after the story ships and the product selects branding or added title phases. Reuse the entry projection, keep the finite score, and preserve the existing responsive Start path. Budget **1–3 days** for a single approved layer or bounded title phase change with available art. | Check first entry, early Skip, Witch Back, idle and Reduced Flash by state/projection; verify there is a fresh press per transition. Record any appearance decision separately. |
+
+Inspect the actual adapter and use small engine behavior checks only where a real rule such as
+timed dialogue or terminal scene completion changes. Existing input, state, cue and error
+inspection is enough for the short acceptance runs. A full chapter, all save formats, a pixel
+comparator and continuous capture add no coverage of the new handoff. Original natural timing,
+hardware image and audio correspondence, and player visual/listening acceptance remain **Unknown**.
+
 ### Slot, name and initial-save design (#1443)
 
 High rigor remains appropriate for this change: a confirmed New Game must bind names, admitted

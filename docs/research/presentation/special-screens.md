@@ -68,6 +68,70 @@ several phases. Its entry loads/arranges the title resources and its exit report
 should reset or continue to the witch screen. Source control flow is confirmed; exact scroll/fade
 frames are not.
 
+## Boot story sequence
+
+**Confirmed (pinned USA source).** On the ordinary non-debug path, `InitializeGame` calls
+`NewGame` to initialize volatile game state and calls `DisplaySegaLogo`. The logo's nonzero
+Start result branches to `AfterGameIntro`. Otherwise `GameIntro` saves the stack and installs
+`AfterGameIntro` as the interrupt continuation, then calls `PlayIntroOrEndCutscene` with D0 zero.
+That path starts `MUSIC_INTRO` (9, `Music_9`, timer B C4, repeating channel sections) and runs the
+four map scripts in order. The helper's nonzero D0 branch is the ending and has a different score.
+The title and Witch arrive after the boot story. The earlier `NewGame` call in initialization is
+distinct from the later Witch menu action. [Startup control contract](../../design/contracts/system/startup-control-flow.md) ·
+[Intro caller](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/start/gameintro.asm) ·
+[Dispatcher](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/scripting/map/cs_introendroutine.asm) ·
+[Music_9](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/sound/musicbank0/music09.asm).
+
+The table lists the initial camera operands and the text cursor ranges for the ordinary text-enabled
+script path. `nextSingleText` and `nextText` wait for view scroll, display at the current cursor and
+increment it. The single-box caller also closes text/portrait and sleeps. Script 4 resets its cursor
+to 4233 before its first line. All 81 lines carry the `{D2}` source control. Its `$F0` handler suspends
+the typewriting indicator, calls `Sleep(119)` and restores the indicator. The `Sleep` loop requests
+119 VInt waits. [Canonical message table](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/scripting/text/gamescript.txt) ·
+[Text callers](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/scripting/map/mapscriptengine_2.asm) ·
+[Text symbol handler](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/scripting/text/textfunctions_1.asm) ·
+[Sleep](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/interrupts/vintengine_1.asm#L162).
+
+| Script and ROM entry | Map, camera and principal beats | Text IDs |
+| --- | --- | --- |
+| [`IntroCutscene1`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/scripting/map/cs_intro1.asm) · `$47F7E` | Force Sword Shrine Map42, (2,5). Slade and two workers approach in a storm. Camera follows Slade or targets fixed positions. Lightning, quake, effect actors, layout edits and reload (15,0) bracket discovery of the jewels. | 4186–4201 |
+| [`IntroCutscene2`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/scripting/map/cs_intro2.asm) · `$48380` | Granseal Castle Map65, (7,2). King, minister and guard stage the response to the storm. Reset/reload, same-map load, camera reposition/follow, actor effect and palette changes are scripted. | 4202–4214 |
+| [`IntroCutscene3`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/scripting/map/cs_intro3.asm) · `$48540` | Map42, (21,1), following Slade at the jewels. Actor poses, block copy and escalating quake accompany the removal. Reload (0,3) stages the escape. | 4215–4232 |
+| [`IntroCutscene4`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/scripting/map/cs_intro4.asm) · `$48A78` | Map65, (7,3). King, minister, guard and an entity using the Geshp sprite. The camera pans and tracks actors through the storm, apparition and threat to the King. Palette swaps, white fade/flash, quake and actor effects precede the last fade. | 4233–4266 |
+
+`ApplyStormEffect` in scripts 2 and 4 snapshots current palette bank 1, installs a 16-word
+replacement, requests CRAM DMA and sleeps for 10 VInt waits. It restores the bank, requests another
+DMA and sleeps for another 10. The scripts also use map tint, half-black fades and positional/camera
+work. SFX command IDs are spell cast 77, warp 89, demon breath 117 and intro lightning 118. Map65 is
+a distinct scene map from the ordinary castle floors. The scene tables place Bowie at (63,63) and
+stage actors through script commands. The four programs have no durable flag, party-join or save
+instruction. [Storm helper](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/scripting/map/cs_intro_stormeffect.asm) ·
+[Source equates](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/sf2enums.asm).
+
+On completion the caller clears its continuation. During playback, P1 Start sampled by `VInt` with
+the continuation installed clears it, restores the saved stack and jumps to `AfterGameIntro`. Both
+paths reach quake/scroll cleanup, fade to black and `MUSIC_TITLE`. Title has separate logo, numeral
+and copyright fades, opposite vertical scroll and a cycling Start prompt. A Start poll takes the
+Witch path, while idle exhaustion takes the white-to-black/reset path back to `Start`. This is startup
+re-entry in source, distinct from the remake's in-process return to its title.
+[Interrupt skip](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/interrupts/vint.asm#L43) ·
+[Title](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/specialscreens/title/title.asm).
+
+**Confirmed (static boundary after Witch).** Ordinary New names the leader, selects difficulty and
+runs initial SaveGame, then enters MainLoop at Map3 (56,3), Down. The default Map3 init is a separate
+conditional actor/setup path, with no call to the boot story. Ordinary Load follows its own action
+and returns to `alt_MainLoopEntry`. The controlled New-action observation below supplies the narrower
+runtime handoff evidence. [Witch caller](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/specialscreens/witch/witchstart.asm) ·
+[Map3 init](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/maps/entries/map03/mapsetups/s6_initfunction.asm).
+
+**Unknown.** Natural cold/soft-reset sampling, which held presses span the source logo, intro and
+title polls, end-to-end timing and reach under natural input, rendered fade/storm/actor frames,
+and original audio parity. The bounded New-action harness begins at the Witch, so it supplies no
+boot playback evidence. Reproduce the static check with `git -C $pinnedUpstream show
+"${pin}:disasm/code/gameflow/start/gameintro.asm"` and the linked source objects at the same pin.
+For the ROM identity and the existing fixture commands, use the accepted entry evidence and
+[reproduction](#reproduction) below.
+
 ## Witch, Save, and Suspend
 
 The witch entry builds its screen, checks both SRAM slots, and dispatches exactly four save actions:
