@@ -11,10 +11,11 @@ recruitment, maps, smithing and other acquisition services remain with the campa
 legal detached inputs can validate their equipment before those routes exist. No real save
 or backup is an acceptance workspace. This section owns the implementation sequence;
 the [complete item reconciliation](../content/campaign-items.md#whole-game-equipment-reconciliation)
-owns individual rows. Slice A implements the static-equipment boundary below; whole-game support is still incomplete
+owns individual rows. Slices A/B implement static equipment and physical prowess below; whole-game support is still incomplete
 and this does not close [#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
 
-The current dependency is the accepted SORC **v3** package and its catalog, with independent
+The current successor is `derived/issue2271/equipment-v1`, built from the accepted slice-A package.
+It retains SORC **v3** and its catalog, with independent
 opening and Witch selections retained. Do not substitute rejected v2, earlier v1, or a removed
 producer checkout. Reuse the existing Domain/Application/Content/adapter boundaries and
 registered prepared assets. No new equipment platform, second item catalog, save format,
@@ -64,11 +65,8 @@ nonimmune, miss and counter cases before claiming closure. Existing DESOUL spell
 not itself implement this physical branch.
 
 The [growth contract](../../../docs/design/contracts/party/level-up.md) confirms Ninja Katana's
-source `0x94 → 0x24` double-increase behavior, including loss of the counter field. The proposed
-fidelity choice for this equipment work is to preserve that observed result and document it,
-rather than silently correct it while implementing the item. Independent design acceptance
-must explicitly retain or revise that choice; a normal probability increment cannot accidentally
-decide it. Counter Sword uses `0x94 → 0xD4`; Gisarme uses `0x94 → 0x96`. Unused SET_DOUBLE and
+source `0x94 → 0x24` double-increase behavior, including loss of the counter field. Main-gate explicitly accepted preserving that result for this equipment work; slice B retains
+the lost counter field rather than modernizing the handler. Counter Sword uses `0x94 → 0xD4`; Gisarme uses `0x94 → 0x96`. Unused SET_DOUBLE and
 SET_COUNTER handlers are not required by the 94 definitions.
 
 ### Finite implementation sequence
@@ -196,8 +194,8 @@ policy. Documentation-only design uses document checks, not those runtime gates.
 **Implemented static-equipment behavior.** The connected source catalog retains
 all 94 definitions and their complete class masks without requiring present custody. The passive
 reader admits 80 weapons and eight rings, including player-ineligible Iron Ball102/Taros Sword110.
-Counter Sword68, Ninja Katana108 and Gisarme109 remain excluded until B; Holy Staff97, Mystery
-Staff100 and Life Ring124 remain excluded until C. The source metadata is retained, not used to
+At the slice-A boundary Counter Sword68, Ninja Katana108 and Gisarme109 were excluded;
+[B now admits them](#equipment-prowess-and-gisarme-2271). Holy Staff97, Mystery Staff100 and Life Ring124 remain excluded until C. The source metadata is retained, not used to
 silently discard their unique effects. New equipment Use remains D, and full legal class/appearance
 closure remains E. No future acquisition, class roster, recruitment or main campaign advance is added.
 
@@ -290,6 +288,94 @@ that exclusion while preserving pickup, Give, repeat-pickup and absent Use asser
 renamed `SelectedPickupGrantsCarryAndGiveWithoutAdmittingAUseEffect`. A direct
 `FullyQualifiedName~FieldSearchTests` run passes 44 with one private-input skip. The completed
 CI failure is preserved; no local aggregate rerun or production change was needed.
+
+## Equipment prowess and Gisarme (#2271)
+
+**Implemented.** The source reader admits Counter Sword68, Ninja Katana108 and Gisarme109,
+for 83 weapons and eight rings. Both the attacking and defending live loadouts feed
+`BattleEquipment.Physical`, including reversed counter strikes and the defender's counter draw.
+`PhysicalCriticalRule` preserves source `0x94 → 0xD4 / 0x24 / 0x96` for the three items respectively.
+The Ninja Katana handler clears counter bits; it is not an independent probability increment.
+SET_CRITICAL6 is a weapon term, whereas cutoff requires equipped item109 and a successful
+non-ailment critical draw against a target without DESOUL immunity. Misses never reach that check;
+immunity retains ordinary boosted critical damage. Ordinary increased-critical weapons use the
+same live projection. No unused SET_DOUBLE/SET_COUNTER handler or alternate RNG authority is added.
+
+**Confirmed (static).** Pinned `c834c652` `determinecriticalhit.asm` checks equipped Gisarme only
+after critical success. `inflictdamage.asm` performs counter halving and both damage-variance draws,
+calculates damage EXP, then substitutes `0x8000` for cutoff and runs ordinary death/kill processing.
+The remake retains the pre-cutoff amount for damage EXP, clears the ordinary critical marker,
+and uses existing reaction, inventory drop, reward, death cleanup and outcome paths. The cutoff
+result message remains required at every battle-speed setting. These words are derived from
+live equipment and require no persistent field or save-format change. All three weapons are
+nonbreakable in the pinned definitions: illegal broken save words reject rather than inventing a
+Use/wear route. Removal and restoration derive base prowess again; source class masks still apply.
+[Critical source](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/determinecriticalhit.asm)
+· [Damage, EXP and message source](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/inflictdamage.asm).
+
+**Confirmed (remake).** Deterministic engine cases cover both initial attack and counter directions,
+actual double/counter followups at unchanged seeds, miss, immunity, lethal cutoff, ordinary critical
+without cutoff, drop/once custody, gold/EXP, victory/defeat, illegal class, nonbreakable words,
+unequip and reconstruction. The production reader resolves HERO0/BRN3/BRN16 Counter Sword and
+NINJ5 Ninja Katana/Gisarme in all 26 scenes, preserving prior SORC/rod, opening and catalog admission.
+The [asset successor](../content/asset-inventory.md#prowess-successor-2271) retains the complete package.
+Full legal class/body coverage remains E; Use remains D and recovery remains C.
+
+The short native observation starts from a **controlled** copy of the registered NINJ promotion
+battle-ready save, with late Gisarme custody, selected turn/RNG and one adjacent enemy arranged.
+It is not natural acquisition, training or a later campaign claim. Ordinary Equip selects slot2,
+keeps Power Ring worn, changes ATT35→77 and items to `[103,147,237,127]`. The attack renders NINJ
+body26/palette0 and separate weapon109, shows “WIZARD was cut down!”, removes Wizard, awards
+49 EXP/430 gold and returns to Movement. Kills advance7→8. A fresh Chinese Continue/re-save
+preserves the entire decoded battle data, advancing save sequence10→11. Original natural
+reach/timing and the original CUTOFF special-animation choreography remain **Unknown**; the native
+witness uses the existing physical scene/reaction and explicit cutoff text, not a claim of that
+additional original animation. No screenshot, real player save or #1716 change is involved.
+
+### B reproduction and retained failures
+
+Load `local/private-inputs.ps1`. Run the engine unit project with filter
+`Physical|Equipment|Drop|Reward|Death|Outcome|MasterMonk|Ring` (each term a
+`FullyQualifiedName~` predicate), and `uv run sf2 verify adapter`. Use controlled SDK environment,
+`UseSharedCompilation=false` and `nodeReuse:false`. The affected run completed with624 passing,
+13 private-input skips and one failure in
+`RingEquipmentTests.MovingActorUsesTheirWornSoundRingWithoutChangingWeaponOrStats`: the new
+zero-term projection unnecessarily allocated a different critical-rule reference. Returning the
+existing immutable rule for no equipment terms corrected it; the narrow RingEquipment/Prowess
+rerun passed24. The expanded Prowess/RingEquipment selection passed26 with one new EXP
+expectation failure; its corrected single-case rerun passed, as recorded below. Same-seed actual
+double/counter transitions and pre-cutoff EXP arithmetic are covered. These are preserved
+completed failures, not interrupted full suites.
+
+Earlier new-test corrections retain their TRX: first build had nullable assertion overload errors;
+`prowess-second` had two occupied controlled-position failures; `physical-affected` passed100 and
+failed one enemy kill-counter expectation; `prowess-extended` passed9 and failed two incorrectly
+expected pre-cutoff counter amounts plus an outcome setup that retained another enemy. Corrected
+`prowess-corrected` passed12. `prowess-exp-final` passed26 and failed a new expected award that omitted the selected
+halved-EXP option; the corrected expectation is10, not20. No production validation was relaxed. Native `cutoff01` completed
+but incorrectly selected the English ordinary-damage text (32768); `cutoff02` verifies the corrected
+cutoff message route. Both exit0; attack runs retain six ObjectDB shutdown warnings and cold
+Continue retains two. These warnings do not close or resume #1716.
+
+The stable `derived/issue2271/review-v1` holds the source-based reader, controlled seed, short
+ordinary-input runner and retained receipts. The Boot stages helpers into checkout-local scratch
+and requires a fresh disposable namespace. Build the Debug adapter before native playback.
+Select the complete B package, the unchanged #2266 catalog and independent #2252/#2255 opening/Witch.
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2271/review-v1'
+& "$review/consumer/Verify.ps1" -Repo (Get-Location).Path
+& "$review/Boot.ps1" -Repo (Get-Location).Path -Mode strike -Sample $freshSample `
+    -Journey $freshJourney -Seed "$review/seeds/controlled-ninja-gisarme.json" `
+    -SaveRoot $disposableSaveRoot
+# Same journey, fresh sample/process, no seed: -Mode battle-cold -Language zh-CN.
+```
+
+The Python change only mounts prepared remake weapons, with no research extraction/fixture changes.
+The clean-head plan therefore uses `uv run sf2 verify plan --base origin/main --head HEAD --scope engine`.
+Interpret selected checks under the current engine policy; no full research or retired aggregate
+suite is implied. Required public checks and actual CI are recorded in the frozen PR handoff.
 
 ## Accepted Use and Repair through first Pacalon
 

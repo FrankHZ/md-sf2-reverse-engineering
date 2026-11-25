@@ -8,7 +8,7 @@ internal sealed record BattleReaction(ActorRef Actor, ActorRef Target, string Ac
     BattleReactionKind Kind, ushort HpBefore, ushort HpAfter, byte MpBefore, byte MpAfter,
     bool Critical = false, int Amount = 0, ushort? StatusWrite = null, ushort? InflictedSleep = null,
     BattleItemReceipt? Receipt = null, ushort? InflictedSilence = null, ushort? InflictedPoison = null, ushort? InflictedStun = null,
-    ushort ClearedStatus = 0, bool SpecialAnimation = false);
+    ushort ClearedStatus = 0, bool SpecialAnimation = false, int? CutoffDamage = null);
 internal sealed record BattleActionReward(ActorRef Actor, int Amount);
 internal sealed record PhysicalInaction(ActorRef Target, bool DueToCurse);
 internal sealed record BattleAutomaticAction(EngineBattleState Battle, IReadOnlyList<BattleEffect> Effects,
@@ -428,6 +428,10 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 reaction.Amount >= 0 && reaction.HpAfter == Math.Max(0, hp - reaction.Amount) &&
                 reaction.MpBefore == defender.Mp && reaction.MpAfter == defender.Mp &&
                 (reaction.Kind == BattleReactionKind.Damage || reaction.Amount == 0 && !reaction.Critical));
+            Require(reaction.CutoffDamage is null || reaction.Kind == BattleReactionKind.Damage &&
+                !reaction.Critical && reaction.Amount == 0x8000 && reaction.HpAfter == 0 &&
+                reaction.CutoffDamage > 0 && BattleEquipment.EquippedWeaponItem(attacker) == 109 &&
+                (defender.Definition.Resistance >> 14 & 3) != 3);
             Require(reaction.Kind != BattleReactionKind.Ineffective || !reversed && ineffective);
             Require(reversed || !ineffective || reaction.Kind != BattleReactionKind.Damage);
             Require(!reversed || (target.Status & 0xC1) == 0 &&
@@ -455,6 +459,7 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
                 facts.Add(new("ineffective", reaction.Target, reaction.HpBefore, reaction.HpAfter));
             else
             {
+                if (reaction.CutoffDamage is not null) facts.Add(new("cutoff", reaction.Actor, Target: reaction.Target));
                 if (reaction.Critical) facts.Add(new("critical", reaction.Actor, Target: reaction.Target));
                 facts.Add(new("hp", reaction.Target, reaction.HpBefore, reaction.HpAfter));
             }
@@ -462,6 +467,12 @@ internal sealed record BattleActionResolution(EngineBattleState Prepared, ActorR
             while (cursor < ConstructionEffects.Count && ConstructionEffects[cursor] != facts[^1]) cursor++;
             Require(cursor < ConstructionEffects.Count);
             var impact = ConstructionEffects.Skip(impactStart).Take(cursor++ - impactStart).ToArray();
+            if (reaction.CutoffDamage is not null)
+            {
+                var critical = impact.SingleOrDefault(effect => effect.Kind == "rng-critical");
+                Require(critical is not null && critical.RandomValue == 0 &&
+                    critical.RandomRange == profile.Critical.ChanceDenominator && profile.Critical.DamageBonusShift > 0);
+            }
             var specialRolls = impact.Where(effect => effect.Kind == "rng-monk-special").ToArray();
             bool monk = attacker.Definition.ClassRule == BattleClassRule.MasterMonk;
             Require(specialRolls.Length == (monk ? 1 : 0) &&

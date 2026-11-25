@@ -228,10 +228,12 @@ gated locations. `drop` is the connected battle rule. `other/future` makes no ab
 original ally starts, shops or grants: its acquisition owner is the [remaining campaign](../application/remaining-campaign-risk-baseline.md#optional-content-and-ownership).
 Current caller reproduction is below. A/B/C/D/E refer to the five serial slices in the agreement;
 E's exhaustive class/appearance check applies to **every** row, even one already observed.
-A on B/C items means retained source metadata and deferred equipment integration after the unique
+A on still-pending C items means retained source metadata and deferred equipment integration after the unique
 effect exists, not permission to equip it early with missing effects. `A complete` marks passive
 mechanics only; D/E remain explicit where Use or exhaustive appearance closure is unfinished.
-The linked mechanism owners retain the original accepted observations and slice A witnesses.
+`B complete` marks live prowess/cutoff and the representative weapon consumers; E still owns
+all legal class/appearance combinations. The mechanism owners retain the original observations
+and A/B witnesses.
 
 | ID / equipment | Source classes | Passive effects; range | Use; flags | Allied equip / scene | Selected acquisition | Remaining slice |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -284,7 +286,7 @@ The linked mechanism owners retain the original accepted observations and slice 
 | 65 Critical Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT32, +CRITICAL1; 1–1 | —; — | yes / none | other/future | A complete; E |
 | 66 Battle Sword | HERO, BRN, BDBT, RDBN | +ATT35; 1–1 | —; — | yes / none | other/future | A complete; E |
 | 67 Force Sword | HERO | +ATT46; 1–1 | —; UNSELLABLE | yes / none | other/future | A complete; E |
-| 68 Counter Sword | HERO, BRN, BDBT, RDBN | +ATT39, +COUNTER1; 1–1 | —; — | no / none | other/future | A,B,E |
+| 68 Counter Sword | HERO, BRN, BDBT, RDBN | +ATT39, +COUNTER1; 1–1 | —; — | yes / row | other/future | B complete; E |
 | 69 Levanter | HERO | +ATT42; 1–1 | BLAZE3; BREAKABLE | yes / none | other/future | A complete; D,E |
 | 70 Dark Sword | HERO, BRN, BDBT, NINJ, RDBN | +ATT50, −DEF5; 1–1 | DESOUL1; CURSED,BREAKABLE | yes / none | other/future | A complete; D,E |
 | 71 Wooden Sword | SDMN, BDMN, HERO, BRN, BDBT, NINJ, RDBN | +ATT3; 1–1 | —; — | yes / row | other/future | existing; E check |
@@ -324,8 +326,8 @@ The linked mechanism owners retain the original accepted observations and slice 
 | 105 Knife | THIF | +ATT12; 1–1 | —; — | yes / row | shop | existing; E check |
 | 106 Thieve's Dagger | THIF | +ATT17, +AGI5; 1–1 | —; — | yes / row | shop | A complete; E |
 | 107 Katana | NINJ | +ATT34; 1–1 | —; — | yes / none | other/future | A complete; E |
-| 108 Ninja Katana | NINJ | +ATT39, +DOUBLE1; 1–1 | —; — | no / none | other/future | A,B,E |
-| 109 Gisarme | NINJ | +ATT42, SET_CRITICAL6; 1–1 | —; — | no / none | other/future | A,B,E |
+| 108 Ninja Katana | NINJ | +ATT39, +DOUBLE1; 1–1 | —; — | yes / row | other/future | B complete; E |
+| 109 Gisarme | NINJ | +ATT42, SET_CRITICAL6; 1–1 | —; — | yes / row | other/future | B complete; E |
 | 110 Taros Sword | NONE | +ATT32; 1–2 | BOLT2; BREAKABLE | NONE / none | Taros/drop | D |
 | 124 Life Ring | HERO, PLDN, PGNT, GLDT, BRN, WIZ, SORC, VICR, MMNK, SNIP, BRGN, BDBT, WFBR, BWNT, PHNX, NINJ, MNST, RBT, GLM, RDBN | HP_RECOVERY5; 0–0 | —; — | no / n/a | other/future | A,C |
 | 126 Chirrup Sandals | ALL | none; 0–0 | —; — | yes / n/a | Search | existing; E check |

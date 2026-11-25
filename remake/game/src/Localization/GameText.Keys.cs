@@ -747,6 +747,7 @@ internal static partial class GameText
         ["battle.scene.item"] = 2,
         ["battle.scene.prism"] = 1,
         ["battle.scene.damage"] = 2,
+        ["battle.scene.cutoff"] = 1,
         ["battle.scene.critical"] = 2,
         ["battle.scene.dodge"] = 1,
         ["battle.scene.ineffective"] = 1,

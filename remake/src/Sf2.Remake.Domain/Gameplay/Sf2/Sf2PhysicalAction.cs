@@ -210,7 +210,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             var defender = counter ? actor : target;
             var targetPosition = counter || self ? destination : target.Position!;
             ushort hp = counter ? actorHp : targetHp;
-            var profile = attacker.Definition.Physical!;
+            var profile = BattleEquipment.Physical(attacker)!;
             ushort status = defender.Status;
             var terrain = current.Definition.Terrain[targetPosition.Y * 48 + targetPosition.X];
             // Ground protection is separate from movement cost, including the
@@ -228,7 +228,9 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
                 special ? (ushort)1 : profile.Critical.ChanceDenominator,
                 profile.Critical.DamageBonusShift, counter, profile.Critical.InflictsSleep, (status & 0xC1) != 0,
                 ineffective: !counter && ineffective, silenceCritical: profile.Critical.InflictsSilence, poisonCritical: profile.Critical.InflictsPoison,
-                stunCritical: profile.Critical.InflictsStun, archerBonus: archerBonus);
+                stunCritical: profile.Critical.InflictsStun, archerBonus: archerBonus,
+                gisarme: BattleEquipment.EquippedWeaponItem(attacker) == 109,
+                immuneToDesoul: (defender.Definition.Resistance >> 14 & 3) == 3);
             int impactIndex = reactions.Count;
             reactions.Add(new(attacker.Actor, defender.Actor, kind,
                 strike.Dodged ? BattleReactionKind.Dodge : strike.Ineffective ? BattleReactionKind.Ineffective : BattleReactionKind.Damage,
@@ -238,7 +240,7 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
                 InflictedStun: strike.StunInflicted ? (ushort)(status | 1) : null,
                 InflictedPoison: strike.PoisonInflicted ? (ushort)(status | 2) : null,
                 InflictedSilence: strike.SilenceInflicted && SilenceRules.HasSpells(defender) ? (ushort)(status | SilenceRules.Mask) : null,
-                SpecialAnimation: special));
+                SpecialAnimation: special, CutoffDamage: strike.CutoffDamage));
             seed = strike.Seed;
             effects.Add(new(kind, attacker.Actor, Target: defender.Actor));
             AddRolls(strike.Rolls, attacker.Actor, defender.Actor);
@@ -256,11 +258,12 @@ internal sealed class Sf2PhysicalAction : IPhysicalActionRule
             }
             bool canFollow = attackerHp > 0 && strike.Hp > 0;
             bool twice = canFollow && Roll("double", profile.Critical.DoubleChanceDenominator, attacker.Actor, defender.Actor) == 0;
-            bool response = canFollow && Roll("counter", defender.Definition.Physical!.Critical.CounterChanceDenominator, attacker.Actor, defender.Actor) == 0;
+            bool response = canFollow && Roll("counter", BattleEquipment.Physical(defender)!.Critical.CounterChanceDenominator, attacker.Actor, defender.Actor) == 0;
             if (strike.Dodged) effects.Add(new("dodge", defender.Actor, hp, hp));
             else if (strike.Ineffective) effects.Add(new("ineffective", defender.Actor, hp, hp));
             else
             {
+                if (strike.CutoffDamage is not null) effects.Add(new("cutoff", attacker.Actor, Target: defender.Actor));
                 if (strike.Critical) effects.Add(new("critical", attacker.Actor, Target: defender.Actor));
                 effects.Add(new("hp", defender.Actor, hp, strike.Hp));
             }

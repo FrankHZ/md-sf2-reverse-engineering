@@ -1153,6 +1153,29 @@ The E slice still owns exhaustive legal class/item/body closure; this successor 
 The [slice A owner](../domain/equipment-use-repair-design.md#slice-a-reproduction-and-retained-failures)
 records reader/native commands, retained failures and private receipt registration.
 
+### Prowess successor (#2271)
+
+`derived/issue2271/equipment-v1` is the complete successor to A:174 files,365,733,902 bytes,
+a15,986-byte increase. Only Battle26 scene JSON differs; every predecessor actor and raster remains
+identical and all other closure files compare byte-identical. It retains the same catalog, independent
+opening/Witch, map/audio, growth and class selections. The existing `static-equipment` family adds
+Counter Sword68 using selector6/palette12 and Ninja Katana108/Gisarme109 using selector8/palette17.
+The five rows reuse HERO0, BRN3/16 and NINJ5 bodies; Counter Sword is not mounted onto NINJ.
+The production reader verifies these five keys across all26 scenes through existing shared admission.
+
+The single-scene pilot took0.164s, grew3,669,928→3,685,914 bytes and added5 actor rows/12 rasters.
+The serial complete mount took under2s. The2GiB peak-memory/1GiB publication budgets were retained;
+peak memory was not measured. Processing remains O(package bytes + selected records), with no
+capture/download/API cost. Twelve encoded images include the two item-specific copies of the shared
+Ninja selector; this bounded addition requires no new cache or manifest. No old package was removed.
+Native Slade Equip/attack projects body26/palette0 and weapon109. Original special CUTOFF animation
+is not mounted by this weapon-only addition. Full legal equipment/body closure remains E.
+
+Reproduce with the preceding `Prepare-PrivateAssets.ps1 -Family static-equipment` command using
+`derived/issue2270/equipment-v1` as `-Package` and a fresh ignored destination. The
+[B owner](../domain/equipment-use-repair-design.md#b-reproduction-and-retained-failures) records
+reader/native commands and retained failures. No real player save is an input or output.
+
 ### Budget and pilot before expansion
 
 The accepted package is about345MiB. Preparation should be O(input package bytes + selected

@@ -317,6 +317,7 @@ public sealed class BattleSceneState
         : Laser is not null ? HasReaction && LaserTargetsVisible && !Action.Prepared.GetActor(Reaction.Target).IsAlly ? Reaction.Target : Action.Actor
         : IsCurseRecoil ? Action.Reactions[ReactionIndex - 1].Target
         : AbsorbsMp ? Action.Reactions[0].Target : Action.Prepared.GetActor(Actor).IsAlly ? Target : Actor;
+    public bool IsCutoff => HasReaction && Reaction.CutoffDamage is not null;
     public bool Critical => HasReaction && Reaction.Critical;
     public bool SpecialPhysicalAnimation => HasReaction && Reaction.SpecialAnimation;
     public int HpChange => !HasReaction ? 0 : Reaction.HpAfter - Reaction.HpBefore;
@@ -335,7 +336,7 @@ public sealed class BattleSceneState
     // token through the ordinary continuation; resources, RNG and rewards are unchanged.
     // Critical, miss, spell/item, status, death, EXP, growth and item notices stay required.
     public bool CanSuppressHitCoinMessage => Phase == BattleScenePhase.GoldMessage ||
-        Phase == BattleScenePhase.ResultMessage && ReactionKind == "Damage" && !Critical &&
+        Phase == BattleScenePhase.ResultMessage && ReactionKind == "Damage" && !Critical && !IsCutoff &&
         ActionKind is "physical-first" or "physical-second" or "physical-counter";
     public bool RequiresAcknowledgement => Phase is BattleScenePhase.SilencedCastMessage or BattleScenePhase.PhysicalInactionMessage or
         BattleScenePhase.ActionMessage or BattleScenePhase.ResultMessage or BattleScenePhase.CureStunMessage or BattleScenePhase.CureCurseMessage or BattleScenePhase.SupportDefenseMessage or BattleScenePhase.DeathMessage
@@ -484,6 +485,7 @@ internal static class BattleSceneContinuation
                 if (beforeReaction.Status != battle.GetActor(scene.Target!.Value).Status)
                     observations.Add(new(++sequence, revision, "status", scene.Target, beforeReaction.Status, battle.GetActor(scene.Target!.Value).Status));
                 deaths = deaths.Append(beforeReaction, battle.GetActor(scene.Target!.Value));
+                if (scene.IsCutoff) observations.Add(new(++sequence, revision, "cutoff", scene.Actor, Target: scene.ReactionTarget));
                 if (scene.Critical) observations.Add(new(++sequence, revision, "critical", scene.Actor, Target: scene.ReactionTarget));
                 if (scene.Reaction.Kind == BattleReactionKind.Dodge)
                     observations.Add(new(++sequence, revision, "dodge", scene.Target));
