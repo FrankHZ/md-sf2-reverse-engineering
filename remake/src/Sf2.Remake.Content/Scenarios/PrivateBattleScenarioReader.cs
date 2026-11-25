@@ -216,16 +216,8 @@ public sealed class PrivateBattleScenarioReader(string placementPath, string sce
         byte id = input.Id;
         var actor = new ActorRef($"ally-{id}");
         var classDefinition = definitions.Classes[input.ClassId];
-        var classRule = classDefinition.Id switch
-        {
-            0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedKnight,
-            2 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedPriest,
-            3 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedArcher,
-            6 => BattleClassRule.UnpromotedBirdman, 7 => BattleClassRule.UnpromotedWolfman, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedPhoenix,
-            10 => BattleClassRule.UnpromotedThief, 11 => BattleClassRule.UnpromotedTortoise,
-            13 => BattleClassRule.Paladin, 22 => BattleClassRule.BrassGunner,
-            _ => throw Unsupported("source-class", "actors.class"),
-        };
+        var classRule = Sf2ClassRules.FromSource(classDefinition.Id)
+            ?? throw Unsupported("source-class", "actors.class");
         Require(input.Hp <= input.MaxHp && input.Mp <= input.MaxMp, "numeric-range", "allies.resources");
         foreach (ushort word in input.Items)
         {

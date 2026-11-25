@@ -8,7 +8,8 @@ handoffs, carried state and acceptance boundaries for Battle03 through departure
 The [#2268 agreement](domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268)
 and [complete equipment reconciliation](content/campaign-items.md#whole-game-equipment-reconciliation)
 cover all94 source equipment definitions. The audit is complete at the static definition/code
-boundary; whole-game implementation is **not complete**. Slices A/B/C admit85 weapon definitions
+boundary; equipment rule/consumer implementation has local complete-table verification, with final
+independent parent acceptance pending. Slices A/B/C admit85 weapon definitions
 (including two player-ineligible mask-NONE rows) and nine rings. Signed ATT/DEF/AGI/MOV operations
 run after statuses in actual carried-slot order, with each source clamp. Weapon and ring curses
 share Equip, custody, Cure and Repair. Guardian91 has ordinary purchase/Equip, body/weapon
@@ -21,16 +22,22 @@ battle Continue. These witnesses do not establish natural late acquisition or ex
 actors' double/counter/critical prowess from live equipment and supports Gisarme cutoff after
 successful critical against nonimmune targets. Native controlled NINJ Equip/cutoff/reward and
 Chinese cold Continue pass, with separate weapon109/body26. Natural late acquisition and original
-CUTOFF animation remain Unknown; exhaustive legal class/body keys remain E. [Slice C](domain/equipment-use-repair-design.md#equipped-turn-recovery-2272) admits Holy Staff97,
+CUTOFF animation remain Unknown; E supplies the exhaustive legal class/body keys. [Slice C](domain/equipment-use-repair-design.md#equipped-turn-recovery-2272) admits Holy Staff97,
 Mystery Staff100 and Life Ring124. Their capped turn recovery precedes poison through the existing
-continuation; controlled native Holy/Life notices and cold Continue pass without extra recovery. [Slice D](domain/equipment-use-repair-design.md#whole-table-equipment-use-2273) binds all25 nonempty equipment Use rows through shared spell effects and selected-slot wear, including healing/cure, hostile status and later attack ranks. Controlled native AURA2, failed DISPEL1, BOLT2 and continuous Repair/cold pass; books and Field eligibility are unchanged. Remaining legal class/body/weapon tuples remain E. Iron Knuckles29 and Great Axe39 still need their explicit appearance rows.
+continuation; controlled native Holy/Life notices and cold Continue pass without extra recovery. [Slice D](domain/equipment-use-repair-design.md#whole-table-equipment-use-2273) binds all25 nonempty equipment Use rows through shared spell effects and selected-slot wear, including healing/cure, hostile status and later attack ranks. Controlled native AURA2, failed DISPEL1, BOLT2 and continuous Repair/cold pass; books and Field eligibility are unchanged. E now supplies explicit Iron Knuckles29/Great Axe39 rows and every legal class/body/weapon tuple.
 
-Five serial implementation outcomes own signed stats/weapon curses, prowess/cutoff, turn recovery,
-all equipment Use, and final legal class/resource consumers. RBT/GLM/RDBN mappings and necessary
-controlled late holders belong to equipment closure; future recruitment/maps/acquisition stay with
-the campaign owners. The initial audit made no runtime claim; slice A evidence is linked above. The parent remains
-open until the final production reader and representative input/save checks close every equipment
-rule and necessary consumer. [Resource plan](content/asset-inventory.md#whole-game-equipment-resource-plan-2268)
+[Slice E](domain/equipment-use-repair-design.md#complete-equipment-consumers-2274) admits RBT/GLM/RDBN,
+all30 source members and their59 legal class bindings. The corrected source join yields557 weapon
+pairs plus59 explicit bare keys, checked by the production reader across all26 scenes. The94
+items retain439 class/item and912 member/class/equipment pairs. Rings keep body/weapon identity;
+no-layer fists/arrows remain without an overlay. Native RBT/GLM, late MMNK29 and RDBN39 attacks,
+field Equip and independent field/battle Continue pass. Recipe11 reuses roster upgrade for old
+field/battle saves, without changing their existing party/flags/RNG or adding a save field.
+
+Late holders use controlled custody, not natural recruitment/acquisition. Future maps, recruitment
+and smithing remain campaign work; original animation-only gaps remain #2104 and shutdown warnings
+remain #1716. No equipment rule or necessary consumer is deferred to those owners. #2268 stays open
+for main-gate's independent final acceptance. [Resource closure](content/asset-inventory.md#equipment-closure-pilot-2274)
 
 ## Campaign feature trace
 

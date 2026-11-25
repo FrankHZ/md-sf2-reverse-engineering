@@ -12,7 +12,7 @@ public sealed record BattleGrowthDefinition(byte ClassId, byte AttackBonus,
 {
     internal IReadOnlyList<LevelSpell>? RetainedSpells { get; init; }
     internal bool CanKnow(byte packed, byte level) =>
-        Spells.Any(spell => spell.PackedSpell == packed && spell.Level <= level + (RetainedSpells is null ? 0 : 20)) ||
+        Spells.Any(spell => spell.PackedSpell == packed && spell.Level <= level + (ClassId >= 11 ? 20 : 0)) ||
         RetainedSpells?.Any(spell => spell.PackedSpell == packed) == true;
 }
 

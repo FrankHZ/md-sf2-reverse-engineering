@@ -11,16 +11,116 @@ recruitment, maps, smithing and other acquisition services remain with the campa
 legal detached inputs can validate their equipment before those routes exist. No real save
 or backup is an acceptance workspace. This section owns the implementation sequence;
 the [complete item reconciliation](../content/campaign-items.md#whole-game-equipment-reconciliation)
-owns individual rows. Slices A/B/C/D implement static equipment, physical prowess, turn recovery and equipment Use below; whole-game support is still incomplete
+owns individual rows. Slices A–D implement static equipment, physical prowess, turn recovery and equipment Use.
+Slice E completes the source-legal equipment consumer table and representative late consumers;
+independent final acceptance remains pending
 and this does not close [#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
 
-The current successor is `derived/issue2272/equipment-v1`, built from the accepted slice-B package.
+The current successor is `derived/issue2274/equipment-v1`, built from the accepted slice-C package.
+The [E reproduction section](#complete-equipment-consumers-2274) owns its complete consumer checks.
 It retains SORC **v3** and its catalog, with independent
 opening and Witch selections retained. Do not substitute rejected v2, earlier v1, or a removed
 producer checkout. Reuse the existing Domain/Application/Content/adapter boundaries and
 registered prepared assets. No new equipment platform, second item catalog, save format,
 reference runner or per-item scenario framework is proposed. Ordinary source-backed definitions
 must remain independent of the controlled witnesses used to test them.
+
+
+## Complete equipment consumers (#2274)
+
+**Confirmed (local implementation; independent final acceptance pending).** The producer joins
+original starts and ordinary/special promotion destinations to the registered #2001 walking/body
+library. Against pinned `c834c652b6862bc5679fd7f69a38a7093206efc6`, the owning source tables are
+`data/stats/allies/allystartdefs.asm`, `data/stats/allies/classes/promotions.asm`,
+`data/stats/allies/allybattlesprites.asm` and `data/stats/items/itemdefs.asm`.
+Paths above are relative to the pinned repository's `disasm/` directory. The source-backed set has **94 equipment definitions, 439 class/item pairs, 59 member/class pairs,
+912 member/class/equipment tuples and 557 member/class/weapon tuples**. Adding one explicit bare
+row per member/class gives **616 appearance keys and 16,016 selections across 26 scenes**.
+The earlier audit's 61/972/605/666 counts were erroneous cross-checks, not extra legal classes.
+Rohde and Higins start promoted; no hypothetical base-class records are added for them.
+
+RBT29, GLM30 and RDBN31 now have named class, source prowess and AI target-priority operands
+(`data/battles/global/aipriority.asm`). Late members20–29 have the necessary original start/growth,
+class/mask, portrait and prepared bodies. Original effective starting level uses the class>=11
+threshold, including its TORT behavior; HEAL3 initial prowess preserves the packed source rule.
+No later recruitment, map, natural acquisition or complete late growth campaign is connected.
+The scene's optional explicit source class distinguishes RDBN from its shared BRN body22.
+All item-null rows are explicit; weapon selector255, fists and arrows retain source layering.
+Rings retain the selected body. Mask-NONE items102/110 remain refused for player equipment.
+
+Recipe11 extends the existing historical roster with30 members. Field exact snapshots and battle
+records use the existing historical-roster upgrade, retaining existing party values and RNG while
+adding detached late members. No save format or second equipment authority is introduced.
+The two coupled persistence owners are `FieldPartySnapshot` and `SettledFieldSnapshot`; source
+growth admission, class rules and target priority are dependencies of these late equipment holders.
+
+The complete publication is `derived/issue2274/equipment-v1`; independent opening #2252, Witch
+#2255 and Chinese catalog #2266 remain selected. The registered review bundle is
+`derived/issue2274/review-v1` under `SF2_SHARED_INPUT_ROOT`. It contains the actual production-reader
+consumer, launchers, controlled seeds, receipts and completed failure logs. From the isolated
+checkout with its private configuration loaded:
+
+```powershell
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2274/review-v1'
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+uv run python (Join-Path $review 'assets-check.py')
+uv run sf2 verify adapter
+```
+
+To regenerate the package, select the registered pinned disassembly root as `$upstream` and
+a fresh ignored destination as `$destination`, then use the existing producer (no new capture):
+
+```powershell
+uv run python -m sf2tool.remake_retail_assets --root (Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1') --base (Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2272/equipment-v1') --upstream $upstream --mount $destination --family equipment
+```
+
+`Verify.ps1` stages the consumer locally and runs production `OpeningNewGameReader`, actual
+equipment choices/equip and `TryAllyVisual`, checking every legal key in every scene. It compares
+source code/mask/ordered effects/Use, body/palette, weapon layers, animation headers, indices,
+signed frame offsets and projectile selectors; it also restores accepted field/battle records.
+It checks 27,144 retained HD body references. The raster comparison checks all260 distinct weapon
+frames against the prepared 4bpp palette and newly mounted bodies byte-for-byte. The package has
+174 files / 368,276,281 bytes: only world.json and Battle26 scenes change from C, a 2,522,715-byte
+increment. [Asset owner](../content/asset-inventory.md#complete-equipment-successor-2274) records
+the four-family pilot, measured mount/reader memory, runtime and budget boundaries.
+
+Native `Boot.ps1` accepts `-Repo`, `-Mode`, `-Sample`, `-Journey`, `-SaveRoot`, `-Seed`,
+`-Language`, `-Actor` and `-Target`. Use a fresh sample/namespace and an explicitly disposable root.
+The modes are `field-cold`, `battle-cold`, `attack`, and `field-equip`. Seeds and saved successor
+slots are under the bundle's `seeds` and `receipts`; these are private controlled records.
+For example, replay a published old-field slot with `-Mode field-cold -Language en`, or the
+Red Baron seed with `-Mode attack -Actor ally-28 -Target enemy-12 -Language zh-CN`.
+Drivers use ordinary input and read actual state/projection; they take no screenshots.
+
+| Receipt | Observed boundary |
+| --- | --- |
+| old-field-en / old-battle-zh | Accepted pre-E field and battle cold Continue; recipe11 and30 members |
+| robot-en3 | Robot26 body20, bare physical attack and next legal movement |
+| redbaron-zh / redbaron-cold-en | Red Baron28 body22 with explicit Great Axe39 layer; attack save and fresh Continue |
+| fist-en | Sheela25 MMNK body19, Iron Knuckles29 attack without fabricated overlay |
+| golem-zh | Claude29 body23 bare attack and next movement |
+| late-field-zh / late-field-cold-en | Controlled late holder28 equips Great Axe39 through PartyStatus, saves and cold continues |
+
+All listed final native processes exited0. Old-field had no ObjectDB warning; battle-cold and field
+equipping reported2 and attack runs4. These retained warnings remain with #1716. Earlier Robot
+attempts retain malformed controlled-seed rejection and a real `ai-target-class` failure; the
+source-backed priority rows corrected the latter. Seed construction/reconstruction failures,
+zero-valued memory instrumentation and unavailable optional Pillow attempt are preserved too.
+
+The completed engine run had3374 passed,50 skipped and one new fixture failure:
+`HistoricalSaveRosterTests.EquipmentRosterUpgradePreservesExactVisitPartyAndRandomState`
+(`field-visit-actor`). Its fixture incorrectly mixed legacy visit state; the corrected focused
+party/RNG test plus affected files passed24 tests. After the native AI finding, focused
+`LateEquipmentTests|TargetSelectionTests` passed73 tests. The completed broad failure is not
+relabelled interrupted or overwritten with a new aggregate. Final adapter compilation and the
+complete published production-reader check pass. CI and the clean-head planner are recorded
+with the frozen PR's exact Git objects.
+
+Natural late recruitment/acquisition, later campaign, original full choreography #2104 and
+lifecycle #1716 remain separate. Chinese rendering reuses the registered catalog and existing
+fallbacks; this does not assert complete Chinese proper-name coverage. A–D effects, including
+unique effects, remain their accepted mechanisms; E does not replace them with admission-only
+claims. Main-gate owns independent final acceptance and parent closure.
 
 ### Audit result and decisions
 

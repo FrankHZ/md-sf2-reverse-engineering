@@ -13,7 +13,7 @@ public readonly record struct ActorRef(string Value);
 public readonly record struct SpellRef(string Value, byte Level);
 public enum BattleActionKind { Stay, Healing, Physical, Item, Retreat, PrismLaser, AttackSpell, SupportSpell }
 public readonly record struct BattleActionRef(BattleActionKind Kind, SpellRef? Spell = null, int? ItemSlot = null);
-public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight, UnpromotedMage, UnpromotedArcher, UnpromotedThief, UnpromotedTortoise, UnpromotedPhoenix, UnpromotedRanger, UnpromotedWolfman, UnpromotedBirdman, BrassGunner, Paladin, Hero, Wizard, Gladiator, BirdBattler, Sniper, BowKnight, Vicar, WolfBaron, Phoenix, Ninja, Monster, PegasusKnight, Baron, MasterMonk, Sorcerer }
+public enum BattleClassRule { UnpromotedPriest, Ordinary, UnpromotedSwordsman, UnpromotedWarrior, UnpromotedKnight, UnpromotedMage, UnpromotedArcher, UnpromotedThief, UnpromotedTortoise, UnpromotedPhoenix, UnpromotedRanger, UnpromotedWolfman, UnpromotedBirdman, BrassGunner, Paladin, Hero, Wizard, Gladiator, BirdBattler, Sniper, BowKnight, Vicar, WolfBaron, Phoenix, Ninja, Monster, PegasusKnight, Baron, MasterMonk, Sorcerer, Robot, Golem, RedBaron }
 public enum BattleControl { Player, Automatic }
 public enum BattleFaction { Ally, Enemy }
 
@@ -32,6 +32,7 @@ public sealed class PhysicalCriticalRule
     public static PhysicalCriticalRule Monk { get; } = new(4, 1, doubleChanceDenominator: 16, counterChanceDenominator: 16);
     public static PhysicalCriticalRule Hero { get; } = new(16, 2, doubleChanceDenominator: 16, counterChanceDenominator: 8);
     public static PhysicalCriticalRule WolfBaron { get; } = new(16, 2, counterChanceDenominator: 8);
+    public static PhysicalCriticalRule RedBaron { get; } = new(8, 1, counterChanceDenominator: 8);
     public static PhysicalCriticalRule Ninja { get; } = new(8, 1, doubleChanceDenominator: 16, counterChanceDenominator: 8);
     public static PhysicalCriticalRule Thief { get; } = new(16, 2, doubleChanceDenominator: 16);
     public static PhysicalCriticalRule OneIn32WithFrequentDouble { get; } = new(32, 1, doubleChanceDenominator: 16);
@@ -69,6 +70,17 @@ public sealed class PhysicalCriticalRule
 
     private static int ChanceSetting(ushort denominator) => denominator switch
     { 32 => 0, 16 => 1, 8 => 2, 4 => 3, _ => throw new BattleRuleException("prowess-setting", "actor.physical") };
+
+    internal PhysicalCriticalRule InitialHealThree()
+    {
+        // InitializeAllyStats increments the combined double/counter nibble, with its 8 -> 7 edge.
+        int combined = ChanceSetting(DoubleChanceDenominator) | ChanceSetting(CounterChanceDenominator) << 2;
+        combined++;
+        if (combined == 8) combined = 7;
+        return new(ChanceDenominator, DamageBonusShift, InflictsSleep,
+            (ushort)(32 >> (combined & 3)), (ushort)(32 >> ((combined >> 2) & 3)),
+            InflictsSilence, InflictsPoison, InflictsStun);
+    }
 
     internal PhysicalCriticalRule IncreaseCritical(byte amount)
     {

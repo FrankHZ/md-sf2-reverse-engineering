@@ -8,7 +8,7 @@ public sealed record BattleSceneAnimation(int Index, int Trigger, int Spell, boo
     BattleSceneWeaponFrame? IdleWeapon, IReadOnlyList<BattleSceneAnimationFrame> Frames);
 public sealed record BattleSceneActorVisual(int Sprite, int Palette, int? Item,
     IReadOnlyList<string> Frames, IReadOnlyList<string> WeaponFrames,
-    IReadOnlyDictionary<string, BattleSceneAnimation> Sequences, int IdleTicks = 0);
+    IReadOnlyDictionary<string, BattleSceneAnimation> Sequences, int IdleTicks = 0, byte? SourceClass = null);
 public sealed record HealingSceneVisual(IReadOnlyList<string> Bodies, IReadOnlyList<string> Wings, IReadOnlyList<string> Dust,
     HealingSceneVisual? Enemy = null);
 public sealed record NeutralBattleSprite(int Sprite, int X, int Y, int Facing, int CompletedFlag, bool WhirlsInWater = false, bool LyingLeft = false);

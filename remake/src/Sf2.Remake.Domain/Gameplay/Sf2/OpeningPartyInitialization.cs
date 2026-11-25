@@ -7,25 +7,22 @@ internal static class OpeningPartyInitialization
 {
     internal static PhysicalCriticalRule InitialCritical(BattleGrowthDefinition growth, byte startingLevel, PhysicalCriticalRule critical)
     {
-        if (!growth.Spells.Any(spell => spell.Level <= startingLevel && spell.PackedSpell == 128)) return critical;
-        if (critical != PhysicalCriticalRule.OneIn16WithQuarterBonus)
-            throw new BattleRuleException("initial-heal3-prowess", "opening.spells", true);
-        // InitializeAllyStats increments the combined double/counter nibble before LevelUp.
-        // The admitted PRST baseline is03, so this source initialization yields13.
-        return PhysicalCriticalRule.Thief;
+        int effectiveLevel = startingLevel + (growth.ClassId >= 11 ? 20 : 0);
+        return growth.Spells.Any(spell => spell.Level <= effectiveLevel && spell.PackedSpell == 128)
+            ? critical.InitialHealThree() : critical;
     }
 
     internal static BattleActorStartInput Initialize(BattleDeploymentDefinition deployment, byte startingLevel, ref uint seed)
     {
         var definition = deployment.Definition;
         var growth = definition.Growth ?? throw new BattleRuleException("initial-growth-required", "opening.growth");
-        if (growth.ClassId is > 11 and not (13 or 22) || startingLevel is 0 or > 40 || growth.Stats.Count != 5)
+        if (growth.ClassId > 31 || startingLevel is 0 or > 40 || growth.Stats.Count != 5)
             throw new BattleRuleException("initial-class-level", "opening.ally", true);
         var items = definition.SourceLoadout?.Items ?? throw new BattleRuleException("initial-items-required", "opening.items");
         var packed = Enumerable.Repeat((byte)63, 4).ToArray();
         // InitializeAllyStats scans the initial spell list before replaying LevelUp.
         // Initial prowess is already bound to the immutable source definition before replay.
-        foreach (var spell in growth.Spells.Where(spell => spell.Level <= startingLevel))
+        foreach (var spell in growth.Spells.Where(spell => spell.Level <= startingLevel + (growth.ClassId >= 11 ? 20 : 0)))
         {
             int slot = Array.FindIndex(packed, value => (value & 63) == (spell.PackedSpell & 63));
             if (slot < 0) slot = Array.FindIndex(packed, value => value == 63);

@@ -16,7 +16,7 @@ internal static class BattleSceneContentReader
         try
         {
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            Require(stream.Length is > 0 and <= 4 * 1024 * 1024, "document-size", "battleScenes");
+            Require(stream.Length is > 0 and <= 8 * 1024 * 1024, "document-size", "battleScenes");
             bytes = new byte[(int)stream.Length]; stream.ReadExactly(bytes);
         }
         catch (IOException) { throw new AdmissionIssue(new(Sf2.Remake.Application.Runtime.SessionFailureKind.ContentError,
@@ -76,7 +76,7 @@ internal static class BattleSceneContentReader
         var enemyBodies = new Dictionary<(int, int), BattleSceneActorVisual>();
         foreach (var row in Array(root, "actors"))
         {
-            ObjectOptional(row, "sceneActor", "members", "side", "sprite", "palette", "item", "frames", "weaponFrames", "sequences", "idleTicks");
+            ObjectOptional(row, "sceneActor", ["side", "sprite", "palette", "item", "frames", "weaponFrames", "sequences", "idleTicks"], "members", "classId");
             string side = Text(row, "side");
             int sprite = Number(row, "sprite", 0, 255), palette = Number(row, "palette", 0, 255);
             int? item = row.GetProperty("item").ValueKind == JsonValueKind.Null ? null : Number(row, "item", 0, 127);
@@ -115,14 +115,22 @@ internal static class BattleSceneContentReader
                 row.TryGetProperty("idleTicks", out _) ? Number(row, "idleTicks", 1, 65535) : 0);
             if (side == "ally")
             {
-                Require(sprite is >= 0 and <= 16 or 17 or 18 or 19 or 21 or 22 or 24 or 25 or 26 or 27 or 28 or 29 or 30 or 31, "scene-class", "battleScenes.actors", true);
+                Require(sprite is >= 0 and <= 16 or 17 or 18 or 19 or 20 or 21 or 22 or 23 or 24 or 25 or 26 or 27 or 28 or 29 or 30 or 31, "scene-class", "battleScenes.actors", true);
                 var kind = sprite switch { 0 => BattleClassRule.UnpromotedSwordsman, 1 => BattleClassRule.UnpromotedPriest,
                     2 => BattleClassRule.UnpromotedKnight, 3 => BattleClassRule.UnpromotedWarrior, 4 => BattleClassRule.UnpromotedMage, 5 => BattleClassRule.UnpromotedThief, 6 => BattleClassRule.UnpromotedTortoise,
                     7 => BattleClassRule.UnpromotedPhoenix, 8 => BattleClassRule.UnpromotedRanger, 9 => BattleClassRule.UnpromotedWolfman, 11 => BattleClassRule.BrassGunner, 12 => BattleClassRule.UnpromotedArcher, 13 => BattleClassRule.Paladin,
                     14 => BattleClassRule.BirdBattler, 17 => BattleClassRule.PegasusKnight, 18 => BattleClassRule.Gladiator, 21 => BattleClassRule.Wizard,
                     15 or 16 => BattleClassRule.Sorcerer, 19 => BattleClassRule.MasterMonk, 22 => BattleClassRule.Baron, 24 => BattleClassRule.Hero,
                     25 => BattleClassRule.Vicar, 26 => BattleClassRule.Ninja, 27 => BattleClassRule.Monster, 28 => BattleClassRule.Phoenix, 29 => BattleClassRule.BowKnight, 30 => BattleClassRule.WolfBaron,
-                    31 => BattleClassRule.Sniper, _ => BattleClassRule.UnpromotedBirdman };
+                    31 => BattleClassRule.Sniper, 20 => BattleClassRule.Robot, 23 => BattleClassRule.Golem, _ => BattleClassRule.UnpromotedBirdman };
+                if (row.TryGetProperty("classId", out _))
+                {
+                    var explicitKind = Sf2ClassRules.FromSource((byte)Number(row, "classId", 0, 31));
+                    Require(explicitKind == kind || sprite == 22 && explicitKind == BattleClassRule.RedBaron,
+                        "scene-class-body", "battleScenes.actors.classId");
+                    kind = explicitKind!.Value;
+                    visual = visual with { SourceClass = (byte)Number(row, "classId", 0, 31) };
+                }
                 if (row.TryGetProperty("members", out _))
                 {
                     var members = Array(row, "members").Select(value =>
@@ -139,7 +147,8 @@ internal static class BattleSceneContentReader
                     {
                         if (item is { } weapon)
                             Require(allyAppearances.TryAdd((member, kind, weapon), visual), "scene-ally-binding", "battleScenes.actors");
-                        allyAppearances.TryAdd((member, kind, -1), visual);
+                        if (item is null) allyAppearances[(member, kind, -1)] = visual;
+                        else allyAppearances.TryAdd((member, kind, -1), visual);
                     }
                     // Older class consumers retain the ordinary palette as their fallback.
                     if (palette == (sprite == 12 ? 1 : 0))

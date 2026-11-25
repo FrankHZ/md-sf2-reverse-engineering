@@ -44,8 +44,13 @@ internal sealed record SettledFieldSnapshot(SaveCompatibility Compatibility, Fie
 
     internal SessionResult Build(ScenarioDefinition definition, SessionRules rules)
     {
-        Require(Compatibility == OpeningSave.FieldCompatibility(definition, rules), "incompatible");
-        var (party, _) = Party.Rebuild(definition, Registers.Flags, Registers.Names);
+        var expected = OpeningSave.FieldCompatibility(definition, rules);
+        int prior = Compatibility.RecipeRevision;
+        Require(prior >= 1 && prior <= expected.RecipeRevision &&
+            Compatibility == (expected with { RecipeRevision = prior }), "incompatible");
+        var (party, _) = Party.Rebuild(definition, Registers.Flags, Registers.Names,
+            expected: expected, priorRecipe: prior < expected.RecipeRevision ? prior : null);
+        var admittedParty = prior < expected.RecipeRevision ? FieldPartySnapshot.Capture(definition, party) : Party;
         var world = Visit.Rebuild(definition.Exploration!, party);
         var story = Registers.Rebuild(definition, world, Visit.Berth);
         _ = rules.Bind(definition.Encounters.Values, party.Actors);
@@ -53,7 +58,7 @@ internal sealed record SettledFieldSnapshot(SaveCompatibility Compatibility, Fie
         var snapshot = new SessionSnapshot(Guid.NewGuid(), 0, story.Music?.Generation ?? 0,
             new ActiveExploration(world), story, SessionStopReason.PlayerInput);
         var rebuilt = Read(definition, snapshot, rules);
-        Require(Visit.SameValues(rebuilt.Visit) && Party.SameValues(rebuilt.Party) &&
+        Require(Visit.SameValues(rebuilt.Visit) && admittedParty.SameValues(rebuilt.Party) &&
             Registers.SameValues(rebuilt.Registers), "reconstruction-mismatch");
         return new(snapshot, [], SessionStopReason.PlayerInput);
     }

@@ -85,7 +85,8 @@ internal static class PrivateWorldEncounterReader
         var equipment = scenes.SelectMany(scene => scene.Equipment!.Select(pair => (pair.Key, pair.Value, Scene: scene)))
             .DistinctBy(row => row.Key).ToArray();
         var appearances = scenes.SelectMany(scene => (scene.AllyAppearances ?? new Dictionary<(ActorRef Actor, BattleClassRule Class, int Item), BattleSceneActorVisual>())
-            .Select(pair => (pair.Key, pair.Value, Scene: scene))).DistinctBy(row => row.Key).ToArray();
+            .Select(pair => (pair.Key, pair.Value, Scene: scene))).OrderByDescending(row => row.Value.SourceClass.HasValue)
+            .DistinctBy(row => row.Key).ToArray();
         // Spell icons have one source identity at every rank and can travel with
         // a learned book to earlier encounters just as its battle body can.
         var sharedRasters = scenes.SelectMany(scene => scene.Rasters.Select(pair => (pair.Key, pair.Value, Scene: scene)))
@@ -109,7 +110,11 @@ internal static class PrivateWorldEncounterReader
             foreach (var row in equipment)
                 if (weapons.TryAdd(row.Key, row.Value)) IncludeFrames(row.Value, row.Scene);
             foreach (var row in appearances)
-                if (actorVisuals.TryAdd(row.Key, row.Value)) IncludeFrames(row.Value, row.Scene);
+                if (row.Value.SourceClass.HasValue || !actorVisuals.ContainsKey(row.Key))
+                {
+                    actorVisuals[row.Key] = row.Value;
+                    IncludeFrames(row.Value, row.Scene);
+                }
             return scene with { Rasters = rasters.AsReadOnly(), Allies = allies.AsReadOnly(), Equipment = weapons.AsReadOnly(),
                 AllyAppearances = actorVisuals.AsReadOnly(), HdRasters = hdRasters.AsReadOnly(),
                 FieldDeath = scene.FieldDeath is { } field ? field with { AllySprites = sprites.AsReadOnly() } : null };
