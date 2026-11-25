@@ -481,8 +481,8 @@ fork to `egress` and `field-return-cold`. The handoff lists the exact seed and r
 | Persistence and return | Complete decoded v4 battle data matched on cold re-save at the ready and post-action checkpoints. Bowie used EGRESS after the Assault Shell fork and returned to Map36. Fresh field v3 Continue preserved the three promoted cards, books and packs. Elric retained his equipped Assault Shell and 17 EXP. Ambient field state and main seed advanced. |
 
 Controlled archer cases decline a Silver Tank held by another member and preserve its
-exact slot. Native Silver Tank fallback remains **Unknown**. BRGN special acceptance
-stays with [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957).
+exact slot. Native Silver Tank fallback and both archer BRGN rites now have controlled ordinary-input
+coverage. [Brass Gunner promotion](church-promotion-design.md#brass-gunner-promotion)
 
 The first two road probes stopped at an unnecessary Relief request and an early Caravan
 lookup. Both driver failures are retained. The Assault Shell run reached input and

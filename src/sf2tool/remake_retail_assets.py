@@ -570,6 +570,7 @@ def main():
             "pldn-eric",
             "pgnt",
             "brn",
+            "brgn",
             "wiz",
             "melee",
             "ranged",
@@ -592,6 +593,7 @@ def main():
     if {
         "pgnt",
         "brn",
+        "brgn",
         "wiz",
         "melee",
         "ranged",

@@ -27,6 +27,7 @@ internal static class Sf2ClassRules
     {
         1 => BattleClassRule.PegasusKnight,
         2 => BattleClassRule.Baron,
+        5 => BattleClassRule.BrassGunner,
         _ => null,
     };
 

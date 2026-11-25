@@ -1,6 +1,6 @@
 # Church promotion
 
-**Ordinary church promotion.** Bowie can become HERO from SDMN at stored level 20 or higher. The current class travels with his earned progress through field play, combat, level-up, saves and return. The campaign retains High rigor because this change crosses growth, equipment, presentation and both save recipes. The ordinary class pairs, Eric’s Pegasus Wing route and the Warrior Pride route for Jaha and Randolf are admitted through first Pacalon. Brass Gunner, Sorcerer and Master Monk remain with [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957). [Campaign agreement](remaining-campaign-risk-baseline.md) · [Design assignment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945)
+**Ordinary church promotion.** Bowie can become HERO from SDMN at stored level 20 or higher. The current class travels with his earned progress through field play, combat, level-up, saves and return. The campaign retains High rigor because this change crosses growth, equipment, presentation and both save recipes. The ordinary class pairs, Eric’s Pegasus Wing route the Warrior Pride route for Jaha and Randolf, and Silver Tank for Elric and Janet are admitted through first Pacalon. Sorcerer and Master Monk remain with [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957). [Campaign agreement](remaining-campaign-risk-baseline.md) · [Design assignment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945)
 
 ## Playable HERO and reproduction
 
@@ -392,3 +392,74 @@ Chinese catalog with `overlay-unavailable`. The complete successor reinstates th
 PGNT bindings and admits the catalog. Some successful exits emitted ObjectDB warnings.
 A connection to [#1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716)
 remains **Unknown**, as do natural Warrior Pride pickup and Randolf’s native BRN playthrough.
+
+## Brass Gunner promotion
+
+**High rigor, bounded to #2242.** Joined Elric and Janet can accept Silver Tank for BRGN,
+or decline it and separately confirm SNIP, through first Pacalon. The existing church
+transaction, Rohde BRGN rules, class-aware growth, equipment and save consumers own this
+behavior. Acceptance covers both members through the production reader and priest, then
+one ordinary battle route with changed equipment and independent field/battle Continue.
+Battle27+, SORC/MMNK and the shutdown investigation #1716 remain deferred.
+
+**Confirmed** from pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`.
+`promotions.asm` maps ACHR plus Silver Tank (120) to BRGN (22). Class definitions give
+MOV 5, BRASS_GUNNER terrain and CRITICAL125_1IN16 / DOUBLE_1IN32 / COUNTER_1IN16.
+The existing Rohde consumers already implement these rules and AI class priorities.
+Elric's BRGN level-30 ATT/DEF/AGI projections are 40/80/55, with EARLY defense.
+Janet's are 35/80/57, with LINEAR defense. Their own HP rows and empty spell lists remain
+member-specific. The source appearance tables select map sprites 32/47 and battle sprite
+11 with palettes 0/2. [Elric growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats13.asm) ·
+[Janet growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats18.asm)
+
+The current item catalog admits Wooden, Iron and Steel Arrow (45–47), range 2–2, and
+Robin Arrow, Assault Shell and Great Shot (48–50), range 2–3. Both members have all six
+battle bindings. These actions use the existing body animation with the independent weapon
+layer hidden. Unarmed retains range 1–1. The RARE weapons 51–55 remain outside current
+weapon admission, including Evil Shot's curse effects. The catalog retains the registered
+Chinese BRGN name 炮手. [Item definitions](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/items/itemdefs.asm) ·
+[Current equipment admission](../../src/Sf2.Remake.Content/Scenarios/PrivateFieldPreparation.cs)
+
+**Confirmed in the remake.** The controlled input copies the accepted Chinese castle slot
+and replaces only Kazin's slot-1 Medical Herb with a Silver Tank. F146 remains clear.
+Elric ACHR22 and Janet ACHR26 each accepted BRGN1/0 in separate journeys, with their Steel
+Arrow retained. The complete party comparison across final Yes changes only candidate
+class/level/EXP and the holder's compacted pack/refresh. Flags, gold, both RNG seeds and
+custody compare equal. Member-list cancel, special No, regular No and regular Yes were
+exercised. Fallback produces SNIP and retains the Tank. Both independent field re-saves
+match complete decoded data.
+
+Elric walked through Pacalon and Ketto to Battle26 and received Rohde's Assault Shell via
+Caravan Give. A separate legal copy changes only his EXP to 99. Native movement takes him
+from (4,26) to (4,23), with BrassGunner MOV5. Equip selects Assault Shell and its distance-3
+hit deals 19 HP, using body 11/palette0 and the existing ranged action. BRGN2/22 has 37 max
+HP, 26 base ATT, 27 DEF and 27 AGI. Separate Steel Arrow and Unarmed forks enforce range
+2–2 and 1–1 respectively, retain the other carried weapon and return to Movement. Engine
+behavior additionally checks range rejection, terrain, destination growth and atomic
+cross-holder removal. The post-growth battle save, paid EGRESS return and independent
+cold re-saves match complete decoded data.
+
+Use `derived/issue2242/review-v1/Boot.ps1` and the complete
+[BRGN successor](../content/presentation-assets.md#brass-gunner-promotion-successor).
+Build the Debug adapter with the locked SDK workflow first. Each mode writes receipts in
+`local/issue2242/review/receipts/<Sample>`. Select an explicit disposable save root and fresh
+sample/journey names. `special` and `fallback` create the controlled castle copy. `-Member 18`
+selects Janet. `road` continues Elric's special journey, checks field re-save and publishes
+`battle-ready-slot.json`. `prepare.py growth <ready-slot> <fresh-copy>` sets only Elric EXP99.
+Run `strike` with that seed, then `battle-cold`, `egress`, `field-cold` in its journey.
+Run `arrow` and `bare` as separate forks of the ready slot. The published driver retains
+accepted input/state observers and uses no screenshots.
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2242/review-v1'
+& "$review/Boot.ps1" -Repo (Get-Location).Path -Mode special -Member 13 `
+    -Sample $freshSample -Journey $freshJourney -Language zh-CN -SaveRoot $disposableSaveRoot
+```
+
+**Retained failures and limits.** The initial test edit failed compilation and was corrected
+before the successful engine run. The first Unarmed driver expected the old one-weapon pack
+and stopped after unequipping. Its corrected check preserves both carried weapons and the
+second fork succeeds. Successful native exits can report ObjectDB warnings, retained under
+#1716. Natural Silver Tank pickup, Janet's BRGN battle action and original audiovisual timing
+remain **Unknown**. Controlled custody and EXP are explicitly distinct from natural acquisition.

@@ -103,7 +103,7 @@ Janet's actual ACHR sprite12 uses palette0; Elric's existing archer binding is n
 Maintained ROM/source preparation generates her weapon45/46/47 bodies and field sprite45, mounted
 into all23 existing encounter scene packs. Their referenced rasters and member identity are checked
 directly; missing bindings were repaired before handoff. The [Battle24 chapter](battle24-north-parmecia.md) observes Janet's natural ACHR attack.
-Her promoted SNIP/BRGN bindings remain **Unknown**. North Cliff must consume actual Cannon/Dynamite custody and retain its own
+Her promoted SNIP and BRGN bindings are admitted. [Promotion coverage](church-promotion-design.md#brass-gunner-promotion). North Cliff must consume actual Cannon/Dynamite custody and retain its own
 current/fresh terrain distinction.
 
 ## Reproduction, gates and retained limits

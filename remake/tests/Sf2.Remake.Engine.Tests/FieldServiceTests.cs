@@ -41,7 +41,8 @@ public sealed class FieldServiceTests
         };
         var (baseClass, destination, baseCode, promotedCode, title, move, mover, weapon, promotionItem) = profile;
         bool baron = sourceRule == BattleClassRule.UnpromotedWarrior;
-        byte specialClass = baron ? (byte)16 : (byte)14;
+        bool gunner = sourceRule == BattleClassRule.UnpromotedArcher;
+        byte specialClass = gunner ? (byte)22 : baron ? (byte)16 : (byte)14;
         ushort material = promotionItem ?? 0;
         ushort duplicate = (ushort)(material | BattleInventory.Broken);
         byte[] book = sourceRule switch
@@ -102,7 +103,9 @@ public sealed class FieldServiceTests
                         sourceRule == BattleClassRule.UnpromotedWolfman ? "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN8" :
                             "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")];
                 if (bindSpecial)
-                    classRows.Add(baron
+                    classRows.Add(gunner
+                        ? new(22, "BRGN", "Brass Gunner", 5, "NONE", "BRASS_GUNNER", "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")
+                        : baron
                         ? new(16, "BRN", "Baron", 6, "NONE", "REGULAR", "CRITICAL150_1IN8|DOUBLE_1IN32|COUNTER_1IN16")
                         : new(14, "PGNT", "Pegasus Knight", 7, "NONE", "FLYING", "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16"));
                 var classDefinitions = new PrivateBattleDefinitions(null!, [], classRows,
@@ -288,6 +291,7 @@ public sealed class FieldServiceTests
     [Theory]
     [InlineData(BattleClassRule.UnpromotedKnight)]
     [InlineData(BattleClassRule.UnpromotedWarrior)]
+    [InlineData(BattleClassRule.UnpromotedArcher)]
     public void APrivateSpecialDestinationRequiresMountedBattleAppearance(BattleClassRule sourceClass)
     {
         var session = Session(hp: 0, currentLevel: 27, promotion: true, armed: true,
@@ -557,10 +561,12 @@ public sealed class FieldServiceTests
     [InlineData(BattleClassRule.UnpromotedArcher, 22, 21, BattleClassRule.Sniper, BattleMover.Archer, 3, true)]
     [InlineData(BattleClassRule.UnpromotedArcher, 26, 21, BattleClassRule.Sniper, BattleMover.Archer, 3, true)]
     [InlineData(BattleClassRule.UnpromotedRanger, 21, 25, BattleClassRule.BowKnight, BattleMover.CentaurArcher, 5, false)]
+    [InlineData(BattleClassRule.UnpromotedArcher, 22, 22, BattleClassRule.BrassGunner, BattleMover.BrassGunner, 3, true)]
     public void RangedPromotionPreservesTheArrowAndChangesPromotedOnlyShotEligibility(BattleClassRule source,
         byte level, byte classId, BattleClassRule destination, BattleMover mover, int roughCost, bool archer)
     {
-        var session = Session(hp: 27, currentLevel: level, promotion: true, armed: true, sourceRule: source);
+        bool gunner = classId == 22;
+        var session = Session(hp: 27, currentLevel: level, promotion: true, armed: true, sourceRule: source, bindSpecial: gunner);
         var prior = Member(session, First);
         var holder = Member(session, Second);
         var original = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First).Deployment!;
@@ -568,24 +574,28 @@ public sealed class FieldServiceTests
 
         Choose(session, ChurchAction.Promote);
         var offer = Wait(session).Candidates!.Single(c => c.Member == First);
-        Assert.Equal(archer ? new HeldPromotionItem(Second, 0, 120) : null, offer.SpecialItem);
+        Assert.Equal(archer ? new HeldPromotionItem(Second, gunner ? 2 : 0, gunner ? (ushort)(120 | BattleInventory.Broken) : (ushort)120) : null, offer.SpecialItem);
         Accept(session, new SelectPromotion(Wait(session).Token, offer));
         Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
         if (archer)
         {
             Assert.Equal(ChurchPhase.Special, Wait(session).Phase);
-            Accept(session, new AnswerPromotion(Wait(session).Token, offer, false));
+            Accept(session, new AnswerPromotion(Wait(session).Token, offer, gunner));
         }
-        Assert.Equal(ChurchPhase.Regular, Wait(session).Phase);
-        Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+        if (!gunner)
+        {
+            Assert.Equal(ChurchPhase.Regular, Wait(session).Phase);
+            Accept(session, new AnswerPromotion(Wait(session).Token, offer, true));
+        }
 
         var member = Member(session, First);
-        Assert.Same(holder, Member(session, Second));
+        if (gunner) Assert.Equal(new ushort[] { 120, 0, 189, 127 }, Member(session, Second).SourceLoadout!.Items);
+        else Assert.Same(holder, Member(session, Second));
         Assert.Equal(prior with { Exp = 0, Progress = prior.Progress! with { ClassId = classId, Level = 1, BaseMove = null } }, member);
         var deployment = session.QueryPartyDetails()!.Members.Single(m => m.Carried.Actor == First).Deployment!;
         var definition = deployment.Definition;
         Assert.Equal(destination, definition.ClassRule);
-        Assert.Equal(6, definition.Move);
+        Assert.Equal(gunner ? 5 : 6, definition.Move);
         Assert.Equal(mover, definition.Mover);
         var rough = new BattleTerrain(TerrainSurface.Rough, TerrainProtection.Light);
         Assert.Equal(roughCost, BattleTerrainRules.MovementCost(rough, mover));
