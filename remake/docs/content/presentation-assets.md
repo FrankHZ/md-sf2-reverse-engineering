@@ -1408,3 +1408,24 @@ catalog: PASS`. This checks production admission, not complete opening playback,
 or saved-game continuity. It launches no Godot instance and reads or writes no save slots.
 Accepted opening observations and the earlier MMNK native/cold-save results retain their own
 scope and failures; updating the checkout does not turn the retained exit crash into a pass.
+
+### Sorcerer promotion successor
+
+`derived/issue2266/pre-voyage-sorc-v1` extends the complete MMNK selection with Kazin
+and Tyrin SORC growth, walking and battle bodies, cast poses and the four summon icons.
+Use its world, main scene and six opening inputs with
+`derived/issue2266/catalogs-v1/world.zh-CN.json`. Keep #2252 opening and #2255 Witch entry
+selected separately as above. The catalog adds only accepted class18 and spell29–32 names.
+Dedicated summon effects are not mounted: native DAO uses the existing modern fallback.
+[#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104) owns that visual gap.
+
+```powershell
+. ./local/private-inputs.ps1
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2244/pre-voyage-mmnk-v1'
+uv run python -m sf2tool.remake_retail_assets --root $registeredRetailLibrary `
+    --base $base --upstream $pinnedSource --mount $freshAbsolutePackage --family sorc
+```
+
+Use `sf2tool.remake_private_package` to copy its complete dependency closure to a fresh
+registered `derived/` selection. [Budget and validation](asset-inventory.md#sorcerer-promotion-2266)
+· [Ordinary reproduction and limits](../application/church-promotion-design.md#reproduce-the-sorc-consumers).

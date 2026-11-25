@@ -98,11 +98,12 @@ internal sealed partial class ChurchServiceView : Control
                 foreach (var row in wait.Candidates!)
                     _options.Add(($"{Member(row)}  Lv {row.Level}", new SelectPromotion(wait.Token, row)));
             }
-            else if (wait.Phase is ChurchPhase.Consent or ChurchPhase.Special or ChurchPhase.Regular)
+            else if (wait.Phase is ChurchPhase.Consent or ChurchPhase.Special or ChurchPhase.Regular or ChurchPhase.ReplaceBook)
             {
                 var row = wait.Candidate!;
                 _title.Text = wait.Phase switch
                 {
+                    ChurchPhase.ReplaceBook => GameText.Get("church.replace-book", Member(row)),
                     ChurchPhase.Special => Special("church.special-offer", row),
                     ChurchPhase.Regular => GameText.Get("church.regular", Member(row), Destination(row.Destination)),
                     _ => GameText.Get("church.consent", Member(row)),
@@ -230,7 +231,7 @@ internal sealed partial class ChurchServiceView : Control
         if (action == GameAction.Cancel)
         {
             Choose(_wait.Phase == ChurchPhase.Members ? new CancelPromotion(_wait.Token) :
-                _wait.Phase is ChurchPhase.Consent or ChurchPhase.Special or ChurchPhase.Regular ? new AnswerPromotion(_wait.Token, _wait.Candidate!, false) :
+                _wait.Phase is ChurchPhase.Consent or ChurchPhase.Special or ChurchPhase.Regular or ChurchPhase.ReplaceBook ? new AnswerPromotion(_wait.Token, _wait.Candidate!, false) :
                 _wait.Phase == ChurchPhase.Result ? new ContinueChurch(_wait.Token) : _wait.Offer is { } offer
                 ? new AnswerChurch(_wait.Token, offer, false) : new LeaveChurch(_wait.Token)); return;
         }

@@ -76,7 +76,7 @@ internal static class BattleGrowthReader
                     variants.Add(id, new(baseline.Actor, promotedRule, 1, baseline.MaxHp, baseline.MaxMp,
                         baseline.Attack, baseline.Defense, baseline.Agility, baseline.ExtraRoundAction, destination.Movement, baseline.Spells,
                         prowess, PrivateBattleScenarioReader.Mover(destination.MovementType), baseline.SourceLoadout,
-                        pair.Value with { RetainedSpells = value.Spells.Where(spell => spell.Level <= 40).ToArray() },
+                        pair.Value with { RetainedSpells = promotedRule == BattleClassRule.Sorcerer ? [] : value.Spells.Where(spell => spell.Level <= 40).ToArray() },
                         resistance: PrivateAttackSpellBindings.Resistance(destination.ResistanceExpression)));
                 }
                 return bound with { PromotionVariants = new ReadOnlyDictionary<byte, BattleActorDefinition>(variants) };

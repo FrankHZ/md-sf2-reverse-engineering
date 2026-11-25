@@ -18,7 +18,7 @@ public sealed partial class FieldServiceTests
         ushort secondHp = 100, ushort secondStatus = 0, byte level = 2, bool promoted = false, ushort maxHp = 250,
         ChurchDefinition? terms = null, byte? currentLevel = null, bool failReturn = false, bool promotion = false, bool armed = false, bool power = false,
         BattleClassRule sourceRule = BattleClassRule.UnpromotedSwordsman, byte warriorAxe = 33, ushort[]? curseItems = null,
-        bool bindSpecial = false, bool selfHolder = false, bool missingScenes = false)
+        bool bindSpecial = false, bool selfHolder = false, bool missingScenes = false, int sorcererFirstLearn = 24)
     {
         var original = FieldInventoryTests.Session().Current.Exploration!.Party;
         var source = FieldInventoryTests.Session().Definition.Encounters.Values.Single();
@@ -40,10 +40,11 @@ public sealed partial class FieldServiceTests
             _ => (0, 12, "SDMN", "HERO", "Hero", 6, "REGULAR", 50, null),
         };
         var (baseClass, destination, baseCode, promotedCode, title, move, mover, weapon, promotionItem) = profile;
+        bool sorcerer = sourceRule == BattleClassRule.UnpromotedMage;
         bool monk = sourceRule == BattleClassRule.UnpromotedPriest;
         bool baron = sourceRule == BattleClassRule.UnpromotedWarrior;
         bool gunner = sourceRule == BattleClassRule.UnpromotedArcher;
-        byte specialClass = monk ? (byte)20 : gunner ? (byte)22 : baron ? (byte)16 : (byte)14;
+        byte specialClass = sorcerer ? (byte)18 : monk ? (byte)20 : gunner ? (byte)22 : baron ? (byte)16 : (byte)14;
         ushort material = promotionItem ?? 0;
         ushort duplicate = (ushort)(material | BattleInventory.Broken);
         byte[] book = sourceRule switch
@@ -104,7 +105,9 @@ public sealed partial class FieldServiceTests
                         sourceRule == BattleClassRule.UnpromotedWolfman ? "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN8" :
                             "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")];
                 if (bindSpecial)
-                    classRows.Add(monk
+                    classRows.Add(sorcerer
+                        ? new(18, "SORC", "Sorcerer", 5, "NONE", "MAGE", "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")
+                        : monk
                         ? new(20, "MMNK", "Master Monk", 5, "NONE", "REGULAR", "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN8")
                         : gunner
                         ? new(22, "BRGN", "Brass Gunner", 5, "NONE", "BRASS_GUNNER", "CRITICAL125_1IN16|DOUBLE_1IN32|COUNTER_1IN16")
@@ -129,7 +132,9 @@ public sealed partial class FieldServiceTests
                 var rows = JsonSerializer.SerializeToElement((bindSpecial ? new byte[] { baseClass, destination, specialClass } : [baseClass, destination]).Select(classId => new
                 {
                     actor = First.Value, classId, stats,
-                    spells = ninja && classId == destination ? ninjaSchedule : schedule,
+                    spells = sorcerer && classId == 18
+                        ? new[] { new { packed = (byte)29, level = 21, spell = "dao" }, new { packed = (byte)30, level = sorcererFirstLearn, spell = "apollo" } }
+                        : ninja && classId == destination ? ninjaSchedule : schedule,
                 }));
                 deployments = BattleGrowthReader.Bind(rows, new ScenarioDefinition("promotion-test", [fixture], classDefinitions))
                     .Single().Deployments.Select(d => d.Actor != First ? d : d with

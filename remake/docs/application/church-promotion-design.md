@@ -1,6 +1,6 @@
 # Church promotion
 
-**Ordinary church promotion.** Bowie can become HERO from SDMN at stored level 20 or higher. The current class travels with his earned progress through field play, combat, level-up, saves and return. The campaign retains High rigor because this change crosses growth, equipment, presentation and both save recipes. The ordinary class pairs, Eric’s Pegasus Wing route, the Warrior Pride route for Jaha and Randolf, Silver Tank for Elric and Janet, and Vigor Ball for Sarah and Karna are admitted through first Pacalon. Sorcerer remains with [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957). [Campaign agreement](remaining-campaign-risk-baseline.md) · [Design assignment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945)
+**Ordinary church promotion.** Bowie can become HERO from SDMN at stored level 20 or higher. The current class travels with his earned progress through field play, combat, level-up, saves and return. The campaign retains High rigor because this change crosses growth, equipment, presentation and both save recipes. The ordinary class pairs, Eric’s Pegasus Wing route, the Warrior Pride route for Jaha and Randolf, Silver Tank for Elric and Janet, and Vigor Ball for Sarah and Karna are admitted through first Pacalon. Kazin and Tyrin also have the bounded [Sorcerer route](#sorcerer-promotion). [Campaign agreement](remaining-campaign-risk-baseline.md) · [Design assignment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945)
 
 ## Playable HERO and reproduction
 
@@ -562,3 +562,119 @@ finalization exited with `0xC0000005` in `GodotObject.Finalize`. That exit is a 
 process result**, not a passed native run. Its saved result cold-continued successfully in
 an independent process. Other exits can report the existing ObjectDB warnings. Root cause
 remains **Unknown** under #1716; this slice does not repair or hide it.
+
+## Sorcerer promotion
+
+**High rigor, bounded to #2266.** The outcome is Kazin/Tyrin MAGE → SORC,
+second-consent cancellation, atomic actual-holder consumption, DAO-only replacement,
+destination learning, usable summon Magic and independent field/battle Continue.
+The existing transaction, growth, content and save owners remain authoritative. No new
+save version, chapter, parallel damage rule or full spell-animation project is included.
+Original summon animations remain with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
+
+### Mechanism audit and selected design
+
+**Confirmed from pinned source** `c834c652b6862bc5679fd7f69a38a7093206efc6`.
+`churchactions_1.asm` requires a second consent before deleting the book; its No returns
+to member selection without consuming Secret Book. `churchactions_2.asm` replaces all
+four slots with DAO1 and empty words. `allystats04.asm` and `allystats17.asm` supply
+separate SORC lists, both starting at effective level 21. Kazin learns APOLLO at 24 and
+Tyrin at 23. Their remaining thresholds are respectively 27/32/37/41/46/52 and
+28/32/36/40/45/49 for NEPTUN1/DAO2/APOLLO2/ATLAS1/NEPTUN2/ATLAS2.
+The existing +20 promoted learning offset applies. SORC MOV5 uses MAGE terrain;
+battle body 15 has Kazin palette0 and Tyrin palette1. Class18 AI priorities are
+3/3/6/23 in Regular/Flying/Archer/Mage tables. Static definitions do not establish
+natural original promotion, casting or animation playback.
+
+The four accepted special routes already publish candidate and actual holder replacements
+in one immutable party transaction. Removal compacts the actual slot and refreshes the
+other holder. The new `ReplaceBook` prompt reuses the revision/token/offer recheck;
+only its final Yes commits. Same-holder consumption feeds the new book instead of
+reconstructing the original pack. Other routes retain their existing book behavior.
+SORC growth binds an empty retained-learning list, so both existing save readers admit
+only its destination schedule. No MAGE history is retained or synthesized.
+
+The existing attack rule owns recipient selection, promoted power, resistance, critical,
+variance, payment and progression. It now divides promoted power by the complete eligible
+recipient count before resistance and quarter calculations. The list is fixed for the
+whole action, including targets killed by an earlier reaction. DAO/APOLLO/NEPTUN/ATLAS
+share this path. NEPTUN uses critical denominator 16; the other three use 32. Their source
+resistance fields are WIND/FIRE/ICE/NEUTRAL. Both ranks are admitted from source terms,
+including ATLAS2 range 3. Ordinary action-footprint queries consume the same spell radius.
+Godot remains a presenter. [Bounded original calculation evidence](../../../docs/design/contracts/battle/spell-resolution.md#confirmed-damage-pipeline)
+
+### Resources and acceptance boundary
+
+The complete MMNK input is 361,020,000 bytes. The first two-actor SORC mount adds
+51,287 bytes before name/icon publication. Preparation is one serial linear pass over
+one world and the existing scene dependencies, with one JSON world in memory; budget
+1 GiB transient RAM and 1 GiB scratch/publication storage. Reuse this package across
+attempts rather than duplicate worlds per save. Existing immutable media use the
+closed-package producer's shared-file mechanism; changed JSON receives independent files.
+Replan if the world exceeds its 128 MiB reader limit or new asset capture becomes necessary.
+
+**Confirmed in the remake.** Both source class/growth definitions and appearances across
+26 scenes pass the production reader. Small engine cases cover both first-learning thresholds,
+final-consent No, same/cross holder, DAO-only replacement, subsequent learning and actual
+single/multiple summon recipients. Reading choices does not change state or RNG.
+Field v6 and battle v4 restoration reject MAGE BLAZE1 and impossible DAO3 books.
+
+The ordinary pilot uses a labeled copy of the Chinese Pacalon castle slot: Jaha's slot 1
+is replaced with Secret Book; F158 is not changed and this is not a new acquisition witness.
+Kazin keeps MAGE29/5, HP35/MP55, his Wooden Rod and original four-spell book until final Yes.
+Member Cancel, special No → regular No/Yes, and the second book-warning No were exercised.
+The latter preserves the complete party. Final Yes compacts Jaha's actual pack and changes
+Kazin to SORC1/0 with `[29,63,63,63]` (DAO1 only). Complete party comparison changes only
+those fields; flags, gold, custody and both RNG words are equal. The current card displays
+召唤师. Independent field Continue and re-save match the complete decoded data.
+
+Kazin walks from the castle through Pacalon/Ketto to the Battle26 repeat. A separate copy
+of that ready save sets only his stored level to 3 and EXP to 99, explicitly exercising the
+next destination-learning threshold without grinding. Ordinary Magic selects DAO1 and
+hits the Lesser Demon for 21, spends 8 MP (55→47), awards 26 EXP, and reaches SORC4/25.
+The resulting book is DAO1/APOLLO1 and the action returns to player Movement. Independent
+battle Continue and re-save match all decoded data, including unrelated party and custody.
+The full published package also passed fresh field and battle Continue after producer
+scratch was moved aside. The accepted #2252 opening was selected and skipped through
+ordinary input; #2255 Witch Continue remained selected throughout.
+
+**Unknown:** Tyrin's native rite/cast, natural Book custody for this controlled history,
+all higher-rank native casts, original natural summon dispatch and original audiovisual
+timing. Native battle uses the existing modern fallback; dedicated original DAO/APOLLO/
+NEPTUN/ATLAS effects remain with #2104. Source-prepared containers are not a delivered effect.
+
+### Reproduce the SORC consumers
+
+Use registered `derived/issue2266/pre-voyage-sorc-v1`,
+`derived/issue2266/catalogs-v1/world.zh-CN.json` and
+`derived/issue2266/review-v1/Boot.ps1`. Build the current Debug adapter first using the
+locked workflow with `UseSharedCompilation=false` and `nodeReuse:false`. The runner
+copies only registered drivers into checkout-local scratch, selects current opening/witch
+inputs, and requires a fresh sample plus an external disposable save namespace. It uses
+ordinary input and state observations, never screenshots.
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2266/review-v1'
+& "$review/Boot.ps1" -Repo (Get-Location).Path -Mode special `
+    -Sample $freshSample -Journey $freshJourney -Language zh-CN -SaveRoot $disposableSaveRoot
+```
+
+`special`/`fallback` prepare the labeled castle copy. `field-cold` re-saves the same journey.
+`road` publishes `battle-ready-slot.json` under `local/issue2266/review/receipts/<Sample>`.
+`runner/prepare.py growth <ready-slot> <fresh-seed>` creates the level 3/EXP99 copy.
+Run `strike` with it in a fresh journey, then `battle-cold`. The published compact receipts
+retain original failed attempts and successful complete-data comparisons. Reader-only
+`derived/issue2266/consumer-v1/Verify.ps1 -Repo <checkout>` checks both actors, names,
+scene coverage, published save acceptance and illegal-book refusal without native playback.
+
+**Retained failures.** First engine run completed with 3303 passes, 50 skips and one new
+assertion failure: the holder's retained BaseMove 6 was incorrectly expected to be null.
+The corrected affected run passes 129 cases with one private-input skip. Subsequent small
+summon tests initially had nullable assertion compilation errors and an inconsistent authored
+promoted-class setup; both are corrected with their logs retained. The first reader probe
+underestimated existing rod eligibility, then passed after checking actual equipment terms.
+Its later save-check extension initially lacked a namespace import. Two native boot attempts
+used old fixed key sequencing against current asynchronous Witch Continue and failed before
+play; the corrected state-driven ordinary-input driver passed. Successful native processes
+exit 0; some report existing ObjectDB leaks. No shutdown repair is claimed under #1716.

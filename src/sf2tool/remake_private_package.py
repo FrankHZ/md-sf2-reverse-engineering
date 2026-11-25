@@ -440,6 +440,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         "brn": {3: "BRN", 16: "BRN"},
         "brgn": {13: "BRGN", 18: "BRGN"},
         "mmnk": {1: "MMNK", 15: "MMNK"},
+        "sorc": {4: "SORC", 17: "SORC"},
         "wiz": {4: "WIZ", 17: "WIZ"},
         "melee": {3: "GLDT", 16: "GLDT", 10: "BDBT"},
         "ranged": {13: "SNIP", 18: "SNIP", 8: "BWNT"},
@@ -457,7 +458,7 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         "blast-1",
     }
     selected = permitted | (set(families) & optional) if "all" in families else set(families)
-    special_promotions = {"pgnt", "brn", "brgn", "mmnk"}
+    special_promotions = {"pgnt", "brn", "brgn", "mmnk", "sorc"}
     if selected & special_promotions and not selected <= special_promotions:
         raise ValueError("mount special promotions on a prepared ordinary promotion package")
     shrine = "south-shrine" in selected
@@ -551,6 +552,8 @@ def mount(root, base, destination, families, commands, *, upstream=None, canonic
         spell_icons = [7, 8, 9] if "icons" in selected else []
         if "ninja" in selected:
             spell_icons.extend((27, 28))
+        if "sorc" in selected:
+            spell_icons.extend((29, 30, 31, 32))
         if spell_icons:
             images = read_json(root / "icons/identity-icons.json")
             for i in spell_icons:

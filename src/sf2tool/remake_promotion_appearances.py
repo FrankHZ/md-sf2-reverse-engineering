@@ -164,6 +164,7 @@ def mount_promotion_appearances(
     rules = {
         "PGNT": (14, set()),
         "WIZ": (17, {85, 86, 87, 89}),
+        "SORC": (18, {85, 86, 87, 89}),
         "MMNK": (20, set()),
         "VICR": (19, {85, 86, 87, 89}),
         "GLDT": (15, {33, 34, 35, 36}),
@@ -283,7 +284,7 @@ def mount_promotion_appearances(
                 sequences["attack"] = prepared_ally_sequence(
                     attack_index, animations[attack_index], draw_weapon
                 )
-            if class_code in {"WIZ", "VICR", "NINJ", "MMNK"}:
+            if class_code in {"WIZ", "SORC", "VICR", "NINJ", "MMNK"}:
                 sequences["cast"] = attack
             if class_code == "MMNK":
                 sequences["special"] = prepared_ally_sequence(83, animations[83], False)

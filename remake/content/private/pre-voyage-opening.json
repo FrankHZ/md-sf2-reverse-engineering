@@ -92,6 +92,8 @@
     {"member": 14, "class": "PGNT"},
     {"member": 4, "class": "WIZ"},
     {"member": 17, "class": "WIZ"},
+    {"member": 4, "class": "SORC"},
+    {"member": 17, "class": "SORC"},
     {"member": 3, "class": "GLDT"},
     {"member": 16, "class": "GLDT"},
     {"member": 3, "class": "BRN"},

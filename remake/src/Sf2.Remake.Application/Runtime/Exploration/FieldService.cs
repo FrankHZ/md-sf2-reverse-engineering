@@ -7,7 +7,7 @@ namespace Sf2.Remake.Application.Runtime.Exploration;
 
 public enum ChurchAction { Raise, Cure, Promote }
 public enum ChurchEffect { Raise, Poison, Stun, Curse }
-public enum ChurchPhase { Menu, Offer, Result, Members, Consent, Regular, AnotherService, Special }
+public enum ChurchPhase { Menu, Offer, Result, Members, Consent, Regular, AnotherService, Special, ReplaceBook }
 public enum ChurchResultKind { NoApplicableMember, Declined, InsufficientGold, Paid, LowLevel, NoPromotion, Unavailable, SpecialUnavailable, Promoted }
 public sealed record ChurchResult(ChurchResultKind Kind, ChurchOffer? Treatment = null, byte? PromotedClass = null);
 public sealed record HeldPromotionItem(ActorRef Holder, int Slot, ushort Word);
@@ -21,6 +21,7 @@ public sealed record ChurchWait(WaitToken Token, ChurchDefinition Definition, Ch
     public PromotionOffer? Candidate { get; init; }
     public bool Consented { get; init; }
     public bool DeclinedSpecial { get; init; }
+    public bool AcceptedSpecial { get; init; }
     public bool LeavingPromotion { get; init; }
     public ChurchPhase Phase => LeavingPromotion ? ChurchPhase.AnotherService : (Result, Action, Candidate, Consented) switch
     {
@@ -28,6 +29,7 @@ public sealed record ChurchWait(WaitToken Token, ChurchDefinition Definition, Ch
         (_, null, _, _) => ChurchPhase.Menu,
         (_, ChurchAction.Promote, null, _) => ChurchPhase.Members,
         (_, ChurchAction.Promote, _, false) => ChurchPhase.Consent,
+        (_, ChurchAction.Promote, { SpecialItem: not null }, true) when AcceptedSpecial => ChurchPhase.ReplaceBook,
         (_, ChurchAction.Promote, { SpecialItem: not null }, true) when !DeclinedSpecial => ChurchPhase.Special,
         (_, ChurchAction.Promote, _, true) => ChurchPhase.Regular,
         _ => ChurchPhase.Offer,
@@ -65,11 +67,11 @@ internal static class FieldService
                     kind = "church-promotion-members"; break;
                 case SelectPromotion select when wait.Phase == ChurchPhase.Members && wait.Candidates!.Contains(select.Candidate):
                     var choice = select.Candidate;
-                    next = next with { Candidate = choice, Consented = false, DeclinedSpecial = false,
+                    next = next with { Candidate = choice, Consented = false, DeclinedSpecial = false, AcceptedSpecial = false,
                         Result = !Sf2ClassRules.RegularBase(choice.Source) ? new(ChurchResultKind.NoPromotion) :
                             choice.Level < 20 ? new(ChurchResultKind.LowLevel) : null };
                     kind = "church-promotion-selection"; break;
-                case AnswerPromotion answer when wait.Phase is ChurchPhase.Consent or ChurchPhase.Special or ChurchPhase.Regular &&
+                case AnswerPromotion answer when wait.Phase is ChurchPhase.Consent or ChurchPhase.Special or ChurchPhase.Regular or ChurchPhase.ReplaceBook &&
                         wait.Candidate == answer.Candidate:
                     var candidate = answer.Candidate;
                     if (!Candidates(definition, current).Contains(candidate))
@@ -79,6 +81,8 @@ internal static class FieldService
                         if (!answer.Accept)
                             next = next with { DeclinedSpecial = true,
                                 Result = candidate.Destination is null ? new(ChurchResultKind.Unavailable) : null };
+                        else if (candidate.SpecialDestination == Sf2ClassRules.SourceClass(BattleClassRule.Sorcerer))
+                            next = next with { AcceptedSpecial = true };
                         else if (candidate.SpecialDestination is { } special)
                         {
                             (field, party) = Promote(definition, current, field, candidate, special, candidate.SpecialItem);
@@ -86,7 +90,13 @@ internal static class FieldService
                         }
                         else next = next with { Result = new(ChurchResultKind.SpecialUnavailable) };
                     }
-                    else if (!answer.Accept) next = next with { Candidate = null, Consented = false, DeclinedSpecial = false };
+                    else if (!answer.Accept) next = next with { Candidate = null, Consented = false, DeclinedSpecial = false, AcceptedSpecial = false };
+                    else if (wait.Phase == ChurchPhase.ReplaceBook)
+                    {
+                        byte special = candidate.SpecialDestination!.Value;
+                        (field, party) = Promote(definition, current, field, candidate, special, candidate.SpecialItem);
+                        next = next with { Result = new(ChurchResultKind.Promoted, PromotedClass: special) };
+                    }
                     else if (wait.Phase == ChurchPhase.Consent)
                     {
                         next = next with { Consented = true,
@@ -102,7 +112,7 @@ internal static class FieldService
                     break;
                 case ContinueChurch when wait.Phase == ChurchPhase.Result && wait.Action == ChurchAction.Promote &&
                         wait.Result!.Kind != ChurchResultKind.NoApplicableMember:
-                    next = next with { Candidates = Candidates(definition, current), Result = null, Candidate = null, Consented = false, DeclinedSpecial = false };
+                    next = next with { Candidates = Candidates(definition, current), Result = null, Candidate = null, Consented = false, DeclinedSpecial = false, AcceptedSpecial = false };
                     kind = "church-promotion-members"; break;
                 case CancelPromotion when wait.Phase == ChurchPhase.Members:
                 case ContinueChurch when wait.Action == ChurchAction.Promote && wait.Result?.Kind == ChurchResultKind.NoApplicableMember:
@@ -198,7 +208,9 @@ internal static class FieldService
         BattleEquipment.ValidateLoadout(destination, loadout);
         var changed = member.Carried with { Exp = 0,
             SourceLoadout = member.Carried.SourceLoadout is null ? null : loadout, Progress = progress with
-            { ClassId = classId, Level = 1, SourceLoadout = loadout, BaseMove = null, CurrentStats = null } };
+            { ClassId = classId, Level = 1, SourceLoadout = loadout,
+                Spells = destination.ClassRule == BattleClassRule.Sorcerer ? [new("dao", 1)] : progress.Spells,
+                BaseMove = null, CurrentStats = null } };
         updates.Add(changed);
         var party = FieldInventory.Replace(field.Party, updates);
         if (field.Population is { } population && member.Deployment.Initialization?.AllyPartyMember is { } memberIndex)
@@ -218,6 +230,7 @@ internal static class FieldService
         BattleSourceLoadout? loadout = null)
     {
         loadout ??= FieldInventory.Loadout(member);
+        if (destination.ClassRule == BattleClassRule.Sorcerer) return new(loadout.Items, [29, 63, 63, 63]);
         if (destination.ClassRule is not (BattleClassRule.Ninja or BattleClassRule.MasterMonk)) return loadout;
         // The source rite removes the worn weapon independently of the ring and its slot.
         int slot = BattleEquipment.EquippedSlot(member.Deployment!.Definition, loadout);

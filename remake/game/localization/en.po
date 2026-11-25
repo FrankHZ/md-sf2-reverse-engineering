@@ -2998,3 +2998,6 @@ msgstr "Unknown unit"
 
 msgid "battle.order.actor"
 msgstr "{0} ({1},{2}) · {3}"
+
+msgid "church.replace-book"
+msgstr "{0} will forget all current spells. Become a Sorcerer?"

@@ -1766,3 +1766,24 @@ The record codec runs in memory and does not prove disk I/O. The
 checks ordinary connected input and localized projection. Later battles, new item effects, original
 natural reach/timing and human visual acceptance remain outside this outcome. Four slots bound local
 work to O(4); existing actor copy/target query is O(N), with no acquisition or new comparator.
+
+## Private learned summons
+
+SORC uses the shared offensive action, target selection and read-only action-footprint query.
+DAO/APOLLO/NEPTUN/ATLAS divide promoted power by the actual eligible recipient count,
+then apply source integer resistance, critical and variance rules independently per target.
+NEPTUN critical denominator is16; the others use 32. This changes no Godot damage rule.
+
+| Spell | MP1/2 | Power1/2 | Range1/2 | Radius | Resistance |
+| --- | --- | --- | --- | --- | --- |
+| DAO | 8/15 | 18/40 | 1–2 / 1–2 | 1 | WIND |
+| APOLLO | 10/17 | 23/50 | 1–2 / 1–2 | 1 | FIRE |
+| NEPTUN | 12/19 | 30/61 | 1–2 / 1–2 | 1 | ICE |
+| ATLAS | 14/23 | 35/73 | 1–2 / 1–3 | 1 | NEUTRAL |
+
+**Confirmed** source terms: pinned `c834c652` `spelldefs.asm`, `spellelements.asm`,
+`castspell.asm` and `calculatespelldamage.asm`. The existing
+[calculation-seam evidence](../../../docs/design/contracts/battle/spell-resolution.md#confirmed-damage-pipeline)
+is narrower than natural dispatch. Both source learning schedules and cold saved books
+are admitted. DAO1 has the bounded native pilot; higher ranks remain native **Unknown**.
+[Promotion, saves and reproduction](../application/church-promotion-design.md#sorcerer-promotion).
