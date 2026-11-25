@@ -82,10 +82,10 @@ listed by rank below. [Binding contract](../content/asset-inventory.md#battle-ra
 | AURA 2–4 | HEALING_FAIRY v2–v4 | **Original assets bound** for learned private allied Magic through the existing fairy path. Controlled Battle26 input covers ranks2/3 and VICR rank4, one payment and ordered return. | [Recovery and reproduction](../domain/gameplay-rules.md#private-learned-aura-ranks). Equipment Use rules and consumers are accepted under [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268); their original effect presentation is tracked separately. |
 | DETOX 1–3 | DETOX v1–v3 | **Original assets bound** for admitted private Magic in the [DETOX successor](../content/presentation-assets.md#detox-successor). The same mote/trail composition plays for effective and paid no-effect casts and is suppressed by silence. Field Magic and Antidote/Fairy Powder have distinct delivery. Rune Axe Use selects DETOX2 in the original. | [#2232] delivers the [controlled native presentation](#prepared-detox-presentation). [#1965] owns rank-2/3 gameplay and equipped curse. Natural ordinary acquisition and casts remain **Unknown**. |
 | DETOX 4 | DETOX v4 | **Original assets bound** for private learned Magic with one cast and one end wait around the ordered area results. | [Area rules and controlled Battle26 playback](../domain/detox-ranks-design.md#detox-4-area-and-field-admission) |
-| BOOST 1 | BUFF1 v1 | **Partial**. Ordinary private Karna cast has AGI/DEF, no-effect recast, cards and return on the support scene. Protect Ring uses the same effect rules with an equipment gesture, slot wear and result notices. | [#2104] later BUFF effect work. Share the asset setup with ATTACK where source operands agree and verify Magic/Item independently. [Support evidence](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Ring witness](../domain/equipment-use-repair-design.md#implemented-ring-loop-and-ordinary-reproduction) |
-| BOOST 2 | BUFF1 v2 | **Partial**. Private Magic uses the shared cast scene, ordered AGI/DEF and ineffective messages, and return to battle input. Enemy SUPPORT still rejects the packed rank. | [#2104] retail BUFF1 v2 effect. [Battle26 observation](../domain/support-spell-status-design.md#boost-2-admission-and-observation) |
+| BOOST 1 | BUFF1 v1 | **Original mechanism bound.** Learned Karna and Protect Ring use the original no-tile flash/PSH family, actual Magic/Item gesture, ordered AGI/DEF and return. | [BUFF playback](#buff-family-playback-2282); existing rule/expiry/save evidence remains with the support owner. |
+| BOOST 2 | BUFF1 v2 | **Original mechanism bound.** Selector40 uses the same setup/update as8; learned Karna delivers mixed effective/ineffective area results with one5 MP payment. Enemy SUPPORT remains outside admission. | [BUFF playback](#buff-family-playback-2282). |
 | SLOW 1–2 | DEBUFF1 v1–v2 | **Original assets bound**. Both Sarah ranks use the shared gray cloud group with actual AGI/DEF and ordered effective/ineffective results. Variation2 retains selector41 but does not select the separate DEBUFF2 palette. | [DEBUFF family playback](#debuff-family-playback-2280). [Support evidence](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) |
-| ATTACK 1 | BUFF1 v1 | **Partial** through Power Ring Use with item gesture, target ATT, durability and subsequent control. The current private Magic binding omits ATTACK. Battle25 Dark Soldier holds the spell and its ordinary AI rejects it. | [#2104] BUFF effect after the primary spell work. Accepted equipment Use retains the [#2268 rules](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268); private learned ATTACK remains outside this binding. [Item-use rules and evidence](../domain/equipment-use-repair-design.md) · [Battle25](../application/battle25-north-cave.md) |
+| ATTACK 1 | BUFF1 v1 | **Original mechanism bound** for admitted equipment Use. Power Ring, Protect Ring, Valkyrie and Wish Staff have controlled native witnesses. Private learned ATTACK and ordinary enemy AI admission remain outside this binding. | [BUFF playback](#buff-family-playback-2282); [equipment authority](../domain/equipment-use-repair-design.md). |
 | DISPEL 1 | DEBUFF1 v1 | **Original assets bound** for learned Kazin and existing Dark Smoke AI in the [DISPEL successor](../content/presentation-assets.md#dispel-successor). Controlled mixed results, paid silence and Original/HD fallback use ordinary input and completion. | [DISPEL playback](#dispel-playback-implementation-2238) records the source, responsibilities and reproduction. Natural learning/reach and hardware timing remain **Unknown**. Grand Cannon Use has [controlled Item-gesture playback](#debuff-family-playback-2280). |
 | MUDDLE 1–2 | DEBUFF1 v1 for both | **Original assets bound**. Both learned Kazin ranks share DEBUFF1; controlled Battle26 mixed-result casts and Giant Knuckles Use mount the same clouds. Item retains its own gesture and wear. Controlled Battle25 rank-2 automatic actions and cold Continue retain their gameplay witnesses. | [DEBUFF family playback](#debuff-family-playback-2280). [Accepted MUDDLE evidence](../domain/hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25) |
 | DESOUL 1–2 | DESOUL v1–v2 | **Learned Magic bound.** Controlled Battle26 Kazin casts both ranks with spell-8 icons and localized cast, instant-death, ineffective and reward messages on black. Dark Sword Use is admitted by the accepted equipment effect rules; original DESOUL presentation remains pending. | [#2104] owns original effects and timing. [DESOUL reproduction](../domain/hostile-spells-design.md#controlled-kazin-input-and-cold-continue) |
@@ -167,9 +167,9 @@ foreground visual acceptance remain **Unknown** where no named witness covers th
   recovery. Enemy AURA delivery remains **Unknown**. The [DETOX successor](#prepared-detox-presentation)
   covers learned ranks 1–3. [DISPEL playback](#dispel-playback-implementation-2238) supplies
   the first DEBUFF consumer. The [DEBUFF family](#debuff-family-playback-2280) extends it to
-  admitted SLOW/MUDDLE/SLEEP and two equipment callers. BUFF retains separate acceptance. [#1456] governs foreground acceptance and [#1616] the wider design review.
+  admitted SLOW/MUDDLE/SLEEP and two equipment callers. The [BUFF family](#buff-family-playback-2282) has its own no-tile mechanism and consumer acceptance. [#1456] governs foreground acceptance and [#1616] the wider design review.
 - **P3 for current later content.** [#2104] groups the remaining elemental variants and shared
-  KATON/RAIJIN art, then BUFF and any additional DEBUFF callers as admitted. Private allied AURA2–4
+  KATON/RAIJIN art, then any additional support callers as admitted. Private allied AURA2–4
   has [controlled ordinary coverage](../domain/gameplay-rules.md#private-learned-aura-ranks).
   [#2016], [#1967] and [#1926] own missing gameplay and item admission. Keep item gestures where
   the original selector path calls for them. Schedule equipment effect reuse at its first legal
@@ -1002,3 +1002,131 @@ opening through ordinary input first. One intermediate observer quit before awai
 verification coroutine and emitted script errors despite a success JSON; that run is failed.
 Final runs have no session/presenter/script error, but several retain6–8 ObjectDB exit warnings.
 These warnings and the finalizer failure remain with #1716; this slice claims no lifecycle fix.
+
+## BUFF family playback #2282
+
+**Standard; bounded presentation scope.** BOOST1/2 and admitted ATTACK1 equipment Use
+consume the source mechanism through `BuffEffectView` and the existing support scene.
+Domain/Application retain MP, status construction/refresh, RNG, wear, ordered results and
+next actor. No new gameplay rule, learned ATTACK or enemy AI admission is introduced.
+The existing actor/raster loader, completion tokens, held-rate clock and audio voices remain
+owners; no new shader, asset producer, schema or animation framework is needed.
+
+**Confirmed source structure.** SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+paths relative to `disasm/`:
+
+- `data/stats/spells/spelldefs.asm` selects8 for BOOST1/ATTACK1 and40 for BOOST2.
+  `battlescenes/battlesceneengine_2.asm:SetupSpellanimation` strips the variation bits;
+  both dispatch `spellanimationSetup_Buff1`. The separately indexed Buff2 is not BOOST2.
+- `code/gameflow/battle/battlescenes/animation/buff.asm` (1AB9E–1ABF4) loads no tiles.
+  It plays77, invokes the cast flash with `$2C2`, and initializes interval30, delta−2,
+  countdown1. `animation/update/buff.asm` (1CFFC–1D038) emits PSH97 at intervals28,26,…,2
+  and ends at zero:14 cues. It never branches on variation. Spell tileset8 is unrelated.
+- `battlesceneengine_3.asm:ExecuteSpellcastFlashEffect` writes palette1 color0 and
+  palette3 color1 for four4-tick flashes separated by3-tick black periods. `tintscreen.asm`
+  assigns BUFF `tint_None`; no cloud, particle or full-scene tint is implied.
+- `battleactions/getspellanimation.asm` reads an equipment item's Use spell;
+  `createbattlesceneanimation.asm` retains `BATTLEANIMATION_USE_ITEM` and `animateaction.asm`
+  forwards its effect operand. `battlesceneengine_0.asm:bsc01_animateAllyAction` and
+  `sub_184B0` preserve the nonzero effect. Power Ring19, Protect Ring20, Valkyrie80 and
+  Wish Staff94 select ATTACK/BOOST through this path. Ordinary consumables are unchanged.
+- `code/common/tech/sound/sounddriver.asm:sfx_21` is type2 with only its second pointer
+  active (`byte_19CB`; other pointers immediately terminate at `byte_19D5`). `Load_SFX`
+  maps that slot to YM5. SessionAudio admits97 in its existing whole-clip YM5 group.
+
+The adapter uses the source green on the existing black backdrop, preserves actor/body/weapon
+rasters and lets the source pose pause across the flash. It waits for the bounded effect before
+releasing the action token. Reduced Flash suppresses the backdrop flashes, retaining pose,
+PSH cadence and results. This is the accepted modern clock/composition approximation, not
+per-index hardware palette emulation. No gameplay RNG is consumed. Original/HD selection and
+whole-body fallback remain in the existing raster binder. The complete successor adds only
+prepared PSH audio; [publication and reproducible command](../content/presentation-assets.md#buff-successor).
+
+**Confirmed bounded remake observations.** The direct probe
+`remake/game/probes/engine_buff_family_observation.gd` drives Continue, Magic/Item, target,
+Confirm and the next ActionChoice through ordinary input. It inspects the actual Sprite2D
+texture, backdrop, scene state, displayed results and audio receipts. Karna PRST28 casts
+BOOST1 with2 MP; PRST30 casts BOOST2 with5 MP. Controlled BOOST2 has Kazin already boosted:
+Bowie succeeds, Kazin is ineffective, then Peter/Gerhalt/Rohde/Elric/Karna/Janet succeed in
+order. The ineffective target retains its prior stats. Karna's source pose is1.
+Power Ring and Wish Staff use Sarah VICR Item25 on Peter with zero MP under Silence;
+Protect Ring uses Item25 with ordered Sarah/Kazin/Peter/Rohde results. Each equipment
+consumer makes one authoritative wear draw and damages the selected held copy exactly once.
+Controlled PLDN Chester uses bare Valkyrie Item13 on Peter under Silence with zero MP. Sarah's existing Holy Staff/Life Ring end-turn
+recovery remains distinct from BUFF. Every completed accepted sample reaches the next
+ordinary action menu; early Confirm cannot release the active cast token. Each emits one77
+and fourteen97 requests, then restores the black backdrop.
+
+Protect Ring Original, complete HD with Reduced Flash/held Shift, and HD with one body frame
+removed plus hit/coin suppression have identical gameplay events, HP/MP, stats, inventory,
+EXP, status and both RNG seeds. Actual mounted Sarah textures confirm whole-body fallback;
+no imaginary BUFF raster group is required. Existing rule, expiry and cold-save evidence is
+reused. Natural learning/acquisition/reach, exact hardware timing and human aesthetic acceptance
+remain **Unknown**. PSH uses the accepted sole-variant audio fallback (prepared Timer CB in
+battle Timer C6), not an exact new timing capture.
+
+### BUFF reproduction and retained failures
+
+Use `derived/issue2282/buff-v1` with independent #2252 opening, #2255 Witch/catalog and
+#2266 world catalog under `SF2_SHARED_INPUT_ROOT`. `derived/issue2282/review-v1` contains
+immutable controlled records, Boot/Run launchers and receipts; no producer scratch is required.
+Build the Debug adapter with the locked SDK environment, then from an isolated checkout:
+
+```powershell
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2282/review-v1'
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case boost2 `
+  -Seed boost2-recast.json -Sample buff-review -SaveRoot $disposableSaveRoot
+# Other cases: boost1, power, protect, wish (same-named JSON).
+# Valkyrie: -Case valkyrie -Seed valkyrie-ready.json.
+# Settings representatives: -Case protect -Graphics hd -Reduced -Fast
+# or -Case protect -Graphics hd -Fallback -Skip; use a fresh Sample each time.
+```
+
+Records derive from #2280's legal Battle26 support seed. Karna swaps position/first queue slot
+with Sarah; rank2 uses her source PRST30 learned book. Recast uses battle v5 with explicit
+class terms and Kazin status0x3000. Equipment records retain Sarah's VICR class and replace
+one held slot, with zero MP and Silence. Valkyrie replaces deployed Sarah with already joined
+Chester, PLDN1, bare item80 and the corresponding unarmed ATT5; flags/queue transfer with him. These are controlled prerequisites, not natural
+campaign histories. The observer's inherited `SF2_DEBUFF_*` environment names are local
+launcher inputs, not a production interface. Fallback removes only Sarah's
+`hdRasters["equipment/ally25-palette1/frame1"]` from one disposable copy.
+
+Resource work is linear in the prepared audio and one package closure. The small audio pilot
+validates5865 stereo samples; publication plus atomic staging each stay below500MiB. The
+single fallback copy, build/import/cache and receipts fit the initial2GiB scratch/RAM budget.
+Native cases run serially. No new capture, remote API cost, producer, planner registration or
+engine test is introduced. Adapter build, direct probe, document checks and clean-head selected
+gates own acceptance; the Draft PR records exact head and actual CI.
+
+**Completed failures retained:** two first runs paused after missing97 audio; the next found
+missing97 in the audio slot dispatch. These were real failed consumers, corrected by the full
+package and YM5 binding. Initial observer assertions used ActionMenu instead of ActionChoice,
+off-by-one ring IDs, and compared HP across existing end-turn recovery; their receipts remain
+failed. Initial Valkyrie records retained ATT8 after removing its old equipped spear, so
+Continue did not admit them; correcting the controlled ATT to5 admits the same consumer.
+One failed-record run also ended in the existing Godot finalizer access violation0xC0000005;
+its cause remains Unknown and belongs with #1716. Final accepted observations have no session/presenter/script/audio error. ObjectDB
+exit warnings remain with #1716 and are not a lifecycle pass. No failed record is relabeled.
+
+
+### BUFF optional-group compatibility
+
+BUFF's original presentation is optional: the scene must have both77 and97 selectable
+through the existing exact-timer/default/sole-finite rules in its upcoming battle-music
+context (allied2 or enemy5). `SessionAudio.CanSelectSceneEffects` performs that read-only
+selection without caching or decoding media. Missing or ambiguous selections keep the prior
+support Magic message path or equipment Item presentation. Thus equipment-v2 remains usable;
+buff-v1 enables the original group. This availability check does not catch content/media
+admission errors: a declared corrupt WAV/digest remains an error, never an optional fallback.
+
+**Confirmed:** `compat-old-boost1` runs ordinary learned BOOST1 against unchanged equipment-v2:
+no BUFF node activity or77/97 requests, prior message presentation,2 MP once, four ordered
+successful recipients and next ActionChoice. `compat-new-boost1` against buff-v1 retains
+mounted rasters/flash, one77/fourteen97 and return. Actor HP/MP/status/stats/items/EXP, both RNG
+seeds and ordered results match across the two observations. Both exit0; the old-package
+sample retains4 ObjectDB exit warnings. The earlier missing-audio/slot failures remain failed.
+No wider matrix or retired suite was repeated for this correction.
+
+`derived/issue2282/review-v2` adds the two receipts and updated launchers. Use
+`-Case boost1 -Legacy` for equipment-v2 and omit `-Legacy` for buff-v1, with a fresh Sample
+and disposable SaveRoot as above. The complete buff-v1 media package is unchanged.

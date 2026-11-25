@@ -1253,3 +1253,5 @@ clouds. Source equipment Use selects the spell effect while keeping the Item ges
 Controlled zero-MP, silenced holders observe ordered results, one selected-slot wear draw
 and subsequent input. Effect rules, Repair, acquisition and other families keep their
 existing owners; this is not blanket completion of equipment spell choreography.
+
+The [BUFF presentation](../godot/spell-presentation.md#buff-family-playback-2282) binds ATTACK/BOOST equipment effects to the source Item gesture, flash and PSH. Power Ring, Protect Ring, Valkyrie and Wish Staff have direct native consumers; one payment/wear and the existing end-turn recovery remain authoritative here.
