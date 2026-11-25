@@ -1255,3 +1255,18 @@ and subsequent input. Effect rules, Repair, acquisition and other families keep 
 existing owners; this is not blanket completion of equipment spell choreography.
 
 The [BUFF presentation](../godot/spell-presentation.md#buff-family-playback-2282) binds ATTACK/BOOST equipment effects to the source Item gesture, flash and PSH. Power Ring, Protect Ring, Valkyrie and Wish Staff have direct native consumers; one payment/wear and the existing end-turn recovery remain authoritative here.
+
+
+## Recovery equipment presentation
+
+[Equipment recovery playback #2291](../godot/spell-presentation.md#equipment-recovery-playback-2291)
+binds Holy Lance81/HEALIN1, White Ring23/AURA2 and Rune Axe43/DETOX2 to their original
+Item gesture and existing fairy/mote consumers. Controlled legal holds preserve zero MP,
+silence immunity, raw item healing, ordered area results and one selected-slot wear.
+The second poison/stun cure notice now uses the same semantic message receiver as Magic.
+Ordinary Healing Seed remains a NONE visual with consumption, not equipment wear.
+
+The [historical AURA partition defect](../godot/spell-presentation.md#supported-historical-aura-partition-defect)
+is a confirmed supported-old-save/current-package action refusal. The complete roster
+witness does not resolve it; restore/source-slot reconciliation is queued separately in
+[#2295](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2295).

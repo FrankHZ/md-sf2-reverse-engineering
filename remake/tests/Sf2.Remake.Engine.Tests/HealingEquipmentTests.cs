@@ -48,12 +48,13 @@ public sealed class HealingEquipmentTests
     }
     private static SessionSnapshot Finish(SessionSnapshot current, List<BattleScenePhase> phases)
     {
+        int steps = 0;
         while (current.BattleScene is { } scene)
         {
-            Assert.True(phases.Count < 100);
-            phases.Add(scene.Phase);
-            var result = BattleSceneContinuation.Submit(current, scene.RequiresAcknowledgement ? new Acknowledge(scene.Token) :
-                new CompletePresentation(scene.Token, scene.CompletionKind));
+            Assert.True(++steps < 10000);
+            if (phases.Count == 0 || phases[^1] != scene.Phase) phases.Add(scene.Phase);
+            var result = BattleSceneContinuation.Submit(current, scene.Healing is { LogicalComplete: false, AtTimedInput: false } ? new AdvanceSimulation(scene.Token, 1) :
+                scene.RequiresAcknowledgement ? new Acknowledge(scene.Token) : new CompletePresentation(scene.Token, scene.CompletionKind));
             Assert.Null(result.Failure);
             current = result.Snapshot;
         }
@@ -96,6 +97,8 @@ public sealed class HealingEquipmentTests
         List<BattleScenePhase> phases = [];
         var done = Finish(result.Snapshot, phases);
         Assert.Equal(0, done.Battle.GetActor(Center).Status);
+        Assert.Contains(BattleScenePhase.SpellStop, phases);
+        Assert.DoesNotContain(BattleScenePhase.SpellCost, phases);
         Assert.Equal(cured, phases.Contains(BattleScenePhase.CureStunMessage));
         Assert.Equal(23, done.Battle.GetActor(Caster).SourceLoadout!.Items[2] & 127);
     }
@@ -113,7 +116,14 @@ public sealed class HealingEquipmentTests
         Assert.Empty(rejected.Observations);
         var wrong = Accept(At("healin", mask: 1u << 12), new Confirm());
         Assert.NotNull(BattleCommandDispatcher.Submit(wrong, new SelectItem(2)).Failure);
-        var done = Finish(Accept(selected, new Confirm()), []);
+        var prepared = Accept(selected, new Confirm());
+        Assert.NotNull(prepared.BattleScene!.Healing);
+        Assert.Equal(new SpellRef("healin", 1), prepared.BattleScene.RecoveryEffect!.Spell);
+        List<BattleScenePhase> phases = [];
+        var done = Finish(prepared, phases);
+        Assert.DoesNotContain(BattleScenePhase.SpellCost, phases);
+        Assert.Contains(BattleScenePhase.SpellStop, phases);
+        Assert.Equal(0, done.Battle.GetActor(Caster).Mp);
         Assert.Equal(start.Battle.GetActor(Caster).Hp + 10, done.Battle.GetActor(Caster).Hp);
     }
 }
