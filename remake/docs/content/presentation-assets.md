@@ -1264,3 +1264,26 @@ $base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2240/pre-voyage-brn-v
 uv run python -m sf2tool.remake_retail_assets --root $registeredRetailLibrary `
     --base $base --upstream $pinnedSource --mount $freshAbsolutePackage --family brgn
 ```
+
+### Master Monk promotion successor
+
+`derived/issue2244/pre-voyage-mmnk-v1` extends the complete BRGN successor with Sarah and
+Karna MMNK growth, walking sprites, unarmed and current item26–28 battle bindings, cast and
+special-critical animation83. Select its world, main scene, entry and six opening inputs
+together; retain the registered prepared retail library. It preserves all predecessor
+PGNT/BRN/BRGN and spell content. [Closure and budget](asset-inventory.md#master-monk-promotion-2244) ·
+[Consumer acceptance and reproduction](../application/church-promotion-design.md#master-monk-promotion)
+
+```powershell
+. ./local/private-inputs.ps1
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2242/pre-voyage-brgn-v1'
+uv run python -m sf2tool.remake_retail_assets --root $registeredRetailLibrary `
+    --base $base --upstream $pinnedSource --mount $freshAbsolutePackage --family mmnk
+```
+
+Select `derived/issue2244/catalogs-v1/world.zh-CN.json`. The successor preserves the BRN
+catalog and adds the registered `name.class/20` translation 武僧. Existing item26–28 names
+remain unchanged. `derived/issue2244/review-v1/runner/prepare.py catalog <base-catalog>
+<fresh-output> <registered-names-source>` reproduces this from the sole `names.zh-CN.jsonl`.
+The production catalog reader and independent native Continue accept it. Generating scratch
+was moved aside before the published-package field and battle Continue checks.

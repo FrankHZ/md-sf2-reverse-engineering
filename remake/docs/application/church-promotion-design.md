@@ -1,6 +1,6 @@
 # Church promotion
 
-**Ordinary church promotion.** Bowie can become HERO from SDMN at stored level 20 or higher. The current class travels with his earned progress through field play, combat, level-up, saves and return. The campaign retains High rigor because this change crosses growth, equipment, presentation and both save recipes. The ordinary class pairs, Eric’s Pegasus Wing route the Warrior Pride route for Jaha and Randolf, and Silver Tank for Elric and Janet are admitted through first Pacalon. Sorcerer and Master Monk remain with [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957). [Campaign agreement](remaining-campaign-risk-baseline.md) · [Design assignment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945)
+**Ordinary church promotion.** Bowie can become HERO from SDMN at stored level 20 or higher. The current class travels with his earned progress through field play, combat, level-up, saves and return. The campaign retains High rigor because this change crosses growth, equipment, presentation and both save recipes. The ordinary class pairs, Eric’s Pegasus Wing route, the Warrior Pride route for Jaha and Randolf, Silver Tank for Elric and Janet, and Vigor Ball for Sarah and Karna are admitted through first Pacalon. Sorcerer remains with [#1957](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1957). [Campaign agreement](remaining-campaign-risk-baseline.md) · [Design assignment](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1945)
 
 ## Playable HERO and reproduction
 
@@ -400,7 +400,7 @@ or decline it and separately confirm SNIP, through first Pacalon. The existing c
 transaction, Rohde BRGN rules, class-aware growth, equipment and save consumers own this
 behavior. Acceptance covers both members through the production reader and priest, then
 one ordinary battle route with changed equipment and independent field/battle Continue.
-Battle27+, SORC/MMNK and the shutdown investigation #1716 remain deferred.
+Battle27+, SORC and the shutdown investigation #1716 remain deferred. MMNK uses the separate boundary below.
 
 **Confirmed** from pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`.
 `promotions.asm` maps ACHR plus Silver Tank (120) to BRGN (22). Class definitions give
@@ -463,3 +463,98 @@ and stopped after unequipping. Its corrected check preserves both carried weapon
 second fork succeeds. Successful native exits can report ObjectDB warnings, retained under
 #1716. Natural Silver Tank pickup, Janet's BRGN battle action and original audiovisual timing
 remain **Unknown**. Controlled custody and EXP are explicitly distinct from natural acquisition.
+
+## Master Monk promotion
+
+**High rigor, bounded to #2244.** Joined Sarah and Karna can accept Vigor Ball for MMNK,
+or decline it and separately confirm VICR. The existing church transaction, class-aware
+growth, equipment, spell book, scene and save owners implement this through first Pacalon.
+Acceptance covers both production definitions and priest rites, one member's unarmed and
+legal equipped attack, healing and destination growth, and complete field/battle re-save
+equality after independent Continue. No new chapter, SORC, full equipment/spell library or
+shutdown repair is included. There is no new save format or second promotion state.
+
+**Confirmed from pinned source** `c834c652b6862bc5679fd7f69a38a7093206efc6`:
+`promotions.asm` maps PRST plus Vigor Ball (122) to MMNK (20). The destination has MOV5,
+REGULAR terrain and CRITICAL125_1IN16 / DOUBLE_1IN32 / COUNTER_1IN8. Sarah's projected
+HP/MP/ATT/DEF/AGI are 84/58/50/69/61; Karna's are 92/71/46/55/62. Each destination uses
+its member's first spell list. Their map sprites are 4/38 and battle sprite19 uses palettes
+1/2. [Class and promotion tables](https://github.com/ShiningForceCentral/SF2DISASM/tree/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/classes) ·
+[Sarah growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats01.asm) ·
+[Karna growth](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/allies/stats/allystats15.asm)
+
+The rite removes the selected holder's item first, then unwears the candidate's actual
+weapon in the resulting pack. Its slot remains carried after compaction; an independent
+ring and the packed book survive. Stale or unsupported results publish neither replacement.
+This order also prevents same-holder consumption from restoring the old weapon equip bit.
+[Church source](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/church/churchactions_1.asm#L417-L470) ·
+[Transaction](../../src/Sf2.Remake.Application/Runtime/Exploration/FieldService.cs)
+
+MMNK uses the shared 125% promoted spell power and healer EXP rules. Full-recovery spells
+retain their sentinel behavior. Before each first, second or counter strike, a separate
+1/16 draw can select animation83 and force the critical draw's range to 1; dodge still
+occurs afterward and can avoid the hit. The ordinary critical/double/counter prowess is
+unchanged. The class is admitted by all four existing AI target-priority tables.
+[Animation and special-critical draw](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/createbattlesceneanimation.asm#L67-L104) ·
+[Critical consumer](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/determinecriticalhit.asm#L33-L65) ·
+[Promoted spell power](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/calculatespelldamage.asm#L89-L101) ·
+[AI priorities](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/battles/global/aipriority.asm)
+
+**Confirmed in the remake.** Controlled copies retain the accepted Chinese Pacalon party's
+levels, vitals and books. They transfer Jaha's carried Power Ring to the candidate, replace
+selected consumables with the material, and leave natural F221 clear. Sarah holds her own
+Ball before the equipped Power Stick, while Karna uses Kazin's slot-1 Ball. Sarah's copy
+also carries one controlled Leather Glove. These custody setups do not claim natural pickup.
+Final Yes changes only the declared candidate fields and holder pack/refresh across the
+complete party comparison; flags, custody, gold and both RNG words remain equal. Both rites
+produce MMNK1/0. Member cancel and special No/regular No preserve the party; regular Yes
+produces VICR and retains the Ball and rod. Small engine cases additionally vary equipped
+versus unworn weapon, self versus separate holder, stale offers, ring retention and books.
+
+Sarah walked from the castle through Pacalon and Ketto to Battle26. Separate copies set
+only her EXP to 99; the healing copy also subtracts 30 HP. Ordinary Unarmed Attack deals
+15 HP and reaches MMNK2/17, with 60 max HP, 57 max MP, 49 base ATT, 41 DEF and 52 AGI.
+The retained Power Ring adds 5 ATT. HEAL3 restores 30 HP, spends 10 MP and reaches MMNK2/10.
+Leather Glove adds 26 ATT, deals 39 HP and reaches MMNK2/47. The actual Equip choices omit
+the incompatible Power Stick and offer the glove, Unarmed and independent ring operations.
+Both field cold re-saves and the post-healing/post-glove battle cold re-saves match all
+decoded authoritative data. Published-input Continue also admits the Chinese name 武僧.
+
+Current production item admission includes Leather Glove, Power Glove and Brass Knuckles
+(26–28), each range1. Iron Knuckles and rare fists remain unbound; no additional fist was
+admitted just for this check. Both members' growth, retained schedules and all four
+unarmed/equipment appearances pass the production reader across all 26 scenes. Karna's
+ordinary MMNK battle action, natural Ball custody for these rites, special-animation native
+timing and wider spell acquisition remain **Unknown**. Engine cases cover the special
+animation selection, forced critical draw and dodge independently of native timing.
+
+### Reproduce the MMNK consumers
+
+Use the complete [MMNK successor](../content/presentation-assets.md#master-monk-promotion-successor)
+and `derived/issue2244/review-v1/Boot.ps1`, after the locked Debug adapter build. Select a
+fresh disposable namespace and sample. `special`/`fallback` prepare the explicit controlled
+castle copy; `-Member 1` selects Sarah and `-Member 15` Karna. `field-cold` reloads and
+re-saves either rite. Sarah's `road` produces `battle-ready-slot.json` under the sample's
+receipt directory. `runner/prepare.py growth <ready-slot> <fresh-seed>` sets EXP99;
+append `heal` to also subtract 30 HP. Use separate `strike`, `heal` and `glove` forks.
+Then `battle-cold` reloads and re-saves the same journey. Receipts are under
+`local/issue2244/review/receipts/<Sample>`; no screenshots or bulk frame acquisition is used.
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2244/review-v1'
+& "$review/Boot.ps1" -Repo (Get-Location).Path -Mode special -Member 1 `
+    -Sample $freshSample -Journey $freshJourney -Language zh-CN -SaveRoot $disposableSaveRoot
+```
+
+**Retained failures and limits.** The first engine build failed on a nullable-byte test
+assertion, corrected before the passing suite. The first combat driver sent an extra
+confirmation after Stay; the corrected bounded Unarmed run passed. The initial producer
+pilot included unadmitted item29, and its translated name invalidated the Chinese overlay;
+both were removed before publication and published catalog admission passed. The first
+standalone reader invocation treated a build option as its package argument; the corrected
+DLL invocation passed. The Leather Glove action, growth and save completed, then native
+finalization exited with `0xC0000005` in `GodotObject.Finalize`. That exit is a **failed
+process result**, not a passed native run. Its saved result cold-continued successfully in
+an independent process. Other exits can report the existing ObjectDB warnings. Root cause
+remains **Unknown** under #1716; this slice does not repair or hide it.

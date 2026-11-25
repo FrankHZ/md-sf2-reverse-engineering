@@ -1700,10 +1700,11 @@ It does not relabel authored tests as an original trace replay.
 
 Private Content admits Medical Herb and the separately bounded [Seed/Antidote extension](#finite-purchased-supplies-and-detox1) into this item family.
 Other carried item IDs remain visible but reject as `item-effect`; equipped weapons are
-not herbs. The current class model admits PRST healing EXP and the existing non-healer
-classes. VICR/MMNK class admission, broader item families, equipment beyond its explicit admitted subset, Give/Drop beyond their explicit admitted subsets, field inventory,
-AI healing-item choice and save/load remain unsupported. Exact original presentation timing remains Unknown. The existing
-physical-only AI policy rejects a nonempty item loadout at start. This does not close the
+not herbs. The current class model admits PRST/VICR/MMNK healing EXP and the existing non-healer
+classes. [Promotion](../application/church-promotion-design.md#master-monk-promotion),
+[recovery items](recovery-items-design.md), equipment, Give/Drop and field/battle saves use their
+current bounded owners; this original herb baseline does not expand them. AI healing-item
+choice remains outside this baseline. Exact original presentation timing remains Unknown. This does not close the
 continuous H4 milestone or establish successful native-original cancellation.
 
 ## Authored battle Give and exchange

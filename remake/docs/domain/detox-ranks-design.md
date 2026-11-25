@@ -161,8 +161,8 @@ decode each slot envelope's base64 payload and verify its SHA-256 against the en
 `data.allies` by `actor` and `data.activeAllies`, or `data.battle.actors` by `actorId`
 and its position and loadout. In both forms use `ally-1` for Sarah. Rank admission is keyed by
 the current book and the selected source record, independent of the actor's name or chapter.
-VICR/MMNK borrow Sarah's first spell list in the source. Their broader class/scene admission
-belongs to the promotion owners.
+VICR/MMNK borrow each member's first spell list in the source. Both current priest members
+now have class/scene admission through the [promotion owner](../application/church-promotion-design.md#master-monk-promotion); learned rank and target checks remain shared.
 [Sarah's growth and campaign consumer](../content/campaign-characters.md) ·
 [Private field binding](../../src/Sf2.Remake.Content/Scenarios/PrivateFieldPreparation.cs) ·
 [Private battle binding](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleActionBindings.cs)
