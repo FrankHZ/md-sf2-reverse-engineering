@@ -474,8 +474,8 @@ public sealed partial class BattleSessionView : Control
         if (!_inspection.Active)
         {
             _map.Present(projection, current, movementFocus, candidate);
-            _map.PreviewAction(decision.Targeting && decision.SelectedAction is { Enabled: true } offer ? offer : null,
-                current, candidate, _input.Settings.ReducedFlash);
+            _map.PreviewAction(decision.Targeting && decision.SelectedAction is { Enabled: true }
+                ? _session.QueryBattleActionFootprint(candidate) : null, _input.Settings.ReducedFlash);
         }
         // A close-up owns the art canvas. Field death and notices retain the board.
         _map.Visible = current.BattleScene is not { IsFieldDeath: false, IsAfterTurnNotice: false };

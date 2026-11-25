@@ -84,6 +84,12 @@ public sealed class SilenceSessionTests
         Assert.Empty(rejected.Observations);
         Assert.Same(targeting, session.Current);
         Accept(session, new SelectTarget(patient));
+        var selected = session.Current;
+        var preview = session.QueryBattleActionFootprint(patient)!;
+        Assert.Contains(preview.Centers, unit => unit.Actor == patient);
+        Assert.Equal(selected.Battle.GetActor(patient).Position, Assert.Single(preview.Area));
+        Assert.Empty(preview.Recipients);
+        Assert.Same(selected, session.Current);
 
         var prepared = Accept(session, new Confirm());
         var scene = prepared.Snapshot.BattleScene!;

@@ -25,8 +25,24 @@ public sealed class AttackSpellSessionTests
     [InlineData(false)] [InlineData(true)]
     public void OnePaymentOrderedHitsDeathAccountingOneAwardThenUsableNextActor(bool bothDie)
     {
-        var session = Start("attack-spells", d => { if (bothDie) d["start"]!["actors"]![2]!["hp"] = 1; }); var initial = session.Current;
-        var events = Cast(session).Observations.ToList();
+        var session = Start("attack-spells", d =>
+        {
+            if (bothDie) d["start"]!["actors"]![2]!["hp"] = 1;
+            d["encounters"]![0]!["placements"]![1]!["x"] = 4;
+            d["encounters"]![0]!["placements"]![1]!["y"] = 1;
+        });
+        var initial = session.Current;
+        Accept(session, new Confirm()); Accept(session, new SelectSpell(new("blaze", 2)));
+        var selecting = session.Current;
+        var preview = session.QueryBattleActionFootprint(Center)!;
+        Assert.Equal(new[] { Center }, preview.Centers.Select(unit => unit.Actor));
+        Assert.Equal(5, preview.Area.Count);
+        Assert.Contains(new MapPosition(4, 1), preview.Area); // Friendly actor inside the nominal radius.
+        Assert.DoesNotContain(new MapPosition(7, 5), preview.Area); // Reserve opponent outside it.
+        Assert.Equal(new[] { Wing, Center }, preview.Recipients.Select(unit => unit.Actor));
+        Assert.Same(selecting, session.Current);
+        Accept(session, new SelectTarget(Center));
+        var events = Accept(session, new Confirm()).Observations.ToList();
         Assert.Equal(20, session.Current.Battle.GetActor(Caster).Mp);
         Assert.Equal(4, session.Current.Battle.GetActor(Center).Hp);
         int messages = 0;
@@ -40,6 +56,7 @@ public sealed class AttackSpellSessionTests
             var after = session.Current; Assert.NotNull(Send(session, command).Failure); Assert.Same(after, session.Current);
         }
         Assert.Equal(1, messages); Assert.Equal(new[] { Wing, Center }, targets);
+        Assert.Equal(preview.Recipients.Select(unit => unit.Actor), targets);
         Assert.Single(events, e => e.Kind == "mp"); Assert.Single(events, e => e.Kind == "exp");
         Assert.Equal(new[] { Wing, Center }, events.Where(e => e.Kind == "hp").Select(e => e.Actor!.Value));
         Assert.Equal(14, session.Current.Battle.GetActor(Caster).Mp);

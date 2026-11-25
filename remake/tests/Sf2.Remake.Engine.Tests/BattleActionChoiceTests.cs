@@ -186,6 +186,16 @@ public sealed class BattleActionChoiceTests
         Assert.Empty(rule.Preparations);
         Accept(session, new Confirm()); Accept(session, new SelectBattleAction(new(BattleActionKind.Physical)));
         var before = session.Current;
+        var blocked = session.QueryBattleActionFootprint(new("raider"))!;
+        Assert.Contains(before.Battle.GetActor(new("raider")).Position!, blocked.Reach);
+        Assert.Empty(blocked.Area);
+        Assert.Empty(blocked.Recipients);
+        var preview = session.QueryBattleActionFootprint(new("scavenger"))!;
+        Assert.Equal("scavenger", Assert.Single(preview.Centers).Actor.Value);
+        Assert.Equal(before.Battle.GetActor(new("scavenger")).Position, Assert.Single(preview.Area));
+        Assert.Equal(Assert.Single(preview.Centers), Assert.Single(preview.Recipients));
+        Assert.Empty(rule.Preparations);
+        Assert.Same(before, session.Current);
         Assert.Equal("selected-target-disabled", Send(session, new SelectTarget(new("raider"))).Failure!.Code);
         Assert.Same(before, session.Current);
         Accept(session, new SelectTarget(new("scavenger"))); var begun = Accept(session, new Confirm());

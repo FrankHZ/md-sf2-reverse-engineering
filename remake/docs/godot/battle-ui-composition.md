@@ -154,13 +154,40 @@ Reuse the board-local movement and action drawing owners. Only one field may be 
 units and source foreground, using a pixel-aligned tile motif that leaves terrain readable.
 Movement uses cyan for allies and red for enemies, with distinct interior fill for legal stops and a simpler edge mark for
 traversable-only cells such as occupied friendly cells. In targeting use warm reach tiles and one
-lighter inset for affected cells. A cell in both has one outline and a distinct effect interior.
-A radius-zero effect shares the candidate cell with the cursor. Rules, costs, target side,
-AURA-all behavior and multi-target incidence come from the live offer and effect content.
-Range geometry explains reach. Enabled recipients remain the session's admission decision.
-When the candidate is invalid, only the valid offer's reach can remain. Keep a restrained
+lighter inset for the nominal effect area. A cell in both has one outline and a distinct effect
+interior. A radius-zero effect shares the candidate cell with the cursor. The
+[action footprint](#rule-backed-action-footprint) supplies geometry and separates selectable
+centers from prospective recipients. When the candidate is invalid, only the valid offer's
+reach can remain. Keep a restrained
 version of the existing pulse, with a steady presentation under Reduced Flash. Exact original
 pulse and graphics parity remain **Unknown**. [Original range construction](../../../docs/research/battle/battlefield-pathfinding.md#range-and-target-construction)
+
+### Rule-backed action footprint
+
+At the confirmed stop, `QueryBattleActionFootprint` and the target menu share the admitted action
+and target choices. Painted reach omits barrier tiles. A valid center still follows command
+admission. A radius effect draws its full in-bounds shape, including empty or ineligible cells.
+AURA4 and Healing Rain draw the living placed source-side roster, including admitted neutral and
+distant members. A silenced marked spell retains its center and nominal area with zero recipients.
+Recipients describe the eligible effect target list before resolution rolls and amounts.
+
+Run `uv run sf2 verify engine` and `uv run sf2 verify adapter` with the
+[locked SDK workflow](../development-and-verification.md#locked-net-workflow). The existing
+`BattleActionChoiceTests`, `AttackSpellSessionTests`, `EquipmentItemTests`,
+`RecoveryItemSessionTests` and `SilenceSessionTests` compare rule-backed reads with physical
+delivery, BLAZE2, Black Ring/Boost items, Healing Rain and suppressed HEAL. The cases include
+an ineligible unit inside the area, an opponent beyond it, and an illegal center on drawn reach.
+
+For native reproduction, build the Debug adapter and run the
+[existing demo observer](battle-interaction-baseline.md#direct-production-reproduction) with
+`SF2_DEMO_BATTLE_CASE=area` on `attack-spells.json` and `aura` on `aura-healing.json`.
+Use a fresh ignored output per launch and ordinary English keyboard settings with Reduced Flash.
+The observer reads selectable centers, nominal cells and ordered recipients from the board.
+BLAZE2 projects five cells around one legal center and settles on the two projected recipients.
+AURA4 resolves the projected source-side roster in order. Repeated observation preserves
+revision, RNG, turn cursor and resources. Back clears the marks, and confirmation pays once
+before returning to usable player control. Healing Rain is covered by the controlled engine
+case. This observation covers input and projection with the existing drawing style.
 
 Use the [shared visual language](ui-design-language.md) for all panels. At 1920×1080, anchor the
 quiet round panel at the existing upper-left gameplay inset below host chrome, with the terrain

@@ -136,6 +136,9 @@ public sealed class GameSession
     public BattleChoicesSnapshot QueryBattleChoices() =>
         BattleChoices.Query(Current, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null);
 
+    public BattleActionFootprint? QueryBattleActionFootprint(ActorRef? candidate) =>
+        BattleActionFootprint.Query(Current, Rules, ActiveBattleScenes, Definition.PrivateDefinitions is not null, candidate);
+
     public BattleInspectionSnapshot QueryBattleInspection(Guid? session = null, long? revision = null, ActorRef? unit = null) =>
         BattleInspectionQuery.Query(Definition, Current, session, revision, unit);
 

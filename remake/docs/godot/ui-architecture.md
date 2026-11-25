@@ -355,21 +355,14 @@ boundary](../../game/src/Battles/BattleSessionView.Navigation.cs) · [Field mapp
 routes](../../game/src/Exploration/ExplorationSessionView.cs) · [Field
 pointer](../../game/src/Exploration/ExplorationSessionView.Mouse.cs)
 
-### The action overlay omits admitted recipients
+### The action overlay reads the selected rule
 
-P2. **Confirmed** discrepancy between projected and resolved effect.
-
-`BattleActionRangeView.Present` scans cells using its own Manhattan calculation, terrain mask and
-spell-radius lookup. It knows all-ally healing only from `Action.Spell`. The admitted Healing Rain
-binding is an item with `FullPartyHp`, self center and a placed-side recipient scan. Its Item action
-reference has no spell, so the overlay shows only the center even when the resolver applies the effect
-to several allies. Attack/support items also carry their effect through item admission. The spell AoE ring denotes geometry. Recipient rules also apply eligibility inside it. Keep that
-distinction when replacing the duplicate calculations. This is a preview defect with no evidence of
-mis-settlement. Application and Domain own the admitted footprint. Godot owns the marks. [Current
-overlay](../../game/src/Battles/BattleActionRangeView.cs) · [Recovery item
-admission](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2ItemAction.cs) · [Recipient
-rules](../../src/Sf2.Remake.Domain/Gameplay/Sf2/HealingTargetRules.cs) · [Healing Rain
-binding](../../src/Sf2.Remake.Content/Scenarios/PrivateBattleActionBindings.cs)
+**Implemented (#2258).** The action overlay reads the current selection's footprint from Application.
+The selected item's admission supplies its effect. Healing Rain uses its self center and paints
+the living placed source-side roster. Attack and support items use the same area and recipient
+rules as their admitted spell effects. Godot draws the returned geometry with the existing board
+marks. [Overlay](../../game/src/Battles/BattleActionRangeView.cs) ·
+[Targeting and reproduction](battle-ui-composition.md#rule-backed-action-footprint)
 
 ### Texture borrowers depend on projection order
 
@@ -486,27 +479,21 @@ query boundaries.
 
 ### Read queries and renderer responsibilities
 
-- **Action geometry.** Extend the battle choices/read boundary with a typed description of the
-  selected action's admitted reach and optional candidate footprint. Read it for the live
-  session/revision, acting unit, action reference and attempted candidate. Resolve against the same
-  `AtConfirmedStop` state, selected rule and action admission as `BattleChoices.RequireTarget`.
-  Reuse `BattleRange`, `HealingTargetRules` and existing attack/support recipient enumeration.
-  Distinguish selectable centers, painted reach, area cells and applicable recipient positions.
-  Preserve the view's terrain mask where it is an intentional display convention, with a legal
-  center remaining actionable even if display geometry is clipped. A rejected/missing candidate
-  has no candidate-specific footprint. Rules supply all-side/source-roster selection. The scene
-  consumes the resulting positions and reasons. Read the nominal area separately from currently
-  applicable recipients, including suppressed effects. Use the rule's query path for geometry
-  and reserve `Prepare` for gameplay execution. Keep queries free of payments, random draws
-  and published revisions. Hand the result to the existing board painter for clipping, color,
-  opacity and Reduced Flash. [Rule interface](../../src/Sf2.Remake.Domain/Battles/Rules/IBattleActionRule.cs) ·
-  [Attack recipient rules](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2AttackSpellAction.cs) ·
-  [Support recipient rules](../../src/Sf2.Remake.Domain/Gameplay/Sf2/Sf2SupportSpellAction.cs)
+- **Action geometry.** `QueryBattleActionFootprint` reads the live selection and an optional
+  candidate. It shares `AtConfirmedStop`, action admission and target choices with `BattleChoices`.
+  Application applies `BattleRange` and the display mask to the reach band. The Domain area query
+  uses the typed admission and existing healing, attack and support recipient enumerators.
+  Using the admitted effect covers both spell and item actions without adding a preview hook to
+  every action rule or calculating effects through `Prepare`. The result separates selectable
+  centers, reach tiles, nominal area and eligible recipients. An absent or rejected candidate
+  leaves only reach and centers. Silence can leave nominal area with an empty recipient list.
+  The query does not publish a revision, spend resources or draw RNG. The existing board painter
+  owns clipping, layering, color, opacity and Reduced Flash. [Application query](../../src/Sf2.Remake.Application/Runtime/Battles/BattleActionFootprint.cs) ·
+  [Domain area](../../src/Sf2.Remake.Domain/Gameplay/Sf2/BattleActionArea.cs)
 - **Spell description.** `BattleChoices` and `FieldRecovery` project `SpellDescriptionFacts`
   for the exact `SpellRef`. The Godot formatter consumes typed effect operands and current
   restrictions in the shared reader. Field recovery owns free NoEffect and clamped MP.
   `SilenceRules` owns whether an otherwise eligible battle cast pays and loses its effect.
-  Future target geometry can consume the same admitted reach and radius operands.
   [Shared facts](../../src/Sf2.Remake.Application/Runtime/SpellDescriptionFacts.cs) ·
   [Formatter](../../game/src/Localization/SpellDescriptions.cs) ·
   [Behavior and reproduction](battle-ui-composition.md#selected-spell-descriptions)
@@ -522,9 +509,8 @@ query boundaries.
 
 ## Migration and independent acceptance
 
-The first two battle and reading boundaries below are implemented. The target-footprint query
-remains a separate proposal. The [native UI slices](#finite-implementation-slices) consume the
-shipped player behavior.
+The [native UI slices](#finite-implementation-slices) consume the battle and reading behavior
+implemented below.
 
 1. **Coherent battle action entry, rejection and Back (#2107).** `BattleSessionView` owns local
    focus and the action/target submission sequence. `BattleDecision` supplies the menu, board,
@@ -548,16 +534,12 @@ shipped player behavior.
    Its independent spell, inventory and reading regions keep the four carried positions and their
    item text visible together. Field summaries align live party gold and the selected member's
    record with shared metrics. Battle Member mounts the complete shared page with its own read query and Back. [Current field behavior and verification](field-and-shop.md#reproduce-four-slot-capacity-and-accounting)
-3. **Rule-backed battle target footprint.** After slice 1 for the final adapter integration
-   (the pure rule/query work can be scoped independently), replace `BattleActionRangeView`'s
-   spell lookup and distance/party selection with selected-action geometry from the authoritative
-   read boundary. Align the existing movement overlay without changing its query. Keep range
-   meanings and layering. Accept a physical or single target, radius effect at a legal stop,
-   rejected center, party-wide item and a suppression case where supported. Include an ally
-   outside the area or an ineligible actor inside. Compare nominal geometry and applicable
-   recipients with the actual resolution from that controlled state, preserving a separate check
-   for no state/RNG/payment changes from reading. Cover new rules with small engine behavior
-   assertions where needed. Revert the query and consumer together before downstream uses.
+3. **Rule-backed battle target footprint (#2258).** `BattleActionRangeView` consumes the selected
+   action's read query and shares its drawing motif with the movement overlay. The
+   [bounded reproduction](battle-ui-composition.md#rule-backed-action-footprint) covers single
+   and area effects, rejected centers, party-wide items and Silence. It compares the nominal area
+   and eligible recipients with actual resolution and checks the decision state across repeated
+   reads. Revert the query and consumer together before downstream uses.
 
 [Independent review](ui-scene-review.md#review-changed-ui-responsibilities) complements the
 existing scene feature checks. The accepted [#2079 review](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/2084#issuecomment-7087838808)
