@@ -1176,6 +1176,31 @@ Reproduce with the preceding `Prepare-PrivateAssets.ps1 -Family static-equipment
 [B owner](../domain/equipment-use-repair-design.md#b-reproduction-and-retained-failures) records
 reader/native commands and retained failures. No real player save is an input or output.
 
+### Recovery successor (#2272)
+
+`derived/issue2272/equipment-v1` is the complete B successor:174 files,365,753,566 bytes,
+a19,664-byte increase. Only `inputs/battle26/battle-scenes.json` changes; all other closure files
+compare byte-identical. The existing `static-equipment` producer mounts Holy97 selector17/palette33
+on VICR bodies and Mystery100 selector17/palette36 on WIZ/SORC/VICR bodies, reusing the registered
+#2001 prepared weapon files and existing six body variants. Life124 has no independent weapon layer.
+Eight added member/class/item rows resolve through the production reader in all26 scenes; this
+retains A/B rows without claiming the exhaustive E closure. The unchanged #2266 catalog, independent
+#2252 opening/#2255 Witch, maps and audio remain selected. No captures or downloads are needed.
+
+The serial single-scene pilot took0.176s and added8 rows. Its pretty-printed scratch JSON grew
+3,685,914→3,802,492 bytes; the final package serializer emits3,705,578 bytes for that scene.
+Processing is O(package bytes + selected records), with one approximately349MiB successor and
+small local probe/receipt files. The pre-run2GiB memory/2GiB scratch/1GiB publication allowances
+remain sufficient by output size; peak memory was not measured. No per-item full package copies
+or new caching/manifests were added. Native Stay and independent cold Continue consume the
+registered successor directly, independent of producer scratch.
+
+Reproduce with the preceding `Prepare-PrivateAssets.ps1 -Family static-equipment` command,
+using `derived/issue2271/equipment-v1` as `-Package` and a fresh ignored destination. The
+[C owner](../domain/equipment-use-repair-design.md#c-reproduction-and-retained-failures) records
+reader/native commands, controlled custody, results and preserved failures. Full class/resource
+closure remains E and future acquisition remains with the campaign owner.
+
 ### Budget and pilot before expansion
 
 The accepted package is about345MiB. Preparation should be O(input package bytes + selected

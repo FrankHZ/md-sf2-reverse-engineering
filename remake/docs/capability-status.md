@@ -8,8 +8,8 @@ handoffs, carried state and acceptance boundaries for Battle03 through departure
 The [#2268 agreement](domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268)
 and [complete equipment reconciliation](content/campaign-items.md#whole-game-equipment-reconciliation)
 cover all94 source equipment definitions. The audit is complete at the static definition/code
-boundary; whole-game implementation is **not complete**. Slices A/B admit 83 weapon definitions
-(including two player-ineligible mask-NONE rows) and eight rings. Signed ATT/DEF/AGI/MOV operations
+boundary; whole-game implementation is **not complete**. Slices A/B/C admit85 weapon definitions
+(including two player-ineligible mask-NONE rows) and nine rings. Signed ATT/DEF/AGI/MOV operations
 run after statuses in actual carried-slot order, with each source clamp. Weapon and ring curses
 share Equip, custody, Cure and Repair. Guardian91 has ordinary purchase/Equip, body/weapon
 projection, removal and independent field/battle Continue; Thieve's Dagger106 has production-reader
@@ -21,8 +21,9 @@ battle Continue. These witnesses do not establish natural late acquisition or ex
 actors' double/counter/critical prowess from live equipment and supports Gisarme cutoff after
 successful critical against nonimmune targets. Native controlled NINJ Equip/cutoff/reward and
 Chinese cold Continue pass, with separate weapon109/body26. Natural late acquisition and original
-CUTOFF animation remain Unknown; exhaustive legal class/body keys remain E. Holy Staff97,
-Mystery Staff100 and Life Ring124 remain C and excluded from Equip admission. New equipment Use remains D; remaining legal class/body/weapon tuples
+CUTOFF animation remain Unknown; exhaustive legal class/body keys remain E. [Slice C](domain/equipment-use-repair-design.md#equipped-turn-recovery-2272) admits Holy Staff97,
+Mystery Staff100 and Life Ring124. Their capped turn recovery precedes poison through the existing
+continuation; controlled native Holy/Life notices and cold Continue pass without extra recovery. New equipment Use remains D; remaining legal class/body/weapon tuples
 remain E. Iron Knuckles29 and Great Axe39 still need their explicit appearance rows.
 
 Five serial implementation outcomes own signed stats/weapon curses, prowess/cutoff, turn recovery,

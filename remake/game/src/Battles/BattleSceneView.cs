@@ -653,6 +653,9 @@ internal sealed partial class BattleSceneView : Control
         }
         if (state.Item?.CuresPoison == true && state.Phase == BattleScenePhase.ResultMessage && SemanticMessage(state) is { } itemCure)
             return itemCure;
+        if (state.EquipmentRecoveryText is { } recoveryText)
+            return LocalizedMessage(recoveryText == 357 ? "battle.heal.mp-recovery" : "battle.heal.recovery",
+                ActorName(state.Actor), state.Amount);
         if (state.Item is { Effect: HealingItemEffect.RestoreMp } && state.Phase == BattleScenePhase.ResultMessage)
             return LocalizedMessage("battle.heal.mp-recovery", ActorName(state.Target!.Value), state.Amount);
         if (state.Spell?.IsAura == true && state.Phase == BattleScenePhase.ActionMessage)

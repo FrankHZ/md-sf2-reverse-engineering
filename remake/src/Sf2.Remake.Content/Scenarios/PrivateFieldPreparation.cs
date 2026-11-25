@@ -84,6 +84,15 @@ internal static class PrivateFieldPreparation
                 primary.Type == effect && primary.Parameter == bonus, "source-static-ring", "field.items");
             yield return new(id, item.DisplayName, classes, stat, bonus, DamageOnUse: true, Cursed: id == 25);
         }
+        if (source.Items.TryGetValue(124, out var lifeRing))
+        {
+            Require(lifeRing is { Code: "LIFE_RING", UseSpell: "NOTHING",
+                EquipEffects: [{ Type: "HP_RECOVERY", Parameter: 5 }, { Type: "NONE", Parameter: 0 }, { Type: "NONE", Parameter: 0 }] },
+                "source-recovery-ring", "field.items");
+            uint classes = source.Classes.Values.Where(allowed => allowed.Id < 32 && lifeRing.EquipFlags.Contains(allowed.Code))
+                .Aggregate(0u, (mask, allowed) => mask | 1u << allowed.Id);
+            yield return new(lifeRing.Id, lifeRing.DisplayName, classes, null, 0, HpRecovery: 5);
+        }
         if (source.Items.TryGetValue(126, out var sandals))
         {
             Require(sandals is { Code: "CHIRRUP_SANDALS", EquipFlagsExpression: "ALL", ItemTypeExpression: "RING|RARE",

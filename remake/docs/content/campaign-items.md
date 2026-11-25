@@ -315,10 +315,10 @@ and A/B witnesses.
 | 94 Wish Staff | VICR | +ATT26; 1–1 | ATTACK1; BREAKABLE | yes / none | other/future | A complete; D,E |
 | 95 Great Rod | WIZ, SORC, VICR | +ATT28; 1–1 | —; — | yes / none | other/future | A complete; E |
 | 96 Supply Staff | WIZ, SORC | +ATT32; 1–1 | SPOIT1; BREAKABLE | yes / none | other/future | A complete; D,E |
-| 97 Holy Staff | VICR | +ATT29, HP_RECOVERY3; 1–1 | —; — | no / none | other/future | A,C,E |
+| 97 Holy Staff | VICR | +ATT29, HP_RECOVERY3; 1–1 | —; — | yes / row | other/future | A,C complete; E |
 | 98 Freeze Staff | WIZ, SORC | +ATT37; 1–1 | FREEZE3; BREAKABLE | yes / none | other/future | A complete; D,E |
 | 99 Goddess Staff | VICR | +ATT31; 1–1 | AURA2; BREAKABLE | yes / none | other/future | A complete; D,E |
-| 100 Mystery Staff | WIZ, SORC, VICR | +ATT39, MP_RECOVERY2; 1–1 | —; — | no / none | other/future | A,C,E |
+| 100 Mystery Staff | WIZ, SORC, VICR | +ATT39, MP_RECOVERY2; 1–1 | —; — | yes / row | other/future | A,C complete; E |
 | 101 Demon Rod | WIZ, SORC, VICR | +ATT50, −AGI10; 1–1 | SPOIT1; CURSED,BREAKABLE | yes / row | other/future | A complete; D,E |
 | 102 Iron Ball | NONE | +ATT44; 1–1 | BLAZE3; CURSED,BREAKABLE | NONE / none | other/future | D |
 | 103 Short Knife | THIF | +ATT5; 1–1 | —; — | yes / row | shop | existing; E check |
@@ -329,7 +329,7 @@ and A/B witnesses.
 | 108 Ninja Katana | NINJ | +ATT39, +DOUBLE1; 1–1 | —; — | yes / row | other/future | B complete; E |
 | 109 Gisarme | NINJ | +ATT42, SET_CRITICAL6; 1–1 | —; — | yes / row | other/future | B complete; E |
 | 110 Taros Sword | NONE | +ATT32; 1–2 | BOLT2; BREAKABLE | NONE / none | Taros/drop | D |
-| 124 Life Ring | HERO, PLDN, PGNT, GLDT, BRN, WIZ, SORC, VICR, MMNK, SNIP, BRGN, BDBT, WFBR, BWNT, PHNX, NINJ, MNST, RBT, GLM, RDBN | HP_RECOVERY5; 0–0 | —; — | no / n/a | other/future | A,C |
+| 124 Life Ring | HERO, PLDN, PGNT, GLDT, BRN, WIZ, SORC, VICR, MMNK, SNIP, BRGN, BDBT, WFBR, BWNT, PHNX, NINJ, MNST, RBT, GLM, RDBN | HP_RECOVERY5; 0–0 | —; — | yes / n/a | other/future | A,C complete |
 | 126 Chirrup Sandals | ALL | none; 0–0 | —; — | yes / n/a | Search | existing; E check |
 
 ### Reproduce the full definition join
@@ -381,10 +381,10 @@ if ($LASTEXITCODE -ne 0) { throw 'Equipment source reconciliation failed' }
 **Confirmed (selected content/code).** Guardian91 is stocked by `loc-54b1a` (Map06),
 `loc-5d2c4` (Map25) and `map2-entityevent7` (Map02). Thieve's Dagger106 is stocked by
 `map9-entityevent5` (Hassan Map09). Both current acquisition callers now admit Equip through the same ordered signed-stat mechanism.
-The production catalog retains all 94 equipment source definitions; 80 weapons and eight rings
+The production catalog retains all94 equipment source definitions;85 weapons and nine rings
 have passive admission, including the two mask-NONE weapon definitions that remain player-refused.
-Counter Sword68, Ninja Katana108, Gisarme109, Holy Staff97, Mystery Staff100 and Life Ring124
-remain unavailable for Equip until their B/C effect consumers exist. New Use bindings remain D. No initial holder or natural pickup was inferred
+A/B/C now consume static stats/curses, prowess/cutoff and ordered HP/MP recovery.
+[Recovery behavior and controlled native/Continue evidence](../domain/equipment-use-repair-design.md#equipped-turn-recovery-2272). New Use bindings remain D. No initial holder or natural pickup was inferred
 from a shop row. The prior Karna witness is Power Stick89, not Guardian91.
 
 For the selected Search rows, compare itemWord identity and receipt against every map/setup's

@@ -5,7 +5,7 @@ using Sf2.Remake.Domain.Gameplay.Sf2;
 
 namespace Sf2.Remake.Application.Runtime.Battles;
 
-public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage, SilencedCastMessage, SilenceMessage, SilenceTurnMessage, PoisonMessage, StunMessage, StunTurnMessage, SlowExpiredMessage, BoostExpiredMessage, SupportDefenseMessage, AttackExpiredMessage, EquipmentWearMessage, CureStunMessage, PhysicalInactionMessage, CureCurseMessage, MuddleTurnMessage }
+public enum BattleScenePhase { Initialize, ActionMessage, SpellCost, ActionAnimation, TargetExit, TargetEnter, Reaction, ResultMessage, MakeIdle, SpellStop, DeathMessage, ActorExit, ActorEnter, Reward, RewardMessage, GrowthMessage, GoldMessage, End, FieldSpin, FieldExit, FieldSettle, SleepMessage, SleepTurnMessage, PoisonDamageMessage, PoisonExhaustedMessage, PoisonFinalize, ItemDroppedMessage, ItemReceivedMessage, SilencedCastMessage, SilenceMessage, SilenceTurnMessage, PoisonMessage, StunMessage, StunTurnMessage, SlowExpiredMessage, BoostExpiredMessage, SupportDefenseMessage, AttackExpiredMessage, EquipmentWearMessage, CureStunMessage, PhysicalInactionMessage, CureCurseMessage, MuddleTurnMessage, EquipmentRecoveryMessage }
 public sealed record BattleSceneOffset(short X, short Y);
 public enum BattleGrowthNoticeKind { Level, MaxHp, MaxMp, Attack, Defense, Agility, Spell }
 public sealed record BattleGrowthNotice(BattleGrowthNoticeKind Kind, int Amount, SpellRef? Spell = null);
@@ -212,9 +212,11 @@ public sealed class BattleSceneState
 {
     internal BattleSceneState(BattleActionResolution? action, BattleScenePhase phase, int reactionIndex,
         WaitToken token, IReadOnlyList<BattleSceneOffset>? motion = null, IReadOnlyList<BattleGrowthNotice>? growth = null, int noticeIndex = 0,
-        HealingSceneCursor? healing = null, BattleDeathBatch? deaths = null, int fieldStep = 0, SleepTurnNotice? sleepTurn = null, FieldDeathTurn? fieldDeath = null, PoisonTurnNotice? poisonTurn = null, CounterExpiryNotice? counterExpiry = null, StunTurnNotice? stunTurn = null)
-    { StunTurn = stunTurn; CounterExpiry = counterExpiry; PoisonTurn = poisonTurn; FieldDeath = fieldDeath; Deaths = deaths ?? BattleDeathBatch.Empty; FieldStep = fieldStep; _action = action; SleepTurn = sleepTurn; Phase = phase; ReactionIndex = reactionIndex; Token = token; Motion = motion ?? []; Growth = growth ?? []; NoticeIndex = noticeIndex; Healing = healing; }
+        HealingSceneCursor? healing = null, BattleDeathBatch? deaths = null, int fieldStep = 0, SleepTurnNotice? sleepTurn = null, FieldDeathTurn? fieldDeath = null, PoisonTurnNotice? poisonTurn = null, CounterExpiryNotice? counterExpiry = null, StunTurnNotice? stunTurn = null, EquipmentRecoveryNotice? equipmentRecovery = null)
+    { EquipmentRecovery = equipmentRecovery; StunTurn = stunTurn; CounterExpiry = counterExpiry; PoisonTurn = poisonTurn; FieldDeath = fieldDeath; Deaths = deaths ?? BattleDeathBatch.Empty; FieldStep = fieldStep; _action = action; SleepTurn = sleepTurn; Phase = phase; ReactionIndex = reactionIndex; Token = token; Motion = motion ?? []; Growth = growth ?? []; NoticeIndex = noticeIndex; Healing = healing; }
     private readonly BattleActionResolution? _action;
+    internal EquipmentRecoveryNotice? EquipmentRecovery { get; }
+    public int? EquipmentRecoveryText => EquipmentRecovery?.Recovery.Text;
     internal StunTurnNotice? StunTurn { get; }
     public bool StunCleared => StunTurn is { After: var status } && (status & 1) == 0;
     internal CounterExpiryNotice? CounterExpiry { get; }
@@ -224,7 +226,7 @@ public sealed class BattleSceneState
     internal SleepTurnNotice? SleepTurn { get; }
     internal PoisonTurnNotice? PoisonTurn { get; }
     public bool IsPoisonTurn => PoisonTurn is not null;
-    public bool IsAfterTurnNotice => IsSleepTurn || IsPoisonTurn || CounterExpiry is not null || StunTurn is not null;
+    public bool IsAfterTurnNotice => EquipmentRecovery is not null || IsSleepTurn || IsPoisonTurn || CounterExpiry is not null || StunTurn is not null;
     internal FieldDeathTurn? FieldDeath { get; }
     public bool IsSleepTurn => SleepTurn is not null;
     public int? SleepTurnText => SleepTurn?.Text;
@@ -244,14 +246,14 @@ public sealed class BattleSceneState
     public PrismLaserShot? Laser => _action?.Laser;
     public bool HasReaction => _action is not null && ReactionIndex < Action.Reactions.Count;
     public ActorRef? ReactionTarget => HasReaction ? Reaction.Target : null;
-    public ActorRef Actor => FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? CounterExpiry?.Actor ?? (!HasReaction ? Action.Actor : Reaction.Actor);
-    public ActorRef? Target => FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ??
+    public ActorRef Actor => EquipmentRecovery?.Actor ?? FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ?? CounterExpiry?.Actor ?? (!HasReaction ? Action.Actor : Reaction.Actor);
+    public ActorRef? Target => EquipmentRecovery?.Actor ?? FieldDeath?.Actor ?? StunTurn?.Actor ?? PoisonTurn?.Actor ?? SleepTurn?.Actor ??
         CounterExpiry?.Actor ?? ReactionTarget ?? _action?.Inaction?.Target;
     public bool IsInstantDeath => HasReaction && Reaction.Kind == BattleReactionKind.InstantDeath;
     public bool IsCurseRecoil => HasReaction && Reaction.Kind == BattleReactionKind.CurseRecoil;
     public bool CurseStoppedAttack => _action?.Inaction?.DueToCurse == true;
     public int? MuddleActionMessage => _action?.MuddleMessage;
-    public string ActionKind => IsFieldDeath ? "field-death" : StunTurn is not null ? "stun-turn" : IsPoisonTurn ? "poison-turn" : Phase == BattleScenePhase.SlowExpiredMessage ? "slow-turn" : Phase == BattleScenePhase.AttackExpiredMessage ? "attack-turn" : Phase == BattleScenePhase.BoostExpiredMessage ? "boost-turn" : Phase == BattleScenePhase.MuddleTurnMessage ? "muddle-turn" : IsSilenceTurn ? "silence-turn" : IsSleepTurn ? "sleep-turn" : IsSilencedCast ? "silenced-cast" :
+    public string ActionKind => EquipmentRecovery is not null ? "equipment-recovery" : IsFieldDeath ? "field-death" : StunTurn is not null ? "stun-turn" : IsPoisonTurn ? "poison-turn" : Phase == BattleScenePhase.SlowExpiredMessage ? "slow-turn" : Phase == BattleScenePhase.AttackExpiredMessage ? "attack-turn" : Phase == BattleScenePhase.BoostExpiredMessage ? "boost-turn" : Phase == BattleScenePhase.MuddleTurnMessage ? "muddle-turn" : IsSilenceTurn ? "silence-turn" : IsSleepTurn ? "sleep-turn" : IsSilencedCast ? "silenced-cast" :
         MuddleActionMessage is not null ? "muddle-inaction" :
         _action?.Inaction is { } stopped ? (stopped.DueToCurse ? "curse-inaction" : "stun-inaction") :
         Laser is not null ? "prism-laser" : Reaction.Action;
@@ -322,7 +324,7 @@ public sealed class BattleSceneState
     public bool SpecialPhysicalAnimation => HasReaction && Reaction.SpecialAnimation;
     public int HpChange => !HasReaction ? 0 : Reaction.HpAfter - Reaction.HpBefore;
     public int MpChange => !HasReaction ? 0 : Reaction.MpAfter - Reaction.MpBefore;
-    public int Amount => IsPoisonTurn ? 2 : !HasReaction ? 0 : Reaction.Amount;
+    public int Amount => EquipmentRecovery is { Recovery: var recovery } ? recovery.After - recovery.Before : IsPoisonTurn ? 2 : !HasReaction ? 0 : Reaction.Amount;
     public bool TargetDefeated => HasReaction && Reaction.HpAfter == 0;
     public ActorRef? RewardActor => _action?.Reward?.Actor;
     public int RewardAmount => _action?.Reward?.Amount ?? 0;
@@ -381,7 +383,7 @@ internal static class BattleSceneContinuation
     {
         var scene = current.BattleScene!;
         if (scene.IsPoisonTurn) return BattlePoisonContinuation.Complete(current, command, rules);
-        if (scene.IsSleepTurn || scene.CounterExpiry is not null || scene.StunTurn is not null) return BattleAfterTurnContinuation.Complete(current, command, rules);
+        if (scene.EquipmentRecovery is not null || scene.IsSleepTurn || scene.CounterExpiry is not null || scene.StunTurn is not null) return BattleAfterTurnContinuation.Complete(current, command, rules);
         if (scene.IsFieldDeath) return BattleFieldDeathContinuation.Submit(current, command, rules);
         if (scene.Healing is not { } healing) return Continue(current, command, rules);
         bool advancing = command is AdvanceSimulation { Ticks: 1 } advance && advance.Wait == scene.Token && !healing.LogicalComplete;

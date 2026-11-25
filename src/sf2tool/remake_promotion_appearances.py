@@ -157,12 +157,13 @@ def brn_weapon_layers(library, scratch, scene):
 
 
 def mount_static_equipment(library: Path, scratch: Path, scene: dict) -> None:
-    """Add admitted static/prowess weapons without replacing existing class bodies."""
+    """Add admitted static/prowess/recovery weapons without replacing existing class bodies."""
     directory = library / "weapons"
     index = read_json(directory / "index.json")["records"]
     for item, donor, selector in (
         (91, 92, [16, 31]), (106, 105, [22, 41]), (101, 92, [19, 38]),
         (68, 64, [6, 12]), (108, 64, [8, 17]), (109, 64, [8, 17]),
+        (97, 92, [17, 33]), (100, 92, [17, 36]),
     ):
         if index["items"][str(item)] != selector:
             raise ValueError(f"equipment {item} differs from the pinned weapon selector")
@@ -170,6 +171,7 @@ def mount_static_equipment(library: Path, scratch: Path, scene: dict) -> None:
         donors = [
             row for row in scene["actors"]
             if row["side"] == "ally" and row["item"] == donor
+            and (item != 97 or row["sprite"] == 25)
             and (item not in {68, 108, 109} or (row["sprite"] == 26) == (item != 68))
         ]
         if not donors:
