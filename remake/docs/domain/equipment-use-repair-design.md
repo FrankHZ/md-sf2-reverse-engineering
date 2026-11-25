@@ -16,7 +16,7 @@ Slice E completes the source-legal equipment consumer table and representative l
 independent final acceptance remains pending
 and this does not close [#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
 
-The current successor is `derived/issue2274/equipment-v1`, built from the accepted slice-C package.
+The current successor is `derived/issue2274/equipment-v2`, built from the accepted slice-C package.
 The [E reproduction section](#complete-equipment-consumers-2274) owns its complete consumer checks.
 It retains SORC **v3** and its catalog, with independent
 opening and Witch selections retained. Do not substitute rejected v2, earlier v1, or a removed
@@ -58,14 +58,14 @@ adding detached late members. No save format or second equipment authority is in
 The two coupled persistence owners are `FieldPartySnapshot` and `SettledFieldSnapshot`; source
 growth admission, class rules and target priority are dependencies of these late equipment holders.
 
-The complete publication is `derived/issue2274/equipment-v1`; independent opening #2252, Witch
+The complete publication is `derived/issue2274/equipment-v2`; independent opening #2252, Witch
 #2255 and Chinese catalog #2266 remain selected. The registered review bundle is
-`derived/issue2274/review-v1` under `SF2_SHARED_INPUT_ROOT`. It contains the actual production-reader
+`derived/issue2274/review-v2` under `SF2_SHARED_INPUT_ROOT`. It contains the actual production-reader
 consumer, launchers, controlled seeds, receipts and completed failure logs. From the isolated
 checkout with its private configuration loaded:
 
 ```powershell
-$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2274/review-v1'
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2274/review-v2'
 & (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
 uv run python (Join-Path $review 'assets-check.py')
 uv run sf2 verify adapter
@@ -82,18 +82,32 @@ uv run python -m sf2tool.remake_retail_assets --root (Join-Path $env:SF2_SHARED_
 equipment choices/equip and `TryAllyVisual`, checking every legal key in every scene. It compares
 source code/mask/ordered effects/Use, body/palette, weapon layers, animation headers, indices,
 signed frame offsets and projectile selectors; it also restores accepted field/battle records.
-It checks 27,144 retained HD body references. The raster comparison checks all260 distinct weapon
+It checks actual selected HD dimensions, format and bytes for 27,144 body and 17,160 weapon
+references, using the predecessor production reader as the accepted-content source. The raster comparison checks all260 distinct weapon
 frames against the prepared 4bpp palette and newly mounted bodies byte-for-byte. The package has
-174 files / 368,276,281 bytes: only world.json and Battle26 scenes change from C, a 2,522,715-byte
+174 files / 368,469,461 bytes: only world.json and Battle26 scenes change from C, a 2,715,895-byte
 increment. [Asset owner](../content/asset-inventory.md#complete-equipment-successor-2274) records
 the four-family pilot, measured mount/reader memory, runtime and budget boundaries.
 
+Independent review found that v1 remapped weapon keys without carrying their HD bindings.
+The strengthened consumer reproduces `weapon HD lost battle-1/weapon75/frame0` on immutable v1;
+v1 and `review-v1` retain that failure and the original rule/native-family evidence. V2 copies HD
+only from the same accepted item/frame, rejects conflicting donors, and leaves bare/no-layer
+rows unchanged. Old 128px versus new 64px original rasters have equal normalized visible pixels;
+only transparent RGB differs. Shared selectors never substitute another item's palette/art.
+The v2 `redbaron-hd` ordinary-input receipt selects Great Sword64 frames0–2 with `weapon.hd=true`
+and 256px textures, settles and saves, exits0 with4 retained ObjectDB warnings. Its new Red Baron
+body has no prior HD variant and correctly remains Original. Existing multitype native evidence
+is reused from `review-v1`; v2 changes no gameplay or adapter code.
+
 Native `Boot.ps1` accepts `-Repo`, `-Mode`, `-Sample`, `-Journey`, `-SaveRoot`, `-Seed`,
 `-Language`, `-Actor` and `-Target`. Use a fresh sample/namespace and an explicitly disposable root.
-The modes are `field-cold`, `battle-cold`, `attack`, and `field-equip`. Seeds and saved successor
-slots are under the bundle's `seeds` and `receipts`; these are private controlled records.
+The modes are `field-cold`, `battle-cold`, `attack`, and `field-equip`. Original controlled seeds
+and saved slots remain under `review-v1/seeds` and `review-v1/receipts`; v2 provides its own
+`redbaron-hd.json` and `receipts/redbaron-hd`. All are private controlled records.
 For example, replay a published old-field slot with `-Mode field-cold -Language en`, or the
-Red Baron seed with `-Mode attack -Actor ally-28 -Target enemy-12 -Language zh-CN`.
+v2 `redbaron-hd.json` with `-Mode attack -Actor ally-28 -Target enemy-12 -Language en`.
+The v2 runner explicitly selects HD; earlier seeds/receipts remain in `review-v1`.
 Drivers use ordinary input and read actual state/projection; they take no screenshots.
 
 | Receipt | Observed boundary |

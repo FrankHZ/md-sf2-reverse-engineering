@@ -62,6 +62,16 @@ def mount_equipment_appearances(library, scratch, scene, source, *, selected=Non
     animations = read_json(directory / "ally-animations.json")
     weapons = read_json(library / "weapons/index.json")["records"]
     previous = list(scene["actors"])
+    weapon_hd = {}
+    for row in previous:
+        if row["side"] != "ally" or row["item"] is None:
+            continue
+        for frame, key in enumerate(row["weaponFrames"]):
+            if key in scene.get("hdRasters", {}):
+                identity = row["item"], frame
+                raster = scene["hdRasters"][key]
+                if weapon_hd.setdefault(identity, raster) != raster:
+                    raise ValueError(f"conflicting accepted weapon HD: {identity}")
     additions = []
     for variant in variants:
         member, role = variant["member"], variant["sourceClass"]
@@ -115,6 +125,10 @@ def mount_equipment_appearances(library, scratch, scene, source, *, selected=Non
                 scene["rasters"].update(
                     ("equipment/" + key, value) for key, value in layer["rasters"].items()
                 )
+                # Item identity retains its palette; shared selectors alone are not sufficient.
+                for frame, key in enumerate(weapon_frames):
+                    if (item, frame) in weapon_hd:
+                        scene["hdRasters"][key] = weapon_hd[item, frame]
             draw = bool(weapon_frames)
             ordinary = prepared_ally_sequence(sprite, animations[sprite], draw)
             attack = {2: 80, 13: 81, 17: 82}.get(sprite, sprite) if selector in (12, 13) else sprite

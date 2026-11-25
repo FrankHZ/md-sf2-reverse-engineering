@@ -1301,7 +1301,7 @@ must identify its actual functional/visual boundary rather than call a modern ef
 
 ### Complete equipment successor (#2274)
 
-`derived/issue2274/equipment-v1` is the complete successor:174 files,368,276,281 bytes,
+`derived/issue2274/equipment-v1` is the retained initial candidate (superseded by v2 below):174 files,368,276,281 bytes,
 2,522,715 bytes above C. Only world.json and Battle26 scene JSON differ; all172 other predecessor
 files compare byte-identical. Independent #2252 opening, #2255 Witch and #2266 Chinese catalog
 remain selected. The existing private-package closure publishes this once; the production reader
@@ -1325,3 +1325,25 @@ records the commands, native boundaries, saved failures and independent review h
 
 The full production reader check peaked at 1,381,109,760 bytes (below 2 GiB), including
 loading the predecessor for the HD preservation comparison.
+
+### Equipment HD correction (v2)
+
+**Confirmed.** Independent review found that v1 retained body HD but dropped selected weapon HD
+after renaming its frame keys. The expanded production consumer fails on immutable v1; both v1
+bundles and all completed failures remain available. The current complete package is
+`derived/issue2274/equipment-v2`, with reproduction/consumer/native receipts in `review-v2`.
+The producer inherits HD by accepted item/frame, checks duplicate donors agree and never uses a
+different item's shared selector or palette. The116 unique accepted item/frame donors include
+aliases of older resource keys. Their original raster visible pixels match after128→64 scaling;
+only transparent RGB differs. Actual production selection preserves the dimensions, format and
+bytes of27,144 body and17,160 weapon HD references across26 scenes. All260 original weapon
+frames still compare pixel-for-pixel with prepared source data.
+
+V2 has174 files /368,469,461 bytes:193,180 bytes above v1 and2,715,895 above C. Only world and
+Battle26 scene JSON differ from C; the other172 files remain byte-identical. The mount took6.569s
+with412,745,728-byte peak working set; complete published reader comparison peaked at1,387,896,832
+bytes. These remain within the2GiB memory and<1GiB full-package limits. The correction uses one
+isolated local candidate and one immutable publication; previous review scratch is untouched.
+The `redbaron-hd` native receipt confirms selected Great Sword64 frames0–2 use256px HD textures
+through ordinary input, then settle/save and exit0 (four retained #1716 warnings). Original late
+rule/native-family evidence remains valid; no full campaign or per-key native rerun was made.
