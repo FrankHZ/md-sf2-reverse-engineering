@@ -1049,7 +1049,9 @@ battle19/palette1 and Karna map38, battle19/palette2. Each member has unarmed an
 rows, with no independent weapon layer, plus ordinary cast and special animation83. The
 existing preparation owner mounts these onto the accepted BRGN package without changing
 previous class rows, rasters or growth. The production reader checks both members in every
-scene. Current item admission excludes Iron Knuckles29 and rare fists30–32.
+scene. The mounted appearance set excludes Iron Knuckles29 and rare fists30–32.
+The equipment filter does admit29; its missing appearance is tracked in the
+[whole-game equipment plan](#whole-game-equipment-resource-plan-2268).
 
 The serial pre-run budget was 1.5 GiB temporary disk, 2 GiB peak memory and one approximately
 345 MiB successor; processing is O(package bytes + selected records), without downloads or
@@ -1088,3 +1090,88 @@ this successor. The native DAO1 witness uses the existing modern fallback, not a
 summon animation. [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104)
 retains the four-family gap. [Source, rule and native boundary](../application/church-promotion-design.md#sorcerer-promotion)
 · [Producer and selections](presentation-assets.md#sorcerer-promotion-successor).
+
+## Whole-game equipment resource plan (#2268)
+
+The [equipment agreement](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268)
+and [94-row reconciliation](campaign-items.md#whole-game-equipment-reconciliation) own the scope.
+This is a resource/design audit; no new package or native acceptance is claimed. Reuse the
+registered #2001 prepared retail library and accepted `pre-voyage-sorc-v3`, with its matching
+catalog and the separately selected #2252 opening/#2255 Witch. Do not fall back to v2/v1 or
+require old producer scratch.
+
+**Confirmed (prepared metadata and selected JSON).** The prepared weapon index contains84
+item selectors (26–109),42 palettes and23 packed weapon files totaling188,416 bytes. Selector255
+means no independent weapon raster, including fists/arrows; it does not imply a missing asset.
+Taros110 is outside that item-selector index and retains its enemy-specific path; Iron Ball102
+has no eligible player class. No acquisition or capture is needed merely to recover these
+existing files. The final selected Battle26 scene has42 distinct allied item IDs; raw row presence
+is only a diagnostic, not full legal combination coverage. Guardian91 shares prepared selector16/
+palette31 with Indra92 but still needs its own admitted item key. Thieve's Dagger106 reuses
+selector22/palette41. Iron Knuckles29 and Great Axe39 need explicit appearance coverage despite
+already passing the equipment filter.
+
+**Confirmed (source enumeration, not runtime admission).** The full source's30 ally starts plus
+legal regular/special class destinations produce61 member/class pairs. Their weapon masks yield
+605 legal member/class/weapon tuples, plus61 explicit unarmed tuples:666 appearance keys.
+Including rings yields972 member/class/equipment tuples. Independently, the94 definitions yield
+439 class/item pairs when ALL expands to32 and NONE to zero. These are joins over source
+`allies`, `classes`, `items` and the accepted promotion mapping, not assumptions about which
+members have joined the current campaign. The existing source party and class readers must
+admit the necessary legal consumers; missing late class mappings cannot be hidden by limiting
+this join to the20 currently mounted member identities. RBT/GLM/RDBN and late member records
+are limited here to equipment eligibility, source-defined combat operands and controlled
+consumer/appearance/save admission. Recruitment, chapter maps and full growth journeys remain
+outside this work.
+
+### Budget and pilot before expansion
+
+The accepted package is about345MiB. Preparation should be O(input package bytes + selected
+body/weapon records), with serial processing and one reusable final successor. No per-frame
+runtime capture, downloaded executable, model/API generation, or per-item world copy is planned.
+The23 packed weapon files are already present; raster expansion, JSON duplication and extra
+body palettes dominate the uncertain increment. The61/666 source joins bound enumeration;
+checking all26 scenes entails at most17,316 expected appearance-key lookups, not17,316 native
+runs. Reuse the established shared-scene admission mechanism instead of duplicating all rasters
+per member or scene.
+
+Provisional planning allowances:2GiB peak memory,2GiB worktree-local scratch/build outputs and
+one final publication under1GiB, retaining the345MiB accepted input read-only. Expect less than
+100MiB of new compact media/scene data if identical body/weapon rasters remain shared, but measure
+before committing to that estimate. Raw188KiB weapon storage alone is not a final-package estimate.
+Pilot CPU/runtime allowance is2minutes; the full serial mount/closure estimate is10minutes,
+excluding a cold SDK restore and subsequent native observation. There is no network/model/API
+cost for asset reuse. Implementation/review time is budgeted separately in the equipment agreement.
+
+Use one representative scene for a mixed-stat rod91, a no-layer fist29, a late sword109 and one
+missing late class body. Record input/output bytes, added actor/raster records, elapsed time,
+peak process memory and actual production-reader result. A missing prepared body/sequence or
+reader rejection must preserve its exact diagnostic and lead to a bounded dependency correction;
+it is not grounds to omit that legal class. Do not generate all combinations until the pilot
+proves the selected keys, layer identity and complete dependency closure. Replan through the
+existing owner if peak memory exceeds2GiB, the estimated successor exceeds1GiB, media duplication
+invalidates the increment estimate or a genuinely new capture/asset family is needed.
+
+Each earlier mechanism slice may mount its few representative keys using existing producers and
+retain a small changed-file overlay. The final slice produces the one complete reusable successor
+via `sf2tool.remake_private_package`. Keep every predecessor map/audio/class/portrait/frame and
+compare exact source-derived selections; do not rebuild unrelated assets. Validate the final world,
+main scene, all26 encounter consumers, six opening inputs, catalog, independent opening and Witch
+without any producer-local paths. Retain the closed package and receipts for independent review.
+
+### Final reader and native acceptance
+
+Use `OpeningNewGameReader`/`BattleSceneContentReader` and the existing consumer pattern to enumerate
+actual class/item masks and member/class/item appearance keys. A raw file scan is insufficient:
+member restrictions, class mapping and fallback selection can change which body is used. Require
+explicit unarmed rows, legal weapon/body separation, source selector palettes, complete referenced
+frames/sequences and correct ranged projectile families. Ring changes must not change weapon art;
+fists and source no-layer classes must not gain a fabricated weapon overlay. Include legal variants
+absent from current seeds and verify ineligible combinations reject.
+
+Short native state/input/projection observations cover the genuinely new effect families and
+representative body/layer changes, removal/destruction and fresh-process Continue. Ordinary current
+shop acquisition and controlled late custody are reported separately. All functional checks remain
+screenshot-free and use disposable save namespaces. Full original spell animation remains under
+[#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104); an equipment Use result
+must identify its actual functional/visual boundary rather than call a modern effect original.

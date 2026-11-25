@@ -1,4 +1,190 @@
-# Equipment Use, damage and Repair through first Pacalon
+# Equipment rules, Use, damage and Repair
+
+## Whole-game equipment agreement (#2268)
+
+**High rigor.** Equipment crosses stat refresh, physical construction, Item effects,
+after-turn execution, custody, class admission, presentation and persistence. A permissive
+reader alone would silently omit effects or destroy the wrong held copy. The outcome is all
+original equipment definitions and their necessary consumers, including late weapons and
+rings. The connected campaign still stops at the first Pacalon/Battle26 boundary. Later
+recruitment, maps, smithing and other acquisition services remain with the campaign owner;
+legal detached inputs can validate their equipment before those routes exist. No real save
+or backup is an acceptance workspace. This section owns the implementation sequence;
+the [complete item reconciliation](../content/campaign-items.md#whole-game-equipment-reconciliation)
+owns individual rows. This is an audit/design handoff, not implemented whole-game support,
+and does not close [#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
+
+The current dependency is the accepted SORC **v3** package and its catalog, with independent
+opening and Witch selections retained. Do not substitute rejected v2, earlier v1, or a removed
+producer checkout. Reuse the existing Domain/Application/Content/adapter boundaries and
+registered prepared assets. No new equipment platform, second item catalog, save format,
+reference runner or per-item scenario framework is proposed. Ordinary source-backed definitions
+must remain independent of the controlled witnesses used to test them.
+
+### Audit result and decisions
+
+**Confirmed (static).** All 128 item rows in the registered static input agree with pinned
+`c834c652b6862bc5679fd7f69a38a7093206efc6` `data/stats/items/itemdefs.asm` for class mask,
+range, price, category flags, Use expression and three ordered effects. There are 85 weapon
+and nine ring definitions, including two weapons with mask NONE. The [source/ROM contract](../../../docs/design/contracts/party/item-definition-data.md)
+owns their original packing/parity. The downloaded source uses LF while the registered source
+digest was made with CRLF; direct parsed-field comparison agrees. No content mismatch was
+resolved by changing provenance. The registered USA ROM passes `uv run sf2 rom verify`.
+
+**Confirmed (code and selected content).** Current allied Content admits 45 weapons and six
+rings. Guardian91 and Thieve's Dagger106 are already offered by connected shops but rejected
+by the weapon effect filter. Iron Knuckles29 and Great Axe39 pass that filter but have no
+item-specific allied row in the selected Battle26 scene. Rare ordinary ATT weapons are also
+excluded by the category filter. Equipment data, admission, an appearance row, actual gameplay
+and natural custody are different claims; none implies the next.
+
+| Execution boundary | Existing authority and actual missing behavior | Decision |
+| --- | --- | --- |
+| Equip and refresh | `BattleEquipment` stores weapon ATT/critical only; DEF/AGI/MOV use only `RingBonus`. `WornCurse` and `RefreshCurse` recognize rings only. `PrivateFieldPreparation.Weapons` filters mixed effects and almost all rare weapons. | Extend the existing weapon terms with signed stat adjustments and curse metadata, preserving source order and per-step clamps. Reuse equip, transfer, church cure, Repair, growth and restore. Include equipped weapon and ring in curse derivation/removal; do not add an independent persistent curse authority. |
+| Physical action | `PhysicalCriticalRule.IncreaseCritical` exists; double/counter changes and Gisarme cutoff do not. `Sf2PhysicalAction` reads the defender's definition directly for counter chance, so changing only attacker projection is insufficient. | Derive both actors' effective prowess from live equipment. Reuse the physical RNG/reaction/death pipeline. Model SET_CRITICAL separately from Gisarme's item-specific cutoff. |
+| After-turn | `BattleActionCommitter.NeedsAfterTurn` has no gear-recovery predicate; `BattleAfterTurnContinuation.AfterCounters` proceeds directly to poison/refresh. | Add recovery terms to admitted equipment and consume them in this existing continuation, including otherwise status-free Stay. Do not put recovery in stat refresh, selection, field walking or save reads. |
+| Item Use | Offensive breakable and ATTACK/BOOST/SPOIT equipment paths exist. `Sf2ItemAction`'s healing path always consumes the slot; healing/cure equipment cannot safely be added to its table. | Reuse each spell's targeting/effect implementation with explicit Item origin and one selected-slot wear transaction. Add the missing healing/cure and status/damage bindings; do not invent another spell engine or put these items into the Magic book. |
+| Class and appearance | `Sf2ClassRules.SourceClass` stops at MNST28. The current world has no growth records for late members20–29; RBT29/GLM30/RDBN31 have no named class mapping and no corresponding complete scene admission. | Admit the necessary original class/party records and prepared bodies for legal controlled equipment consumers, with correct unarmed behavior. This does not connect recruitment or later chapters. Existing class variants also need a complete member/class/item key check. |
+
+**Confirmed (static original recovery order).**
+`code/gameflow/battle/battleloop/processafterturneffects.asm`,
+`@ApplyHolyStaffRecovery` through `@UpdateStats`, processes Holy Staff97 HP+3, Mystery
+Staff100 MP+2, Life Ring124 HP+5, then poison and final refresh. It selects actual equipped
+identities, caps to maxima, and emits message356/357 only for positive recovery. Holy Staff
+plus Life Ring is two ordered operations, not one +8 message. The item-table HP_RECOVERY and
+MP_RECOVERY labels alone do not establish this timing. Original natural play at these seams
+remains **Unknown**; no new H3 run was made for this audit.
+
+**Confirmed (static original cutoff).**
+`code/gameflow/battle/battleactions/determinecriticalhit.asm` checks the equipped Gisarme
+after a successful ordinary critical draw. DESOUL immunity prevents cutoff; otherwise it sets
+cutoff and clears the normal critical marker. This is additional to the item's SET_CRITICAL6.
+The implementation slice must follow its damage/death/message consumers and verify immune,
+nonimmune, miss and counter cases before claiming closure. Existing DESOUL spell support does
+not itself implement this physical branch.
+
+The [growth contract](../../../docs/design/contracts/party/level-up.md) confirms Ninja Katana's
+source `0x94 → 0x24` double-increase behavior, including loss of the counter field. The proposed
+fidelity choice for this equipment work is to preserve that observed result and document it,
+rather than silently correct it while implementing the item. Independent design acceptance
+must explicitly retain or revise that choice; a normal probability increment cannot accidentally
+decide it. Counter Sword uses `0x94 → 0xD4`; Gisarme uses `0x94 → 0x96`. Unused SET_DOUBLE and
+SET_COUNTER handlers are not required by the 94 definitions.
+
+### Finite implementation sequence
+
+Main-gate opens and dispatches these five child outcomes serially after independent design
+review. The estimates are engineering ranges, not runtime promises or permission thresholds:
+roughly 4–8, 3–6, 3–6, 6–12 and 6–12 working hours respectively, including tests and review fixes.
+Reassess at each handoff or if a new rule authority/save representation is required. The parent
+stays open until all five outcomes and the final checklist pass. This audit PR contains no
+production implementation. Each child updates the rows it actually completes.
+
+1. **Static equipment, signed stats and weapon curses.** Independently make current-shop
+   Guardian91 add ATT22/DEF5 and Thieve's Dagger106 add ATT17/AGI5, with real appearance,
+   removal and cold Continue. Admit ordinary rare ATT/critical gear and mixed positive/negative
+   stats, plus White/Evil ring passive terms; keep unimplemented Use explicit until slice4.
+   Generalize existing curse custody/cure/Repair to weapons and rings. Do not admit a recovery
+   or prowess item while silently dropping its unique term. Dependencies: accepted current
+   source/content only. Primary paths: `remake/src/Sf2.Remake.Domain/Battles/Rules/BattleEquipment.cs`,
+   `remake/src/Sf2.Remake.Content/Scenarios/PrivateFieldPreparation.cs`,
+   `PrivateBattleActionBindings.cs` in that directory, and affected existing growth/field stat
+   consumers. Include `EnemyEquipment` and source physical admission without applying an
+   ally-only class gate to enemies or adding weapon ATT twice to initialized enemy stats.
+   Extend `BattleWeaponDefinition` with optional immutable terms so existing authored
+   definitions remain compatible. Check weapon-before-ring slot order and clamping rather than
+   summing signed changes without regard to source application order. Behavior acceptance:
+   mixed stats under BOOST/SLOW, zero/cap edges, queue unchanged by AGI equip, MOV preview/undo,
+   two cursed slots/cure, failed Give/Sell/Repair, valid removal, growth/promotion and restored
+   words. One ordinary Guardian shop purchase/Equip and a legal controlled negative-stat weapon
+   witness suffice; ordinary Dagger shop stock must still be admitted. Mount the relevant
+   existing prepared weapon selectors through the current producer; do not rework all art here.
+2. **Prowess and Gisarme physical behavior.** Depends on slice1's shared weapon definition.
+   Own `EngineBattleState.cs`'s `PhysicalCriticalRule`, `BattleEquipment.Physical`,
+   `Sf2PhysicalAction.cs` and `PhysicalStrikeRules.cs`, with the existing reaction/message
+   consumers only where cutoff requires them. Admit Counter Sword68, Ninja Katana108 and
+   Gisarme109, retain ordinary increased-critical swords/arrows. Cover both attacker and
+   defender equipment, counter direction, misses, immunity, lethal cutoff, reward/drop/death,
+   legal class refusal and unequip/restore. Use small deterministic actual-engine cases and
+   one short native cutoff/counter observation; no per-item battles or new RNG harness.
+3. **Equipped HP/MP recovery.** Depends on slice1. Own `BattleEquipment` recovery terms,
+   `BattleActionCommitter.NeedsAfterTurn`, `BattleAfterTurnContinuation` and its existing
+   scene/message wait representation; add a focused Domain recovery rule only if it keeps the
+   numerical responsibility out of Application. Admit Holy Staff97, Mystery Staff100 and Life
+   Ring124. Test status-free Stay, both slots, full resources, poison ordering, dead/absent/reserve
+   actors, multiple queue entries, no RNG/EXP, remove and Continue. One ordinary native turn
+   using a legal controlled holder must show ordered resource/message results. Saved settled
+   state must not double-apply recovery on load.
+4. **All equipment Use effects and durability.** Depends on slice1 and consumes accepted slices2/3
+   without modifying their semantics. Own `PrivateBattleActionBindings`, `Sf2ItemAction`,
+   `EquipmentItemUse`, `Sf2AttackSpellAction`, `Sf2SupportSpellAction` and the existing healing/
+   cure rule and scene consumers. Cover ATTACK1, BOOST1, SPOIT1, BLAZE2/3, BOLT1/2, FREEZE3,
+   MUDDLE1, DISPEL1, DESOUL1, HEALIN1, DETOX2 and AURA2. Reuse admitted spell definitions and
+   their power/radius/resistance/progression rules. Equipment Use ignores MP and Silence,
+   checks current class even when bare or broken, and performs effect before one wear check.
+   Healing gear must not pass through unconditional consumption. Cover failed/no-effect,
+   self/multi-target, canceled/stale action, wrong class, zero MP, damaged destruction and exact
+   slot compaction; preserve effect RNG → wear → reward ordering. Retain mask-NONE player
+   refusal for Iron Ball102/Taros Sword110 and enemy no-wear behavior. Field Use must follow
+   the original field-item table/refusal owner rather than exposing every battle spell. Native
+   witnesses: one healing/cure, one status, one offensive equipment use plus Repair and cold
+   Continue; existing Black/Power/Protect/Indra witnesses are regression references. #2104
+   retains unimplemented original spell choreography, never an excuse to omit the Use rule.
+5. **Complete class/resource consumers and final reconciliation.** Depends on slices1–4.
+   Own `Sf2ClassRules`, the source party/class binding in Content, `BattleSceneContentReader`
+   and existing growth/appearance consumers needed for legal late equipment holders. Bind only
+   the source combat operands and minimal detached records necessary for equipment, rather than
+   connecting full late-character growth journeys. Reuse
+   prepared assets via `src/sf2tool/remake_retail_assets.py` and its current family modules;
+   `remake_private_package` owns closure publication. Do not implement future joins, smithing
+   or maps. Verify all legal source member/class/item tuples, including explicit unarmed,
+   weapon/body separation and innate no-layer classes. This includes late members and current
+   members' missing legitimate variants, not just RDBN weapon use. Check all existing scene
+   consumers, field/battle save restoration and late-class controlled ordinary input. Publish
+   one complete reusable successor from the accepted package; preserve independent opening,
+   Witch, catalogs, maps and audio. The [asset plan](../content/asset-inventory.md#whole-game-equipment-resource-plan-2268)
+   supplies the resource bound and pilot conditions.
+
+Paths above describe responsibilities for dispatch, not permission for concurrent writers or
+an unchecked path glob. Each child declares its exact files after tracing the affected consumer.
+The same `BattleEquipment`, Content bindings, engine test files, capability and item/asset owners
+are shared serial surfaces. No slice consumes unmerged conclusions; rebase on accepted main.
+Tests belong in the existing equipment, physical, after-turn, item, promotion and save behavior
+test owners, with at most one focused new file per genuinely new behavior. Do not test parsers,
+observation drivers or planners. Run affected engine behavior tests and `uv run sf2 verify adapter`
+for implementation, then the clean-head dependency plan interpreted under the current engine
+policy. Documentation-only design uses document checks, not those runtime gates.
+
+### Whole-game acceptance and compatibility
+
+- Reproduce the 94-row source reconciliation and use the final **production reader** to inspect
+  every definition, exact mask/effect/Use term and all 439 legal class/item pairs (ALL expands
+  to 32 classes; NONE to zero). Inert mask-NONE definitions are retained and player-refused,
+  not silently omitted from the reconciliation. Count is a completeness cross-check, never
+  a substitute for actual values or behavior. Add the legal member/class mapping before
+  checking appearance keys; raw scene-row presence is insufficient.
+- From the final mounted package, compare every expected member/class/item key and an explicit
+  unarmed key against actual reader results in all 26 loaded encounter scenes. Rings must retain
+  body/weapon identity; fists and other source no-layer items must not invent a weapon overlay.
+  Verify required frames, palettes, animation selectors and projectile families. Preserve
+  predecessor assets and compare complete dependency closure without producer-local inputs.
+- Use short ordinary input for current acquisition callers and legal detached controlled
+  setups for future items/classes. Observe new effect families, damage/destruction/unarmed
+  refresh, actual body/weapon projection, Save and a fresh-process Continue. Also preserve a
+  prior accepted field and battle save, both languages and the independent opening/Witch.
+  No real saves, screenshots, grinding or whole-campaign replay are needed.
+- Existing save words encode identity/equipped/broken and existing growth/applied-status fields
+  encode stat bases; definitions should reconstruct new derived effects without a format change.
+  If actual evidence requires a new durable field, stop that child at the interface decision,
+  explain old-save compatibility and amend this owner before implementation. Do not loosen
+  validation or mutate historical saves to make the comparison pass.
+- Each child records completed failures, actual CI, exact head/tree, remaining original-runtime
+  Unknowns and any unavailable original spell art. The final review must leave no equipment
+  rule or necessary consumer deferred under the parent. Future acquisition remains a named
+  campaign boundary; original animation-only gaps remain explicitly with #2104. Neither
+  boundary licenses claiming natural acquisition or original animation from controlled play.
+
+## Accepted Use and Repair through first Pacalon
 
 This High-rigor design for [#1952](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1952)
 covers ordinary Battle Item → Use, the exact slot that survives or is destroyed, the merchant
