@@ -656,6 +656,29 @@ and final owner destruction releases current resources. See the
 draw/resource geometry, return/reentry and negative-case observations. This establishes bounded
 rendering and lifecycle behavior, with no original pixel/timing parity or human aesthetic approval.
 
+### Playable board exterior
+
+The player accepted a black exterior wherever the playable board ends during a movement turn
+([#2348](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2348)).
+The board clips its children to the encounter rectangle. The host releases the field view on
+battle entry. Terrain and tactical input use the same board dimensions.
+
+**Confirmed:** On the published aqua-v1 gameplay package, use the
+[Map16 showcase route](../evidence/opening-loop-acceptance.md#pilot-and-recording-boundary)
+with slot 2, the #2324 opening and the #2255 Witch. At Battle06 Movement read the mounted
+MapViewport's `ReadTerrainJson()`. At 1920×1080 the Map66 board measured 1920×3072 and
+filled the viewport width. The two priority passes shared origin (21,2). The low pass drew
+5,760 tiles and the high pass drew zero. Its first animated and static tiles came from
+adjacent blocks 50 and 8 at (21,2) and (22,2), with board-local destinations at x=0 and
+x=96. Both used 96-pixel textures in HD and 24-pixel textures in Original. The HD route
+completed the dialogue, first-turn Confirm and Back checks. The Original route reached
+Movement, but its combined entry/custody assertion failed; only its independently read
+board state and draw samples support the mode comparison.
+
+**Unknown:** The earlier exterior map reported by the player was not reproduced. The
+sampled viewport exposed no horizontal exterior strip on which to measure its color.
+The player subsequently observed the accepted black exterior during play.
+
 ## Physical Battle Scenes
 
 The common session separates physical action construction from scene execution. Domain prepares
