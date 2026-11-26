@@ -42,6 +42,28 @@ owns Issue dispatch, exact production ownership and integration. Reassess High
 rigor at the persistence review and final restart acceptance; ordinary inventory/UI slices can
 use Standard once their state boundary is fixed. No unresolved aesthetic choice gates this design.
 
+## In-game Load (#2286)
+
+The existing High-rigor recovery agreement also governs system Menu → Load. A settled field
+must pass the current field snapshot offer and menu-entry settlement; battle must pass the
+existing player Movement save offer. Story/text, services, unfinished movement, action selection,
+playback, automatic turns and unsupported profiles retain their existing explicit refusal.
+This is a replacement entry, not arbitrary mid-script suspension or a new save format.
+
+The host compares the current session/revision with its last successful save/restore. Dirty
+progress requires a Cancel-first warning before opening the shared history. Cancellation and
+failed selection retain the paused session and return focus to Load. A clean journey opens history
+directly. Ordinary field clocks may make a restored journey dirty under the existing revision rule.
+
+Load uses the same freshly read/version-checked slots, compatibility validation, explicit backup
+recovery, detached restore, prepared content and candidate view/audio preflight as Continue.
+Only a successfully prepared candidate releases the old scene/audio ownership. It mounts once,
+without title or Witch dialogue, and rearms input only after held controls release. A prepared field
+uses a temporary node name until the old field is released, then takes the ordinary stable view name.
+Backup promotion remains the only Load operation that writes; it is explicit and confined to the
+selected store. The [host observation](../godot/host-ui.md#in-game-load-observation-2286) owns bounded
+ordinary-input reproduction and failures. #2287 input defaults and global UI changes remain excluded.
+
 ## Entry confirmation responsiveness
 
 **Standard rigor** for [#1605](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1605):

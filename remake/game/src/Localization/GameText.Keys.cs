@@ -512,6 +512,8 @@ internal static partial class GameText
         ["entry.save"] = 0,
         ["entry.quit-menu"] = 0,
         ["entry.save-menu"] = 0,
+        ["entry.load-menu"] = 0,
+        ["save.load-dirty"] = 0,
         ["entry.retry"] = 0,
         ["entry.return"] = 0,
         ["entry.recover"] = 0,

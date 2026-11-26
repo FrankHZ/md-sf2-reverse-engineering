@@ -433,6 +433,17 @@ environment workflow. No normal/full research suite or Godot restart is selected
 
 ## Implemented ordinary host boundary (C)
 
+System Menu → Load also enters this shared restoration path directly from an admitted settled
+player Movement boundary. The Save offer remains the replacement admission authority: nonzero
+preview, movement delivery, action selection, story and playback refuse Load without cancelling
+their work. Dirty progress requires Cancel-first confirmation; cancelling history or a failed
+record retains the original battle and the Load row. A valid field or battle record can replace
+either eligible caller; the destination comes from the record, not the caller's mode. Continue's
+fresh file/version checks, explicit backup recovery, candidate preparation and input-release barrier
+remain shared. The [in-game observation](../godot/host-ui.md#in-game-load-observation-2286) confirms
+ordinary battle save/load payload equality, old-view disposal and the first fresh Confirm after
+held-key release. There is no new snapshot format, mid-action capture or title/Witch round trip.
+
 **Confirmed in bounded remake observations; [#1638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1638).**
 The system menu offers the shared save history at admitted player Movement, with localized
 encounter/round/actor/time labels and explicit overwrite consent. Confirmation offers Save and

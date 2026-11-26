@@ -359,6 +359,12 @@ msgstr "退出…"
 msgid "entry.save-menu"
 msgstr "保存…"
 
+msgid "entry.load-menu"
+msgstr "读档…"
+
+msgid "save.load-dirty"
+msgstr "要读取存档吗？当前旅程尚未保存的进度将会丢失。"
+
 msgid "entry.retry"
 msgstr "重试"
 
