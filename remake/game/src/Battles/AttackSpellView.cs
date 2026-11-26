@@ -52,7 +52,7 @@ internal sealed partial class AttackSpellView : Node2D
     {
         _scene = scene;
         if (scene.IsMonsterBreath && scene.AttackAnimationSelector == 76)
-            _kiwi = new(frames, reducedFlash);
+            _kiwi = new(frames, scene.DisplayedAlly == scene.Actor, targetIsAlly, reducedFlash);
         else if (scene.AttackAnimationSelector is 22 or 54)
             _aqua = new(frames, targetIsAlly, reducedFlash, scene.AttackSpell!.Spell.Level);
         else if (scene.AttackAnimationSelector is 7 or 39 or 71 or 103)

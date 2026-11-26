@@ -26,7 +26,7 @@ func settle() -> Dictionary:
             check(s.spell.Level == rank_ and s.spellAnimationSelector == 76,"rank/selector")
             if s.attackSpell != null and s.attackSpell.preparedKiwi != null:
                 var effect: Dictionary = s.attackSpell.preparedKiwi
-                check(not effect.targetIsAlly and effect.variation == 3,"actual ally side")
+                check(effect.casterOnRight and not effect.targetIsAlly and effect.variation == 3,"actual ally side")
                 check(effect.reducedFlash == reduced,"Reduced Flash binding")
                 check(s.allyVisible and s.enemyVisible and s.backgroundVisible,"real bodies and terrain")
                 check(s.allyResource.begins_with("equipment/ally27-palette0/"),"MNST body resource")

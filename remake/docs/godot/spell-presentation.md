@@ -16,7 +16,8 @@ No learned KIWI, enemy FLAME1–3, campaign/training, save format or #1716 work 
 
 Owned paths are `game/src/Battles/KiwiBreathEffect.cs`, `AttackSpellView.cs`,
 `BattleSceneView.cs`/`.Rasters.cs`, `src/sf2tool/remake_kiwi_mount.py` and the existing
-attack-spell/private-package/retail CLI/engine-path registrations. The exact observer is
+attack-spell/private-package/retail CLI/engine-path registrations and the existing
+`MuddleConfusedTurnTests` Monster case. The exact observer is
 `game/probes/engine_kiwi_breath_observation.gd`; serial documentation owners are this page,
 battle-scenes, ordinary-promotion-classes, presentation-assets, asset-inventory and capability.
 Accepted AQUA complete input and registered prepared graphics are the only asset dependencies.
@@ -50,7 +51,12 @@ source damage wait; hold285 is not the whole action duration.
 finite growth/drain and floating-point trigonometry. It waits for the effect before the
 unchanged result continuation, rather than claiming the original overlapping damage wait.
 The renderer consumes neither gameplay nor cosmetic RNG. Body27/palette0 uses cast sequence84;
-its frame15 retains the current pose. Existing command92/CB and YM4/YM5 replacement slots
+its frame15 retains the current pose. Direction binds the displayed caster side, while the
+observation retains the actual target faction. The accepted MUDDLE own-side conversion is
+not message-only: its ActionAnimation displays the allied caster alone; Reaction replaces
+it with the friendly target on that same side. Thus target faction cannot infer breath
+origin/direction. The existing focused Monster confusion test covers this projection and
+selector76 without extending gameplay admission. Existing command92/CB and YM4/YM5 replacement slots
 supply whole-clip sound; no generic cast77 is added. Reduced Flash suppresses horizontal
 flipping while preserving motion/growth; held1.5× uses shared pacing. Six resources select HD
 atomically; incomplete HD falls back wholly, partial Original fails, and whole group absence
@@ -80,7 +86,10 @@ natural promotion/training. Ordinary Continue → Confirm → Attack → Confirm
 adjacent enemy12 commit: body27/sequence84, selector76, all six growth states, audible-request92,
 early Confirm refusal,39 damage,48 EXP once, zero MP delta and usable next ActionChoice.
 Original, HD/Reduced Flash/held-speed and incomplete-HD runs pass with the producing package
-path absent. Existing `MonsterBreathTests` retain all rank thresholds, gate/draw order,
+path absent. Focused `PromotedMonsterConvertsAnAdmittedOwnSideStrikeAfterTheGuard` passes with
+cast/recipient projection assertions; this own-side seam is engine evidence, not a native
+friendly-target observation. A normal private native Attack passes again after the side-binding
+correction. Existing `MonsterBreathTests` retain all rank thresholds, gate/draw order,
 no learned spell and no MP-payment assertions. Reader peak is882MB; native peaks stay below
 1.33GB and successful runs below4.7 seconds. No screenshots, helper tests or native training.
 
