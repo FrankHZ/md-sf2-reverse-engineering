@@ -157,6 +157,7 @@ internal sealed partial class BattleSceneView : Control
                 33 => BlazeMeteorEffect.SmallResources,
                 65 => BlazeMeteorEffect.LargeResources,
                 97 => BlazeMeteorEffect.DragonResources,
+                2 or 34 or 66 or 98 => FreezeEffect.Resources,
                 5 when state.AttackSpell?.Spell.Value == "blast" => BlastOneEffect.Resources,
                 _ => null,
             };
@@ -495,6 +496,7 @@ internal sealed partial class BattleSceneView : Control
         if (_preparedAttackSpell && state.Phase == BattleScenePhase.ActionAnimation)
         {
             _attackSpell.AdvancePrepared(_elapsed - _attackSpellStart);
+            if (_attackSpell.PreparedSound() is { } effectSound) _audio?.PlayEffect(effectSound);
             duration = Math.Max(duration, _attackSpellStart + _attackSpell.PreparedDuration);
             if (!_blastSoundPlayed && state.AttackSpell?.Spell.Value == "blast" && _elapsed >= _attackSpellStart + 0.1)
             {

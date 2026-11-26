@@ -75,6 +75,7 @@ internal sealed partial class BattleSceneView
         if (content.FieldDeath is { } death) Group(death.ExitFrames);
         foreach (var keys in new[] { AttackSpellView.BlazeResources, BlazeMeteorEffect.SmallResources,
             BlazeMeteorEffect.LargeResources, BlazeMeteorEffect.DragonResources,
+            FreezeEffect.Resources,
             BlastOneEffect.Resources, BreathResources, PhoenixWaveView.Resources, DetoxEffectView.Resources, DebuffEffectView.Resources })
             if (keys.All(content.Rasters.ContainsKey)) Group(keys);
         return selected;
