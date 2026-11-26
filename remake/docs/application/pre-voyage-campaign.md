@@ -32,14 +32,15 @@ changes the snapshot boundary. Battle27+ and later story openings stay outside t
 
 ## Proposed non-battle Debug starts
 
-These three stops share the ordinary first Battle07 victory lineage. Use the
+The last three stops share the ordinary first Battle07 victory lineage. Galam starts earlier, after Battle05. Use the
 [Grans campaign flag index](../content/campaign-flags-grans.md) for writers, readers and optional
 branches. The table selects entry conditions for short checks. Carry the earlier campaign state,
-including both jewels (F384/F385), names, equipment and casualties, from the chosen baseline.
+including the jewels acquired by that point, names, equipment and casualties, from the chosen baseline.
 The listed flags are route predicates and receipts, not a complete serialized flag set.
 
 | Stop and ordinary transition | Combat party / temporary field followers | Entry conditions and observable result | Evidence boundary |
 | --- | --- | --- | --- |
+| Galam south approach (`map16`). First Battle05 victory returns to Map16 (16,18) Down. Continue the later saved visit at (26,30), saved facing 0, F663 setup. | Bowie, Sarah, Chester, Jaha, Kazin and Slade joined/active (F0–5/F32–37), all living. Slade has joined permanently. Prison F73 and royal F74 are clear. | F384/F406/F505/F663/F664 set, F405/F456/F506 clear. Cross (26,31) to Map18 (9,10), then (9,29) to Map66. Battle06 before/start sets F407/F456. | **Confirmed:** [Battle05 join and recruitment custody](#galam-escape-through-battle06-first-control) and [current cold Continue and gate check](../evidence/opening-loop-acceptance.md#pilot-and-recording-boundary). |
 | Tower return. First Battle07 victory requests Map58 (13,35) Down, void setup. | Bowie, Sarah, Chester, Jaha, Kazin and Slade joined and active (F0–5/F32–37). The observed seven-member route adds Kiwi (F6/F38). Astral, King and Minister follow Bowie. | Set F507/F74/F640. Clear F407/F73/F83/F999 and, before the first castle warnings and quake, F622/F623/F624. The victory caller writes F507 after the scene. A repeat victory cannot supply this fixed landing. | **Confirmed:** [first-victory operands](../../../docs/research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md) and [carried tower return](#battle06-result-through-usable-tower-exploration). |
 | First quake. Leave Map19's F507 castle by its south exit. Requested Map3 (29,2) Down becomes Map4, default setup. | Same chosen active force and three royal followers. | Carry F507/F74/F640 set and F407/F73/F83 clear. Enter with F624 clear. Take both castle warnings for the representative route (F622/F623 set independently). Init stages the guards and crack copies, writes F624 and releases control at (29,4) Down. | **Confirmed:** [castle exit and first/repeat visit](#castle-to-quake-handoff-from-a-player-save-2167). This row distinguishes the incoming tile from the settled tile. |
 | Docks before departure. Leave Map4 at (50,24) to rebuild Map44 at (1,25) Right, F507 setup. | Same six or seven joined and active. Slade is a force member. F74 declares Astral, King and Minister in the field. | Keep F506/F507/F74/F640/F624 set, F407/F73/F83/F700 clear. Carry the chosen castle receipts. From (11,14) face Left to interact with captain 138 at (10,14). No/cancel returns control. Yes consumes departure. | **Confirmed:** [exit, setup priority and follower declarations](../../../docs/research/chapters/grans-opening/earthquake-town-through-docks-departure.md) and [carried remake departure](#tower-return-through-first-damaged-ship-control). **Unknown:** natural royal portraits in the #2339 export. |
@@ -49,6 +50,22 @@ declining Kiwi and bypassing recruitment, or confirming the name and joining wit
 Use F6/F38 both clear for the six-member variant. The seven-member observation carries both set.
 Joined state and deployment have separate flags. Preserve actual actor inputs and liveness even
 when an active ally was defeated. Later dock playback with the six-member variant is **Unknown**.
+
+### Showcase starts and continuity
+
+Each independent take uses either production New Game or the named read-only record below.
+Resolve record selections under the registered shared input root. The record supplies the
+actual serialized state, including any legacy recipe, party, learned ranks and resources.
+The field table identifies observable predicates. The driver sends ordinary choices after
+launch. No Markdown or list of flag assignments is consumed by the game.
+
+| Start / predecessor | Planned shots and expected boundary | Initialization and evidence |
+| --- | --- | --- |
+| New Game / fresh disposable namespace | Opening, Witch, choose an empty destination, name Bowie and reach his house on Map3 (56,3), default setup, F0/F32/F80. Walk, talk, search, toggle graphics, prepare equipment and use the Granseal church. Start with Bowie's own party and let the opening recruit Sarah and Chester. | [Entry and ordinary opening route](../evidence/opening-loop-acceptance.md#reproduce-the-composed-route). Use actual story joins, equipment and church Record on this journey. |
+| Continuous Battle01 / same New Game | Reach the tower with the joined trio, inspect, move, resolve a legal physical attack. At the next eligible Movement publish Save and Quit and cold Continue the selected battle record. Require the same actor, board and resources and a usable preview. | [Battle Save and Continue](../verification/battle-save.md). This segment's slot is the one actually written in this take. The composed journey remains **Unknown**. |
+| `battle01` / independent battle snapshot | Production Witch Continue, inspection, one legal preview, Stay and next actor preview. Round 1 Chester at (7,18), queue 0, Bowie and Sarah deployed. | `handoffs/issue2245/battle01/slot1.json`, #1666 v2 player-input record. [Pilot receipt](../evidence/opening-loop-acceptance.md#pilot-and-recording-boundary). |
+| `map16` / independent post-Battle05 field record | Galam row above. The saved party carries 1,072 gold, Sarah's HEAL 1 (13 MP) and Kazin's BLAZE through rank 2 (17 MP). For a planned cast require sufficient MP, an enabled hostile target in range for BLAZE or a living wounded ally in range for HEAL. Use the casters' actual turns. | `handoffs/issue2245/map16/slot2.json`, #2167 review copy, v6 settled visit. The short check ends at Battle06 control. Both spell shots and a fresh field Save on this branch remain **Unknown**. |
+| Boarding / independent post-Battle07 field route | Tower return, first quake and docks rows above. Check the actual force and royal bindings, decline once then accept and regain Map14 (40,8) Left control. | `handoffs/issue2245/map58/slot1.json` is the #1606 legacy v1 `battle07-return` record. BRGN Continue to Map58 was observed. Current export admission and natural royal cast from that record remain **Unknown**. The [carried castle predecessor](#castle-to-quake-handoff-from-a-player-save-2167) is the evidenced later entry for the quake/dock portion. Exclude the #2329 controlled dock slot with saved Bowie aliases from a natural cast claim. |
 
 ### Worked dock entry
 
