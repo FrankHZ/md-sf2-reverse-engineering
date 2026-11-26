@@ -97,6 +97,10 @@ discards the draft. Page reset and Reset all stage Off. Format 1 preferences tha
 `runInBackground` load as Off. Keyboard, pointer and controller actions require window focus.
 A dialogue acknowledgement or player decision waits for fresh input. System menus, recovery,
 loading and error boundaries retain their own pause and admission rules.
+An explicitly enabled debug client can dispatch a contextual command in either focus state.
+With passive playback Off, the client can grant up to 120 ordinary processing frames for
+pending motion, reading or entry preparation. Modal ownership continues across each grant.
+[Debug commands and completion](../verification/debug-port.md#wire-contract-version-2) ·
 [Native focus, audio and input verification](../verification/host.md#native-background-playback)
 
 ## Access through the finite demo

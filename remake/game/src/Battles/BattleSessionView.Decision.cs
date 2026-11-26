@@ -16,8 +16,9 @@ public sealed partial class BattleSessionView
     private int _row;
     private ActorRef? _attemptedTarget;
 
-    private bool CanRouteBattleInput => _startupFailure is null && !_inputSuspended && !_hostCovered &&
-        IsVisibleInTree() && CanProcess() && GetWindow().HasFocus() &&
+    private bool CanRouteBattleInput => CanRouteBattleAction && !_inputSuspended && GetWindow().HasFocus();
+    private bool CanRouteBattleAction => _startupFailure is null && !_hostCovered &&
+        IsVisibleInTree() && CanProcess() &&
         _result is { StopReason: not (SessionStopReason.Unsupported or SessionStopReason.Faulted) };
 
     internal bool NeedsFreshDirection => CanRouteBattleInput && !_inspection.Active && !_inspectionRelease &&
@@ -149,7 +150,7 @@ public sealed partial class BattleSessionView
         var before = _session!.Current;
         var result = Submit(choose);
         _attemptedTarget = null;
-        if (CanRouteBattleInput && result is { Failure: null, StopReason: SessionStopReason.PlayerInput,
+        if (CanRouteBattleAction && result is { Failure: null, StopReason: SessionStopReason.PlayerInput,
                 Snapshot.Selection: { Stage: BattleSelectionStage.TargetChoice } selection } &&
             BattleDecision.ActionOffer(_session.QueryBattleChoices(), selection.ActionReference) is { } offer)
         {

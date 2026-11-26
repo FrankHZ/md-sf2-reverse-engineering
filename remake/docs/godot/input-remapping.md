@@ -11,7 +11,8 @@ Focus loss cancels held movement, acceleration, repeat and pointer gestures. The
 edges received in the background before gameplay or UI dispatch. Returning to the window reconciles
 neutral input and discards elapsed pacing debt. The [background preference](host-ui.md#run-in-background)
 controls automatic time and audio. The explicitly enabled [debug endpoint](../verification/debug-port.md)
-retains its own request admission and can read state while the window is unfocused.
+routes one semantic action to the current controller while the window is unfocused. A debug
+action has no physical key, mapping or held/repeat lifetime.
 
 ## Current production boundary
 

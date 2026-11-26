@@ -1,4 +1,4 @@
-"""Exercise the ordinary opening/title/Witch/Back route with default keyboard bindings."""
+"""Exercise the ordinary opening/title/Witch/Back route through semantic commands."""
 
 import argparse
 import time
@@ -16,41 +16,24 @@ def wait_host(client, ready):
     raise ValueError("expected host state did not arrive before deadline")
 
 
-def released(stage):
-    def ready(host):
-        entry = host["entry"] or {}
-        return (
-            entry.get("stage") == stage
-            and not entry["latched"]
-            and not entry["activated"]
-            and not host["gameplayHeld"]
-            and not host["releaseBarrier"]
-            and host["focused"]
-        )
-
-    return ready
-
-
 def round_trip(client):
-    print("Instance", client.request("hello")["data"])
-    host = wait_host(client, lambda h: h["focused"] and (h["opening"]["active"] or h["entry"]))
+    host = wait_host(client, lambda sample: sample["opening"]["active"] or sample["entry"])
     if host["opening"]["active"]:
-        client.tap("E")
-    title = wait_host(client, released("title"))
+        client.request("opening skip")
+    title = wait_host(client, lambda sample: sample["entry"]["stage"] == "title")
     if title["entry"]["audio"]["musicCue"] != "MUSIC_TITLE":
         raise ValueError("title music missing")
-    client.tap("Enter")
-    client.request("down E")
-    menu = wait_host(client, lambda h: h["entry"]["stage"] == "menu" and h["entry"]["latched"])
-    if not menu["gameplayHeld"]:
-        raise ValueError("Witch menu lost the held Start input")
-    client.request("up E")
-    wait_host(client, released("menu"))
-    client.tap("Escape")
-    back = wait_host(client, released("title"))
+    client.request("menu confirm")
+    client.request("witch skip")
+    host = client.request("observe host")["data"]
+    if host["entry"]["stage"] == "checking-saves" and not (host["focused"] or host["runInBackground"]):
+        client.request("clock run 120")
+    wait_host(client, lambda sample: sample["entry"]["stage"] == "menu" and sample["runFramesRemaining"] == 0)
+    client.request("menu back")
+    back = wait_host(client, lambda sample: sample["entry"]["stage"] == "title")
     if back["opening"]["active"] or back["entry"]["audio"]["musicCue"] != "MUSIC_TITLE":
         raise ValueError("Back did not restore the playable title and its music")
-    print("Title -> Witch menu (held, released) -> playable title")
+    print("Title -> Witch menu -> playable title")
 
 
 if __name__ == "__main__":

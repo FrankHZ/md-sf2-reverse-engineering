@@ -325,7 +325,7 @@ production code, private package and the completed full-play observation are unc
 eight-minute replay was performed. The original failed receipt remains available beside these
 short controls under `local/issue2252/`.
 
-For the ordinary opening skip, title music, held/released Witch menu and Back sequence, use the
+For the ordinary opening skip, title music, Witch greeting and menu and Back sequence, use the
 [network title round-trip client](../verification/debug-port.md#launch-and-operate) with a disposable
 namespace. It works with the exported game as well as the development entry. To reproduce the
 specialized retired-owner callback and native focus controls after the ordinary selection above:

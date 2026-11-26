@@ -36,6 +36,7 @@ public sealed partial class SessionEntryView : Control
     private bool _canRetry;
     private bool Revealed => _dialogue.Body.VisibleCharacters < 0 || _dialogue.Body.VisibleCharacters >= _dialogue.Body.GetTotalCharacterCount();
     private bool Reading => _page >= 0 || _continueText != 0;
+    internal bool CanSkipGreeting => _page >= 0 && _continueText == 0;
     private bool CheckingSaves => _continueDefault is not null;
     private string Stage => _page == -1 ? "title" : _continueText != 0 ? "continue-dialogue" :
         _page >= 0 ? "dialogue" : CheckingSaves ? "checking-saves" : "menu";
@@ -172,31 +173,38 @@ public sealed partial class SessionEntryView : Control
             Handle(GameAction.Cancel);
         return true;
     }
-    internal void Handle(GameAction action)
+    internal bool Handle(GameAction action, bool direct = false)
     {
-        if (_latched || _activated) return;
+        if (direct && _input?.GameplayHeld == false) _latched = false;
+        if (_latched || _activated) return false;
         if (_page == -1)
         {
-            if (action is GameAction.Confirm or GameAction.Equipment) Advance();
-            return;
+            if (action is not (GameAction.Confirm or GameAction.Equipment) || _assets is null) return false;
+            Advance();
         }
-        if (Reading)
+        else if (Reading)
         {
             if (action == GameAction.Equipment && _continueText == 0) { Latch(); ShowMenu(); }
             else if (action == GameAction.Confirm) Advance();
             else if (action == GameAction.Cancel && _continueText == 225) { Latch(); ShowMenu(); }
             else if (action == GameAction.Cancel && _continueText == 0) { Latch(); ShowTitle(); }
-            return;
+            else return false;
         }
-        if (CheckingSaves && action != GameAction.Cancel) return;
-        if (action == GameAction.Up) Select((_selection + _buttons.Count - 1) % _buttons.Count);
+        else if (CheckingSaves && action != GameAction.Cancel) return false;
+        else if (action == GameAction.Up) Select((_selection + _buttons.Count - 1) % _buttons.Count);
         else if (action == GameAction.Down) Select((_selection + 1) % _buttons.Count);
-        else if (action == GameAction.Cancel) { Latch(); if (Replacement) Cancel?.Invoke(); else ShowTitle(); }
+        else if (action == GameAction.Cancel)
+        {
+            if (!Replacement && (_failed || _assetError is not null)) return false;
+            Latch(); if (Replacement) Cancel?.Invoke(); else ShowTitle();
+        }
         else if (action == GameAction.Confirm)
         {
             if (!Revealed) { _dialogue.Body.VisibleCharacters = -1; Latch(); }
-            else Activate(_selection);
+            else return Activate(_selection);
         }
+        else return false;
+        return true;
     }
     private void Latch() => _latched = _input?.GameplayHeld == true;
     private void Advance()
@@ -286,13 +294,13 @@ public sealed partial class SessionEntryView : Control
         Callable.From(() => { if (IsInstanceValid(_buttons[index]) && _buttons[index].IsVisibleInTree())
             _actionScroll.EnsureControlVisible(_buttons[index]); }).CallDeferred();
     }
-    private void Activate(int index)
+    private bool Activate(int index)
     {
-        if (_page != -2 || Reading || CheckingSaves || _activated || _latched) return;
-        if (index != _buttons.Count - 1 && ReadMenu()) return;
-        if (_buttons[index].Disabled) return;
+        if (_page != -2 || Reading || CheckingSaves || _activated || _latched) return false;
+        if (index != _buttons.Count - 1 && ReadMenu()) return true;
+        if (_buttons[index].Disabled) return false;
         Select(index); Latch();
-        if (index == _buttons.Count - 1) { Settings?.Invoke(); return; }
+        if (index == _buttons.Count - 1) { Settings?.Invoke(); return true; }
         if (index == 0) { _activated = true; NewGame?.Invoke(); }
         else if (index == 1)
         {
@@ -300,6 +308,7 @@ public sealed partial class SessionEntryView : Control
             else { _continueText = 225; _pointer.Suspend(); EntryMessage(_continueText); }
         }
         else Quit?.Invoke();
+        return true;
     }
     private bool ReadMenu()
     {
