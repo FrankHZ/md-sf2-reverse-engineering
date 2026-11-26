@@ -141,6 +141,26 @@ public sealed record ExplorationDisplay(byte Period, PalettePair Base, PalettePa
 
 internal readonly record struct FieldMapBody(MapId Map, MapSetupId? Setup);
 
+// The battle loader places a local copy at (0,0) inside the field map's working storage.
+public sealed record BeforeBattleMapCopy(WorkingMapLayout Field, WorkingMapLayout Installed, int Width, int Height)
+{
+    // The explicit load reads working storage inside the installed copy, even where
+    // the source and destination rectangles overlap. Outside it the field remains in place.
+    internal bool StartsInField(int planeX, int planeY) => planeX >= Width * 384 || planeY >= Height * 384;
+
+    public WorkingMapLayout FieldWithSceneEdits(WorkingMapLayout current)
+    {
+        if (current == Installed) return Field;
+        if (current.BlankBlockZero) return current;
+        var words = current.Words.ToArray();
+        for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++)
+                if (current[x, y] == Installed[x, y])
+                    words[y * WorkingMapLayout.ColumnCount + x] = Field[x, y];
+        return current.WithWords(words);
+    }
+}
+
 public sealed class ExplorationMapDefinition
 {
     internal ExplorationMapDefinition(MapId map, WorkingMapLayout layout, OriginalMapTraversal traversal,
@@ -163,6 +183,15 @@ public sealed class ExplorationMapDefinition
     }
     private MapSetupId? BoundSetup { get; init; }
     internal FieldMapBody Body => new(Map, BoundSetup ?? Setup?.DefaultSetup);
+    public BeforeBattleMapCopy? BeforeBattleCopy { get; private set; }
+
+    internal ExplorationMapDefinition WithBeforeBattleCopy(BeforeBattleMapCopy copy)
+    {
+        var scene = (ExplorationMapDefinition)MemberwiseClone();
+        scene.BeforeBattleCopy = copy;
+        return scene;
+    }
+
     internal bool HasBattleSceneArea { get; private set; }
     public Runtime.Exploration.FieldReturnAnchor? ChurchSavepoint { get; init; }
     public CaravanDefinition? Caravan { get; }

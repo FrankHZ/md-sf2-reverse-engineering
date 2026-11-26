@@ -675,9 +675,65 @@ completed the dialogue, first-turn Confirm and Back checks. The Original route r
 Movement, but its combined entry/custody assertion failed; only its independently read
 board state and draw samples support the mode comparison.
 
-**Unknown:** The earlier exterior map reported by the player was not reproduced. The
-sampled viewport exposed no horizontal exterior strip on which to measure its color.
-The player subsequently observed the accepted black exterior during play.
+The first player-turn observation used a viewport exactly as wide as the board. The player
+subsequently localized the seam to the dialogue on the field before battle control.
+
+### Widescreen terrain during a before-battle scene
+
+A before-program can address two parts of one working map. The loader first applies flag and
+chest changes, then copies the encounter rectangle to (0,0) for battle-local operands.
+In a source-space scene the expanded viewport can expose the *destination* of that copy beside
+unrelated field terrain. At the south gate, Map66 (19,9) in working storage then holds block
+200 from (40,11). Its real field neighbor to the right, (20,9), holds block 31.
+
+For a displaced before-battle copy, the loaded scene retains the immutable field and installed
+layouts. A positive scene load binds each plane once from the first working address that
+the script requests. The scene view has already applied the selected area's offsets and
+parallax to that address. A start in the installed copy uses working terrain, including
+where the source and destination rectangles overlap. A start beyond the copy uses the
+field layout with later changed working words. The original working map has no separate
+field/local tag. This display rule keeps the loaded plane's interpretation during a pan
+or follow, including when the camera crosses the copy boundary.
+
+A same-map reload that retains the working layout inherits the two bindings. A reset reload
+clears them and displays its cleared working layout. The bindings serve the active before-program
+only, outside ordinary field-save admission. The battle presenter uses the encounter board.
+Low, high and actor occlusion passes use the same selected plane layout for block
+IDs, tile priority and HD neighborhoods. Camera motion, script reads and the victory and
+playable-board loaders keep their existing coordinate spaces.
+
+**Confirmed:** Use the Map16 slot-2 route above on aqua-v1. Hold Map66 dialogue 2342 before
+sending `story confirm`. On the visible ExplorationSessionView request
+`ObserveLayoutRegion(18, 9, 5, 1)`, wait for a draw, then call
+`ReadLayoutRegion(18, 9, 5, 1)` and `StopLayoutObservation()`. Compare the low-pass
+`draw.uses` by source cell with the five `words` masked to ten bits. Repeat at the next
+size while holding the same dialogue. The working words continue to give **3, 200, 31, 10, 31**.
+
+| Physical client at dialogue 2342 | Actual low-pass blocks across x=18…22, y=9 |
+| --- | --- |
+| 1920×1080, including after restoring | Only x=20…22 visible: 31, 10, 31. |
+| 3586×2115 maximized, DPI 192 | Baseline HD drew 3, 200, 31, 10, 31. Corrected HD and Original drew **51, 10, 31, 10, 31**. |
+| 3840×2160 windowed client, DPI 192 | Same five-block baseline and corrected results as maximized. |
+
+The corrected HD launch was maximized before Continue. Original entered at 1920×1080 and
+maximized during the dialogue. A per-monitor-DPI-aware client measurement matched the native
+window size at each step. HD selected 96-pixel contextual blocks and Original selected 24-pixel
+blocks. Both runs advanced texts 2342–2356 and reached usable Battle06 Movement.
+
+After binding the coordinate space at load, repeat the five-cell draw query at 2342 and
+2353 in the maximized HD client. The plane origin moved from (271.75, −12.375) to
+(283.75, 35.5) source pixels; both reads gave 51, 10, 31, 10, 31.
+`BattleEntryProgramTests.SceneLoadKeepsItsCameraDomainUntilTheBattleLoader` supplies a
+separate crossing that this dialogue does not exercise. With a 12×9 copy, it waits for
+the actual pan from (18,4) to (3,4) and for the reverse crossing from a local start.
+The packed foreground starts 32 cells below the main plane. The test checks the two
+bindings at the destination, after a retained reload and after a layout reset.
+
+At that turn, maximizing centered the 1920-pixel board at x=833. The field view was gone and
+the clipped Map66 board drew 5,760 low tiles. Four unobstructed client samples at y=1057
+(x=801, 832, 2753 and 2785) matched the renderer clear color **#06090E**. In inspection,
+a click at x=831 preserved the cursor at (9,6); x=845 selected (0,11) and opened Options.
+Back returned to Movement. These samples cover the specified dialogue and playable turn.
 
 ## Physical Battle Scenes
 

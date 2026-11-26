@@ -15,6 +15,20 @@ internal sealed partial class ExplorationPresentation : IDisposable
     private readonly ExplorationPaletteView _palette;
     private IReadOnlyDictionary<int, string> _spriteGraphics = new Dictionary<int, string>();
     private MapId? _terrainMap;
+    private WorkingMapLayout? _editedWorking, _editedField;
+
+    private WorkingMapLayout PlaneLayout(WorkingMapLayout working, BeforeBattleMapCopy? copy, bool usesField)
+    {
+        if (copy is null || !usesField || working.BlankBlockZero) return working;
+        if (working == copy.Installed) return copy.Field;
+        // Layouts are immutable. Recompose once per script mutation, across both priority passes.
+        if (_editedWorking != working)
+        {
+            _editedField = copy.FieldWithSceneEdits(working);
+            _editedWorking = working;
+        }
+        return _editedField!;
+    }
     private long _terrainStart;
     private int _terrainPhase = -1;
     internal void ResetTerrainPhase(long tick) => _terrainStart = tick;
@@ -483,14 +497,17 @@ internal sealed partial class ExplorationPresentation : IDisposable
             var areaCells = new Rect2I((Vector2I)(_viewport.Bounds.Position / 24), (Vector2I)(_viewport.Bounds.Size / 24));
             var backgroundBounds = new Rect2I(areaCells.Position + new Vector2I(view?.Area.BackgroundX ?? 0, view?.Area.BackgroundY ?? 0), areaCells.Size);
             var foregroundBounds = new Rect2I(areaCells.Position + new Vector2I(view?.Area.ForegroundX ?? offset.X, view?.Area.ForegroundY ?? offset.Y), areaCells.Size);
-            var backgroundDraw = DrawLayer(world, visual, backgroundBounds, background, new(0, 0), false, view is null ? null : false, 0, prepare: prepare);
+            var copy = story.Continuation == ProgramContinuation.BeforeBattleFinished ? world.Definition.BeforeBattleCopy : null;
+            var backLayout = PlaneLayout(world.Layout, copy, view?.BeforeBattleFieldB == true);
+            var frontLayout = hasForeground ? PlaneLayout(world.Layout, copy, view?.BeforeBattleFieldA == true) : backLayout;
+            var backgroundDraw = DrawLayer(backLayout, visual, backgroundBounds, background, new(0, 0), false, view is null ? null : false, 0, prepare: prepare);
             bool pickupsOnA = hasForeground && view is { Area.Layer: not 0 };
             bool PickupCovered(Rect2 star) =>
                 (view is not null && LayerCoversPickup(star, world, visual, backgroundBounds, background, new(0, 0), false, true)) ||
                 (hasForeground && LayerCoversPickup(star, world, visual, foregroundBounds, foreground, offset, true, pickupsOnA));
             if (!prepare && !pickupsOnA && pickups is { Count: > 0 }) DrawPickupGlints(pickups, background, _screen, PickupCovered);
             LayerDraw? foregroundDraw = view is not null && hasForeground
-                ? DrawLayer(world, visual, foregroundBounds, foreground, offset, true, false, 1, prepare: prepare) : null;
+                ? DrawLayer(frontLayout, visual, foregroundBounds, foreground, offset, true, false, 1, prepare: prepare) : null;
             if (!prepare && pickupsOnA && pickups is { Count: > 0 }) DrawPickupGlints(pickups, foreground, _screen, PickupCovered);
             if (prepare)
             {
@@ -500,9 +517,9 @@ internal sealed partial class ExplorationPresentation : IDisposable
             List<object>? actors = _observeCamera ? [] : null;
             List<(ExplorationEntity Entity, ImageTexture Texture, bool Lowered)>? drawnActors = Streaming ? [] : null;
             List<object>? occlusionDraws = _observeCamera ? [] : null;
-            LayerDraw? backgroundHigh = view is null ? null : DrawLayer(world, visual, backgroundBounds, background, new(0, 0), false, true, 2);
+            LayerDraw? backgroundHigh = view is null ? null : DrawLayer(backLayout, visual, backgroundBounds, background, new(0, 0), false, true, 2);
             LayerDraw? foregroundHigh = view is not null && hasForeground
-                ? DrawLayer(world, visual, foregroundBounds, foreground, offset, true, true, 3) : null;
+                ? DrawLayer(frontLayout, visual, foregroundBounds, foreground, offset, true, true, 3) : null;
             int pass = 4;
             var sourceNod = story.Wait as NodWait;
             NodProjection = null;
@@ -590,11 +607,11 @@ internal sealed partial class ExplorationPresentation : IDisposable
                         new Vector2(mirror ? 24 - run.End.X : run.Position.X, run.Position.Y) * _scale,
                         run.Size * _scale)).ToArray();
                     var actor = (entity.Entity, bounds, (IReadOnlyList<Rect2>)ink);
-                    var restoredBackground = DrawLayer(world, visual, backgroundBounds, background, new(0, 0), false, true, pass++, actor);
+                    var restoredBackground = DrawLayer(backLayout, visual, backgroundBounds, background, new(0, 0), false, true, pass++, actor);
                     if (restoredBackground is not null) occlusionDraws?.Add(restoredBackground);
                     if (hasForeground)
                     {
-                        var restoredForeground = DrawLayer(world, visual, foregroundBounds, foreground, offset, true, true, pass++, actor);
+                        var restoredForeground = DrawLayer(frontLayout, visual, foregroundBounds, foreground, offset, true, true, pass++, actor);
                         if (restoredForeground is not null) occlusionDraws?.Add(restoredForeground);
                     }
                 }
@@ -607,7 +624,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 }
             }
             // The bound A origin already includes the foreground layout offset.
-            if (view is null && hasForeground) foregroundDraw = DrawLayer(world, visual, foregroundBounds, foreground, offset, true, null, pass++);
+            if (view is null && hasForeground) foregroundDraw = DrawLayer(frontLayout, visual, foregroundBounds, foreground, offset, true, null, pass++);
             if (_observeCamera)
             {
             CameraProjection = new { drawSequence = ++_drawSequence, processFrame = Engine.GetProcessFrames(),
@@ -768,7 +785,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
         Flush();
     }
 
-    private LayerDraw? DrawLayer(ExplorationState world, ExplorationMapVisual visual, Rect2I bounds, Vector2 origin, MapOverlayOffset offset,
+    private LayerDraw? DrawLayer(WorkingMapLayout layout, ExplorationMapVisual visual, Rect2I bounds, Vector2 origin, MapOverlayOffset offset,
         bool overlay, bool? highPriority, int pass, (EntityRef Entity, Rect2 Bounds, IReadOnlyList<Rect2> Ink)? actor = null, bool prepare = false)
     {
         int left = (int)Math.Floor(origin.X / 24), top = (int)Math.Floor(origin.Y / 24);
@@ -783,10 +800,10 @@ internal sealed partial class ExplorationPresentation : IDisposable
             for (int x = left; x <= left + ViewWidth / 24 + 1; x++)
             {
                 int sourceX = x + offset.X, sourceY = y + offset.Y;
-                if (LayerBlock(world.Layout, sourceX, sourceY, overlay) is not { } block) continue;
+                if (LayerBlock(layout, sourceX, sourceY, overlay) is not { } block) continue;
                 var rectangle = new Rect2((new Vector2(x * 24, y * 24) - origin) * _scale, new Vector2(24, 24) * _scale);
                 if (!rectangle.Intersects(_screen) || actor is { } masked && !rectangle.Intersects(masked.Bounds)) continue;
-                var texture = Block(visual, block, world.Layout, sourceX, sourceY, bounds);
+                var texture = Block(visual, block, layout, sourceX, sourceY, bounds);
                 if (prepare) continue;
                 // Reuse the existing block resource; split its nine tile regions by the
                 // retained VDP priority bit instead of lifting an entire plane above actors.
@@ -805,7 +822,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
                         if (!clipped.Intersects(mask)) continue;
                         var covered = clipped.Intersection(mask);
                         if (expected?.Add((block, tile, word)) == true)
-                            required!.Add(new(world.Map.Value, block, tile, word, sourceX, sourceY));
+                            required!.Add(new(visual.Map.Value, block, tile, word, sourceX, sourceY));
                         _owner.DrawTextureRectRegion(texture, covered,
                             ExplorationRasterImages.TextureRegion(new(tileOffset + (covered.Position - region.Position) / _scale, covered.Size / _scale), texture));
                         if (_layoutRegion is { } requested && requested.HasPoint(new(sourceX, sourceY)))
