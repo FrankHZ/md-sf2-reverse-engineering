@@ -59,10 +59,10 @@ func field() -> bool:
     var footer := view.find_child("ContextHint",true,false)
     var adventure := footer.find_child("FieldMenuEntry",true,false)
     measure("field", [footer,adventure], [adventure,footer.find_child("Help",true,false)])
-    for key in ["normal","hover","pressed","disabled","focus"]:
-        var style := menu_button.get_theme_stylebox(key) as StyleBoxFlat
-        if not expect(style != null and [style.corner_radius_top_left,style.corner_radius_top_right,
-                style.corner_radius_bottom_left,style.corner_radius_bottom_right] == [0,0,0,0],"Menu square in "+key): return false
+    for key in ["normal","hover","pressed","disabled"]:
+        var style := menu_button.get_theme_stylebox(key) as StyleBoxTexture
+        if not expect(style != null and style.texture != null,"Menu decorative frame in "+key): return false
+    if not expect(menu_button.get_theme_stylebox("focus") is StyleBoxFlat,"Menu has separate focus outline"): return false
     if not await cover(true): return false
     await click(control_rect(adventure))
     if not expect(state().fieldMenu.visible,"Adventure entry clickable after host Back"): return false

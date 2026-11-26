@@ -166,8 +166,9 @@ blanket gate or test-preservation wording in this guide, ADRs, runbooks, and his
   There is no test-count target, replacement-per-deletion rule, or requirement for the old aggregate
   suite to remain green. Preserve original evidence and completed failures.
 - Run an affected reference comparison or adapter observation directly when its claim needs it.
-  Godot acceptance reads the running instance's state/input/projection and errors; screenshots are
-  prohibited. Reuse the owned Godot installation, project, and running debug instance. Name the
+  Godot acceptance reads the running instance's state/input/projection and errors. Gameplay and research checks prohibit
+  screenshots. Only dedicated production UI demo review may capture necessary stills locally in ignored
+  output. Never collect frames in bulk or publish private content. Reuse the owned Godot installation, project, and running debug instance. Name the
   concrete failure or necessary startup/import/export/cleanup check before restarting or isolating it.
 - Documentation-only work uses direct document/scope checks. Do not launch normal/full Python,
   .NET, Godot, or H3 suites solely because guidance changed or an earlier run was incomplete in inputs.

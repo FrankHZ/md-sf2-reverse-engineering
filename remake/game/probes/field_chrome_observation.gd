@@ -40,18 +40,13 @@ func shaped_bounds(entry: Label) -> Rect2:
 func corner_check() -> void:
     var button := find("SystemMenuEntry") as Button
     check(button.is_visible_in_tree() and not button.disabled, "available system entry")
-    var radii := {}
     check(button.get_theme_font("font").resource_path == "res://fonts/localization/NotoSansCJKsc-Regular.otf"
         and button.get_theme_font_size("font_size") == 24, "system entry inherits bundled type at hint size")
-    for key_ in ["normal", "hover", "pressed", "disabled", "focus"]:
-        var box := button.get_theme_stylebox(key_) as StyleBoxFlat
-        if box == null:
-            check(false, "missing " + key_ + " action style"); continue
-        var corners := [box.corner_radius_top_left, box.corner_radius_top_right,
-            box.corner_radius_bottom_left, box.corner_radius_bottom_right]
-        radii[key_] = corners
-        check(corners == [0,0,0,0], "square system entry " + key_)
-    samples.append({"label":"system-entry", "text":button.text, "rect":rect(button.get_global_rect()), "corners":radii})
+    for state in ["normal", "hover", "pressed", "disabled"]:
+        var frame := button.get_theme_stylebox(state) as StyleBoxTexture
+        check(frame != null and frame.texture != null, "decorated system entry " + state)
+    check(button.get_theme_stylebox("focus") is StyleBoxFlat, "system entry has a separate focus outline")
+    samples.append({"label":"system-entry", "text":button.text, "rect":rect(button.get_global_rect())})
 
 func hover_system_entry() -> void:
     var button := find("SystemMenuEntry") as Button
@@ -65,10 +60,9 @@ func hover_system_entry() -> void:
         for label in root.find_children("*", "Label", true, false):
             var popup := label.get_parent() as PopupPanel
             if popup == null or not popup.visible or label.text != button.tooltip_text: continue
-            var box := popup.get_theme_stylebox("panel") as StyleBoxFlat
-            check(box != null and [box.corner_radius_top_left, box.corner_radius_top_right,
-                box.corner_radius_bottom_left, box.corner_radius_bottom_right] == [0,0,0,0],
-                "mounted binding tooltip uses square frame")
+            var box := popup.get_theme_stylebox("panel") as StyleBoxTexture
+            check(box != null and box.texture != null, "mounted binding tooltip uses shared frame")
+            if box == null: return
             var inner := Rect2(box.get_offset(), Vector2(popup.size) - box.get_minimum_size())
             check(label.get_theme_font_size("font_size") == 24 and inner.encloses(shaped_bounds(label)),
                 "mounted tooltip encloses its 24px glyphs")
@@ -114,8 +108,7 @@ func run() -> void:
     var choice := find("Continue") as Button
     check(choice.is_visible_in_tree() and choice.get_node("FocusMarker").is_visible_in_tree(),
         "Witch focus marker follows Continue")
-    check((choice.get_theme_stylebox("normal") as StyleBoxFlat).corner_radius_top_left == 0,
-        "selected Continue uses square style")
+    check(choice.get_theme_stylebox("normal") is StyleBoxTexture, "selected Continue uses decorated frame")
     var reading := find("EntryActions") as ScrollContainer
     var hint := find("EntryHint") as Label
     check(reading.get_global_rect().end.y + 24 <= hint.get_global_rect().position.y,

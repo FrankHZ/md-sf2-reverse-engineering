@@ -299,8 +299,8 @@ No full-screen shade covers the Witch. Entry's smaller-window scaling remains di
 +-----------------------------------------------------------------------+
 ```
 
-The right side is one layout column, not necessarily one enclosing blue rectangle. Greeting and
-action rows use the same square edge family; the active choice alone gets gold emphasis. A greeting
+The right side is one layout column, not necessarily one enclosing blue rectangle. The greeting and
+individual Witch buttons share stepped gold corners. The current choice adds a marker and gold text. A greeting
 that requires reading owns the column before choices become available. No new simultaneous menu
 is implied by the diagram. Keep existing title entrance, static idle/return and reduced-flash behavior.
 
@@ -529,6 +529,29 @@ The [implemented F10 host layout and finite observations](host-ui.md) apply this
 ordinary Menu, preferences/help, shared slots and window recovery. Its access table retains the
 existing per-phase settings and save predicates; headless evidence does not imply desktop or human
 visual acceptance.
+
+#### Standalone buttons and grouped rows
+
+The title Start, Witch choices, name actions, opening Skip, gameplay Menu, inspection Back,
+save confirmation actions, and Settings/Help footers use the shared button frame. System Menu,
+numbered slot rows and scrolling settings choices share their container's outer ornament.
+Exploration service lists and battle Main/inspection Options keep their existing custom row
+presenters. Battle Main encloses all four actions in one panel.
+
+**Confirmed:** in the dedicated [DesignPreview](../../game/probes/previews/README.md) at
+1600×900, F1 → Start → skip greeting showed separate gold corners on the Witch actions.
+Hovering Settings brightened its frame. Holding the left button darkened it and turned its text
+gold. Release opened Settings. With longer English and Chinese New Game captions supplied
+in memory, both wrapped to two lines inside the corners, clear of the selection marker.
+New Game → empty slot → type eight Latin letters showed a dimmed Use Name beside an enabled Back
+and the seven-character limit above them. F10 on the authored field showed muted Save/Load
+rows and reasons inside one outer frame.
+
+At 1920×1080 the English and Chinese Settings root and Controls pages kept the selected
+reset footer's outline and marker clear of the label and hints. Reproduce these pages using
+the [settings preview case](input-remapping.md) or navigate from
+F1 Settings. A separate ordinary-window input check skipped the opening, opened Witch Settings
+and returned to the Witch. **Unknown:** player approval and physical-controller reading comfort.
 
 The right-top Menu remains an unmistakable host entry with its own safe region. Its centered 800px
 menu groups the current Journey and Session actions. Cancel or Menu resumes play. Use the shared square

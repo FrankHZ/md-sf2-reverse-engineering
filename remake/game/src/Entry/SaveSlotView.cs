@@ -40,7 +40,7 @@ internal sealed partial class SaveSlotView : Control
             shade.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); AddChild(shade);
             AddChild(panel);
         }
-        _column = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        _column = new VBoxContainer { Theme = StoryTheme.CreateEntry(journey: true, groupedRows: true), Alignment = BoxContainer.AlignmentMode.Center, SizeFlagsHorizontal = SizeFlags.ExpandFill };
         _column.AddThemeConstantOverride("separation", OverEntry ? 24 : 12);
         var layout = new VBoxContainer(); layout.AddThemeConstantOverride("separation", OverEntry ? 24 : 12); panel.AddChild(layout);
         _reading = new ScrollContainer { Name = "SlotReading", SizeFlagsVertical = SizeFlags.ExpandFill,

@@ -44,9 +44,9 @@ func wait_slots(expected: String) -> bool:
     capture("slot-deadline")
     return false
 
-func square(button: Button) -> void:
-    var style := button.get_theme_stylebox("normal") as StyleBoxFlat
-    check(style != null and style.corner_radius_top_left == 0 and style.corner_radius_bottom_right == 0,"square production action: "+str(button.name))
+func framed_action(button: Button) -> void:
+    var style := button.get_theme_stylebox("normal") as StyleBoxTexture
+    check(style != null and style.texture != null, "decorated production action: "+str(button.name))
 
 func form_geometry(name: String) -> void:
     var panel := host.find_child(name,true,false) as Control
@@ -56,7 +56,10 @@ func form_geometry(name: String) -> void:
     check(not panel.get_global_rect().intersects(Rect2(160,92,1024,896)),"form does not cover Witch: "+name)
     for button in panel.find_children("*","Button",true,false):
         if button.is_visible_in_tree():
-            square(button)
+            if name == "SlotWindow" and host.find_child("SlotReading",true,false).is_ancestor_of(button):
+                check(button.get_theme_stylebox("normal") is StyleBoxFlat, "slot list shares the outer frame")
+            else:
+                framed_action(button)
             check(button.size.y >= 64 and button.get_theme_font_size("font_size") == 30,"readable action height and font")
             check(button.size.x <= 612,"wrapped action width inside column")
 
@@ -120,7 +123,7 @@ func _run() -> void:
     check(greeting.x >= 1216 and greeting.y+greeting.height <= 504,"greeting remains separate from Witch and actions")
     check(entry.artRect == {"x":160.0,"y":92.0,"width":1024.0,"height":896.0},"full original Witch rectangle retained")
     var start := entry_view.find_child("NewGame",true,false) as Button
-    square(start)
+    framed_action(start)
     check(start.find_child("FocusMarker",true,false).visible,"one selected marker")
     var hints := entry_view.find_child("EntryHint",true,false) as Label
     check(contained(hints.get_global_rect(),Rect2(1216,64,640,952)) and hints.get_theme_font_size("font_size") == 24,"fixed entry hints fit without shrinking")
