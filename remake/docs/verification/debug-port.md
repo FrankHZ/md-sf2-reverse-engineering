@@ -85,6 +85,48 @@ partway through a movement or wait. Inspect state before granting further time.
 Connection, observation and disconnect grant zero frames. The frame budget and a
 dispatched token-bound reading intent survive disconnect and physical focus loss.
 
+## Preparing a progression start
+
+Use the [three campaign stops and dock example](../application/pre-voyage-campaign.md#proposed-non-battle-debug-starts)
+to select the predecessor and expected landing. Prefer a short ordinary transition from a
+registered, provenance-checked predecessor in a fresh disposable namespace. For the docks, the
+[observed post-tower castle visit](../application/pre-voyage-campaign.md#castle-to-quake-handoff-from-a-player-save-2167)
+already has royal followers. Check its setup, flags, party and live bindings before walking to
+Map4 and taking its east exit. Copy only the registered selection into disposable storage for
+ordinary Continue. A loadable slot by itself establishes neither its story lineage nor its cast.
+
+For repeatable development checks without a suitable slot, the existing pre-session
+[controlled exploration start](../../game/probes/PreVoyageLocalizationObservation.cs) admits the
+selected world and constructs a fresh exploration input. Choose the predecessor map, player,
+tile, facing, speed, explicit story/membership flags and compatible party inputs. The field
+probe derives active IDs from flags 32–61. Its default party, gold, initial egress and seeds are
+controlled values. A carried-resource or natural-reach claim needs an ordinary predecessor.
+Omit the explicit program override so the [selected setup and its OnLoad](../application/session-and-programs.md#exploration-start-setup)
+own initial population, aliases, working layout, camera, continuation and scene effects through
+normal loading and playback. Observe first-entry latches after their writers run. On a settled
+[v6 Continue](../application/opening-session-lifecycle.md#unified-settled-field-snapshots),
+restore the captured visit without replaying init. Editing flags or aliases in a snapshot loses
+the connection between the chosen setup and that captured visit.
+
+**Proposed follow-up slices**
+
+1. Prepare one named dock predecessor using the existing controlled start and registered content
+   in development. Drive the exit with v2 field/story commands. Verify the selected setup,
+   actual roster, royal bindings, settled control and errors. Vary Kiwi membership once to check
+   that the royal cast is independent. Save only at an eligible settled visit and cold Continue
+   the disposable slot to compare bindings, layout and one-time flags. Add another named start
+   only when its distinct transition needs checking. The wire vocabulary needs no setter.
+2. Check natural F74 portraits separately in the specific relocated Release, starting with the
+   registered naturally reached castle predecessor compatible with that export. Record the
+   handshake/build and slot provenance, use ordinary transitions through the first quake, then
+   inspect the dock at reading waits. At 1009/1013 expect Astral portrait 31, across 1015/1018/1019 expect the
+   Minister's panel hidden with null texture and the King's portrait 32 when each speaks. Compare logical speaker and portrait
+   request with the drawn ID and actual panel visibility/texture. Exercise No before Yes, then
+   check F74 clears in boarding, F640 clears on the Map73 request, and F700 is set at first
+   Map14 (40,8) Left control. Use bounded clock grants when paused. If identity, bindings or
+   projections disagree, retain that boundary and stop. A controlled entry or an observation
+   in another build cannot close this export-specific **Unknown**.
+
 ## Native acceptance and reproduction
 
 **Confirmed:** product commit `3077da05978fa7e415d41534f90393a284016561` served v2

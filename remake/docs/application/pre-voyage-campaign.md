@@ -30,6 +30,47 @@ with verified bindings and a shared consumer. [Unified v6 Save and Continue](ope
 owns settled visits. An optional-exploration change needs persistence verification when it
 changes the snapshot boundary. Battle27+ and later story openings stay outside this agreement.
 
+## Proposed non-battle Debug starts
+
+These three stops share the ordinary first Battle07 victory lineage. Use the
+[Grans campaign flag index](../content/campaign-flags-grans.md) for writers, readers and optional
+branches. The table selects entry conditions for short checks. Carry the earlier campaign state,
+including both jewels (F384/F385), names, equipment and casualties, from the chosen baseline.
+The listed flags are route predicates and receipts, not a complete serialized flag set.
+
+| Stop and ordinary transition | Combat party / temporary field followers | Entry conditions and observable result | Evidence boundary |
+| --- | --- | --- | --- |
+| Tower return. First Battle07 victory requests Map58 (13,35) Down, void setup. | Bowie, Sarah, Chester, Jaha, Kazin and Slade joined and active (F0–5/F32–37). The observed seven-member route adds Kiwi (F6/F38). Astral, King and Minister follow Bowie. | Set F507/F74/F640. Clear F407/F73/F83/F999 and, before the first castle warnings and quake, F622/F623/F624. The victory caller writes F507 after the scene. A repeat victory cannot supply this fixed landing. | **Confirmed:** [first-victory operands](../../../docs/research/chapters/grans-opening/battle07-outcomes-and-aftermath-handoff.md) and [carried tower return](#battle06-result-through-usable-tower-exploration). |
+| First quake. Leave Map19's F507 castle by its south exit. Requested Map3 (29,2) Down becomes Map4, default setup. | Same chosen active force and three royal followers. | Carry F507/F74/F640 set and F407/F73/F83 clear. Enter with F624 clear. Take both castle warnings for the representative route (F622/F623 set independently). Init stages the guards and crack copies, writes F624 and releases control at (29,4) Down. | **Confirmed:** [castle exit and first/repeat visit](#castle-to-quake-handoff-from-a-player-save-2167). This row distinguishes the incoming tile from the settled tile. |
+| Docks before departure. Leave Map4 at (50,24) to rebuild Map44 at (1,25) Right, F507 setup. | Same six or seven joined and active. Slade is a force member. F74 declares Astral, King and Minister in the field. | Keep F506/F507/F74/F640/F624 set, F407/F73/F83/F700 clear. Carry the chosen castle receipts. From (11,14) face Left to interact with captain 138 at (10,14). No/cancel returns control. Yes consumes departure. | **Confirmed:** [exit, setup priority and follower declarations](../../../docs/research/chapters/grans-opening/earthquake-town-through-docks-departure.md) and [carried remake departure](#tower-return-through-first-damaged-ship-control). **Unknown:** natural royal portraits in the #2339 export. |
+
+The [Battle06 recruitment route](#battle06-result-through-usable-tower-exploration) permits
+declining Kiwi and bypassing recruitment, or confirming the name and joining with room to deploy.
+Use F6/F38 both clear for the six-member variant. The seven-member observation carries both set.
+Joined state and deployment have separate flags. Preserve actual actor inputs and liveness even
+when an active ally was defeated. Later dock playback with the six-member variant is **Unknown**.
+
+### Worked dock entry
+
+The [opening selection](../../content/private/pre-voyage-opening.json) admits the maps on this route.
+In the pinned Map44 setup table, F507 wins after F609 and F506 and selects the fixed queue and
+captain. F74 independently supplies the royal follower declarations. The earlier prison F73
+temporarily supplies Slade until the first Battle05 join clears it and sets F5/F37. F507 neither
+sets F74 nor clears F73. Keep unrelated follower selectors F68/F70/F77 clear for this controlled
+royal group and preserve the Battle07 intro's F83 clear. These conditions avoid competing
+declarations for royal references. See the [follower and setup review](../../../docs/research/chapters/grans-opening/earthquake-town-through-docks-departure.md#setup-followers-and-conditional-control).
+
+Enter through the explicit east warp. Let map initialization allocate the live actors and resolve
+Astral 31 → sprite 209, King 30 → 203 and Minister 159 → 205. Read the allocated slots and
+speaker projections as outputs. Same-map boarding preserves the visit and cannot establish fresh
+allocation. The [controlled dock report](#exported-dock-portrait-report-2330) restored F507/F640
+with F73 set and F74 clear. All three saved references resolved to Bowie in slot 0. Restoring that
+visit explains the three Bowie panels even though the captain could still complete departure.
+
+Use the [Debug preparation and checks](../verification/debug-port.md#preparing-a-progression-start)
+for disposable runs. Original natural reach and hardware timing retain the source owners' **Unknown**
+boundary. No preset or new native observation is delivered by this design.
+
 ## Castle bedroom cast after Astral leaves
 
 **Standard rigor; bounded content correction:** after the first King's-bedroom scene completes
