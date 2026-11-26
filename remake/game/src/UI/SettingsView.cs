@@ -211,6 +211,14 @@ internal sealed partial class SettingsView : Control
             button.Text = row.Text;
     }
 
+    internal bool BackFromDebug()
+    {
+        if (_page is Page.Capture or Page.Review) return false;
+        if (_help is not null) _help.Handle(GameAction.Cancel);
+        else Back();
+        return true;
+    }
+
     internal void Handle(GameAction action, InputEvent input)
     {
         _pointer.Suspend();

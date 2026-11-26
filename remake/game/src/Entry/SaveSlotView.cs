@@ -129,16 +129,22 @@ internal sealed partial class SaveSlotView : Control
         Select(0);
     }
 
-    internal void Handle(GameAction action)
+    internal bool Handle(GameAction action)
     {
-        if (_loading) { if (action == GameAction.Cancel) _loadingBack?.Invoke(); return; }
-        if (action == GameAction.Cancel) { Cancel?.Invoke(); return; }
-        if (_buttons.Count == 0) return;
+        if (_loading)
+        {
+            if (action != GameAction.Cancel || _loadingBack is null) return false;
+            _loadingBack(); return true;
+        }
+        if (action == GameAction.Cancel) { if (Cancel is null) return false; Cancel(); return true; }
+        if (_buttons.Count == 0) return false;
         if (action is GameAction.Left or GameAction.Right && _reading is not null)
             _reading.ScrollVertical += action == GameAction.Left ? -112 : 112;
         else if (action == GameAction.Up) Select((_selected + _buttons.Count - 1) % _buttons.Count);
         else if (action == GameAction.Down) Select((_selected + 1) % _buttons.Count);
         else if (action == GameAction.Confirm && _actions.Count > 0) _actions[_selected]();
+        else return false;
+        return true;
     }
     internal void SuspendPointer() => _pointer.Suspend();
     internal bool HandlePointerCancel(InputEvent input)

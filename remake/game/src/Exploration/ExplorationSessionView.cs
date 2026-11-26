@@ -130,7 +130,7 @@ public sealed partial class ExplorationSessionView : Control
         ui.AddChild(failurePanel); failurePanel.AddChild(_failureLabel);
         failurePanel.Hide();
         GetViewport().SizeChanged += Present;
-        GetWindow().FocusExited += SuspendClock;
+        GetWindow().FocusExited += SuspendPhysicalClock;
         VisibilityChanged += SuspendClock;
     }
     public override void _ExitTree()
@@ -140,25 +140,28 @@ public sealed partial class ExplorationSessionView : Control
         _movementHold.Clear(_input);
         CancelFieldWait();
         GetViewport().SizeChanged -= Present;
-        GetWindow().FocusExited -= SuspendClock;
+        GetWindow().FocusExited -= SuspendPhysicalClock;
         VisibilityChanged -= SuspendClock;
         _presentation?.Dispose();
     }
 
     public override void _Notification(int what)
     {
-        if (what == NotificationPaused || what == NotificationUnpaused) SuspendClock();
+        if (what == NotificationPaused || what == NotificationUnpaused) SuspendClockCore(keepDirectReading: true);
         if (what == NotificationPaused || what == NotificationUnpaused ||
             what == NotificationDisabled || what == NotificationEnabled)
             QueueRedraw();
     }
 
-    private void SuspendClock()
+    private void SuspendPhysicalClock() => SuspendClockCore(keepDirectReading: true);
+    private void SuspendClock() => SuspendClockCore(keepDirectReading: false);
+
+    private void SuspendClockCore(bool keepDirectReading)
     {
         SuspendPacing();
         CancelMenuEntry("save-entry-paused");
-        _readingConfirmation = null;
-        _joinMusicConfirmation = null;
+        if (!keepDirectReading || _readingConfirmation is not { Direct: true }) _readingConfirmation = null;
+        if (!keepDirectReading || _joinMusicConfirmation is not { Direct: true }) _joinMusicConfirmation = null;
         _choicePointer.Suspend();
         if (_input is not null) _movementHold.Clear(_input);
         _partyStatus?.Suspend();
@@ -331,70 +334,70 @@ public sealed partial class ExplorationSessionView : Control
         else _tickTime = 0;
     }
 
-    internal void HandleAction(GameAction action, bool repeating = false)
+    internal bool HandleAction(GameAction action, bool repeating = false, bool direct = false)
     {
-        if (MenuEntryPending) return;
+        if (MenuEntryPending) return false;
         _choicePointer.Cancel();
-        if (!GetWindow().HasFocus() || !CanProcess()) { SuspendClock(); return; }
+        if ((!direct && !GetWindow().HasFocus()) || !CanProcess()) { SuspendClock(); return false; }
         bool direction = action is GameAction.Up or GameAction.Right or GameAction.Down or GameAction.Left;
         if (!direction) _movementHold.Clear(_input);
         if (action != GameAction.Wait) CancelFieldWait();
-        if (_handedOff || !IsVisibleInTree() || _session is null || SessionPresentationOwner.IsBattle(_session.Current) || PresentationFailure is not null) return;
+        if (_handedOff || !IsVisibleInTree() || _session is null || SessionPresentationOwner.IsBattle(_session.Current) || PresentationFailure is not null) return false;
         var current = _session.Current;
-        if (current.Story.Wait is ChurchWait) { _church.Handle(action); return; }
-        if (current.Story.Wait is ShopWait) { _shop.Handle(action); return; }
-        if (current.Story.Wait is CaravanWait) { _caravan.Handle(action); return; }
+        if (current.Story.Wait is ChurchWait) { _church.Handle(action); return true; }
+        if (current.Story.Wait is ShopWait) { _shop.Handle(action); return true; }
+        if (current.Story.Wait is CaravanWait) { _caravan.Handle(action); return true; }
         if (_partyStatus.Open)
         {
             _movementHold.Clear(_input); CancelFieldWait();
             _partyStatus.Handle(action, _session, _input);
-            Present(); return;
+            Present(); return true;
         }
-        if (_fieldMenuActive) { _fieldMenu.Handle(action); Present(); return; }
+        if (_fieldMenuActive) { _fieldMenu.Handle(action); Present(); return true; }
         if (action == GameAction.Cancel && CanOpenFieldMenu && !_skipRequiresRelease)
-        { BeginFieldMenu(); return; }
+        { BeginFieldMenu(); return true; }
         if (action == GameAction.Equipment && current.CanWaitAtInput && !_battleMounted)
         {
             SuspendPacing();
             _movementHold.Clear(_input); CancelFieldWait(); _returnFeedback.Dismiss();
-            _partyStatus.Begin(_session, _input); Present(); return;
+            _partyStatus.Begin(_session, _input); Present(); return true;
         }
         if (current.CanWaitAtInput) _returnFeedback.Dismiss();
-        if (direction)
+        if (direction && !direct)
         {
             if (!_movementHold.CanContinue(current)) _movementHold.Clear(_input);
             else if (!repeating) _movementHold.Pressed(Time.GetTicksUsec());
             // Direction changes during our own step take effect at its next input boundary.
-            if (!current.CanWaitAtInput && _movementHold.CanContinue(current)) return;
+            if (!current.CanWaitAtInput && _movementHold.CanContinue(current)) return false;
         }
-        if (_skipRequiresRelease || _battleHandoffPending || current.Story.EntrySkip is not null) return;
-        if (action == GameAction.Cancel && BattleEntrySkip.Eligible(current) && GetWindow().HasFocus())
+        if ((!direct && _skipRequiresRelease) || _battleHandoffPending || current.Story.EntrySkip is not null) return false;
+        if (!direct && action == GameAction.Cancel && BattleEntrySkip.Eligible(current) && GetWindow().HasFocus())
         {
             _skipRequiresRelease = true; _choiceRequiresRelease = true;
-            Send(new SkipBattleEntry()); return;
+            return Send(new SkipBattleEntry()).Failure is null;
         }
         if (action == GameAction.Wait)
         {
-            if (current.HasOrdinaryFieldTime) return;
-            if (!CanSubmitWait || !GetWindow().HasFocus() || !CanProcess()) { CancelFieldWait(); return; }
+            if (current.HasOrdinaryFieldTime) return false;
+            if (!CanSubmitWait || !GetWindow().HasFocus() || !CanProcess()) { CancelFieldWait(); return false; }
             _waitingAtInput = true;
             SubmitFieldWait();
-            return;
+            return true;
         }
         SessionCommand? command = null;
         if (current.Story.Wait is ChoiceWait choice)
         {
-            if (action == GameAction.Confirm && RevealText()) return;
+            if (action == GameAction.Confirm && RevealText()) return true;
             if (choice.Work is not null)
             {
-                if (!current.CanWaitForChoice || _choiceRequiresRelease || !GetWindow().HasFocus() || !CanProcess()) return;
+                if (!current.CanWaitForChoice || !direct && (_choiceRequiresRelease || !GetWindow().HasFocus()) || !CanProcess()) return false;
                 ChoiceInput? input = action switch
                 {
                     GameAction.Left => ChoiceInput.Left, GameAction.Right => ChoiceInput.Right,
                     GameAction.Up => ChoiceInput.Up, GameAction.Down => ChoiceInput.Down,
                     GameAction.Confirm => ChoiceInput.ConfirmC, GameAction.Cancel => ChoiceInput.Cancel, _ => null,
                 };
-                if (input is null) return;
+                if (input is null) return false;
                 command = new PollChoice(choice.Token, input.Value);
             }
             else
@@ -402,9 +405,10 @@ public sealed partial class ExplorationSessionView : Control
                 if (action is GameAction.Left or GameAction.Up or GameAction.Right or GameAction.Down)
                 {
                     _dialogueView.Panel.Choices.Focus(action is GameAction.Left or GameAction.Up);
-                    Present(); return;
+                    Present(); return true;
                 }
-                if (action is not (GameAction.Confirm or GameAction.Cancel) || _choiceRequiresRelease || RevealText()) return;
+                if (action is not (GameAction.Confirm or GameAction.Cancel) || !direct && _choiceRequiresRelease) return false;
+                if (RevealText()) return true;
                 command = new ChooseDialogue(choice.Token, action == GameAction.Confirm && _dialogueView.Panel.Choices.SelectedYes);
             }
         }
@@ -415,24 +419,24 @@ public sealed partial class ExplorationSessionView : Control
                 if (action == GameAction.Confirm) RevealText();
                 InterruptDelay(delay);
             }
-            else if (action == GameAction.Confirm) ConfirmReading();
-            return;
+            else if (action == GameAction.Confirm) return ConfirmReading(direct);
+            else return false;
+            return true;
         }
         else if (current.Story.Wait is FieldSearchWait search)
         {
-            if (action == GameAction.Cancel || action == GameAction.Confirm &&
-                _dialogueView.Panel.IsVisibleInTree() && !RevealText()) command = new Acknowledge(search.Token);
+            if (action == GameAction.Confirm && _dialogueView.Panel.IsVisibleInTree() && RevealText()) return true;
+            if (action == GameAction.Cancel || action == GameAction.Confirm && _dialogueView.Panel.IsVisibleInTree())
+                command = new Acknowledge(search.Token);
         }
         else if (current.Story.Wait is DialogueWait)
         {
-            if (action == GameAction.Confirm) ConfirmReading();
-            return;
+            return action == GameAction.Confirm && ConfirmReading(direct);
         }
         else if (action == GameAction.Confirm && current.Story.Wait is MusicWait join &&
             CompleteJoinMusicWait.CanConfirm(current, _session.Definition.Exploration!))
         {
-            ConfirmJoinMusic(join);
-            return;
+            return ConfirmJoinMusic(join, direct);
         }
         else if (current.CanWaitAtInput)
         {
@@ -448,8 +452,8 @@ public sealed partial class ExplorationSessionView : Control
                 else if (_session.CanSearch) command = new Search();
             }
         }
-        if (command is null) return;
-        Send(command);
+        if (command is null) return false;
+        return Send(command).Failure is null;
     }
 
     private bool RevealText()

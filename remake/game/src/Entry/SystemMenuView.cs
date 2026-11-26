@@ -102,7 +102,8 @@ internal sealed partial class SystemMenuView : Control
         if (_buttons[index].Disabled) return;
         Select(index); _pointer.Suspend(); _actions[index]();
     }
-    internal void Handle(GameAction action)
+    internal int SelectedIndex => _selected;
+    internal bool Handle(GameAction action)
     {
         _pointer.Suspend();
         if (action is GameAction.Cancel or GameAction.Menu) Resume();
@@ -115,7 +116,9 @@ internal sealed partial class SystemMenuView : Control
             do { next = (next + step + _buttons.Count) % _buttons.Count; } while (_buttons[next].Disabled);
             Select(next);
         }
-        else if (action == GameAction.Confirm) Activate(_selected);
+        else if (action == GameAction.Confirm && !_buttons[_selected].Disabled) Activate(_selected);
+        else return false;
+        return true;
     }
     internal void SuspendPointer() => _pointer.Suspend();
     public override void _Process(double delta)

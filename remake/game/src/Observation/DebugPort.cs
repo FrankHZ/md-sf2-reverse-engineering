@@ -6,10 +6,10 @@ using System.Threading.Channels;
 namespace Sf2.Remake.GodotAdapter.Observation;
 
 // The socket worker exchanges only strings with the game thread. It admits the
-// next client after the previous client's release has run on that thread.
+// next client after dispatch of every complete preceding request.
 internal sealed class DebugPort : IDisposable
 {
-    internal sealed record Request(string? Line)
+    internal sealed record Request(string Line)
     {
         internal TaskCompletionSource<string> Reply { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
@@ -29,7 +29,7 @@ internal sealed class DebugPort : IDisposable
     internal bool TryRead(out Request? request) => _inbox.Reader.TryRead(out request);
     internal const int MaxReplyBytes = 1024 * 1024;
 
-    private async Task<string> Dispatch(string? line)
+    private async Task<string> Dispatch(string line)
     {
         var request = new Request(line);
         await _inbox.Writer.WriteAsync(request, _stop.Token);
@@ -46,7 +46,6 @@ internal sealed class DebugPort : IDisposable
                 try { await Exchange(client); }
                 catch (Exception error) when (error is IOException or SocketException or OperationCanceledException)
                 { /* Disconnect, idle deadline or shutdown. */ }
-                finally { if (!_stop.IsCancellationRequested) await Dispatch(null); }
             }
         }
         catch (Exception error) when (_stop.IsCancellationRequested &&

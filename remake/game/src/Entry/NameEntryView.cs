@@ -76,6 +76,18 @@ internal sealed partial class NameEntryView : Control
         _error.Text = error switch
         { "name-too-long" => GameText.Get("name.too-long"), "name-character" => GameText.Get("name.character"), _ => _edit.Text.Length == 0 ? GameText.Get("name.default-value", MemberName ?? DisplayNames.DefaultMember(0)) : "" };
     }
+    internal bool ConfirmDraft()
+    {
+        if (_use.Disabled) return false;
+        Finish(); return true;
+    }
+
+    internal bool BackFromDraft()
+    {
+        if (Back is null) return false;
+        Back(_edit.Text); return true;
+    }
+
     private void Finish()
     {
         Validate();

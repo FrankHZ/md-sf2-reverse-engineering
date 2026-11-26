@@ -264,45 +264,67 @@ public sealed partial class BattleSessionView : Control
         ServicePacing(delta);
     }
 
-    private void HandleActionCore(GameAction action)
+    internal bool DispatchDirect(GameAction action)
+    {
+        if (!CanRouteBattleAction || _inspectionRelease || _session is null) return false;
+        if (_inspection.Active) return action == GameAction.Cancel && InspectionInput(action);
+        var current = _session.Current;
+        if (ReadingBoundary)
+        {
+            if (action != GameAction.Confirm) return false;
+        }
+        else
+        {
+            if (!current.HasBattleControl || current.BattleMovement is not null || current.Selection is null) return false;
+            if (action == GameAction.Confirm && _decision is { Visible: true, Moving: false, CanActivateFocus: false } && !_hud.MoreBelow) return false;
+            if (action is GameAction.Stay or GameAction.Attack &&
+                (_decision is not { Page: BattleDecisionPage.Main } decision ||
+                 !decision.CommandAvailable(action == GameAction.Stay ? BattleCommandRow.Stay : BattleCommandRow.Attack)))
+                return false;
+        }
+        _navigationRejected = false;
+        return HandleActionCore(action, direct: true) && !_navigationRejected;
+    }
+
+    private bool HandleActionCore(GameAction action, bool direct = false)
     {
         _boardPointer.Cancel();
         _menu.SuspendPointer(keyboard: true);
-        if (!CanRouteBattleInput) return;
-        if (InspectionInput(action)) return;
+        if (!(direct ? CanRouteBattleAction : CanRouteBattleInput)) return false;
+        if (InspectionInput(action)) return true;
         if (_session?.Current.BattleSearch is not null)
-        { if (_search.Acknowledge(action) is { } ack) Send(ack); return; }
+        { if (_search.Acknowledge(action) is { } ack) Send(ack); return true; }
         if (_session?.Current.BattleDiscard is not null)
-        { if (_discard.Acknowledge(action) is { } ack) Send(ack); return; }
+        { if (_discard.Acknowledge(action) is { } ack) Send(ack); return true; }
         if (_session?.Current.BattleGive is not null)
-        { if (_give.Acknowledge(action) is { } ack) Send(ack); return; }
+        { if (_give.Acknowledge(action) is { } ack) Send(ack); return true; }
         if (_session?.Current.BattleRound is { Program: true })
-        { if (_story.Acknowledge(action) is { } acknowledgement) Send(acknowledgement); return; }
-        if (_session?.Current.BattleRound is not null) return;
+        { if (_story.Acknowledge(action) is { } acknowledgement) Send(acknowledgement); return true; }
+        if (_session?.Current.BattleRound is not null) return false;
         if (_session?.Current.BattleRetreat is not null)
-        { if (_retreat.Acknowledge(action) is { } ack) Send(ack); return; }
-        if (_session?.Current.BattleMovement is not null) return;
+        { if (_retreat.Acknowledge(action) is { } ack) Send(ack); return true; }
+        if (_session?.Current.BattleMovement is not null) return false;
         if (_session?.Current.BattleScene is not null)
-        { if (_scene.Acknowledge(action) is { } ack) Send(ack); return; }
-        if (_session?.Current.HasBattleControl != true) return;
+        { if (_scene.Acknowledge(action) is { } ack) Send(ack); return true; }
+        if (_session?.Current.HasBattleControl != true) return false;
         if (action == GameAction.Confirm && _hud.IsVisibleInTree() && _hud.ReadMore())
-        { _hud.SetHint(_hud.MoreBelow ? GameText.Get("battle.read-more", _input.CompactHint(GameAction.Confirm)) : _help); return; }
+        { _hud.SetHint(_hud.MoreBelow ? GameText.Get("battle.read-more", _input.CompactHint(GameAction.Confirm)) : _help); return true; }
         if (BattleDiscardView.Selecting(_session.Current.Selection?.Stage))
-        { if (BattleDiscardView.Select(_session, action) is { } discardCommand) Send(discardCommand); return; }
+        { if (BattleDiscardView.Select(_session, action) is { } discardCommand) Send(discardCommand); return true; }
         if (BattleGiveView.Selecting(_session.Current.Selection?.Stage))
-        { if (BattleGiveView.Select(_session, action) is { } giveCommand) Send(giveCommand); return; }
+        { if (BattleGiveView.Select(_session, action) is { } giveCommand) Send(giveCommand); return true; }
         if (_session.Current.Selection is { Stage: BattleSelectionStage.EquipmentChoice } equipmentSelection &&
             action is GameAction.Up or GameAction.Right or GameAction.Down or GameAction.Left or GameAction.Equipment)
         {
             var options = _session.QueryBattleChoices().Equipment;
-            if (options.Count == 0) return;
+            if (options.Count == 0) return false;
             int index = options.ToList().FindIndex(option => option.Slot == equipmentSelection.EquipmentSlot);
             int step = action is GameAction.Up or GameAction.Left ? -1 : 1;
             Send(new SelectEquipment(options[(index + step + options.Count) % options.Count].Slot));
-            return;
+            return true;
         }
-        if (MovementInspectionEntry(action)) return;
-        if (HandleDecision(action)) return;
+        if (MovementInspectionEntry(action)) return true;
+        if (HandleDecision(action)) return true;
 
         var stage = _session.Current.Selection?.Stage;
         SessionCommand? command = (stage, action) switch
@@ -318,7 +340,8 @@ public sealed partial class BattleSessionView : Control
             (BattleSelectionStage.ActionChoice, GameAction.Discard) => new BeginDiscard(),
             _ => null,
         };
-        if (command is not null) Send(command);
+        if (command is null) return false;
+        Send(command); return true;
     }
 
     private void Send(SessionCommand command)

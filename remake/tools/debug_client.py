@@ -23,10 +23,6 @@ class DebugClient:
             raise ValueError(reply["error"])
         return reply
 
-    def tap(self, key):
-        self.request(f"down {key}")
-        return self.request(f"up {key}")
-
 
 @contextmanager
 def connect(port):
@@ -35,7 +31,7 @@ def connect(port):
         connection.makefile("rb") as reader,
     ):
         client = DebugClient(connection, reader)
-        if client.request("hello")["data"]["version"] != 1:
+        if client.request("hello")["data"]["version"] != 2:
             raise ValueError("unsupported debug protocol version")
         yield client
 
@@ -43,16 +39,12 @@ def connect(port):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("port", type=int)
-    parser.add_argument("commands", nargs="+", help='e.g. hello "tap Enter" "observe host"')
+    parser.add_argument("commands", nargs="+", help='e.g. hello "menu confirm" "observe host"')
     args = parser.parse_args()
     try:
         with connect(args.port) as client:
             for command in args.commands:
-                reply = (
-                    client.tap(command[4:])
-                    if command.startswith("tap ")
-                    else client.request(command)
-                )
+                reply = client.request(command)
                 print(json.dumps(reply))
     except (OSError, ValueError) as error:
         parser.exit(1, f"Debug request failed: {error}\n")

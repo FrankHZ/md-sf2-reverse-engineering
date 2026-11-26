@@ -1,6 +1,6 @@
 # Development and Verification
 
-## General live observation and keyboard input
+## General live observation and semantic commands
 
 Use the [C# loopback debug port](verification/debug-port.md) for an explicitly enabled development
 or exported game. The protocol owner includes the runnable client, title round-trip and inventory

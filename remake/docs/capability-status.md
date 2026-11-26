@@ -1405,6 +1405,13 @@ Battles01–07 supply no in-region chest candidate. The [Battle15 private route]
 [native witness](development-and-verification.md#battle-search-observation) is authored, with separate
 English/Chinese UI and installed-key-map acceptance; it is not a private source-noun translation claim.
 
+## Local debug operation
+
+The opt-in development and Release endpoint serves observations, contextual menu, field, story
+and battle actions, and bounded playback while unfocused. The active controller owns the
+outcome. The maintained title client uses semantic commands throughout.
+[Protocol, limits and native acceptance](verification/debug-port.md).
+
 ## Battle Speed and selective messages
 
 **Implemented [#2017](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2017):**

@@ -29,7 +29,6 @@ public sealed partial class GameRoot : Node
     public override void _ExitTree()
     {
         _debugPort?.Dispose();
-        ReleaseDebugKeys();
         _entryPreparation.Dispose();
         ReleaseOpening();
         ReleaseWindowSupport(); GetWindow().FocusExited -= HostFocusLost;
