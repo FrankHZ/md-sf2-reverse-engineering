@@ -15,7 +15,7 @@ public sealed record HealingDisplay(ActorRef Caster, ActorRef Target, SpellRef S
 public sealed record HealingSceneCursor
 {
     internal bool EnemyFairy { get; init; }
-    internal BattleSceneDefinition? AllyAuraContent { get; init; }
+    internal BattleSceneDefinition? AuraContent { get; init; }
     internal BattleSceneAnimation Cast { get; init; } = null!;
     internal int CasterIdleTicks { get; init; }
     internal int TargetIdleTicks { get; init; }
@@ -76,7 +76,7 @@ public sealed record HealingSceneCursor
             casterIdle = visual.IdleTicks; targetIdle = targetVisual.IdleTicks;
             actionText = content.Texts[action.Item is null ? 274 : 275]; recoveryText = content.Texts[298];
         }
-        return new() { EnemyFairy = !actor.IsAlly, AllyAuraContent = spell.IsAura && actor.IsAlly ? content : null,
+        return new() { EnemyFairy = !actor.IsAlly, AuraContent = spell.IsAura ? content : null,
             Cast = cast, CasterIdleTicks = casterIdle, TargetIdleTicks = targetIdle,
             Display = new(action.Actor, target.Actor, spell.Spell, action.Reactions[index].Amount,
                 story is null ? CharacterNames.ReadableIdentity(actor.Actor) : CharacterNames.Battle(story, actor, content),

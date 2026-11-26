@@ -440,11 +440,11 @@ internal static class BattleSceneContinuation
         var healing = scene.Healing;
         if (healing is not null && index != scene.ReactionIndex && scene.IsAura)
         {
-            var recipient = HealingSceneCursor.Create(scene.Action, healing.AllyAuraContent, current.Story, index);
+            var recipient = HealingSceneCursor.Create(scene.Action, healing.AuraContent, current.Story, index);
             healing = healing with
             {
                 Display = recipient.Display, RecoveryText = recipient.RecoveryText,
-                TargetIdleTicks = healing.AllyAuraContent is null ? healing.TargetIdleTicks : recipient.TargetIdleTicks,
+                TargetIdleTicks = recipient.TargetIdleTicks,
             };
         }
         healing = healing?.Enter(next);

@@ -6,6 +6,66 @@ pre-voyage priority. Later private campaigns and controlled authored packages es
 boundaries. This inventory uses the existing rules, scene readers, presenters and private resource
 publisher. Each implementation slice owns its own acceptance.
 
+## Enemy AURA recipient handoff #2317
+
+**Standard scope.** One existing Battle19 Dark Bishop AURA1 action checks the final admitted
+recovery seam. The shared cursor retains scene content for either faction, so every subsequent
+recipient keeps its own name, source text operands and idle work. Ownership is limited to
+`HealingSceneCursor.cs`, `BattleSceneContinuation.cs`, `EnemyAuraSceneTests.cs`,
+`engine_enemy_aura_observation.gd` and the existing spell, scene, capability and Battle19 owners.
+No new AI, rank, enemy, resource package, save format or campaign admission is included.
+
+**Confirmed in the remake:** before the correction, a lawful controlled native cast already
+showed Bubbling Ooze → Dark Bishop → Gargoyle with their real bodies, Chinese recovery text,
+evil fairy and caster return. The defect was narrower: later `HealingDisplay` names fell back
+to readable IDs, source text274/298 became null, source recovery text reverted to its fallback,
+and final idle work reused the first recipient's ticks. The UI independently resolves current
+names through Content, so its correct text did not prove the cursor metadata correct.
+The two varied-idle cases in `EnemyAuraSceneTests` reproduce the second-recipient name failure
+before the fix and now check each recipient's text operands and idle work through the actual
+continuation. The same cursor now retains content for allied and enemy AURA; fairy state,
+cast, payment and reaction order remain on their existing authorities.
+
+The native observer uses the unchanged complete `derived/issue2316/kiwi-v1` package,
+independent #2324 opening, #2255 Witch and #2266 catalogs. Its controlled copy derives from
+`handoffs/issue1852/slots/comparison-five-battle.json`, retaining the admitted species, books,
+turn queue and party. Enemy4 is active at(16,12), enemy2 is at(16,13) with HP1, and enemy12
+is at(16,14) with HP1; enemy0 retains its original state and the other enemies are defeated.
+This is controlled state, not a natural campaign witness. Continue and ordinary Stay input
+let production AI choose AURA1. Bubbling Ooze uses body0/palette2, Dark Bishop42/1 and
+Gargoyle9/0 at logical(16,48). Their recoveries are18/0/18 in source-slot order, MP38→31
+once, no enemy EXP, one shared evil fairy group, return to Dark Bishop and usable next
+ActionChoice. Original and HD/Reduced Flash runs pass with actual Sprite2D textures and
+source-coordinate fairy placement. Native frame sampling does not measure exact idle ticks;
+the direct engine assertion owns that check. Existing enemy HEAL3 and allied AURA2–4
+observations retain their own boundaries and are not rerun as a faction/rank matrix.
+
+### Enemy AURA reproduction and limits
+
+After the [locked Debug build](../development-and-verification.md#locked-net-workflow):
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2317/review-v1'
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path `
+  -Sample aura-original-review -SaveRoot $freshExternalSaveRoot
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path `
+  -Sample aura-hd-review -Graphics hd -Reduced -SaveRoot $freshExternalSaveRoot
+```
+
+The small review kit derives the disposable seed from the published #1852 input and reads
+the existing immutable art; it needs no producer scratch or copied media package.
+`uv run sf2 verify engine` passes3,385 with50 optional-private skips in a fresh process;
+those skips are not private passes. The focused healing selection passes26 with1 optional
+skip. Release/Debug adapter builds and both native runs pass. Retained failures are the two original
+`LaterEnemyRecipientsKeepTheirOwnTextIdentityAndIdleWork` cases, an inactive initial seed
+that stayed on standby, a two-recipient geometry setup, and a probe numeric-array type
+comparison corrected without changing the expected18/0/18 recovery. Successful native runs
+retain up to8 ObjectDB exit warnings under#1716. **Unknown:** natural enemy AURA opportunity,
+original native timing, hardware audiovisual parity and human aesthetic acceptance.
+This observation establishes remake behavior; original source claims retain the pinned
+[healing-family evidence](#enemy-healing-family-2227).
+
 ## Kiwi converted Attack playback #2316
 
 **Standard scope.** Complete the already admitted MNST physical Attack conversion's
@@ -729,6 +789,10 @@ and the [byte-identical vanilla rebuild](../../../docs/research/reproducible-ori
 the source to SF2DISASM revision `c834c652b6862bc5679fd7f69a38a7093206efc6` with
 `VANILLA_BUILD=1`. Read `table_SpellDefinitions` at `0x176A6–0x1796E`.
 It has 89 records in 44 families, including item, innate and special effect records.
+The current coverage table accounts for all89 rank records exactly once; closure rechecked
+the pinned spell table, item Use bindings and selector override rather than inferring original
+behavior from remake playback. POWDER1 and G_TEAR2 use NONE on both the table and
+non-equipment action path; G_TEAR1 has no matching retail `useSpell` row.
 `SPELL_NOTHING` is a sentinel. The animation setup/update tables also contain standalone
 selectors such as arrows and spear projectiles. Their own consumers govern those effects.
 [Spell definitions](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm) ·
@@ -754,7 +818,9 @@ reads the rank selector for an unsilenced learned cast or equipment Use. Non-equ
 keeps selector NONE. The battle action can override the table, including Prism Laser. Compare
 actual caster, target faction and action kind at the caller boundary.
 
-- **Original assets bound** records actual private playback within the named package. **Partial**
+- **Original assets bound** records actual private playback within the named package.
+  **Original mechanism bound** identifies an effect such as BUFF/ABSORB that needs no new tiles;
+  **Original item gesture bound** identifies the deliberate NONE-selector item route. **Partial**
   identifies which assets, action pose or feedback the player sees and which effect remains open.
 - **Modern presentation** records a deliberate delivery choice with its acceptance boundary.
   **Placeholder** records an effect or scene retained pending presentation work. An authored
@@ -775,7 +841,8 @@ encounter admission still control the available action. The
 owns ordered gameplay delivery. [BattleSceneView](../../game/src/Battles/BattleSceneView.cs) and
 [AttackSpellView](../../game/src/Battles/AttackSpellView.cs) establish the adapter paths. Ordinary
 placeholder attack Magic hides the scene actors and scenery and draws element-specific shapes.
-Prepared DISPEL uses the mounted scene and cloud group. Other ordinary support Magic and suppressed casts use cards and messages on black. Item gestures, number
+The current private support mounts use the accepted DEBUFF cloud or no-tile BUFF mechanism.
+Older unmounted/authored support and suppressed casts retain their documented card/message delivery. Item gestures, number
 of recipients and actual reaction results follow the committed action.
 
 ## Graphics variants
@@ -794,7 +861,7 @@ listed by rank below. [Binding contract](../content/asset-inventory.md#battle-ra
 | Retail rows | Original selector | Gameplay, package and scene | Remaining owner |
 | --- | --- | --- | --- |
 | HEAL 1–4 | HEALING_FAIRY v1–v4 | **Original assets bound** for private allied self/teammate casts. The private cast/idle, light fairy, live target and 77/113 cues are described in [HEAL spell scenes](#heal-spell-scenes). Native private HEAL1–3 settings cases and Sarah's Battle26 HEAL4 cover allied delivery. Enemy HEAL1 is observed with authored Mage/Cleric content, and a controlled private Battle19 Master Monk uses HEAL3 on itself. **Original assets bound** for the controlled pre-voyage enemy HEAL1 through the shared faction selector and evil-fairy group. | [Enemy healing acceptance](#enemy-healing-family-2227) covers a legal Dark Cleric recovery. Other higher-rank enemy playback and exact timing remain **Unknown** beyond named cases. [Enemy witness](../development-and-verification.md#enemy-spell-observation) · [Battle19 comparison](../application/battle19-repeat.md#controlled-comparisons) |
-| AURA 1 | HEALING_FAIRY v1 | **Original assets bound** for admitted private allied content through the HEAL light-fairy path. Karna's allied ordered recovery has engine evidence and ordinary native campaign casting is **Unknown**. The private Battle19 Dark Bishop shares the faction selector and evil-fairy group; actual enemy AURA delivery remains **Unknown**. Authored AURA uses its own pulse, recipient cards and one EXP delivery. | [#2104] recovery follow-up after pre-voyage priorities. Reuse the same enemy fairy decision and verify actual area recipients when needed. [Current spells](../application/church-promotion-design.md#current-battle-spells) · [Battle19 private binding](../application/battle19-repeat.md) · [Authored AURA](battle-scenes.md#authored-aura-recovery) |
+| AURA 1 | HEALING_FAIRY v1 | **Original assets bound** for admitted private allied content through the HEAL light-fairy path. Karna's allied ordered recovery has engine evidence and ordinary native campaign casting is **Unknown**. The private Battle19 Dark Bishop has a controlled three-recipient native witness with the evil-fairy group and retained per-recipient metadata. Authored AURA uses its own pulse, recipient cards and one EXP delivery. | [Enemy AURA handoff](#enemy-aura-recipient-handoff-2317) covers the admitted enemy consumer; natural opportunity and hardware timing remain **Unknown**. [Current spells](../application/church-promotion-design.md#current-battle-spells) · [Battle19 private binding](../application/battle19-repeat.md) · [Authored AURA](battle-scenes.md#authored-aura-recovery) |
 | AURA 2–4 | HEALING_FAIRY v2–v4 | **Original assets bound** for learned private allied Magic through the existing fairy path. Controlled Battle26 input covers ranks2/3 and VICR rank4, one payment and ordered return. | [Recovery and reproduction](../domain/gameplay-rules.md#private-learned-aura-ranks). Equipment Use rules and consumers are accepted under [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268); White Ring AURA2 now has [equipment recovery playback](#equipment-recovery-playback-2291). |
 | DETOX 1–3 | DETOX v1–v3 | **Original assets bound** for admitted private Magic in the [DETOX successor](../content/presentation-assets.md#detox-successor). The same mote/trail composition plays for effective and paid no-effect casts and is suppressed by silence. Field Magic and Antidote/Fairy Powder have distinct delivery. Rune Axe Use binds DETOX2 through the [equipment recovery consumer](#equipment-recovery-playback-2291). | [#2232] delivers the [controlled native presentation](#prepared-detox-presentation). [#1965] owns rank-2/3 gameplay and equipped curse. Natural ordinary acquisition and casts remain **Unknown**. |
 | DETOX 4 | DETOX v4 | **Original assets bound** for private learned Magic with one cast and one end wait around the ordered area results. | [Area rules and controlled Battle26 playback](../domain/detox-ranks-design.md#detox-4-area-and-field-admission) |
@@ -840,59 +907,53 @@ update controls subsequent movement, mirroring and dust. [Enemy family evidence]
 | --- | --- | --- | --- |
 | SPOIT 1 | ABSORB v1 | **Original mechanism bound** for Misty Knuckles30, Indra Staff92, Supply Staff96 and Demon Rod101 Item Use. Source warp89 and four red flashes accompany the existing Item gesture, ordered target MP loss and capped caster gain. | [ABSORB playback](#absorb-family-playback-2309) reuses the complete DESOUL package. No learned Magic or enemy admission. Equipment rules remain with [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268); natural late custody remains **Unknown**. |
 | HEALIN 1–3 | HEALING_FAIRY v1–v3 in table, NONE for consumable Use | **Original assets bound** for the ordinary private Herb scene's item gesture and recovery. Seed and Drop share the admitted HP item consumer, with a bounded Seed supply witness. Holy Lance equipment Use reads the actual selector. | Preserve [item recovery](battle-scenes.md#medical-herb-scenes). Holy Lance Use is admitted under [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268); [#2291](#equipment-recovery-playback-2291) binds its Item gesture and fairy presentation. |
-| FLAME 1–3 | FLAME_BREATH v1–v3 | **Unavailable** for these enemy spell rows. Kiwi's private converted Attack has separate assets and rules. | [#1818] first enemy caller and [#1369] rule admission, then [#2104] breath playback. |
-| SNOW 1–3 | SNOW_BREATH v2–v4 | **Unavailable** for these enemy spell rows. FREEZE already has a separate Magic path. | [#1818] first enemy caller and [#1369] rule admission, then [#2104] breath playback. |
-| DEMON 1–2 | DEMON_BREATH v1–v2 | **Unavailable** for these enemy spell rows. | [#1818] first enemy caller and [#1369] rule admission, then [#2104] breath playback. |
+| FLAME 1–3 | FLAME_BREATH v1–v3 | **Unavailable** for these enemy spell rows. Kiwi's private converted Attack has separate assets and rules. | [#1818] first enemy caller and [#1369] rule admission, then a presentation slice owned by that admission. |
+| SNOW 1–3 | SNOW_BREATH v2–v4 | **Unavailable** for these enemy spell rows. FREEZE already has a separate Magic path. | [#1818] first enemy caller and [#1369] rule admission, then a presentation slice owned by that admission. |
+| DEMON 1–2 | DEMON_BREATH v1–v2 | **Unavailable** for these enemy spell rows. | [#1818] first enemy caller and [#1369] rule admission, then a presentation slice owned by that admission. |
 | POWER 1, GUARD 1, SPEED 1, IDATEN 1, HEALTH 1, HANNY 1, BRAVE 1 | NONE for each | **Modern delivery** in Field/Caravan, with item result and actual stat/level/growth changes; outside the battle close-up. Ordinary Water, Milk and Chicken Use remain **Unknown**, with rule tests. | Preserve the [permanent growth item scope](../domain/permanent-growth-items-design.md). Any additional caller needs its own evidence under [#1818]. |
-| B_ROCK 1 | BURST_ROCK_EXPLOSION v1, also chosen by the action override | **Unavailable** in the connected campaign. The authored laser path excludes special Burst Rock targets and their action. | [#1369] and [#1818] own special action and encounter admission. [#2104] effect at first admitted caller. [Special-mechanics design](../domain/special-mechanics-design.md) |
-| LASER 1 | NONE in table, PRISM_LASER by action override | **Modern presentation**, finite authored ray with charge, fire, reactions/deaths and continued control. Private Battle36 and original visual/audio effects are outside that acceptance. | [#1370] and [#1818] private special/encounter admission, then [#2104] review desired private presentation. [Authored laser](battle-scenes.md#authored-prism-laser) |
-| POWDER 1 | NONE | **Partial** for private battle item cure with ordinary gesture and notice. Field/Caravan Use has its own status and feedback. | Keep this item separate from DETOX graphics. [Fairy Powder and higher cure boundaries](../domain/detox-ranks-design.md) |
-| G_TEAR 1–2 | NONE | Rank 2 **partial** through admitted Fairy Tear item gesture and MP recovery notice, including ordinary Battle26 input. Rank 1 has a table row and no known retail item binding in `itemdefs.asm`. | Rank 1 live caller remains **Unknown**. Reuse the existing item route only if a caller warrants it. [Fairy Tear evidence](../domain/recovery-items-design.md#ordinary-input-observations) |
-| FBALL 1 | BLAZE v3 in table, NONE for consumable Use | **Original item gesture bound** for Shining Ball with ordinary private damage, custody and return. | Preserve the distinct item route with [#2104] and the [offensive-item owner](../domain/offensive-items-design.md#ordinary-remake-observations). |
-| BREZAD 1 | FREEZE v3 in table, NONE for consumable Use | **Original item gesture bound** for Blizzard with ordinary private damage, custody and return. | Preserve the distinct item route with [#2104] and the [offensive-item owner](../domain/offensive-items-design.md#ordinary-remake-observations). |
+| B_ROCK 1 | BURST_ROCK_EXPLOSION v1, also chosen by the action override | **Unavailable** in the connected campaign. The authored laser path excludes special Burst Rock targets and their action. | [#1369] and [#1818] own special action and encounter admission. That admission owns its presentation slice at the first caller. [Special-mechanics design](../domain/special-mechanics-design.md) |
+| LASER 1 | NONE in table, PRISM_LASER by action override | **Modern presentation**, finite authored ray with charge, fire, reactions/deaths and continued control. Private Battle36 and original visual/audio effects are outside that acceptance. | [#1370] and [#1818] private special/encounter admission, including a presentation decision for the first private caller. [Authored laser](battle-scenes.md#authored-prism-laser) |
+| POWDER 1 | NONE | **Original item gesture bound** for private battle cure and result notice. Non-equipment Use deliberately selects NONE; no DETOX overlay is missing. Field/Caravan Use has its own status and feedback. | Keep this item separate from DETOX graphics. [Fairy Powder and higher cure boundaries](../domain/detox-ranks-design.md) |
+| G_TEAR 1–2 | NONE | Rank 2 **original item gesture bound** through Fairy Tear and MP recovery notice, including ordinary Battle26 input. Non-equipment Use selects NONE; no healing fairy overlay is required. Rank 1 has a table row and no known retail item binding in `itemdefs.asm`. | Rank 1 live caller remains **Unknown**. Reuse the existing item route only if a caller warrants it. [Fairy Tear evidence](../domain/recovery-items-design.md#ordinary-input-observations) |
+| FBALL 1 | BLAZE v3 in table, NONE for consumable Use | **Original item gesture bound** for Shining Ball with ordinary private damage, custody and return. | Preserve the distinct item route with the [offensive-item owner](../domain/offensive-items-design.md#ordinary-remake-observations). |
+| BREZAD 1 | FREEZE v3 in table, NONE for consumable Use | **Original item gesture bound** for Blizzard with ordinary private damage, custody and return. | Preserve the distinct item route with the [offensive-item owner](../domain/offensive-items-design.md#ordinary-remake-observations). |
 | THUNDR 1 | BOLT v3 in table, NONE for consumable Use | **Unavailable** as Holy Thunder private Item Use. | [#1818] item rule/admission. Reuse the ordinary item scene when admitted. |
 | AQUA 1–2 | BUBBLE_BREATH v1–v2 | **Original assets bound**: seven frames per rank, distinct palettes, actual Kraken Head and Battle23 Bubbling Ooze bodies/terrain. Willard itself has no spell. | [AQUA playback](#aqua-family-playback-2315): reader closure, ordinary enemy actions and atomic Original/HD/settings; natural/hardware/human acceptance remains Unknown. |
 | KIWI 1–4 | FLAME_BREATH v3 for all | **Original assets bound** through one six-state growth group and MNST sequence84; actual controlled Attack conversion preserves rules and result authority. | [Kiwi playback](#kiwi-converted-attack-playback-2316) covers production ranks and Original/HD/settings. Natural training, hardware and human presentation remain **Unknown**. |
 | SHINE 1 | NONE | **Unavailable**. Right of Hope from the Fairy Woods trial is outside the current campaign. | [#1818] trial/item caller, with the accepted field/item delivery boundary. [Flag and receipt](../content/campaign-flags.md) |
-| ODDEYE 1 | ODD_EYE_BEAM v1 | **Unavailable** in the connected campaign. | [#1818] first encounter, [#1369] action rules and [#2104] beam effect. |
+| ODDEYE 1 | ODD_EYE_BEAM v1 | **Unavailable** in the connected campaign. | [#1818] first encounter and [#1369] action rules; that admission owns its beam-presentation slice. |
 
-## Pre-voyage dispatch
+<a id="pre-voyage-dispatch"></a>
 
-1. **P2 [#2105], BLAZE2.** See the [prepared mount and observations](#prepared-blaze2-presentation).
-2. **P2 [#2106], BLAST1.** After [#2105] acceptance, use learned Sarah from a legal pre-voyage
-   state (PRST learns BLAST1 at level 10 in `allystats01.asm`), 2 MP and one adjacent opponent.
-   Its source radius is zero. Prepare its own tileset-15 wind/dust composition, including the
-   v1 side selection in `spellanimationSetup_Blast` and `spellanimationUpdate_Blast`.
-   Later enemy BLAST ranks have their own encounter and package checks. Reuse the playback and
-   publication interfaces from the accepted slices. The two issues have independent gameplay rules.
-   [Blast setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/blast.asm) ·
-   [Blast update](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/blast.asm)
+## Pre-voyage coverage
 
-For each, use the [prepared BLAZE1](#prepared-blaze1-presentation) lifecycle and an isolated fresh
-private package. Read the live projection, token and errors through one short ordinary-input
-controlled cast on legal state. Check the mounted art and current scene identities, one payment,
-each actual reaction, release, and the existing Reduced Flash, skip and held-rate behavior at their
-applicable waits. Use modern timing within the accepted playback contract. Retain exact source
-composition and the results of any failed observations. Natural pre-voyage learning/casting and
-foreground visual acceptance remain **Unknown** where no named witness covers them.
+The initial BLAZE2 [#2105] and BLAST1 [#2106] consumers are accepted. Their
+[prepared BLAZE2](#prepared-blaze2-presentation) and [prepared BLAST1](#prepared-blast1-presentation)
+observations remain valid bounded evidence; the current flame and wind family mounts extend
+those consumers. The table above is the current family/rank/consumer entry point, rather than
+a new dispatch queue. The complete KIWI package includes the admitted elemental, support,
+recovery, equipment, summon and breath groups described by their owners. Enemy AURA's
+[handoff check](#enemy-aura-recipient-handoff-2317) closes the identified shared recovery seam.
 
-## Follow-up order
+<a id="follow-up-order"></a>
 
-- **P2 after the two child issues.** [#2104] retains first-use review of pre-voyage recovery and
-  support. The [enemy healing family](#enemy-healing-family-2227) covers its bounded HEAL1
-  recovery. Enemy AURA delivery remains **Unknown**. The [DETOX successor](#prepared-detox-presentation)
-  covers learned ranks 1–3. [DISPEL playback](#dispel-playback-implementation-2238) supplies
-  the first DEBUFF consumer. The [DEBUFF family](#debuff-family-playback-2280) extends it to
-  admitted SLOW/MUDDLE/SLEEP and two equipment callers. The [BUFF family](#buff-family-playback-2282) has its own no-tile mechanism and consumer acceptance. [#1456] governs foreground acceptance and [#1616] the wider design review.
-- **P3 for current later content.** [#2104] groups the remaining elemental variants and shared
-  wind effects, then any additional support callers as admitted. The [lightning family](#lightning-family-playback-2301) covers admitted BOLT/RAIJIN and equipment. The [flame family](#flame-family-playback-2293) covers admitted KATON; the [FREEZE family](#freeze-family-playback-2298) covers admitted ice ranks and Freeze Staff. Private allied AURA2–4
-  has [controlled ordinary coverage](../domain/gameplay-rules.md#private-learned-aura-ranks).
-  [#2016], [#1967] and [#1926] own missing gameplay and item admission. Keep item gestures where
-  the original selector path calls for them. Schedule equipment effect reuse at its first legal
-  consumer.
-- **Campaign-dependent.** [#1818], [#1369] and [#1370] own first-use chapter or action admission
-  for future breaths, summons and special attacks. [#2104] retains effect coverage until the
-  selected caller exists and the accepted original assets or modern decision can be named.
+## Remaining boundaries
+
+- **Accepted delivery choices.** EGRESS/Angel Wing, authored AURA and authored Prism Laser
+  retain their modern presentation. Original graphics or mechanism identity does not claim
+  hardware timing, physical listening or human approval. [#1456] owns foreground acceptance
+  and [#1616] the wider design review.
+- **Future admission.** Enemy FLAME/SNOW/DEMON, Burst Rock, Holy Thunder, SHINE and ODDEYE
+  remain unavailable under [#1818], [#1369] or [#1370], as assigned in the table. Those campaign
+  and rule owners must include a bounded presentation slice when they admit a caller; closing
+  #2104's currently admitted scope does not implement those actions. Private Prism Laser has
+  the same dependency. Battle27+ and #1716 are not resumed by this inventory.
+- **Evidence limits.** G_TEAR1 has no known retail item caller. Natural learning, acquisition,
+  opportunity and original hardware behavior remain Unknown wherever the named witness is
+  controlled or static. These Unknowns do not create an automatic verification queue. Closed
+  rule/admission tickets #2016, #1967 and #1926 retain historical evidence, not pending dispatch.
+  Retained historical packages may still use their documented fallback; current bindings do
+  not retroactively change them.
 
 [#2232]: https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2232
 [#1716]: https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716
@@ -1344,8 +1405,8 @@ Higher ranks remain with their existing owners.
 
 Standard rigor applies to this bounded content/presentation correction. Acceptance covers the
 shared HEAL/AURA faction selector, existing Original/HD contract, controlled pre-voyage enemy
-HEAL1, an allied counterexample and a closed successor package. Natural enemy reach, actual
-enemy AURA, private unbound ranks and hardware-exact timing remain **Unknown**.
+HEAL1, an allied counterexample and a closed successor package. Natural enemy reach, private unbound ranks and hardware-exact timing remain **Unknown**.
+Actual enemy AURA was outside this witness; the later [handoff observation](#enemy-aura-recipient-handoff-2317) supplies its bounded remake evidence.
 
 **Confirmed** from pinned SF2DISASM c834c652b6862bc5679fd7f69a38a7093206efc6,
 `animation/healingfairy.asm` and `animation/update/healingfairy.asm`. Light body offsets are

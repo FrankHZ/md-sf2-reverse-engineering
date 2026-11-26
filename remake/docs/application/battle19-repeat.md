@@ -29,3 +29,16 @@ For a controlled E29 entry with all five additional definitions, the MAIN image 
 ```
 
 Selection consumed 26 draws and left MAIN at `0x566DBEEF`. The first saved player input contained those exact IDs and MAIN `0x2C97BEEF` after ordinary initialization and automatic play. Another seed selected two Dark Bishops and kept the base mage. A separate controlled fight reached a Master Monk with 9 MP and 28 HP missing. It selected HEAL3 on itself and continued through victory. The package's `derivation/rom-compare.py` reads the retail bytes and compares them to the suspended roster. The engine tests also cover other quotients, slot order and both RNG halfwords.
+
+### Enemy AURA presentation handoff
+
+**Confirmed in the remake:** the [bounded enemy AURA observer](../godot/spell-presentation.md#enemy-aura-recipient-handoff-2317)
+uses a disposable copy of the published five-species battle, the complete KIWI art package and
+ordinary Stay inputs. Existing Dark Bishop AURA1 heals Bubbling Ooze, itself and Gargoyle in
+source-slot order for18/0/18 HP, pays7 MP once, restores the caster and returns usable player
+control. Actual body/palette, textures, Chinese results and evil fairy placement pass in Original
+and HD/Reduced Flash. The shared cursor correction preserves later recipients' source metadata
+and their own idle work; direct varied-content engine cases own that timing assertion.
+No enemy policy, rank, source selection or real campaign slot changes. The comparison seed and
+launch command are documented at that owner. Natural original casting and hardware timing remain
+**Unknown**; the earlier Master Monk HEAL3 witness remains separate.
