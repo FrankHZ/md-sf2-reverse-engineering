@@ -1773,3 +1773,20 @@ exit warnings under paused #1716.
 **Unknown.** Natural original/player reach, unobserved combinations, hardware-random
 cadence, palette/priority flicker and human aesthetic acceptance. No Battle27+, new caller,
 equipment, recruitment, save format or broader lifecycle work is included.
+
+**Confirmed remake acceptance.** All four Sarah ranks and Dark Bishop BLAST3 pass ordinary
+input, actual texture/side/composition, ordered result and next-menu observations. HD,
+partial-group fallback and ReducedFlash/held1.5x pass. After the final overlap-order change,
+HD4 and enemy3 pass again; with producer scratch unavailable, the published reader restores
+all five inputs and published rank2, HD4 ReducedFlash/fast and incomplete-HD4 pass.
+Maximum measured native working set is1,348,579,328 bytes; producer scratch logical size
+at review publication is400,884,507 bytes. These host measurements fit the2GiB allowance.
+
+The committed default and `--scope engine` plans agree: engine-unit, adapter-build,
+private-admission-build, live-inspection-build and research-public; no unclassified paths.
+The Python changes are remake asset consumers, not research execution semantics.
+Engine passes3383 with50 optional private-input skips. Locked adapter Debug/Release and
+both tool Release builds pass with zero warnings/errors. Ruff, design-contracts and
+research-index direct checks pass. No rules changed and no verification-tool tests were
+added. Native evidence is independent of optional unit skips. The Draft PR records actual
+remote CI and the frozen head/tree/base for independent main-gate acceptance.
