@@ -54,13 +54,13 @@ func state() -> Dictionary:
     if view == null or not (view as Control).is_visible_in_tree(): view = find("BattleSessionView")
     return observation(view, "ReadObservationJson")
 func selected_menu() -> String:
-    for name_ in ["Save", "Settings", "NewGame", "Quit"]:
+    for name_ in ["Save", "Load", "Settings", "NewGame", "Quit"]:
         var button := find("System" + name_) as Button
         if button != null and button.is_visible_in_tree() and button.theme_type_variation == "EntrySelectedButton": return name_
     return ""
 
 func choose_system_action(id: String) -> void:
-    for i in range(4):
+    for i in range(5):
         if selected_menu() == id:
             await key(KEY_ENTER)
             return
@@ -272,7 +272,7 @@ func save_flow() -> void:
     await key(KEY_ESCAPE)
     check(selected_menu() == "Save", "slots Back restores originating Save row")
     # Settings is legal at this retained settled field boundary.
-    await key(KEY_DOWN); await key(KEY_ENTER)
+    await choose_system_action("Settings")
     check(find("SettingsView") != null, "settled field offers settings")
     if find("SettingsView") != null: await settings_flow()
     check(selected_menu() == "Settings", "settings Back restores originating row")

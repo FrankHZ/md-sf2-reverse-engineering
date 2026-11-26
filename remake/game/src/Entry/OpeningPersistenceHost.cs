@@ -392,6 +392,20 @@ public sealed partial class GameRoot
         }
     }
 
+    private void ShowInGameLoad()
+    {
+        if (_session is null || _slots is not null || _entryLoading || _entry is not null) return;
+        // Replacement admits the same settled boundary as Save; opening a host menu
+        // during an action never grants permission to discard its pending consumers.
+        if (_fieldEntryFailure is not null || SaveOffer(previewMusic: _battle?.Inspecting == true).Error is not null) return;
+        if (_savedSession == _session.Current.SessionId && _savedRevision == _session.Current.Revision)
+        { ShowContinue(); return; }
+        OpenSavePanel();
+        _slots!.ShowChoices("confirm-load", GameText.Get("save.load-dirty"),
+            (GameText.Get("entry.cancel"), CloseSavePanel), (GameText.Get("entry.load-menu"), ShowContinue));
+        DisarmInput();
+    }
+
     private void ShowContinue() => ShowContinue(loadSeed: SeedOnly);
 
     private async void ShowContinue(bool loadSeed, SessionEntryView? witch = null)

@@ -18,7 +18,7 @@ internal sealed partial class SystemMenuView : Control
     private Label _title = null!, _hint = null!;
     private PanelContainer _panel = null!;
     private ScrollContainer _scroll = null!;
-    private int _selected = 1;
+    private int _selected = 2;
 
     public override void _Ready()
     {
@@ -36,10 +36,10 @@ internal sealed partial class SystemMenuView : Control
         _scroll.GetVScrollBar().VisibilityChanged += RefreshInputHints;
         var rows = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         rows.AddThemeConstantOverride("separation", 8); _scroll.AddChild(rows);
-        string[] names = ["Save", "Settings", "NewGame", "Quit"];
+        string[] names = ["Save", "Load", "Settings", "NewGame", "Quit"];
         for (int index = 0; index < names.Length; index++)
         {
-            if (index is 0 or 2)
+            if (index is 0 or 3)
             {
                 var group = new Label(); group.AddThemeFontSizeOverride("font_size", 24);
                 rows.AddChild(group); _groups.Add(group);
@@ -67,15 +67,15 @@ internal sealed partial class SystemMenuView : Control
     }
 
     internal void Present(bool save, string saveReason, bool settings, bool newGame,
-        Action showSave, Action showSettings, Action showEntry, Action quit)
+        Action showSave, Action showLoad, Action showSettings, Action showEntry, Action quit)
     {
         _pointer.Suspend();
-        _actions = [showSave, showSettings, showEntry, quit];
+        _actions = [showSave, showLoad, showSettings, showEntry, quit];
         _title.Text = GameText.Get("system.title");
         _groups[0].Text = GameText.Get("system.journey"); _groups[1].Text = GameText.Get("system.session");
-        string[] keys = ["entry.save-menu", "ui.settings.title", "entry.new-menu", "entry.quit-menu"];
-        bool[] allowed = [save, settings, newGame, true];
-        string[] reasons = [saveReason, GameText.Get("system.settings-reason"), GameText.Get("system.new-reason"), ""];
+        string[] keys = ["entry.save-menu", "entry.load-menu", "ui.settings.title", "entry.new-menu", "entry.quit-menu"];
+        bool[] allowed = [save, save, settings, newGame, true];
+        string[] reasons = [saveReason, saveReason, GameText.Get("system.settings-reason"), GameText.Get("system.new-reason"), ""];
         for (int index = 0; index < _buttons.Count; index++)
         {
             _buttons[index].Text = GameText.Get(keys[index]); _buttons[index].Disabled = !allowed[index];

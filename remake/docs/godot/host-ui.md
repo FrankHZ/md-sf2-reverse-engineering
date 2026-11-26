@@ -82,25 +82,34 @@ minimum dimension, gameplay enters [window recovery](presentation.md#window-supp
 
 ## Access through the finite demo
 
+System Menu now includes Load between Save and Settings. Settings remains the initial selection.
+Load shares Save's settled-boundary admission and displayed refusal reason. Dirty progress opens
+a Cancel-first warning, then the existing paged history with level/local-time summaries. Back or
+an error restores Load focus and the original session. Successful load closes the host directly to
+the selected field/battle snapshot. The [lifecycle owner](../application/opening-session-lifecycle.md#in-game-load-2286)
+defines replacement, compatibility, explicit recovery and held-input semantics.
+
 The host queries current session authority when presenting each offer. A paused picture or a
 finished animation never establishes save eligibility.
 
 | Current boundary | Settings/help | Save and return / Save and Quit |
 | --- | --- | --- |
 | Witch action menu | Ordinary preferences, or read-only values/help with `--input-settings`. Back keeps the entry phase. | Initial focus is Continue with an admitted primary and New Game otherwise. Continue reads paged history after the Witch's question; New Game can choose a fresh numbered destination. |
-| Settled walking field, no Party/service/story owner | Preferences and help available. | Only an admitted finite recipe after stable player/followers, story, display and music checks. |
+| Settled walking field, no Party/service/story owner | Preferences and help available. | The current `SaveOffer` queries the unified field snapshot: the admitted visit must have representable state/bindings and settled player/followers, story, display and music. No historical location-recipe whitelist governs the current writer. |
 | Moving field/followers | The existing menu-entry settlement runs first; no new timeout or settlement rule. | The same bounded settlement may admit Save; failure keeps its reason and no queued write. |
-| Text, choices, services, story motion, fades, transfer or outcome programs | Conditional rows remain unavailable until their real owner returns control. Party/preparation prevents system entry until closed. | Busy state or missing recipe refuses Save. Church's explicit Save caller retains its own completed-parent return. |
-| Battle01–07 settled player Movement at the saved actor's origin | Menu opens the shared Settings and Help. Settled inspection Options → Speed also keeps its two-row shortcut. | Existing new-game provenance, encounter/return route, actor/queue, story and music predicates must all pass. |
+| Text, choices, services, story motion, fades, transfer or outcome programs | Conditional rows remain unavailable until their real owner returns control. Party/preparation prevents system entry until closed. | Unfinished work refuses Save and Load. Church's explicit Save caller retains its own completed-parent return. |
+| Admitted battle, settled player Movement at the saved actor's origin | Menu opens the shared Settings and Help. Settled inspection Options → Speed also keeps its two-row shortcut. | Existing new-game provenance, encounter/return route, actor/queue, story and music predicates must all pass. |
 | Nonzero movement preview, movement delivery, ActionChoice, lists/targets, confirmations, action playback, enemy/round/outcome work | Menu opens shared Settings while the battle presenter owns play. | Refused with the owning preview, selection, movement, story or busy reason. Resume does not undo or commit the retained choice. |
-| Unsupported/diagnostic start or field without a save recipe | Safe field preferences may still be available. | Existing profile/route/location refusal remains explicit. A controlled direct-battle start is not an ordinary saveable journey. |
+| Unsupported/diagnostic start or unrepresentable field mode/state/binding | Safe field preferences may still be available. | The current offer's profile, route, mode or binding refusal remains explicit. A controlled direct-battle start is not an ordinary saveable journey. |
 | Undersized client | Only restore/fullscreen/quit recovery owns input. | No automatic save; Cancel from Quit returns to recovery or the retained page after a supported resize. |
 
-Field recipes remain `new-game`, `map3-opening`, `map3-joined`, `battle01-return` and the completed
-Battle07 `battle07-return` Map58 anchor, according to current content/persistence authority.
-First Map14 control is inside the [campaign demo frontier](../application/pre-voyage-campaign.md),
-not an added field-save recipe. Inspection remains read-only; explicit Save alone consumes the
-existing live music/capture path. Gameplay/progress never stores preferences.
+The [unified settled field snapshot owner](../application/opening-session-lifecycle.md#eligibility-and-return-semantics)
+defines current state-based admission, including supported interiors and later visits. Map14 is
+subject to the same live offer, not excluded for lacking a historical recipe. Older anchored
+recipes remain compatible reader inputs; the initial `new-game` record retains its separate
+pre-on-load bootstrap. This does not widen admitted content or allow riding, pending story work
+or unsupported bindings. Inspection remains read-only; explicit Save alone consumes the existing
+live music/capture path. Gameplay/progress never stores preferences.
 
 ## Settings from the battle system Menu
 
@@ -126,8 +135,11 @@ battle through the ordinary Godot host.
 
 ## Slot recovery and overwrite at 1080p
 
-**Confirmed.** In the Witch's **Continue** column, the backup prompt identifies the slot, name,
-destination and UTC time. The primary failure detail follows at 24px, then any translation fallback
+The current shared `Label` identifies slot number, protagonist name, saved level and local date/time
+in Continue, Save and in-game Load, including the backup prompt; see the
+[slot summary observation](#slot-summary-observation). Destination and UTC time were the historical
+#1769 label format used by the bounded recovery/overwrite observations below, not the current format.
+The primary failure detail follows at 24px, then any translation fallback
 notice at 24px. The reading region starts at its first line. Cancel and Recover Backup sit below
 it, followed by the mapped footer. Left/Right scroll the explanation while Up/Down selects an
 action. The field Menu's **Save** uses the same order for an error or overwrite. The overwrite
@@ -481,6 +493,89 @@ retained in the Issue/PR handoff, not reclassified as interrupted runs. Passing 
 report two `ObjectDB` instances leaked at shutdown; no adapter exception, game error or save mutation
 was observed. This slice does not claim to fix that shutdown warning or certify broader startup,
 performance, story progression or human aesthetic acceptance.
+
+## In-game Load observation (#2286)
+
+**Confirmed, bounded remake host behavior:** English and Chinese field and Battle01 ordinary
+input load through the top-right Menu without title/Witch. Field witnesses cover dirty confirmation
+and history cancellation, changed-file refusal, unsupported future version, incompatible rules,
+corrupt primary, backup Cancel and explicit recovery, valid primary and held Confirm. The battle
+witness saves the actual player turn, rejects ActionChoice, cancels history without mutation,
+compares the complete captured/restored battle payload and accepts a fresh Confirm only after release.
+A separate ordinary NPC Talk witness checks the unavailable Load reason and held Cancel at story text.
+Old field/battle nodes are freed after replacement preflight. Field snapshots compare landing,
+names, map and gold; this is not a new exhaustive field-codec proof. Headless state/input checks
+establish no physical controller, OS focus, human visual/audio or whole-campaign acceptance.
+
+Use the selected SDK/Godot and immutable `issue2282/buff-v1`, `opening2252`, `witch2255` and
+`catalog2266` inputs from [Sample setup](#sample-setup-and-reset). Retain those exact package
+selections; an unaccepted art candidate is not a substitute. No player backup is needed: the
+observer creates a production slot in its disposable namespace, then modifies only that copy.
+The existing High-rigor lifecycle agreement controls scope; no new persistence abstraction,
+format, content admission, input defaults or unit tests of verification helpers are introduced.
+
+Build the Debug adapter with `UseSharedCompilation=false` and `nodeReuse:false` after loading
+`local/private-inputs.ps1`; use the [locked SDK workflow](../development-and-verification.md#locked-net-workflow).
+Import the changed PO resources with the selected editor only when stale. Start from the repository
+root and use the package/environment selection in Sample setup through `$env:SF2_SAVE_ROOT`.
+Set `$disposableSaveRoot` to an external validation directory, never player storage. Then run:
+
+```powershell
+function Invoke-InGameLoadObservation {
+    param([ValidateSet('field','battle','story')][string]$Case='field',
+          [ValidateSet('en','zh-CN')][string]$Language='en')
+    $space = "issue2286-$Case-$Language-$([guid]::NewGuid())"
+    $run = (New-Item -ItemType Directory -Path "local/issue2286/$space" -Force).FullName
+    $env:SF2_SAVE_NAMESPACE = $space
+    $save = Join-Path $env:SF2_SAVE_ROOT $space
+    New-Item -ItemType Directory -Path "$save/sf2-opening" -Force | Out-Null
+    $prefs = (New-Item -ItemType Directory -Path "$save/sf2-preferences").FullName
+    @{formatVersion=1; language=$Language} | ConvertTo-Json |
+        Set-Content -LiteralPath "$prefs/input.json" -Encoding utf8NoBOM
+    foreach ($name in @('APPDATA','LOCALAPPDATA','TEMP')) {
+        [Environment]::SetEnvironmentVariable($name,
+            (New-Item -ItemType Directory -Path "$run/$name").FullName, 'Process')
+    }
+    $env:TMP = $env:TEMP
+    $env:SF2_HOST_UI_CASE = $Case
+    $env:SF2_HOST_UI_OUTPUT = Join-Path $run 'native.json'
+    $env:SF2_HOST_UI_STILLS = ''
+    $env:SF2_HOST_UI_START = Join-Path $run 'start.json'
+    $start = @{map='map-3'; player='entity-0'; position=@{x=32;y=13}; facing=1; speed=32;
+        flags=@(0,1,2,32,33,34,66,67,80,600,602,603,609,610)}
+    if ($Case -eq 'story') { $start.position.x=28 }
+    if ($Case -eq 'battle') {
+        $start=@{map='map-57';player='entity-0';position=@{x=8;y=14};facing=3;speed=32;
+            flags=@(0,1,2,32,33,34,66,80,401,451)}
+    }
+    @{start=$start} | ConvertTo-Json -Depth 8 |
+        Set-Content -LiteralPath $env:SF2_HOST_UI_START -Encoding utf8NoBOM
+    & $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 120 --path remake/game `
+        --script res://probes/ingame_load_observation.gd --log-file "$run/godot.log"
+    if ($LASTEXITCODE) { throw "Load observation failed: $Case / $Language" }
+}
+Invoke-InGameLoadObservation -Case field
+Invoke-InGameLoadObservation -Case field -Language zh-CN
+Invoke-InGameLoadObservation -Case battle
+Invoke-InGameLoadObservation -Case battle -Language zh-CN
+Invoke-InGameLoadObservation -Case story
+```
+
+Run serially in the owned project; each process has a 55-second deadline and exits itself. One
+existing content admission per process, a few small save copies and selected state samples suffice.
+There is no acquisition, image capture or frame-history export. Keep reports/logs below 64 MiB and
+reassess on unexpected growth; no large processing run is required.
+
+Completed failures remain discovery evidence: first menu navigation ran before movement settlement;
+new localization keys initially lacked their required key-registry entries; preparing a field beside
+its old namesake exposed a stable-node-name collision. Those were corrected before passing runs.
+Early observer assertions compared changing presentation/ordinary field-clock revisions, expected a
+clean field after resumed clock ticks, or used an English slot prefix in Chinese. The battle approach
+has no text wait, so it cannot prove story refusal; an initial Map3 story coordinate was rejected.
+The corrected story start above uses ordinary Talk to the adjacent NPC. Final error-classification review also found that Godot JSON reserialization changed integer wire spelling in the incompatibility control; the observer now edits only the original rules string and checks the specific compatibility message in both languages. Existing two/four ObjectDB
+shutdown warnings remain #1716. No production exception or save mutation outside the disposable
+selected namespace was observed. Local reports retain each completed failure; no slow aggregate
+suite or full campaign was rerun to replace them.
 
 ## Reproduction and finite evidence
 

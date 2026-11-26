@@ -359,6 +359,12 @@ msgstr "Quit…"
 msgid "entry.save-menu"
 msgstr "Save…"
 
+msgid "entry.load-menu"
+msgstr "Load…"
+
+msgid "save.load-dirty"
+msgstr "Load another save? Unsaved progress in the current journey will be lost."
+
 msgid "entry.retry"
 msgstr "Retry"
 

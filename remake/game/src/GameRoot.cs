@@ -302,6 +302,7 @@ public sealed partial class GameRoot : Node
         if (settledField)
         {
             preparedField = CreateField(new());
+            preparedField.Name = "PreparedField";
             preparedField.ProcessMode = ProcessModeEnum.Disabled;
             preparedField.Hide();
             AddChild(preparedField);
@@ -367,6 +368,7 @@ public sealed partial class GameRoot : Node
             else
             {
                 _exploration = preparedField;
+                preparedField.Name = "ExplorationSessionView";
                 preparedField.Show();
                 preparedField.PublishAttachment();
             }
@@ -453,7 +455,7 @@ public sealed partial class GameRoot : Node
         _systemMenu.Present(save.Error is null && _fieldEntryFailure is null,
             _fieldEntryFailure is { } error ? Explain(error) : save.Error is null ? "" : saveReason, CanOpenSettings,
             _session!.Current.CanWaitAtInput && _exploration?.PartyMenuOpen != true,
-            ShowSave, ShowSettings, ShowEntry, RequestQuit);
+            ShowSave, ShowInGameLoad, ShowSettings, ShowEntry, RequestQuit);
     }
     private void CoverSystemMenu() { _systemMenu?.SuspendPointer(); _systemMenu?.Hide(); }
     private void ReturnToSystemMenu()
