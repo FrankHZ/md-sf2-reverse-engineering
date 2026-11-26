@@ -7,6 +7,12 @@ and controller alternatives; installed navigation remains active until top-level
 returns to the source row, and Back at the top discards the visit. The [E2 feature row](../evidence/opening-ui-gaps.md#e2-settings)
 tracks the player outcome. The [host handoff](ui-architecture.md#one-event-from-device-to-page-and-back) owns the High-rigor native input boundary.
 
+Focus loss cancels held movement, acceleration, repeat and pointer gestures. The host drains device
+edges received in the background before gameplay or UI dispatch. Returning to the window reconciles
+neutral input and discards elapsed pacing debt. The [background preference](host-ui.md#run-in-background)
+controls automatic time and audio. The explicitly enabled [debug endpoint](../verification/debug-port.md)
+retains its own request admission and can read state while the window is unfocused.
+
 ## Current production boundary
 
 **Confirmed** by reading the following production owners. The existing [production controls audit](ui-scene-review.md#production-controls-audit) separately records ordinary input with already installed settings, including the Ribble field and controlled Galam shop and Battle01. Those runs used defaults or preconfigured mappings.

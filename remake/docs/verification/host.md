@@ -17,6 +17,40 @@ an aggregate checklist. No screenshots; no new tests of probes/helpers. Read com
 Unknown boundaries before reproducing a claim. Full historical receipts remain in the
 [pre-reorganization guide](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/1c4c786a6e2c630e1cfadf4daa88dbd7687caa19/remake/docs/development-and-verification.md).
 
+## Native background playback
+
+**Confirmed:** the Debug main scene and relocated Windows x86_64 Release candidate built from
+`db849450980151dc9c4be195bbce06846ad433e6` used real Windows foreground transfers at 1600×900.
+The Release archive came from a clean product commit. Its game process ran from a different cwd
+with OS-only PATH and the packaged content selections. All saves and preferences used disposable
+namespaces. The two builds reported distinct module IDs and the expected exported flag.
+
+Use the [local client and launch recipe](debug-port.md#launch-and-operate) and the
+[Windows candidate recipe](../windows-local-candidate.md#build-and-run). Observe the game’s
+`focused` field and native foreground window on both sides of each transfer. Keep one client
+connected while holding input. Take observations about 0.5–1 second apart. Keep the game in
+the background between reads.
+
+| Consumer and operation | Observed result |
+| --- | --- |
+| Start at opening. Read `observe state` and `observe host`, switch to another application, then return. | Release default held tick 543 and intro music at 9.314 s. After Apply and restart, ticks advanced 146→183 and music 2.615→3.286 s while unfocused. First sample after return was tick 187. Debug with the preference enabled advanced 74→114. |
+| Skip to title with Equipment, enter Witch and open Settings → Gameplay aids. Toggle and Cancel, reopen, toggle and reset the page, then toggle and Apply. Select Chinese in the same draft. | Both builds discarded Cancel and reset the draft to Off before Apply. Chinese displayed 失焦后继续运行：开启. A format 1 file containing only `formatVersion` and `modernGuidance` opened at Off. Release also applied Reset all, returned to English/Off and loaded Off on the next launch. |
+| Launch with `-- --authored-package <absolute path to harbor-arrival.json>` from `remake/content/authored`. Sample idle field time, Confirm Talk, acknowledge text, leave the choice untouched and then explicitly accept it. | Release enabled advanced field ticks 151→190. Choice token 197 stayed pending. The accepted choice reached the next dialogue with flags 10,12,13,14,15 while unfocused and held at tick 199. After reset, idle tick 37 stayed fixed and the same route paused during the entity wait. |
+| Use `scene-music-context.json` through the same authored entry. Sample `observe audio`. | Background-enabled `area-a` looped with changing playback position, sequence 1 and no error. Off held the position at 0.092 s. Returning to focus retained the sequence in each run. |
+| In an ignored copy of `early-ranged.json`, set sentinel’s agility to 55 and deployment x to 6. Launch via the authored entry. At player Movement open the system Menu, transfer focus, return and close Menu. Hold physical Right and Shift, transfer focus before release, then release in the other window. Confirm the player’s destination (3,2) and choose Stay. Immediately leave the window. Read `observe state` for pacing, movement and scene. | Release Menu kept pacing steps fixed in both settings. Right+Shift armed 1.5×. Focus loss disarmed acceleration, cleared the mapped hold and ended repeat at (3,2). Return used 1× and the four-step cap. Off froze sentinel’s automatic move 6,2→5,2 at revision 8. On completed that move and reached ActionMessage token 28 at revision 11. Both waited there until a fresh Confirm. Debug enabled reached the same move and reading boundary. |
+| Hold the opening Skip button, drag out and back, minimize, restore and release. Then click Skip again. Resize a fresh enabled opening below minimum and switch focus while recovery covers it. | The orphan release preserved the opening. A fresh click reached title. Recovery paused intro audio and held tick 131 until the supported size was restored, then the opening advanced to tick 152. |
+
+The initial native focus helper failed to become foreground. A checked click in the helper
+established the foreground transfer. An initial pointer attempt missed the native window under
+display scaling and stopped before pressing. The corrected run used DPI-aware client coordinates.
+The first battle input combined `practice-yard` with attack AI and correctly failed admission
+with `physical-definition`. The listed ranged package supplies that definition. An initial export
+launcher also removed the observer's Python PATH. Running the clean game-launch environment in its
+own process restored the observer. The successful native game logs contained no warnings or errors.
+
+**Unknown:** physical controller hardware and other Windows display/audio devices. These samples
+measure the game's timing, input and audio state on one host.
+
 ## Ordinary Host Startup
 
 After loading the retained worktree SDK/Godot environment, ordinary play uses:

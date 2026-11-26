@@ -38,6 +38,7 @@ internal sealed partial class SettingsView
                 _draft.CharactersPerSecond = defaults.CharactersPerSecond;
                 break;
             case Page.Assist:
+                _draft.RunInBackground = defaults.RunInBackground;
                 _draft.ReducedFlash = defaults.ReducedFlash;
                 _draft.ModernGuidance = defaults.ModernGuidance;
                 _draft.AccelerationMultiplier = defaults.AccelerationMultiplier;

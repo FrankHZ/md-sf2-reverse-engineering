@@ -2125,6 +2125,12 @@ msgstr "{0}: Read · {1}: Commands"
 msgid "ui.settings.guidance"
 msgstr "Modern guidance: {0}"
 
+msgid "ui.settings.background"
+msgstr "Run in background: {0}"
+
+msgid "ui.settings.background-detail"
+msgstr "Keep automatic scenes and audio running while another window has focus. Choices still wait for input."
+
 msgid "ui.settings.acceleration"
 msgstr "Hold speed: {0}×"
 

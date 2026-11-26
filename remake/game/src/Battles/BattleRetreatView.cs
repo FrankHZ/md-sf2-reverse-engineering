@@ -20,7 +20,7 @@ internal sealed partial class BattleRetreatView : Control
     private InputSettings _settings = null!;
     private BattleRetreatState? _state;
     private double _elapsed, _revealed;
-    private bool _delivered, _suspended;
+    private bool _delivered;
 
     public override void _Ready()
     {
@@ -43,12 +43,6 @@ internal sealed partial class BattleRetreatView : Control
         Hide();
     }
 
-    public override void _EnterTree()
-    { GetWindow().FocusExited += Suspend; GetWindow().FocusEntered += Resume; }
-    public override void _ExitTree()
-    { GetWindow().FocusExited -= Suspend; GetWindow().FocusEntered -= Resume; }
-    private void Suspend() { _suspended = true; if (_cue is not null) _cue.StreamPaused = true; }
-    private void Resume() { _suspended = false; if (_cue is not null) _cue.StreamPaused = false; }
     internal void Configure(GameSession session, InputSettings settings) { _session = session; _settings = settings; }
 
     internal void Present()
@@ -69,7 +63,7 @@ internal sealed partial class BattleRetreatView : Control
                 _ => throw new InvalidOperationException("Unknown retreat payment."),
             };
             _text.VisibleCharacters = _settings.TextMode == "instant" ? -1 : 0;
-            if (state.Phase == BattleRetreatPhase.Effect) { _cue.Play(); _cue.StreamPaused = _suspended; }
+            if (state.Phase == BattleRetreatPhase.Effect) _cue.Play();
         }
         _state = state;
         _text.Visible = state.Phase == BattleRetreatPhase.Text;
@@ -79,7 +73,7 @@ internal sealed partial class BattleRetreatView : Control
 
     internal SessionCommand? Consume(double delta)
     {
-        if (_state is not { } state || _suspended || _delivered || !IsVisibleInTree() || !CanProcess()) return null;
+        if (_state is not { } state || _delivered || !IsVisibleInTree() || !CanProcess()) return null;
         _elapsed += delta;
         if (state.Phase == BattleRetreatPhase.Text)
         {
@@ -109,7 +103,7 @@ internal sealed partial class BattleRetreatView : Control
 
     internal SessionCommand? Acknowledge(GameAction action)
     {
-        if (_suspended || !CanProcess() || _state is not { Phase: BattleRetreatPhase.Text } state || action != GameAction.Confirm) return null;
+        if (!CanProcess() || _state is not { Phase: BattleRetreatPhase.Text } state || action != GameAction.Confirm) return null;
         if (!state.Revealed) { _text.VisibleCharacters = -1; return null; }
         if (_panel.ReadMore())
         { _panel.SetHint(GameText.Get(_panel.MoreBelow ? "battle.result-more" : "battle.result-continue")); return null; }
@@ -120,6 +114,6 @@ internal sealed partial class BattleRetreatView : Control
     internal object Observe() => new { active = _state is not null, phase = _state?.Phase.ToString(),
         token = _state?.Token.Value, paidMp = _state?.PaidMp, payment = (object?)_state?.Payment, revealed = _state?.Revealed,
         text = _text.Text, visibleCharacters = _text.VisibleCharacters, textVisible = _text.Visible,
-        elapsed = _elapsed, delivered = _delivered, suspended = _suspended,
+        elapsed = _elapsed, delivered = _delivered, suspended = !CanProcess(),
         effectAlpha = _veil.Color.A, cuePlaying = _cue.Playing, cue = "authored-egress-tone-v1", panel = _panel.Observe() };
 }

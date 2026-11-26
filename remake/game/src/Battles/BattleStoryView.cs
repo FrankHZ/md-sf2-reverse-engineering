@@ -20,7 +20,7 @@ internal sealed partial class BattleStoryView : Control
     private BattleMapViewport _map = null!;
     private ProgramWait? _wait;
     private ulong _mountedFrame;
-    private bool _delivered, _suspended;
+    private bool _delivered;
     public override void _Ready()
     {
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect); MouseFilter = MouseFilterEnum.Ignore;
@@ -29,7 +29,7 @@ internal sealed partial class BattleStoryView : Control
     }
     public override void _Process(double delta)
     {
-        if (_suspended || !IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess()) return;
+        if (!IsVisibleInTree() || !CanProcess()) return;
         if (_text.VisibleCharacters >= 0)
         {
             _revealed = Math.Min(_text.GetTotalCharacterCount(), _revealed + delta * _input.Settings.CharactersPerSecond);
@@ -47,12 +47,6 @@ internal sealed partial class BattleStoryView : Control
         _panel.SetHint(hint);
     }
     private bool Revealed => _text.VisibleCharacters < 0 || _text.VisibleCharacters >= _text.GetTotalCharacterCount();
-    public override void _EnterTree()
-    { GetWindow().FocusExited += Suspend; GetWindow().FocusEntered += Resume; }
-    public override void _ExitTree()
-    { GetWindow().FocusExited -= Suspend; GetWindow().FocusEntered -= Resume; }
-    private void Suspend() => _suspended = true;
-    private void Resume() => _suspended = false;
     internal void Configure(GameSession session, BattleMapViewport map, GameInput input)
     {
         if (_map is not null) _map.SubjectChanged -= ObserveSubject;
@@ -74,7 +68,7 @@ internal sealed partial class BattleStoryView : Control
         _panel.Present(_wait is DialogueWait, false, false, _subject, "", _wait is DialogueWait);
         Hint();
     }
-    private bool DeliveryReady => !_suspended && !_delivered && IsVisibleInTree() && CanProcess() && Engine.GetProcessFrames() > _mountedFrame;
+    private bool DeliveryReady => !_delivered && IsVisibleInTree() && CanProcess() && Engine.GetProcessFrames() > _mountedFrame;
     internal SessionCommand? Consume()
     {
         if (!DeliveryReady) return null;
@@ -94,7 +88,7 @@ internal sealed partial class BattleStoryView : Control
     internal object Observe() => new { active = _session.Current.BattleRound is { Program: true },
         cursor = _session.Current.Story.Cursor, callers = _session.Current.Story.Callers, token = _wait?.Token.Value,
         kind = _wait?.GetType().Name, text = _text.Text, visible = _text.IsVisibleInTree(),
-        delivered = _delivered, presented = Engine.GetProcessFrames() > _mountedFrame, suspended = _suspended,
+        delivered = _delivered, presented = Engine.GetProcessFrames() > _mountedFrame, suspended = !CanProcess(),
         panel = _panel.Observe(), visibleCharacters = _text.VisibleCharacters, totalCharacters = _text.GetTotalCharacterCount(),
         cameraSlot = _session.Current.Story.CameraEntitySlot, lists = _session.Current.Story.PartyLists };
 }

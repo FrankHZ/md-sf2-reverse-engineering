@@ -140,6 +140,7 @@ internal sealed partial class SaveSlotView : Control
         else if (action == GameAction.Down) Select((_selected + 1) % _buttons.Count);
         else if (action == GameAction.Confirm && _actions.Count > 0) _actions[_selected]();
     }
+    internal void SuspendPointer() => _pointer.Suspend();
     internal bool HandlePointerCancel(InputEvent input)
     {
         if (input is not InputEventMouseButton { ButtonIndex: MouseButton.Right } button)

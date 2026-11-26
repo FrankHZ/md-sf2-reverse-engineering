@@ -63,10 +63,8 @@ public sealed partial class GameRoot
         if (_openingPointerBarrier && !Godot.Input.IsMouseButtonPressed(MouseButton.Left) &&
             !Godot.Input.IsMouseButtonPressed(MouseButton.Right)) _openingPointerBarrier = false;
         if (_opening is not { } owner) return;
-        bool paused = !GetWindow().HasFocus() || _windowRecovery is not null || _windowQuit is not null;
-        owner.Audio?.SetPaused(paused);
-        if (paused) { owner.Pointer.Suspend(); return; }
-        owner.Pointer.ReleaseIfNeutral();
+        if (WindowPausesPlayback) return;
+        if (GetWindow().HasFocus()) owner.Pointer.ReleaseIfNeutral();
         if (owner.Loading is { IsCompleted: true } loading)
         {
             owner.Loading = null;

@@ -146,6 +146,8 @@ internal static partial class GameText
         ["guidance.route-unavailable"] = 0,
         ["guidance.reading"] = 2,
         ["ui.settings.guidance"] = 1,
+        ["ui.settings.background"] = 1,
+        ["ui.settings.background-detail"] = 0,
         ["ui.settings.acceleration"] = 1,
         ["ui.settings.acceleration-detail"] = 1,
         ["ui.settings.debug"] = 1,

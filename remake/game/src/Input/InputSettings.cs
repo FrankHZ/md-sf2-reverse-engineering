@@ -12,6 +12,7 @@ internal sealed class InputSettings
 
     public required int FormatVersion { get; set; }
     public string ConfirmCancel { get; set; } = "standard";
+    public bool RunInBackground { get; set; }
     public bool ReducedFlash { get; set; }
     public string Language { get; set; } = "en";
     public string GraphicsMode { get; set; } = "original";
@@ -66,6 +67,7 @@ internal sealed class InputSettings
             FormatVersion = FormatVersion, ConfirmCancel = ConfirmCancel, ReducedFlash = ReducedFlash,
             Language = Language, GraphicsMode = GraphicsMode, TextMode = TextMode, CharactersPerSecond = CharactersPerSecond,
             ModernGuidance = ModernGuidance, AccelerationMultiplier = AccelerationMultiplier,
+            RunInBackground = RunInBackground,
             ShowDebugDiagnostics = ShowDebugDiagnostics, DebugAutoVictory = DebugAutoVictory,
             SuppressBattleHitCoinMessages = SuppressBattleHitCoinMessages,
         };
@@ -78,6 +80,7 @@ internal sealed class InputSettings
     {
         ConfirmCancel = candidate.ConfirmCancel; ReducedFlash = candidate.ReducedFlash;
         Language = candidate.Language; TextMode = candidate.TextMode; CharactersPerSecond = candidate.CharactersPerSecond;
+        RunInBackground = candidate.RunInBackground;
         GraphicsMode = candidate.GraphicsMode;
         ModernGuidance = candidate.ModernGuidance;
         AccelerationMultiplier = candidate.AccelerationMultiplier;

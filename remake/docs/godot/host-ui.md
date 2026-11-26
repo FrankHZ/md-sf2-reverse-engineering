@@ -89,6 +89,16 @@ These layouts cap reading width and retain 30-unit body text and 24-unit hints o
 canvas. At the 1600×900 desktop floor these project to 25 and 20 physical pixels. Below either
 minimum dimension, gameplay enters [window recovery](presentation.md#window-support-and-recovery-1455).
 
+### Run in background
+
+Gameplay aids → Run in background controls automatic opening, story, exploration and battle
+playback, including audio, when the game window loses focus. Apply saves the preference. Cancel
+discards the draft. Page reset and Reset all stage Off. Format 1 preferences that omit
+`runInBackground` load as Off. Keyboard, pointer and controller actions require window focus.
+A dialogue acknowledgement or player decision waits for fresh input. System menus, recovery,
+loading and error boundaries retain their own pause and admission rules.
+[Native focus, audio and input verification](../verification/host.md#native-background-playback)
+
 ## Access through the finite demo
 
 System Menu now includes Load between Save and Settings. Settings remains the initial selection.
