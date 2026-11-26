@@ -95,19 +95,21 @@ finished animation never establishes save eligibility.
 | Current boundary | Settings/help | Save and return / Save and Quit |
 | --- | --- | --- |
 | Witch action menu | Ordinary preferences, or read-only values/help with `--input-settings`. Back keeps the entry phase. | Initial focus is Continue with an admitted primary and New Game otherwise. Continue reads paged history after the Witch's question; New Game can choose a fresh numbered destination. |
-| Settled walking field, no Party/service/story owner | Preferences and help available. | Only an admitted finite recipe after stable player/followers, story, display and music checks. |
+| Settled walking field, no Party/service/story owner | Preferences and help available. | The current `SaveOffer` queries the unified field snapshot: the admitted visit must have representable state/bindings and settled player/followers, story, display and music. No historical location-recipe whitelist governs the current writer. |
 | Moving field/followers | The existing menu-entry settlement runs first; no new timeout or settlement rule. | The same bounded settlement may admit Save; failure keeps its reason and no queued write. |
-| Text, choices, services, story motion, fades, transfer or outcome programs | Conditional rows remain unavailable until their real owner returns control. Party/preparation prevents system entry until closed. | Busy state or missing recipe refuses Save. Church's explicit Save caller retains its own completed-parent return. |
-| Battle01–07 settled player Movement at the saved actor's origin | Menu opens the shared Settings and Help. Settled inspection Options → Speed also keeps its two-row shortcut. | Existing new-game provenance, encounter/return route, actor/queue, story and music predicates must all pass. |
+| Text, choices, services, story motion, fades, transfer or outcome programs | Conditional rows remain unavailable until their real owner returns control. Party/preparation prevents system entry until closed. | Unfinished work refuses Save and Load. Church's explicit Save caller retains its own completed-parent return. |
+| Admitted battle, settled player Movement at the saved actor's origin | Menu opens the shared Settings and Help. Settled inspection Options → Speed also keeps its two-row shortcut. | Existing new-game provenance, encounter/return route, actor/queue, story and music predicates must all pass. |
 | Nonzero movement preview, movement delivery, ActionChoice, lists/targets, confirmations, action playback, enemy/round/outcome work | Menu opens shared Settings while the battle presenter owns play. | Refused with the owning preview, selection, movement, story or busy reason. Resume does not undo or commit the retained choice. |
-| Unsupported/diagnostic start or field without a save recipe | Safe field preferences may still be available. | Existing profile/route/location refusal remains explicit. A controlled direct-battle start is not an ordinary saveable journey. |
+| Unsupported/diagnostic start or unrepresentable field mode/state/binding | Safe field preferences may still be available. | The current offer's profile, route, mode or binding refusal remains explicit. A controlled direct-battle start is not an ordinary saveable journey. |
 | Undersized client | Only restore/fullscreen/quit recovery owns input. | No automatic save; Cancel from Quit returns to recovery or the retained page after a supported resize. |
 
-Field recipes remain `new-game`, `map3-opening`, `map3-joined`, `battle01-return` and the completed
-Battle07 `battle07-return` Map58 anchor, according to current content/persistence authority.
-First Map14 control is inside the [campaign demo frontier](../application/pre-voyage-campaign.md),
-not an added field-save recipe. Inspection remains read-only; explicit Save alone consumes the
-existing live music/capture path. Gameplay/progress never stores preferences.
+The [unified settled field snapshot owner](../application/opening-session-lifecycle.md#eligibility-and-return-semantics)
+defines current state-based admission, including supported interiors and later visits. Map14 is
+subject to the same live offer, not excluded for lacking a historical recipe. Older anchored
+recipes remain compatible reader inputs; the initial `new-game` record retains its separate
+pre-on-load bootstrap. This does not widen admitted content or allow riding, pending story work
+or unsupported bindings. Inspection remains read-only; explicit Save alone consumes the existing
+live music/capture path. Gameplay/progress never stores preferences.
 
 ## Settings from the battle system Menu
 
@@ -133,8 +135,11 @@ battle through the ordinary Godot host.
 
 ## Slot recovery and overwrite at 1080p
 
-**Confirmed.** In the Witch's **Continue** column, the backup prompt identifies the slot, name,
-destination and UTC time. The primary failure detail follows at 24px, then any translation fallback
+The current shared `Label` identifies slot number, protagonist name, saved level and local date/time
+in Continue, Save and in-game Load, including the backup prompt; see the
+[slot summary observation](#slot-summary-observation). Destination and UTC time were the historical
+#1769 label format used by the bounded recovery/overwrite observations below, not the current format.
+The primary failure detail follows at 24px, then any translation fallback
 notice at 24px. The reading region starts at its first line. Cancel and Recover Backup sit below
 it, followed by the mapped footer. Left/Right scroll the explanation while Up/Down selects an
 action. The field Menu's **Save** uses the same order for an error or overwrite. The overwrite
