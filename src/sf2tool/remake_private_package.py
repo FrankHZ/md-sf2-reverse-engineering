@@ -213,7 +213,7 @@ def prepared_spell_tiles(directory: Path, tileset: int) -> tuple[bytes, list[tup
 
 def mount_monster_breath(directory: Path, scratch: Path, scene: dict) -> None:
     tiles, palette = prepared_spell_tiles(directory, 1)
-    # graphic_FlameBreathParticle opens on tile 1 and alternates its bit-3 tile.
+    # Retained legacy two-tile fallback; source-correct growth is mounted by kiwi-family.
     for tile in (1, 9):
         leaf = f"kiwi-flame-{tile}.png"
         write_png_rgba(scratch / leaf, 8, 8, compose(tiles, palette, 8, 8, [tile]))
@@ -479,6 +479,7 @@ def mount(
         "neptun-family",
         "atlas-family",
         "aqua-family",
+        "kiwi-family",
         "blast-1",
     }
     if "equipment" in families and upstream is None:
@@ -539,6 +540,7 @@ def mount(
             "neptun-family",
             "atlas-family",
             "aqua-family",
+            "kiwi-family",
             "blast-1",
         }
         complete_spell_families = {
@@ -552,6 +554,7 @@ def mount(
             "neptun-family",
             "atlas-family",
             "aqua-family",
+            "kiwi-family",
         }
         spell_only = selected == spell_families and bool(spell_families)
         if spell_families:

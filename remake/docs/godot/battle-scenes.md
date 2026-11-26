@@ -1067,3 +1067,12 @@ palette. Willard himself has no spell. The seven-frame group selects Original/HD
 with source body/sequence44/0 respectively. Prepared104 uses existing whole-clip delivery.
 Controlled ordinary Stay witnesses retain AI, zero MP cost, single result and usable player
 return. Natural campaign reach, original timing and human appearance remain Unknown.
+
+### Kiwi converted Attack #2316
+
+[Kiwi playback](spell-presentation.md#kiwi-converted-attack-playback-2316) binds selector76
+only for the existing Monster conversion. All power ranks share six growing rasters and
+body27/palette0/sequence84. The existing actor trigger starts a finite fan; command92 replaces
+no gameplay state. The scene retains physical Attack authority, then ordered result/reward
+and return. Reduced Flash, held pacing and atomic Original/HD use existing mechanisms.
+Enemy FLAME and natural promotion/training remain outside this presentation acceptance.

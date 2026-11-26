@@ -23,6 +23,7 @@ REMAKE_PRODUCER_PATHS = frozenset(
         "src/sf2tool/remake_neptun_mount.py",
         "src/sf2tool/remake_atlas_mount.py",
         "src/sf2tool/remake_aqua_mount.py",
+        "src/sf2tool/remake_kiwi_mount.py",
         "src/sf2tool/remake_invocation_mount.py",
         "src/sf2tool/remake_enemy_healing.py",
         "src/sf2tool/remake_detox_art.py",

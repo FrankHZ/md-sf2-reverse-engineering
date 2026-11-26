@@ -1448,3 +1448,12 @@ writes are masked to the VDP color bits. Each rank is an atomic seven-frame grap
 Prepared104/CB and its PSG tone3 registration join inherited audio without new capture.
 Actual consumers are Kraken Head and Battle23 Bubbling Ooze, with their own bodies and
 terrain; Willard has no AQUA spell. [Native/reader evidence and limits](../godot/spell-presentation.md#aqua-family-playback-2315).
+
+### Kiwi growth rasters #2316
+
+The [complete successor](presentation-assets.md#kiwi-successor-2316) adds six Original/HD
+resources from prepared Flame Breath tileset1: initial tile0, then offsets1/2/6/10/19,
+with sizes8/8/16/16/24/32. Source byte bit3 mirrors the sprite rather than selecting tile9.
+All four converted Attack ranks share this group. Existing MNST body/sequence84 and92 audio
+are retained. Atomic HD/fallback is observed; enemy FLAME, natural reach and hardware fidelity
+are not established by this asset mount.

@@ -3,6 +3,12 @@
 The [pre-voyage campaign agreement](application/pre-voyage-campaign.md) tracks the ordinary-entry
 handoffs, carried state and acceptance boundaries for Battle03 through departure.
 
+Prepared [Kiwi converted Attack](godot/spell-presentation.md#kiwi-converted-attack-playback-2316)
+uses six source growth states, MNST sequence84 and92 audio for all four admitted power ranks.
+A controlled ordinary Attack passes Original/HD/settings/fallback with unchanged conversion,
+damage/reward and return. Learned KIWI, enemy FLAME, natural training and hardware/human
+presentation acceptance remain outside this boundary.
+
 Prepared [AQUA1–2 enemy breath](godot/spell-presentation.md#aqua-family-playback-2315)
 uses source bubble art and rank palettes, actual Kraken Head/Battle23 Bubbling Ooze bodies,
 and atomic Original/HD selection. Production-reader closure and short controlled ordinary
