@@ -164,6 +164,7 @@ internal sealed partial class BattleSceneView : Control
             if (_debuff.Active && state.Phase is BattleScenePhase.Reward or BattleScenePhase.End) _debuff.Reset();
             var preparedResources = state.AttackAnimationSelector switch
             {
+                22 or 54 => AquaEffect.ResourcesFor(state.AttackSpell!.Spell.Level),
                 1 => AttackSpellView.BlazeResources,
                 33 => BlazeMeteorEffect.SmallResources,
                 65 => BlazeMeteorEffect.LargeResources,
@@ -173,6 +174,9 @@ internal sealed partial class BattleSceneView : Control
                 5 or 37 or 69 or 101 => BlastEffect.ResourcesFor((state.AttackAnimationSelector.Value >> 5) + 1),
                 _ => null,
             };
+            if (state.AttackAnimationSelector is 22 or 54 && Content is { } aquaContent &&
+                preparedResources!.Any(aquaContent.Rasters.ContainsKey) && !preparedResources!.All(aquaContent.Rasters.ContainsKey))
+                throw new InvalidOperationException("aqua-original-group-incomplete");
             _preparedAttackSpell = preparedResources is not null &&
                 Content is { } preparedContent && preparedResources.All(preparedContent.Rasters.ContainsKey);
             if (UsesMessagePlayback(state))
@@ -539,7 +543,7 @@ internal sealed partial class BattleSceneView : Control
                 _blastSoundPlayed = true;
                 _audio?.PlayEffect(114);
             }
-            if (!_castSoundPlayed && _elapsed >= _attackSpellStart)
+            if (!_castSoundPlayed && state.AttackAnimationSelector is not (22 or 54) && _elapsed >= _attackSpellStart)
             {
                 _castSoundPlayed = true;
                 _audio?.PlayEffect(77);

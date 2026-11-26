@@ -1057,3 +1057,13 @@ ordered result commits and completion authority. Other support families retain t
 presentation until their own consumer acceptance.
 
 The [BUFF family](spell-presentation.md#buff-family-playback-2282) now mounts learned BOOST1/2 and admitted ATTACK/BOOST equipment Use with source Magic/Item poses, green backdrop flashes, accelerating PSH and ordered support results. It consumes the unchanged rule and completion authorities.
+
+### AQUA enemy breath #2315
+
+[AQUA playback](spell-presentation.md#aqua-family-playback-2315) now uses the existing
+attack action clock, actor animation trigger, terrain projection and completion authority.
+Kraken Head in Battle16 selects22; Bubbling Ooze in Battle23 selects54 and the second
+palette. Willard himself has no spell. The seven-frame group selects Original/HD atomically,
+with source body/sequence44/0 respectively. Prepared104 uses existing whole-clip delivery.
+Controlled ordinary Stay witnesses retain AI, zero MP cost, single result and usable player
+return. Natural campaign reach, original timing and human appearance remain Unknown.

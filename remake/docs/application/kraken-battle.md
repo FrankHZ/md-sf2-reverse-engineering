@@ -20,7 +20,7 @@ One winning route with this party keeps Bowie at (15,15). Sarah moves to (16,15)
 | Bowie defeated with the saved party | The defeat dialogue completed. Field input resumed on Map13 (18,25) Up with 4,876 of the initial 9,753 gold. F416 and F466 remained set, F516 remained clear and the recorded raft berth was Map72 (43,48). |
 | Egress with the saved party | Bowie used Magic on his first turn. The return reached the same Polca position and berth with all 9,753 gold, F416 and F466 set and F516 clear. |
 
-Run `./local/issue1798/observe.ps1 -Outcome Win`, `Limbs`, `Defeat` or `Retreat` for a fresh headless observation. The ignored handoff identifies inputs, prepared outputs and the retained failed runs. The live checks read the HUD, actor resources, turn queue, spell delivery, death cleanup and field input. AQUA uses the remake’s functional bubble effect. Original presentation timing and full campaign travel are outside this comparison.
+Run `./local/issue1798/observe.ps1 -Outcome Win`, `Limbs`, `Defeat` or `Retreat` for a fresh headless observation. The ignored handoff identifies inputs, prepared outputs and the retained failed runs. The live checks read the HUD, actor resources, turn queue, spell delivery, death cleanup and field input. That retained comparison used the remake’s functional bubble effect; [prepared AQUA delivery](../godot/spell-presentation.md#aqua-family-playback-2315) now binds Original/HD head body44, source bubble frames and palette, with a separate controlled ordinary enemy-action witness. Original presentation timing and full campaign travel are outside this comparison.
 
 ## Encounter resources and campaign binding
 
