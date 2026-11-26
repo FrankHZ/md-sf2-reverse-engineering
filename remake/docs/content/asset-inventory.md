@@ -23,6 +23,10 @@ consumers, release and hardware-equivalence decisions belong to their feature ow
 
 ## Registered selections
 
+The [local Windows candidate recipe](../windows-local-candidate.md) packages the current complete
+Kiwi gameplay successor with independently selected #2324 opening, #2255 Witch and #2266 catalogs.
+Its closure and executable remain private; packaging does not alter asset provenance or rights.
+
 All identifiers here are relative to the configured shared data root. Keep each package's
 `world.json`, `main-scenes.json`, `entry/entry.json` and six `opening-inputs` selections
 together. The active package is the set selected in the launch process.

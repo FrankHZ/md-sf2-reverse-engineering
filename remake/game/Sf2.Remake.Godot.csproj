@@ -4,6 +4,9 @@
     <AssemblyName>Sf2.Remake.Godot</AssemblyName>
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'ExportRelease'">
+    <Compile Remove="probes/**/*.cs" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\src\Sf2.Remake.Application\Sf2.Remake.Application.csproj" />
     <ProjectReference Include="..\src\Sf2.Remake.Content\Sf2.Remake.Content.csproj" />

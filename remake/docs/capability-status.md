@@ -1,5 +1,9 @@
 # Remake Capability Status
 
+The [private Windows candidate](windows-local-candidate.md) owns local Release packaging and its
+exported-build acceptance. It carries the selected campaign beyond the pre-voyage review endpoint;
+it does not impose a demo cutoff or establish public-distribution or clean-machine acceptance.
+
 The [pre-voyage campaign agreement](application/pre-voyage-campaign.md) tracks the ordinary-entry
 handoffs, carried state and acceptance boundaries for Battle03 through departure.
 

@@ -120,7 +120,7 @@ public sealed partial class GameRoot
         if (_outputFile is not null) return new(_outputFile, validate);
         if (SeedOnly) throw new ArgumentException("save-seed-read-only");
         return new(Selected("SF2_SAVE_ROOT"), Selected("SF2_SAVE_NAMESPACE"),
-            System.IO.Path.GetFullPath(System.IO.Path.Combine(ProjectSettings.GlobalizePath("res://"), "..", "..")), validate);
+            Entry.PackagedStartup.StorageBoundary, validate);
     }
 
     private Task<bool> CheckContinueDefault()
