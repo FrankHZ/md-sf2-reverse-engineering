@@ -707,6 +707,38 @@ or portable latency promise. Initial native observer type-inference errors and a
 observer that omitted intentional quake offsets are retained failed observations, not
 passed product evidence. The latter now compares the draw's own logical snapshot and quake.
 
+#### First visible storm-map draw (#2346)
+
+**Confirmed:** the ordinary opening host kept one exploration view across the scene call.
+On the first Map65 draw in both Intro2 and Intro4, the committed display was black and
+the camera was detached. The actor and terrain origins already matched the new logical
+view. The outgoing scene had baked its darkness into its textures, with node modulation
+at full brightness. Loading the new map discarded that palette and drew normally colored
+terrain at brightness 1 before the incoming fade. The #2324 origin comparison could
+pass on every one of those draws.
+
+Exploration presentation now restores black node modulation when a scene palette gives
+way to a committed black display. Both Update and Draw select the palette from the
+snapshot they consume. The scene's own fade determines when the new map becomes visible.
+
+| Ordinary host seam | First Map65 draw after correction | Subsequent visible output |
+| --- | --- | --- |
+| Intro1 → Intro2, 1920×1080 | Logical B (2688,768), drawn origin (48,45), brightness 0 | Reset clears the terrain at (0,0). The scripted fade reveals actors against the blank layout; reload returns to (7,2) for the portrait. The later move toward (7,4) advanced logical Y to 792 then 816 and drawn Y to 46.5 then 48. |
+| Intro3 → Intro4, 1920×1200 | Logical B (2688,1152), drawn origin (48,69), brightness 0 | The opening uses the 1920×1080 entry canvas in this taller client. The scene fade steps from offset −7 to −2 at the same origin. |
+
+To reproduce the short seams, use ignored copies of the #2324 opening HD package.
+For Intro2 retain Intro1 instructions 0–11 and its final fade and return. For Intro4
+start the ordinary sequence at its Intro3 call after the music command, retaining
+Intro3 instructions 0–5, 22 and the final fade and return. Use the published incoming
+script unchanged. Start Main with the ordinary opening selection, explicit HD settings
+and a fresh disposable save namespace. On the opening view's `ResourceDrawObserved`,
+read `ReadCaptureState(false,false)` and compare the draw's logical B axes, plane
+origin, target, visible actors and cue brightness against display visibility.
+Both runs released the owner and audio to the title through Skip. Original and HD share
+the modulation path. **Unknown:** which entrance or later scripted actor displacement
+the player noticed. These bounded runs did not observe the player's process or establish
+the original hardware's visible sprite timing during the reset.
+
 #### Implementation order and acceptance
 
 The bounded scene primitives and first-segment pilot were delivered in #2250/#2251. The #2252

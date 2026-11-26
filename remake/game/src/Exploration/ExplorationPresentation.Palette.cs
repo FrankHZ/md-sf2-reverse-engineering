@@ -58,7 +58,12 @@ internal sealed partial class ExplorationPresentation
     // Derive both projections from the snapshot they actually consume.
     private void SelectScenePalette(SessionSnapshot current)
     {
-        _scenePalette = current.Story.Display?.Scene;
+        var display = current.Story.Display;
+        // Scene banks bake darkness into textures with white node modulation.
+        // A black map load releases those banks before its first ordinary draw.
+        if (_scenePalette is not null && display is { Scene: null, Visibility: FullFadeVisibility.Black })
+            _owner.Modulate = Colors.Black;
+        _scenePalette = display?.Scene;
         _sceneTerrain = _scenePalette?.Terrain;
         if (_reducedFlash && _scenePalette is { ActorOffset: > 0 }) _sceneTerrain = _scenePalette.Resource.Base;
         if (_reducedFlash && current.Story.Wait is ScenePaletteWait { Operation: PulseScenePalette pulse } storm)
