@@ -6,6 +6,107 @@ pre-voyage priority. Later private campaigns and controlled authored packages es
 boundaries. This inventory uses the existing rules, scene readers, presenters and private resource
 publisher. Each implementation slice owns its own acceptance.
 
+## ATLAS family playback #2314
+
+**Standard scope:** bind admitted SORC ATLAS1–2 through the accepted summon lifecycle,
+invocation decoder and scene publisher. Presentation crosses content, producer and adapter
+boundaries but changes no gameplay rule. Preserve one payment, fixed actual-recipient
+division, ordered result/death/reward and returned control. No enemy summon admission,
+promotion/recruitment, AI, Battle27+, save schema, #1716 or broader renderer work.
+
+Owned paths: `game/src/Battles/AtlasEffectView.cs`, `BattleSceneView.Summon.cs`, the existing
+`BattleSceneView.cs` observation field, Content's `PrivateAttackSpellBindings.cs`,
+`src/sf2tool/remake_atlas_mount.py`, existing attack-mount/private-package/retail CLI/engine-path
+registrations, and `game/probes/engine_atlas_family_observation.gd`. Serial document owners
+are this file, battle-scenes, church-promotion-design, presentation-assets, asset-inventory
+and capability-status. Accepted DAO/APOLLO/NEPTUN and their complete package are dependencies.
+Acceptance covers a one-scene pilot, inherited-value equality, production-reader scene/rank
+closure, short ordinary single/divided casts, and one HD/settings/fallback boundary.
+
+### ATLAS source and delivery choices
+
+**Confirmed source structure:** USA ROM SHA256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`, SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. `spelldefs.asm` selects20/52 for ATLAS1–2;
+setup/update have no rank branch. Enemy HEAL rank probing can read an ATLAS operand;
+that is not a cast or enemy summon admission. Setup `0x1B37C..0x1B406` loads invocation1,
+preloads its second pose and initializes two16-sprite streams with delays6/1, horizontal
+velocities +9/-9 and vertical velocity10. The damage hold releases after80 updates.
+The shared loader contributes cast77, four `$CCE` flashes and8 entrance ticks.
+
+`LoadInvocationSpell` starts with bank-bit6 clear, loads frame0 into the alternate bank,
+then toggles bit6. Setup therefore loads frame1 into the base bank. Update
+`0x1E134..0x1E2D4` starts with base-layout frame1 and changes to layout+36/frame0 on the
+11th motion update. It then plays HIT_1/2 (83/84), requests a four-update vertical
+background displacement `[-3,3,2,-2]`, and waits2 updates before the next spawn. Each stream
+restarts every14 updates. Source random choices are x0..23, y0..47, later side and hit cue;
+initial VDP x16/304 and y16 include the128-coordinate bias. The header at ROM`0x12CD26`
+is `(1,1,1)`, initially offscreen; reproduce by following invocation table entry1 at
+`1221368+4` in the verified ROM. Normal/mirrored layouts share the same palette:
+`enums/vdp.asm` defines `VDPTILE_PALETTE1=0`. Both128×128 poses use the accepted palette
+word0 skip and split-stream/VRAM-gap decoder; no separate impact tileset is loaded.
+
+[Setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/atlas.asm) ·
+[Update](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/atlas.asm) ·
+[Shared loader](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/battlesceneengine_3.asm) ·
+[Impact displacement](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/updatespellanimation.asm).
+
+**Modern delivery:** a116/60-second minimum covers setup plus the initial80-update hold.
+Both streams continue through ordered recipients until the shared Reward/End reset restores
+the caster, weapon and ground. Fixed phase offsets and alternating side/cue replace cosmetic
+random calls without consuming gameplay RNG. Logical time, plane displacement, palette flashes
+and whole-clip audio are approximations. Reduced Flash suppresses flashes/shake while retaining
+both poses and motion; held1.5× uses the shared clock. Existing package recordings and
+`SessionAudio` slots cover77 (YM4),83/84 (YM6); no new audio capture or slot change is needed.
+The two-pose group chooses HD atomically, falls back entirely when HD is incomplete, and
+rejects partial Original. An absent group retains the existing modern fallback.
+**Unknown:** natural higher-rank training/reach, original hardware cadence and plane/GPU
+fidelity, physical listening and human aesthetic acceptance.
+
+### ATLAS verification
+
+Use complete `derived/issue2314/atlas-v1`, independent #2252 opening, #2255 Witch and
+#2266 catalogs. After the [locked Debug build](../development-and-verification.md#locked-net-workflow):
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2314/review-v1'
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case atlas1-single `
+  -Sample atlas-original-review -SaveRoot $freshExternalSaveRoot
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case atlas2-multi `
+  -Sample atlas-hd-review -Graphics hd -Reduced -Fast -SaveRoot $freshExternalSaveRoot
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case atlas1-single `
+  -Sample atlas-fallback-review -Graphics hd -Variant incomplete -SaveRoot $freshExternalSaveRoot
+```
+
+**Confirmed in the remake:** the production reader accepts52 rank bindings across26 scenes
+and both controlled Continue records. Kazin retains the accepted Battle26/DAO-derived layout,
+Wooden Rod and seed`0x0DA20000`. Rank1 uses controlled SORC21/book`[93,94,31,32]`;
+rank2 uses SORC32/book`[93,94,95,96]`. These legal destination books and levels are controlled
+prerequisites, not natural training. Continue → Magic → target → Confirm reaches20/52,
+rank1 damage43 and rank2 ordered45/35 across two actual recipients, one14/23-MP payment,
+death cleanup, one reward and usable next ActionChoice. Existing summon assertions own division.
+
+Final node/draw observations cover both128×128 resources, both directions and streams,
+base-bank frame1 before impact-frame0, caster replacement/restoration and cues77/83/84.
+Original, HD/Reduced Flash/held-speed and incomplete-HD fallback pass from the published
+package with the producer package absent. Reader peak is887MB; native witnesses stay below
+1.4GB and5 seconds. No gameplay screenshots, bulk frames or helper tests were added.
+
+The completed engine run retained3,392 passes,6 skips and35 failures: it inherited the native
+launcher's private selections, which omit `SF2_PRIVATE_CONTROLLED_START` and do not match
+older private tests' scene/encounter boundaries. No product rule was changed for those tests.
+A fresh-environment rerun of exactly the35 failed nodes plus `SummonSpellTests` gives5 passes
+and35 optional-fixture skips; those skips are not private-test passes. Production-reader and
+native acceptance above independently cover this package. Do not repeat the full suite to
+replace the retained failure. Release/Debug adapter builds pass. Initial pose-order witnesses
+are superseded by the bank-traced correction and the three focused final reruns.
+Setup-only diagnostics include the unquoted PowerShell Git tree expression, missing TEMP
+warnings before directory creation, an unavailable upstream binary URL and a summary read
+using the wrong text encoding. Original-mode exit retains8 ObjectDB warnings under#1716;
+no cleanup repair or user visual acceptance is claimed.
+
 ## NEPTUN family playback #2313
 
 **Standard scope:** bind currently admitted SORC NEPTUN1–2 through the accepted summon
@@ -166,7 +267,7 @@ are reused, with deterministic flame cues; no new audio capture or BLAZE assets 
 
 The13-frame Original/HD group is atomic. Partial HD selects all Original; partial
 Original reports `apollo-original-group-incomplete`. Packages with no APOLLO group
-retain explicit modern fallback. [NEPTUN](#neptun-family-playback-2313) uses the same boundary; ATLAS remains separate work.
+retain explicit modern fallback. [NEPTUN](#neptun-family-playback-2313) uses the same boundary; [ATLAS](#atlas-family-playback-2314) now shares that lifecycle.
 
 ### APOLLO reproduction and verification
 
@@ -263,7 +364,7 @@ Original frames. A partial Original group reports `dao-original-group-incomplete
 older packages with no DAO group retain their explicit modern fallback. Another spell
 family is never substituted. Common summon responsibilities are confined to caster
 replacement and scene restoration; [APOLLO](#apollo-family-playback-2312) uses that boundary.
-[NEPTUN](#neptun-family-playback-2313) uses the same boundary; ATLAS remains separate work.
+[NEPTUN](#neptun-family-playback-2313) uses the same boundary; [ATLAS](#atlas-family-playback-2314) now shares that lifecycle.
 
 ### DAO reproduction and verification
 
@@ -530,7 +631,7 @@ update controls subsequent movement, mirroring and dust. [Enemy family evidence]
 | DAO 1–2 | DAO v1–v2 | **Original assets bound** for admitted SORC casts: invocation0, rising rocks, scene deformation and sound. Both ranks preserve actual-recipient division. | [DAO playback and limits](#dao-family-playback-2310). Natural training, hardware timing and human visual acceptance remain **Unknown**. |
 | APOLLO 1–2 | APOLLO v1–v2 | **Original assets bound** for admitted SORC casts: invocation3, mouth and two flame sizes, selectors18/50. | [APOLLO playback](#apollo-family-playback-2312) covers controlled single/divided recipients and atomic Original/HD; natural training, hardware timing and human visual acceptance remain **Unknown**. |
 | NEPTUN 1–2 | NEPTUN v1–v2 | **Original assets bound** for admitted SORC casts: invocation2, rising water, rain and sizzle, selectors19/51. | [NEPTUN playback](#neptun-family-playback-2313) covers controlled single/divided recipients and atomic Original/HD; natural training, hardware timing and human visual acceptance remain **Unknown**. |
-| ATLAS 1–2 | ATLAS v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. Enemy HEAL rank selection can read an ATLAS operand as part of its original rank-probing behavior. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns this family's original effect composition and playback. |
+| ATLAS 1–2 | ATLAS v1–v2 | **Original assets bound** for admitted SORC casts: invocation1, opposing two-pose body streams, selectors20/52. Enemy HEAL rank probing does not admit enemy summons. | [ATLAS playback](#atlas-family-playback-2314) covers controlled single/divided recipients and atomic Original/HD; natural training, hardware and human acceptance remain **Unknown**. |
 
 ### Item, innate and special rows
 

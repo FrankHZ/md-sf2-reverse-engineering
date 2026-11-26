@@ -24,8 +24,9 @@ complete Original/HD group, Reduced Flash and held speed use existing consumers;
 [APOLLO1–2](spell-presentation.md#apollo-family-playback-2312) uses the same lifetime
 with its own descending/alternating body, mouth and flame composition.
 [NEPTUN1–2](spell-presentation.md#neptun-family-playback-2313) adds its blinking body,
-rising water and separate rain/sizzle layers with the same restoration boundary. ATLAS
-retains modern presentation pending its own slice.
+rising water and separate rain/sizzle layers with the same restoration boundary.
+[ATLAS1–2](spell-presentation.md#atlas-family-playback-2314) adds opposing two-pose
+invocation streams and impact displacement, retaining that shared restoration and accounting.
 
 [ABSORB equipment playback](spell-presentation.md#absorb-family-playback-2309) uses the
 source warp89 and four red backdrop pulses with the existing Item pose. It loads no

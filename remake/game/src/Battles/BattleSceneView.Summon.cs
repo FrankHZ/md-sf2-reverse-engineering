@@ -5,20 +5,31 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 
 internal sealed partial class BattleSceneView
 {
+    private AtlasEffectView _atlas = null!;
     private NeptunEffectView _neptun = null!;
     private ApolloEffectView _apollo = null!;
     private void CreateSummons()
     {
+        _atlas = new AtlasEffectView { Name = "AtlasEffect", ZIndex = 4 }; _canvas.AddChild(_atlas);
         _neptun = new NeptunEffectView { Name = "NeptunEffect", ZIndex = 4 }; _canvas.AddChild(_neptun);
         _dao = new DaoEffectView { Name = "DaoEffect", ZIndex = 4 }; _canvas.AddChild(_dao);
         _apollo = new ApolloEffectView { Name = "ApolloEffect", ZIndex = 4 }; _canvas.AddChild(_apollo);
     }
-    private void ResetSummons() { _dao.Reset(); _apollo.Reset(); _neptun.Reset(); _enemy.Material = null; }
+    private void ResetSummons() { _atlas.Reset(); _dao.Reset(); _apollo.Reset(); _neptun.Reset(); _enemy.Material = null; }
     private void PresentSummons(BattleSceneState state)
     {
-        _dao.Present(state); _apollo.Present(state); _neptun.Present(state); _enemy.Material = null;
+        _atlas.Present(state); _dao.Present(state); _apollo.Present(state); _neptun.Present(state); _enemy.Material = null;
     }
-    private bool PreparedSummon(BattleSceneState state) => PreparedDao(state) || PreparedApollo(state) || PreparedNeptun(state);
+    private bool PreparedSummon(BattleSceneState state) => PreparedAtlas(state) || PreparedDao(state) || PreparedApollo(state) || PreparedNeptun(state);
+    private bool PreparedAtlas(BattleSceneState state)
+    {
+        if (state.AttackAnimationSelector is not (20 or 52) || state.IsSilencedCast || Content is not { } content)
+            return false;
+        int available = AtlasEffectView.Resources.Count(content.Rasters.ContainsKey);
+        if (available != 0 && available != AtlasEffectView.Resources.Length)
+            throw new InvalidOperationException("atlas-original-group-incomplete");
+        return available != 0;
+    }
     private bool PreparedNeptun(BattleSceneState state)
     {
         if (state.AttackAnimationSelector is not (19 or 51) || state.IsSilencedCast || Content is not { } content)
@@ -40,6 +51,9 @@ internal sealed partial class BattleSceneView
     private void BeginSummon(BattleSceneState state, double trigger)
     {
         BeginDao(state, trigger);
+        if (PreparedAtlas(state))
+            _atlas.Begin(Frames(AtlasEffectView.Resources), trigger,
+                (state.AttackAnimationSelector!.Value >> 5) + 1, _settings.ReducedFlash);
         if (PreparedNeptun(state))
             _neptun.Begin(Frames(NeptunEffectView.Resources), trigger,
                 (state.AttackAnimationSelector!.Value >> 5) + 1, _settings.ReducedFlash);
@@ -49,6 +63,7 @@ internal sealed partial class BattleSceneView
     }
     private void AdvanceSummons(double delta)
     {
+        if (_atlas.Active) _atlas.Advance(delta, cue => _audio?.PlayEffect(cue));
         if (_dao.Active) _dao.Advance(delta, cue => _audio?.PlayEffect(cue));
         if (_apollo.Active) _apollo.Advance(delta, cue => _audio?.PlayEffect(cue));
         if (_neptun.Active) _neptun.Advance(delta, cue => _audio?.PlayEffect(cue));
@@ -56,10 +71,18 @@ internal sealed partial class BattleSceneView
     }
     private double SummonDuration(double duration) => _dao.Active ? Math.Max(duration, _dao.CastDuration)
         : _apollo.Active ? Math.Max(duration, _apollo.CastDuration)
-        : _neptun.Active ? Math.Max(duration, _neptun.CastDuration) : duration;
+        : _neptun.Active ? Math.Max(duration, _neptun.CastDuration)
+        : _atlas.Active ? Math.Max(duration, _atlas.CastDuration) : duration;
     private void ProjectSummons()
     {
         ProjectDao();
+        if (_atlas.Active)
+        {
+            if (_atlas.ReplacesCaster) { _ally.Hide(); _weapon.Hide(); _ground.Hide(); }
+            _background.Position = new Vector2(0, 56) + _atlas.Shake;
+            _backgroundWrap.Position = new Vector2(256, 56) + _atlas.Shake;
+            _sceneBlack.Color = !_settings.ReducedFlash && _atlas.Flash ? new Color(1, 12f/14, 12f/14) : Colors.Black;
+        }
         if (_neptun.Active)
         {
             if (_neptun.ReplacesCaster) { _ally.Hide(); _weapon.Hide(); _ground.Hide(); }
