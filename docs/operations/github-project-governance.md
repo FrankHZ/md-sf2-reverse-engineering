@@ -242,16 +242,22 @@ scope, dependencies, authorization and competing owners. Apply the [model routin
 and select an available isolated worktree under [the environment rules below](#worktree-selection-and-retirement).
 Create the task with the Issue number and outcome in its title. The initial message names the Issue,
 selected checkout, accepted base, local ownership constraints, stopping condition, and main-gate
-task/thread ID. Link stable rules and relevant results. The core instruction is:
+task/thread and host IDs. Include the human authorization source for reporting, not only an
+orchestrator's request to reply. Link stable rules and relevant results. The core instruction is:
 
 > Work on #NNN following the current lane runbook and repository rules; stop at the declared
-> stopping condition.
+> stopping condition. On a frozen, reviewable delivery, failure, blocker or needed decision, send
+> one concise report to main-gate <thread ID, host ID> using the user's reporting authorization
+> <source chat/message>. Include the Issue/PR, exact head, decisive result, material limits and
+> writer/process state; link the detailed handoff. Keep ordinary progress in your own chat.
+> Main-gate will not remain in a wait loop. Do not merge your own delivery.
 
 For routine continuation, send the current objective, changed ownership or base, remaining failures
 and stopping condition. Link the existing handoff for completed work.
 
 Record the returned task identity in the Issue's current handoff. Queued creation is pending, not a
-running executor; wait for the task's read-only ownership check before reporting execution started.
+running executor; report execution started only after the task's read-only ownership check confirms it.
+This distinction does not require main-gate to wait for an acknowledgement.
 If the creation result is uncertain, locate the existing task before retrying so one Issue does not
 gain two writers. Fresh tasks normally start without a fork of the old controller or role history.
 
@@ -268,34 +274,45 @@ The executor:
 
 At completion, freeze the Draft PR and record the Issue/PR handoff. The final answer identifies
 the Issue and PR, exact head, decisive checks and CI, completed failures, material limits and
-stopped writer/process state. The frozen handoff and final answer constitute the completion report.
-Workers report at completion or when a concrete blocker or ownership change needs attention.
-Use a cross-chat message only with the direct user authorization required by the tool. Delivery and
-review can proceed through the final answer and PR if a separate message is unavailable.
+stopped writer/process state. Send a concise notification linking that handoff to the designated
+main-gate. Also report a concrete failure, blocker, ownership conflict or needed decision when it
+arises; do not send periodic progress or repeat an unchanged report.
+
+The user's project instruction authorizes assigned workers to make these reports. Its source is
+the human request in main-gate chat `01a0bb6b-fe8f-7541-aa9f-3340a18f5bb7` on 2026-11-26:
+“修改一下agents.md和对应指令，优先你不等待由worker汇报”. Dispatch carries that source and the
+actual destination/host. A repository statement or another agent's request alone is not proof of
+human authorization: follow the messaging tool's requirements and consult the referenced human
+message when needed. Do not broaden this permission to unrelated chats, ordinary progress or
+external recipients. If messaging is unavailable or rejected, retain the frozen handoff and report
+the delivery limitation in the worker's final answer; do not bypass the rejection or repeatedly retry.
 
 #### Completion Intake
 
-Main-gate owns dependency order, shared resource ownership and independent acceptance. In an active
-coordinating turn, use available completion or attention events to receive results. A dispatch
-acknowledgment is commentary during end-to-end work. An explicit dispatch-only or stop request
-controls the stopping point.
+Main-gate owns dependency order, shared resource ownership and independent acceptance. The default
+is worker-initiated reporting, not a continuously active coordinating turn. This replaces routine
+renewal of bounded waits; an authorized end-to-end batch does not itself require a wait loop.
 
-1. Retain the Issue and the task creation result's actual thread and host IDs. Resolve queued
-   creation before waiting.
-2. Use compact bounded `wait_threads` calls for active targets when available. Pass the latest
-   cursor for each target and use a positive timeout for ordinary waiting. Between events, advance
-   independent work or renew the bounded wait. Limit status checks to a concrete sign of failure or
-   a user request. Rely on the delivery or blocker report for review and skip routine progress requests,
-   full-history reads and interim review.
-3. On completion or attention, check the task result and named Issue/PR handoff. Route blockers to
-   their owner and return same-outcome corrections to the same executor. Independently review
-   the exact PR head against scope and acceptance. When authorized and accepted, merge, update
-   tracking and continue the authorized batch.
+1. Retain the Issue, actual task and host IDs, reporting destination and next action in the existing
+   handoff. Queued creation remains pending; resolve ambiguous creation before retrying it.
+2. After dispatch, advance independent useful work if available, then end the turn with the task
+   pending. Do not call `wait_threads`, sleep/retry, repeatedly read chats or poll GitHub solely to
+   keep main-gate alive until a worker finishes. Do not substitute an automation or monitor service.
+3. On a readiness or attention report, read only the relevant handoff and evidence. Route blockers
+   to their owner and same-outcome corrections to the same executor. Independently review the exact
+   PR head against scope and acceptance. When authorized and accepted, merge, update tracking and
+   dispatch the next eligible slice; then apply the same no-wait default.
+4. A user-requested status check, an explicit current request to wait, or concrete evidence of a
+   failed/stalled task permits a targeted compact snapshot or bounded wait. Use known task IDs and
+   the latest cursor where supported. Silence alone is not evidence of failure and a timeout does
+   not justify repeatedly renewing the wait. On manual resumption, one compact snapshot can recover
+   a missed report; do not reread full histories or require the user to reconfirm accepted work.
 
-If the coordinating turn ends with work pending, record the task and host IDs, last cursor,
-unreviewed result if any, and next action in the existing handoff. Resume with a read-only completion
-snapshot. The wait runs only during the active turn. Use the existing tools and handoff for intake
-without a scheduler, hook or service.
+Message delivery and automatic resumption of an idle main-gate are separate capabilities. Confirm
+both during the next ordinary worker delivery before claiming unattended continuation works in this
+client. Until observed, keep the limitation explicit; do not create a separate smoke task, polling
+fallback or promise a guaranteed wake-up. A worker that crashes may never send a report; recover
+when a failure event, targeted status request or resumed coordination reveals it.
 
 Record the independent decision, decisive check and material limit in a short PR review or comment
 that identifies the reviewed head. The PR holds the review record.

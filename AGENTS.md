@@ -37,6 +37,13 @@ Use [ADR 0018](./docs/decisions/0018-astra-role-routing-trial.md#current-routing
 completion intake, recovery and independent integration. Keep same-outcome corrections with the
 executor. Delegate only bounded independent subtasks when authorized.
 
+Default to worker-initiated completion intake: after dispatch, main-gate does independent work or
+ends its turn; do not keep it alive with repeated waits or status reads. The user authorizes assigned
+workers to report readiness, failure, blockers or needed decisions to the designated main-gate chat.
+Include the human authorization source and destination in dispatch; follow the messaging tool's
+requirements. Ordinary progress stays with the worker. See [completion intake](./docs/operations/github-project-governance.md#completion-intake)
+for delivery, exceptions and independent review; reporting does not authorize self-merge.
+
 For an [audit or design assignment](./docs/operations/github-project-governance.md#audit-and-design-assignments),
 follow the evidence within the agreed decision boundary. Before editing, apply the ownership rules below.
 
