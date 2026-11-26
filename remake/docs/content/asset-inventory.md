@@ -1395,3 +1395,13 @@ operand tables. `bolt/frame-0..21` are64x96 source composites; `bolt/frame-22..2
 extents. Existing scenery, actors, weapons, earlier spells, audio and independent entry
 inputs remain intact. [Source and delivery](../godot/spell-presentation.md#lightning-source-and-modern-delivery)
 separate original composition from modern cadence and Unknown natural reach/hardware timing.
+
+### Wind raster family #2306
+
+The [wind successor](presentation-assets.md#wind-successor-2306) preserves the15
+`blast-1/frame-*` keys and adds `blast/large-diagonal`, `blast/large-horizontal`,
+`blast/cyclone-0..2` and `blast/dust-0..2`. Required groups contain15/17/23 resources
+for rank1/rank2/ranks3–4. Complete HD selection preserves logical sizes; a missing member
+falls back to Original for the whole required group. No equipment consumer is admitted.
+Source operands, controlled native acceptance and Unknowns belong to the
+[spell owner](../godot/spell-presentation.md#wind-family-playback-2306).

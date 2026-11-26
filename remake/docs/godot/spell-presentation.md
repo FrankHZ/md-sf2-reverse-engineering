@@ -64,7 +64,7 @@ of recipients and actual reaction results follow the committed action.
 
 ## Graphics variants
 
-Prepared BLAZE1–4, FREEZE1–4, BOLT1–4, BLAST1, breath and wave rasters can select a complete optional HD
+Prepared BLAZE1–4, FREEZE1–4, BOLT1–4, BLAST1–4, breath and wave rasters can select a complete optional HD
 frame group from the battle scene. The light fairy uses a single group for body, wings and
 dust. Partial groups use the complete Original art. Effect positions, mirroring, opacity
 and Reduced Flash read the existing playback state. Higher density keeps the Original
@@ -109,8 +109,8 @@ update controls subsequent movement, mirroring and dust. [Enemy family evidence]
 | FREEZE 3–4 | FREEZE v3–v4 | **Original assets bound** through admitted learned casts; Freeze Staff Item uses v3. Controlled WIZ Tyrin covers area v3 and single-target v4 with its extra glint. Blizzard consumable remains NONE despite its table row. | [FREEZE family](#freeze-family-playback-2298). No new equipment acquisition or encounter admission. |
 | BOLT 1–2 | BOLT v1–v2 | **Original assets bound** across all26 lightning-successor scenes, including Halberd1, Evil Ring2 and enemy Taros Sword2. Controlled native input retains Magic versus Item, zero-MP equipment and enemy no-wear. | [Lightning family](#lightning-family-playback-2301); natural acquisition/reach remain encounter-owned. |
 | BOLT 3–4 | BOLT v3–v4 | **Original assets bound** through admitted learned casts. v3 has three concurrent strike streams/two orbs; v4 has four/four. Radius2 versus single-target gameplay is unchanged. | [Lightning family](#lightning-family-playback-2301). THUNDR table membership does not admit Holy Thunder or establish its consumable animation. |
-| BLAST 1 | BLAST v1 | **Original assets bound** in the prepared Battles04–07 mount. Controlled Sarah PRST level 10 casts on one adjacent enemy with current actors and backdrop. | [Prepared BLAST1](#prepared-blast1-presentation) owns the tileset-15 fragments, slashes, cues and observations. |
-| BLAST 2–4 | BLAST v2–v4 | **Placeholder**. All three ranks bind to the private wind rule. Battle19 repeat admits Dark Bishop BLAST3; Battle22 observes Sarah's BLAST4 single-target use. | [#2104] later wind variants after [#2106]. Compare their actual area/single-target behavior and setup variants. [Battle19](../application/battle19-repeat.md) · [Battle22](../application/desktop-battle22.md) |
+| BLAST 1 | BLAST v1 | **Original assets bound** in all26 wind-successor scenes. Controlled Sarah retains the fifteen fragment/slash rasters, actors, backdrop and cues. | [Wind family](#wind-family-playback-2306); older BLAST1-only mounts remain supported. |
+| BLAST 2–4 | BLAST v2–v4 | **Original assets bound** in all admitted wind-successor scenes. Even ranks grow larger fragments; v3/v4 add cyclone/dust. Controlled Sarah covers all ranks and existing Battle26 Dark Bishop covers hostile BLAST3. | [Wind family](#wind-family-playback-2306). No new equipment consumer, gameplay or encounter admission. |
 | KATON 1–3 | BLAZE v2–v4 | **Original assets bound** through the actual selector, with neutral gameplay rules unchanged. Native NINJ rank1 uses v2; rank3 uses v4. Rank2 has production binding coverage, without a new native cast. | [Flame family playback](#flame-family-playback-2293). Natural learning/acquisition remain **Unknown**. |
 | RAIJIN 1–3 | BOLT v2–v4 | **Original assets bound**, preserving distinct neutral gameplay. Controlled NINJ ranks1/3 use the shared selectors; rank2 has production-reader binding coverage. | [Lightning family](#lightning-family-playback-2301); natural learning/acquisition remain **Unknown**. |
 | DAO 1–2 | DAO v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns original effect composition and playback. DAO1 native uses the existing modern fallback. |
@@ -1673,3 +1673,103 @@ receipts establish this slice's private acceptance independently of those skips.
 Published-input rebased reproduction passes; maximum measured native working set is
 1,330,892,800 bytes and owned scratch logical size is817,677,889 bytes at publication.
 The Draft PR's actual CI checks and frozen head identify remote acceptance separately.
+
+
+## Wind family playback #2306
+
+**Standard scope.** Extend BLAST1 to admitted BLAST2–4 and existing enemy consumers,
+using the same scene/result continuation. No gameplay, equipment admission, save-format,
+Battle27+ or #1716 changes. Natural reach, hardware timing and human visual acceptance
+remain **Unknown**. Implementation owns `BlastEffect.cs` (replacing `BlastOneEffect.cs`),
+`AttackSpellView.cs`, `BattleSceneView.cs`, `BattleSceneView.Rasters.cs`,
+`PrivateAttackSpellBindings.cs`, `remake_attack_spell_mount.py`,
+`remake_private_package.py`, `remake_retail_assets.py`, `remake_hd_battle_rasters.py`,
+`BattleRasterObservation.cs` constructor migration and `engine_blast_family_observation.gd`.
+Shared documentation is this section and narrow battle-scenes, presentation-assets,
+asset-inventory, equipment and capability entries. No schema/planner/aggregate changes.
+
+Consume complete #2301 bolt-v1 (177 files /373,560,638 bytes) and prepared #2001 retail-v1
+read-only. Preserve independent #2252 opening, #2255 Witch and #2266 catalog. Serial
+O(package bytes + fixed sprite operands) publication makes one immutable complete successor
+below500MiB; scratch and peak memory stay below2GiB. The representative Battle26 pilot
+preserves all previous values and produces23 Original/HD resources in0.29 seconds with
+76,963,840-byte peak memory. Replan if those budgets fail. All26 production scene readers,
+legal controlled restores, four allied ranks and enemy-side input cover the mechanisms;
+HD/partial fallback, Reduced Flash and held acceleration use representatives. Final
+reproduction must consume published inputs after producer scratch is unavailable.
+
+### Wind source and delivery
+
+**Confirmed source.** USA SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`
+`spelldefs.asm` selects5/37/69/101, MP2/5/8/8, power6/8/12/30 and radius0/1/1/0.
+`getspellanimation.asm` selects learned unsilenced Magic and marks enemy origin separately.
+Production readers admit104 BLAST definitions across26 encounters and no BLAST AttackItem.
+Existing Sarah PRST and Dark Bishop books supply the observed consumers.
+
+[`animation/blast.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/blast.asm)
+(`0x1A928..0x1AA40`) selects tileset15, cast77 and eight fragment slots plus one slash.
+Even variations set the larger-fragment bank. Variations3/4 add cyclone and dust slots.
+[`update/blast.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/blast.asm)
+(`0x1C7F6..0x1CC56`) retains six fragment directions and eight slash entries.
+The existing15 raster keys remain byte-identical. Even fragments start at zero-based
+tiles1/25, then5/29 and11/35; the last pair adds24x32 and32x16 rasters. Cyclone banks
+43/75/107 each stack two4x4 sprites, independently column-major, into32x64 composites.
+Dust uses139/143/147 as16x16. `VALUE2` is the property high nibble, not a flip.
+Earlier sprite slots retain overlap priority over cyclone/dust.
+
+The fragment/slash origin is(80,96) for enemy targets or(184,112) for ally targets.
+Cyclone base is(64,80)/(168,96), moving0.75 pixels per update, first reversing at30 ticks
+then every60. Three cyclone frames advance every4 ticks; dust cycles three visible frames
+and one hidden phase, attached at(+8,+52) during updates. Source randomized particle,
+slash and repeat-until-stop scheduling remain separate from remake playback.
+
+**Modern presentation.** The accepted1.4-second deterministic fragment/slash schedule,
+converging travel/fades and one wind114 recording remain unchanged. The cyclone shares
+that finite clock with deterministic triangle motion and source frame banks. Reduced Flash
+holds middle frames; held1.5x changes the existing clock. No gameplay RNG is drawn and no
+source global palette flash is added. Original/4x HD selection is atomic for15 resources
+at rank1,17 at rank2 and23 at ranks3/4; missing HD members select the whole required
+Original group. Old rank1-only packages work. The existing scene owns actors, scenery,
+equipped weapon, completion, MP and ordered results.
+
+### Wind reproduction and acceptance
+
+Select complete `derived/issue2306/blast-v1` world/main scene/six opening inputs together,
+retaining independent #2252 opening, #2255 Witch/entry catalog and #2266 world catalog.
+`derived/issue2306/review-v1` retains legal controlled records, reader, launchers and receipts.
+Sarah uses her existing PRST40 book and inventory; controlled records change her position,
+current membership and queue. Battle26 Dark Bishop retains its species, loadout, orders
+and spells. Full-health enemies and MAIN upper word2000 produce the existing category2
+Magic decision; no production AI policy changes. These states do not prove natural training,
+recruitment, acquisition or chapter traversal.
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2306/review-v1'
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case blast4 `
+  -Sample blast4-review -SaveRoot $freshExternalSaveRoot -Graphics hd
+# Cases: blast1, blast2, blast3, blast4, bishop.
+# blast4 -Graphics hd -Reduced -Fast; blast4 -Graphics hd -Variant incomplete.
+```
+
+Build the locked Debug adapter first. Each run uses a fresh disposable external save
+namespace and worktree-local profile. Require passed:true, exit0 and no script/adapter
+errors. Production readers admit all26 scenes and five records before native input.
+Observe actual textures, actors/scenery/weapon, source variation and target side, one MP
+payment before ordered HP delivery, lethal cleanup/reward and usable next action.
+Area/single-target behavior remains owned by unchanged rules. No screenshots, frame
+captures, grinding, combination matrix or tests of verification tools are added.
+
+**Retained failures.** Initial Ruff reported an import/line-length issue. A scratch
+inspection expected decoded save fields at the envelope root and stopped with KeyError.
+The first Sarah record lacked matching current-membership flags and restore rejected it.
+The first Dark Bishop case healed a wounded Lesser Demon; full-health and high-defense
+attempts selected physical category1 and proved no BLAST. Reading the existing MAIN
+category rule supplied the controlled seed; the final record restores original defense.
+These completed failures remain failures. Successful processes can retain6–8 ObjectDB
+exit warnings under paused #1716.
+
+**Unknown.** Natural original/player reach, unobserved combinations, hardware-random
+cadence, palette/priority flicker and human aesthetic acceptance. No Battle27+, new caller,
+equipment, recruitment, save format or broader lifecycle work is included.
