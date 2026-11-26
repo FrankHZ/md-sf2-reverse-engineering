@@ -16,6 +16,12 @@ F4/F8/F9 rollout; the focused playback contract follows.
 
 ## Spell presentation
 
+[ABSORB equipment playback](spell-presentation.md#absorb-family-playback-2309) uses the
+source warp89 and four red backdrop pulses with the existing Item pose. It loads no
+spell tiles. Misty Knuckles, Indra Staff, Supply Staff and Demon Rod retain their ordered
+MP reactions, wear, reward and next control. Original/HD uses the existing body/weapon
+groups; Reduced Flash suppresses red and held speed uses the shared clock.
+
 The [spell coverage inventory](spell-presentation.md#coverage-by-family-and-rank) maps each original
 rank to its current gameplay binding, assets, package, witnesses and follow-up owner.
 

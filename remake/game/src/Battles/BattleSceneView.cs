@@ -27,6 +27,9 @@ internal sealed partial class BattleSceneView : Control
     private bool PreparedDesoul(BattleSceneState state) => state.AttackAnimationSelector is 3 or 35 &&
         !state.IsSilencedCast && Content is { } content && DesoulEffectView.Resources.All(content.Rasters.ContainsKey);
     private readonly BuffEffectView _buff = new();
+    private readonly AbsorbEffectView _absorb = new();
+    private bool PreparedAbsorb(BattleSceneState state) => Content is not null && AbsorbEffectView.Selector(state) is not null &&
+        _audio?.CanSelectSceneEffects(_session.Current.Battle.GetActor(state.Actor).IsAlly ? 2 : 5, 89) == true;
     private bool _suspended;
     private Node2D _canvas = null!;
     internal Control PresentationRoot { get; set; } = null!;
@@ -139,7 +142,7 @@ internal sealed partial class BattleSceneView : Control
             if (_detox.Active) _detox.Reset();
             if (_debuff.Active) _debuff.Reset();
             _desoul.Reset();
-            _buff.Reset(); _sceneBlack.Color = Colors.Black;
+            _buff.Reset(); _absorb.Reset(); _sceneBlack.Color = Colors.Black;
             RetireRasters(); _state = null;
             return;
         }
@@ -156,6 +159,7 @@ internal sealed partial class BattleSceneView : Control
             if (_detox.Active && state.Phase == BattleScenePhase.SpellStop) _detox.Stop();
             _sceneBlack.Color = Colors.Black;
             if (state.Phase != BattleScenePhase.ActionAnimation) _buff.Reset();
+            if (state.Phase != BattleScenePhase.ActionAnimation) _absorb.Reset();
             if (_debuff.Active && state.Phase is BattleScenePhase.Reward or BattleScenePhase.End) _debuff.Reset();
             var preparedResources = state.AttackAnimationSelector switch
             {
@@ -278,6 +282,8 @@ internal sealed partial class BattleSceneView : Control
                             (state.AttackAnimationSelector!.Value >> 5) + 1, target.IsAlly, _settings.ReducedFlash);
                     if (PreparedBuff(state))
                         _buff.Begin(_frames.Take(Math.Max(0, animation.Trigger - 1 - skippedFrames)).Sum(frame => frame.Ticks));
+                    if (PreparedAbsorb(state))
+                        _absorb.Begin(_frames.Take(Math.Max(0, animation.Trigger - 1 - skippedFrames)).Sum(frame => frame.Ticks));
                     if (PreparedDebuff(state))
                     {
                         int trigger = _frames.Take(Math.Max(0, animation.Trigger - 1 - skippedFrames)).Sum(frame => frame.Ticks);
@@ -376,6 +382,12 @@ internal sealed partial class BattleSceneView : Control
             caster.Modulate = !_settings.ReducedFlash && _desoul.Flash ? new Color(1f/7, 1f/7, 1f/7) : Colors.White;
         }
         bool buffCast = _buff.Active && state.Phase == BattleScenePhase.ActionAnimation;
+        bool absorbCast = _absorb.Active && state.Phase == BattleScenePhase.ActionAnimation;
+        if (absorbCast)
+        {
+            _absorb.Advance(delta, cue => _audio?.PlayEffect(cue));
+            _sceneBlack.Color = !_settings.ReducedFlash && _absorb.Flash ? Colors.Red : Colors.Black;
+        }
         if (buffCast)
         {
             _buff.Advance(delta, cue => _audio?.PlayEffect(cue));
@@ -481,7 +493,7 @@ internal sealed partial class BattleSceneView : Control
         else if (_frames.Length > 0)
         {
             duration = _frames.Sum(frame => frame.Ticks) / 60.0;
-            double time = (detoxCast ? _detox.CastElapsed(_elapsed) : debuffCast ? _debuff.CastElapsed(_elapsed) : buffCast ? _buff.CastElapsed(_elapsed) : _elapsed) * 60;
+            double time = (absorbCast ? _absorb.CastElapsed(_elapsed) : detoxCast ? _detox.CastElapsed(_elapsed) : debuffCast ? _debuff.CastElapsed(_elapsed) : buffCast ? _buff.CastElapsed(_elapsed) : _elapsed) * 60;
             int index = 0;
             while (index < _frames.Length-1 && time >= _frames[index].Ticks) time -= _frames[index++].Ticks;
             if (index != _frameIndex)
@@ -546,7 +558,7 @@ internal sealed partial class BattleSceneView : Control
             duration = Math.Max(duration, DesoulEffectView.StrikeDuration);
         if (buffCast) duration = Math.Max(duration, _buff.Duration - 28.0 / 60);
         if (debuffCast) duration = Math.Max(duration, _debuff.MinimumCastDuration);
-        if ((detoxCast ? _detox.CastElapsed(_elapsed) : debuffCast ? _debuff.CastElapsed(_elapsed) : buffCast ? _buff.CastElapsed(_elapsed) : _elapsed) < duration ||
+        if ((absorbCast ? _absorb.CastElapsed(_elapsed) : detoxCast ? _detox.CastElapsed(_elapsed) : debuffCast ? _debuff.CastElapsed(_elapsed) : buffCast ? _buff.CastElapsed(_elapsed) : _elapsed) < duration ||
             state.Phase == BattleScenePhase.SpellStop && _detox.Active && _detox.Finishing) return null;
         if (state.Phase == BattleScenePhase.End) _audio?.RestoreBattlefieldMusic();
         _completed = true;
@@ -869,6 +881,7 @@ internal sealed partial class BattleSceneView : Control
         detox = _detox.Observe(),
         debuff = _debuff.Observe(),
         buff = _buff.Observe(), buffBackdrop = _sceneBlack.Color.ToHtml(),
+        absorb = _absorb.Observe(), absorbBackdrop = _sceneBlack.Color.ToHtml(),
         visible = Visible, error = Error, phase = _state?.Phase.ToString(), waitToken = _state?.Token.Value,
         suppressed = _state is { } messageState && Suppressed(messageState), suppressible = _state?.CanSuppressHitCoinMessage,
         requiresAcknowledgement = _state?.RequiresAcknowledgement,
@@ -880,10 +893,11 @@ internal sealed partial class BattleSceneView : Control
         allyVisible = _ally.Visible, enemyVisible = _enemy.Visible, backgroundVisible = _background.Visible, groundVisible = _ground.Visible,
         actionKind = _state?.ActionKind, reactionKind = _state?.ReactionKind, supportSpell = _state?.SupportSpell, silencedSpell = _state?.SilencedSpell,
         reactionAmount = _state?.Amount,
+        reactionTarget = _state?.Target?.Value,
         item = _state?.EquipmentItem?.ItemId ?? _state?.AttackItem?.ItemId ?? _state?.Item?.ItemId,
         equipmentWear = _state?.Wear.ToString(),
         spell = _state?.RecoveryEffect?.Spell ?? _state?.AttackSpell?.Spell ?? _state?.SupportSpell?.Spell ?? _state?.SilencedSpell,
-        spellAnimationSelector = BuffEffectView.Selector(_state) ?? DebuffSelector(_state) ?? _state?.AttackAnimationSelector ?? (_state?.AttackItem is not null || _state?.EquipmentItem is not null ? 0 : _state?.AttackSpell is { } attack ? attack.SourceAnimationSelector : _state is { Spell.IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : DetoxSelector(_state) ?? (_state?.RecoveryEffect is { } recoveryEffect ? 4 + 32 * (recoveryEffect.Spell.Level - 1) : _state?.Item is not null ? 0 : (int?)null)),
+        spellAnimationSelector = AbsorbEffectView.Selector(_state) ?? BuffEffectView.Selector(_state) ?? DebuffSelector(_state) ?? _state?.AttackAnimationSelector ?? (_state?.AttackItem is not null || _state?.EquipmentItem is not null ? 0 : _state?.AttackSpell is { } attack ? attack.SourceAnimationSelector : _state is { Spell.IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : DetoxSelector(_state) ?? (_state?.RecoveryEffect is { } recoveryEffect ? 4 + 32 * (recoveryEffect.Spell.Level - 1) : _state?.Item is not null ? 0 : (int?)null)),
         healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
             healing.LogicalComplete, healing.Delivered, healing.CastRequested, healing.CastFrame, healing.Fairy } : null,
         fairySprites = _fairyBodies.Concat(_fairyWings).Concat(_fairyDust).Where(sprite => sprite.Visible)

@@ -689,8 +689,13 @@ v6 Continue and removal are confirmed. Battle05 plays the default for another
 ally on entry. After battle Continue, Bowie plays the override. The controlled post-Taros
 service visit confirms ordinary Depot deposit, bilingual appraisal and retrieval to Bowie.
 [Sandals route and limits](content/special-equipment-reach.md#remake-controls-and-reproduction)
-Indra Staff admits WIZ/VICR weapon Equip, SPOIT1 Item Use, wear, 800-gold Repair and existing
-save/restore. Black Ring admits WIZ Equip for ATT +10, physical curse, selected-slot custody
+Indra Staff admits WIZ/VICR/SORC weapon Equip, SPOIT1 Item Use, wear, 800-gold Repair and existing
+save/restore. Current whole-equipment admission also covers Misty Knuckles, Supply Staff
+and Demon Rod SPOIT1 Use. Their [ABSORB presentation](godot/spell-presentation.md#absorb-family-playback-2309)
+binds source warp/flash, Item gesture and ordered target-loss/caster-gain using unchanged
+resources. Controlled Indra, full-caster Demon Rod and empty-target Supply Staff return
+to usable input; all four have reader/appearance closure. Natural late custody remains Unknown.
+Black Ring admits WIZ Equip for ATT +10, physical curse, selected-slot custody
 protection, Church Cure, BLAZE 2 Item Use, shared wear and merchant Repair. The source SORC bit
 is retained for class admission. The ordinary WIZ observations use controlled copies of accepted
 post-promotion saves. They cover the localized ring and outcomes, return to battle input and cold

@@ -1406,6 +1406,14 @@ falls back to Original for the whole required group. No equipment consumer is ad
 Source operands, controlled native acceptance and Unknowns belong to the
 [spell owner](../godot/spell-presentation.md#wind-family-playback-2306).
 
+### ABSORB resource reuse #2309
+
+ABSORB equipment playback adds no raster family. Its source setup loads no tiles and
+the update returns immediately. The existing complete #2307 package supplies actor,
+weapon and warp89 resources for all four admitted SPOIT items. Existing body/weapon
+groups keep atomic Original/HD fallback. See the
+[ABSORB asset selection](presentation-assets.md#absorb-resource-reuse-2309).
+
 ### DESOUL raster family #2307
 
 The [DESOUL successor](presentation-assets.md#desoul-successor-2307) consumes the

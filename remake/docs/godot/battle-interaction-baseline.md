@@ -2,6 +2,13 @@
 
 ## Decision and scope
 
+The [ABSORB equipment binding](spell-presentation.md#absorb-family-playback-2309) retains
+ordinary Item selection, its body-specific gesture, target MP loss before capped caster
+gain, selected-copy wear, one reward and usable next input. The source no-tile flash/warp
+mechanism covers admitted Misty Knuckles, Indra Staff, Supply Staff and Demon Rod without
+new gameplay admission. Its controlled state/input observations and visual Unknowns remain
+with that presentation owner.
+
 **High rigor for the production battle UI.** Decision, inspection, commit and return
 share input and presentation boundaries; a wrong gesture can spend resources or acknowledge a
 different phase. The agreed outcome is the accepted F4/F8/F9 behavior in the pre-voyage demo,
