@@ -3,6 +3,12 @@
 The [pre-voyage campaign agreement](application/pre-voyage-campaign.md) tracks the ordinary-entry
 handoffs, carried state and acceptance boundaries for Battle03 through departure.
 
+Prepared [AQUA1–2 enemy breath](godot/spell-presentation.md#aqua-family-playback-2315)
+uses source bubble art and rank palettes, actual Kraken Head/Battle23 Bubbling Ooze bodies,
+and atomic Original/HD selection. Production-reader closure and short controlled ordinary
+enemy actions pass; AI, MP, damage/death and return rules are unchanged. Willard himself
+has no spell. Natural reach, hardware and human presentation acceptance remain Unknown.
+
 ## Whole-game equipment audit and implementation boundary
 
 The [#2268 agreement](domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268)

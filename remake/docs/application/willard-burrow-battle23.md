@@ -160,3 +160,13 @@ The source documents establish original static facts only. Original natural reac
 timing/audio parity and original SRAM remain **Unknown**. This is automated ordinary-input native
 acceptance, not a claim of human play or visual review. Broader services, Map33 restoration and
 recruitment remain outside this chapter.
+
+## Prepared AQUA2 presentation
+
+[AQUA delivery #2315](../godot/spell-presentation.md#aqua-family-playback-2315) binds
+Bubbling Ooze's actual body0/palette2, seven growing bubble frames and rank2 color operands
+through existing attack-scene playback. Willard is the encounter's leader, not its breath
+caster; source enemy90 has no spell. The short controlled Continue/Stay witness retains the
+living leader and activates an admitted Ooze beside Bowie. HD/Reduced Flash/held-speed and
+incomplete-HD fallback pass with unchanged AI, zero MP cost, damage and returned control.
+This supplements the natural chapter evidence above without changing admission or boss rules.

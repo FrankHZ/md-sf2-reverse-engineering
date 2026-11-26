@@ -1432,3 +1432,13 @@ preserve logical extents. A missing HD member selects the entire Original group.
 Prepared retail cue 106 joins inherited cast 77 and hover 110. All 26 admitted
 scene projections carry the group for learned ranks and Dark Sword Use.
 [Source operands and playback](../godot/spell-presentation.md#desoul-source-and-delivery)
+
+### AQUA raster family #2315
+
+The [complete AQUA successor](presentation-assets.md#aqua-successor-2315) supplies seven
+Original/4x HD bubble frames for each rank across26 scenes. Prepared tileset0 is33 tiles;
+frames begin at0/1/2/3/4/8/17 with logical sizes8/8/8/8/16/24/32. Rank2's source palette
+writes are masked to the VDP color bits. Each rank is an atomic seven-frame graphics group.
+Prepared104/CB and its PSG tone3 registration join inherited audio without new capture.
+Actual consumers are Kraken Head and Battle23 Bubbling Ooze, with their own bodies and
+terrain; Willard has no AQUA spell. [Native/reader evidence and limits](../godot/spell-presentation.md#aqua-family-playback-2315).

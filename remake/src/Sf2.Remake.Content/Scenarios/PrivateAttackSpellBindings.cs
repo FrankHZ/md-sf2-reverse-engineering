@@ -86,6 +86,12 @@ internal static class PrivateAttackSpellBindings
                     "source-attack-animation", "spells.animation", true);
                 animation = (byte)((family == "BLAZE" ? 1 : 7) | source.Level << 5);
             }
+            if (source.Code == "AQUA")
+            {
+                Require(source.AnimationExpression == (source.Level == 1 ? "BUBBLE_BREATH" : "BUBBLE_BREATH|VARIATION2"),
+                    "source-attack-animation", "spells.animation", true);
+                animation = (byte)(22 | (source.Level - 1) << 5);
+            }
             if (source.Code == "KIWI")
             {
                 Require(source.AnimationExpression == "FLAME_BREATH|VARIATION3",

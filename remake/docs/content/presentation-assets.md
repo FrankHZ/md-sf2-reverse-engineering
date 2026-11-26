@@ -1596,6 +1596,37 @@ is separate from the immutable #2307 content. The reader checks104 SPOIT definit
 and702 equipment appearances over26 scenes. Native Original/HD, Reduced Flash/held
 speed and body-group fallback retain their [playback boundary](../godot/spell-presentation.md#absorb-reproduction-and-verification).
 
+### AQUA successor #2315
+
+Complete `derived/issue2315/aqua-v1` consumes accepted #2314 and prepared
+`derived/issue2001/retail-v1`, with graphics commit
+`172662709b31cb296b55f51894754ce810c30f6c`. It contains181 files /380,536,562 bytes:
+26 scenes gain14 Original and14 HD resources, and world audio gains prepared104/CB.
+Every inherited JSON value and unaffected file compares equal. Independent #2252 opening,
+#2255 Witch and #2266 catalogs remain selected. No new audio capture is required.
+
+The one-scene pilot adds17,648 bytes in0.15s with55.5MB peak working memory. Serial
+publication takes1.52s and adds572,399 bytes overall. Processing is O(package bytes plus
+frame pixels), with one scene and raster bank live. Before scaling the estimate was under
+30MiB added,1GiB working memory/scratch and minutes; publication remains below500MiB.
+The hard scratch/peak limit is2GiB. Reader peak is below900MB and native peak below1.31GB;
+replan if these limits fail. One fallback rewrites only Battle23's rank2 HD group and
+links unchanged immutable inputs. The producer package path is absent during acceptance.
+
+```powershell
+. ./local/private-inputs.ps1
+$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2314/atlas-v1'
+uv run --locked --with pillow==11.3.0 python -m sf2tool.remake_retail_assets `
+  --root $library --base $base --mount $freshAbsolutePackage `
+  --family aqua-family --gfx-root $registeredGraphicsRoot
+```
+
+Use fresh checkout-local ignored output. Published `derived/issue2315/review-v1` holds
+reader/ordinary-input recipes and retained receipts. Boot stages writable files beneath
+the selected worktree and requires an explicit disposable save root.
+[Source, caller distinction, checks and failures](../godot/spell-presentation.md#aqua-family-playback-2315).
+
 ### ATLAS successor #2314
 
 Complete `derived/issue2314/atlas-v1` contains180 files /379,964,163 bytes, consuming

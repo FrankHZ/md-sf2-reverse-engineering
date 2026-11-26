@@ -6,6 +6,110 @@ pre-voyage priority. Later private campaigns and controlled authored packages es
 boundaries. This inventory uses the existing rules, scene readers, presenters and private resource
 publisher. Each implementation slice owns its own acceptance.
 
+## AQUA family playback #2315
+
+**Standard scope.** Prepared BUBBLE_BREATH replaces primitive bubbles for Kraken Head in
+Battle16 and Bubbling Ooze in Battle23. Willard names the encounter; enemy90 Willard has
+no spell. Preserve AI, payment, targets, damage/death and returned control. No new species,
+boss rule, campaign admission, save format, #1716 or broader renderer work is included.
+
+Owned code: `game/src/Battles/AquaEffect.cs`, `AttackSpellView.cs`, `BattleSceneView.cs`,
+`BattleSceneView.Rasters.cs`, `game/src/Audio/SessionAudio.cs` and Content's
+`PrivateAttackSpellBindings.cs`. Producer: `src/sf2tool/remake_aqua_mount.py` plus existing
+attack-mount/private-package/retail CLI/engine-path registrations. Observer:
+`game/probes/engine_aqua_family_observation.gd`. Serial document owners are this file,
+battle-scenes, kraken-battle, willard-burrow-battle23, presentation-assets, asset-inventory
+and capability-status. Accepted #2314 is the complete base; independent opening/Witch/catalogs
+remain selected. Production-reader closure and bounded ordinary enemy input own acceptance.
+
+### AQUA source and delivery
+
+**Confirmed source structure:** USA ROM SHA256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`, SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. `spelldefs.asm` maps AQUA1/2 to22/54,
+zero MP, power13/15, range3/1 and radius0. Spell ID40 is not its animation selector.
+`SetupSpellanimation` shifts variant bits and adds1: setup receives1/2 after masking
+mirroring. Setup `0x1B488..0x1B4F6` loads tileset0 and sets the228-update emission hold.
+Rank2 replaces palette3 slots9/13/14 with raw `$CBF/$B9A/$B46`; the VDP's `$EEE` mask gives
+`$CAE/$A8A/$A46`. Rank1 retains `$ACA/$8A6/$602`. Only these source operands are masked;
+the shared strict decoder is unchanged.
+
+Update `0x1E5D0..0x1E7B2` uses16 slots. `graphic_Bubble` starts at VDP(212,248), logical
+(84,120); its table grows through8/8/8/8/16/24/32-square frames at zero-based tiles
+0/1/2/3/4/8/17. The33-tile prepared stream is1,056 bytes. States10/20/30/40/50/60 change
+frame; state80 retires a bubble. State10 spawns its successor while the hold remains.
+Initial random fixed-point velocities are x320..831 and y-512..-257, with y+28 per update;
+at40 vertical velocity resets to-64..-33 and later receives y-32 plus horizontal sway.
+Horizontal flip follows state bit2. Each spawn requests104; first retirement also releases
+the source damage wait. Neither228 nor307 is asserted as the original whole action length.
+
+Pinned `enemydefs.asm` assigns AQUA1 to Kraken Head87 and AQUA2 to Bubbling Ooze16;
+Willard90 has four NOTHING slots. Battle16 uses head body44/palette0/sequence44;
+Battle23's six Ooze placements share body0/palette2/sequence0. Existing scene readers
+select live actor/target terrain and equipment. No generic caster is introduced.
+
+[Setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/bubblebreath.asm) ·
+[Update](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/bubblebreath.asm) ·
+[Variant decoder](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/battlesceneengine_2.asm) ·
+[Enemy definitions](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/enemies/enemydefs.asm).
+
+**Modern delivery:** deterministic cosmetic velocities and nine-tick emissions during the
+228-tick hold drain within307/60 seconds on the existing action clock. The unchanged action
+continuation delivers damage after this finite animation. Rendering draws no gameplay RNG.
+The actor trigger starts playback; breath adds no generic cast77. Prepared104/CB audio is
+mounted; `sounddriver.asm:sfx_28` has one active PSG tone3 pointer (ninth of ten slots), now
+registered in `SessionAudio`'s existing whole-clip replacement policy. Reduced Flash suppresses
+rapid flipping while retaining growth/motion and outcomes. Held1.5x uses shared pacing.
+Seven-frame rank groups choose HD atomically; incomplete HD falls back entirely, partial
+Original fails at presentation, and whole absence retains the existing modern fallback.
+**Unknown:** natural reach, original cadence, palette/plane/GPU fidelity, physical listening
+and human aesthetic acceptance.
+
+### AQUA verification
+
+Select complete `derived/issue2315/aqua-v1`, independent #2252 opening, #2255 Witch and
+#2266 catalogs. After the [locked Debug build](../development-and-verification.md#locked-net-workflow):
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2315/review-v1'
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case aqua1 `
+  -Sample aqua1-review -SaveRoot $freshExternalSaveRoot
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case aqua2 `
+  -Sample aqua2-hd-review -Graphics hd -Reduced -Fast -SaveRoot $freshExternalSaveRoot
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case aqua2 `
+  -Sample aqua2-fallback-review -Graphics hd -Variant incomplete -SaveRoot $freshExternalSaveRoot
+```
+
+**Confirmed in the remake:** production reader accepts26 complete scenes and seven current
+rank bindings: Battle16 rank1 and Battles17/19/23 ranks1/2. Availability is not caster admission.
+Both controlled Continue records restore. These are controlled prerequisites, not natural
+campaign continuations: the accepted later-party Bowie record is placed beside each actual
+caster; Kraken limbs are defeated to clear its swarm guard, Battle23 retains its living leader,
+and the Ooze activation bit is set. Main seeds are`0x1234`/`0x10000000`; thinking seed is
+`0x12340000`. Enemy books/species and decision rules remain unchanged.
+Continue → Confirm → Stay dispatches real AI. Rank1 deals16 and rank2 deals15 to Bowie,
+with zero MP delta, one HP application, no enemy reward and usable next ActionChoice.
+Existing engine assertions retain death, category/payment and chapter-return behavior;
+these bounded scenes do not independently re-prove natural victory or death.
+
+Published-input Original, HD/Reduced Flash/held-speed and incomplete-HD runs pass with the
+producer package path absent. Draw/state observations cover all seven frames, actual body/
+sequence, scenery, texture density,104, early Confirm refusal and returned control. Reader
+peak stays below900MB; final native peaks are below1.31GB and each takes under4.4 seconds.
+Engine verification passes3,383 with50 optional-fixture skips; Release/Debug builds pass.
+No helper tests, gameplay screenshots, bulk frames or new audio acquisition were added.
+
+Retained failures: missing optional Pillow, wrong Battle16 filename, raw palette-bit rejection,
+nullable build error, wrong save writer overload and nonformation deployment. First Kraken
+correctly waited for its swarm condition. First Battle23 marked its leader dead and returned
+to exploration; its observer then read a battle-only projection. The next Ooze correctly took
+standby before activation was supplied. First fast run delivered AQUA but lost Shift across
+ordinary input; the observer gesture was corrected. Setup also retained a relative-output
+rejection, ctypes pointer-width error and text-encoding error. Complete logs remain in the
+private review. Successful exits retain6–10 ObjectDB warnings under#1716; no repair is claimed.
+
 ## ATLAS family playback #2314
 
 **Standard scope:** bind admitted SORC ATLAS1–2 through the accepted summon lifecycle,
@@ -650,7 +754,7 @@ update controls subsequent movement, mirroring and dust. [Enemy family evidence]
 | FBALL 1 | BLAZE v3 in table, NONE for consumable Use | **Original item gesture bound** for Shining Ball with ordinary private damage, custody and return. | Preserve the distinct item route with [#2104] and the [offensive-item owner](../domain/offensive-items-design.md#ordinary-remake-observations). |
 | BREZAD 1 | FREEZE v3 in table, NONE for consumable Use | **Original item gesture bound** for Blizzard with ordinary private damage, custody and return. | Preserve the distinct item route with [#2104] and the [offensive-item owner](../domain/offensive-items-design.md#ordinary-remake-observations). |
 | THUNDR 1 | BOLT v3 in table, NONE for consumable Use | **Unavailable** as Holy Thunder private Item Use. | [#1818] item rule/admission. Reuse the ordinary item scene when admitted. |
-| AQUA 1–2 | BUBBLE_BREATH v1–v2 | **Placeholder**. Both enemy ranks have private gameplay and primitive bubble playback. Kraken Battle16 and Willard Battle23 cover the changed reach and enemy action in their own accepted scopes. | [#2104] later breath effect. Preserve rank-specific AI and reaction behavior. [Kraken](../application/kraken-battle.md) · [Willard](../application/willard-burrow-battle23.md) |
+| AQUA 1–2 | BUBBLE_BREATH v1–v2 | **Original assets bound**: seven frames per rank, distinct palettes, actual Kraken Head and Battle23 Bubbling Ooze bodies/terrain. Willard itself has no spell. | [AQUA playback](#aqua-family-playback-2315): reader closure, ordinary enemy actions and atomic Original/HD/settings; natural/hardware/human acceptance remains Unknown. |
 | KIWI 1–4 | FLAME_BREATH v3 for all | **Partial** original assets. The optional MNST mount supplies the dedicated cast sequence and two prepared Flame Breath tiles. A controlled private Attack conversion projects the modern particle stream. All four ranks differ by level/power and share the visual path. | [#2104] later breath group can reuse the mounted assets when appropriate. Natural MNST promotion/breath in the connected pilot and exact particle motion remain **Unknown**. [Controlled Monster pilot](../application/ordinary-promotion-classes.md#monster-controlled-reproduction-and-ordinary-pilot) |
 | SHINE 1 | NONE | **Unavailable**. Right of Hope from the Fairy Woods trial is outside the current campaign. | [#1818] trial/item caller, with the accepted field/item delivery boundary. [Flag and receipt](../content/campaign-flags.md) |
 | ODDEYE 1 | ODD_EYE_BEAM v1 | **Unavailable** in the connected campaign. | [#1818] first encounter, [#1369] action rules and [#2104] beam effect. |
