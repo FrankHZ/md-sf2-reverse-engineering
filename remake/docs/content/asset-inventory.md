@@ -26,6 +26,12 @@ consumers, release and hardware-equivalence decisions belong to their feature ow
 All identifiers here are relative to the configured shared data root. Keep each package's
 `world.json`, `main-scenes.json`, `entry/entry.json` and six `opening-inputs` selections
 together. The active package is the set selected in the launch process.
+
+The independent opening selection is `derived/issue2324/opening-hd-v1/opening/opening.json`.
+Its Map42 HD bank and actor/portrait resources come from the accepted #2252 opening; the
+successor adds127 Map65 blocks,166 contexts, nine finite color banks and complete183/187 HD
+direction strips. [Preparation and actual-consumer boundary](hd-rollout.md#opening-terrain-and-palette-banks-2324)
+remain separate from campaign, Witch and catalog selection and from human visual acceptance.
 [Ordinary package selection](presentation-assets.md#reuse-a-closed-private-package)
 
 | Selection | Purpose and resource boundary |

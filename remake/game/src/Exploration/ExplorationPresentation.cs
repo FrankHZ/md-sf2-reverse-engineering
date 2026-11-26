@@ -24,8 +24,10 @@ internal sealed partial class ExplorationPresentation : IDisposable
         if (mode == "hd" && _visuals.Maps.TryGetValue(map, out var visual)) _mapTextures.PrepareHd(visual);
         ExplorationRasterImages.PrepareActors(_visuals, mode == "hd");
     }
-    private bool Painted(MapId map) => _mapTextures.HdPaletteOffset is not null && _settings.GraphicsMode == "hd" &&
+    private bool Painted(MapId map) => _mapTextures.SupportsHdPalette && _settings.GraphicsMode == "hd" &&
         _visuals?.Maps.GetValueOrDefault(map)?.HdBlocks is not null;
+    private bool UsesLogicalCamera(MapId map, LogicalView? view) => view is not null &&
+        (view.TargetSlot is null || _visuals?.Maps.GetValueOrDefault(map)?.ScenePalette is not null);
     internal UI.StoryDialoguePanel? DialoguePanel { get; set; }
     private readonly ExplorationVisuals? _visuals;
     private readonly MapBlockTextures _mapTextures = new();
@@ -373,14 +375,14 @@ internal sealed partial class ExplorationPresentation : IDisposable
             if (!(BattleLoads > 0 && current.Active is ActiveBattle))
             {
                 var view = current.Story.LogicalView;
-                bool explicitCamera = view is { TargetSlot: null } ||
+                bool explicitCamera = UsesLogicalCamera(world.Map, view) ||
                     view?.TargetSlot is { } followed && followed != world.PlayerEntity.Slot ||
                     current.Story.CameraEntitySlot is not null;
                 var tracked = (view?.TargetSlot ?? current.Story.CameraEntitySlot) is { } slot
                     ? world.AllEntities.First(entity => entity.Slot == slot) : world.PlayerEntity;
                 Vector2 point = new(tracked.Motion.X / 16f + 12, tracked.Motion.Y / 16f + 12);
-                if (view is { TargetSlot: null })
-                    point = (view.Area.Layer == 0 ? new Vector2(view.BX.Position, view.BY.Position)
+                if (UsesLogicalCamera(world.Map, view))
+                    point = (view!.Area.Layer == 0 ? new Vector2(view.BX.Position, view.BY.Position)
                         : new Vector2(view.AX.Position, view.AY.Position)) / 16 + WorldViewportLayout.LogicalHalfFrame;
                 else if (view is null && current.Story.CameraEntitySlot is null &&
                     current.Story.Cursor is not null && current.Story.CameraTarget is { } destination)
@@ -441,13 +443,14 @@ internal sealed partial class ExplorationPresentation : IDisposable
             var view = story.LogicalView;
             var background = view is null ? _camera : WorldViewportLayout.Plane(_camera, view.Area, false);
             var foreground = view is null ? _camera : WorldViewportLayout.Plane(_camera, view.Area, true);
-            if (view is { TargetSlot: null })
+            bool logicalCamera = UsesLogicalCamera(world.Map, view);
+            if (logicalCamera)
             {
-                // Scene planes have independent source origins (ship/shore/autoscroll).
-                // Center the source camera frame in the modern viewport; do not derive
-                // both planes from the actor or discard an explicitly written origin.
+                // Scene planes keep the same logical frame when switching between
+                // a script destination and actor following. Modern field clamping
+                // would otherwise jump between two origins on that same switch.
                 var framing = WorldViewportLayout.LogicalHalfFrame - viewport / (2 * _scale) + new Vector2(0, 24);
-                foreground = new Vector2(view.AX.Position, view.AY.Position) / 16 + framing;
+                foreground = new Vector2(view!.AX.Position, view.AY.Position) / 16 + framing;
                 background = new Vector2(view.BX.Position, view.BY.Position) / 16 + framing;
             }
             // A deterministic bounded displacement; no gameplay RNG or motion is consumed.
@@ -456,8 +459,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
 
             // VInt_UpdateSprites selects the area's main plane once before its entity loop.
             // ENTITYDEF_LAYER controls signed window priority, not coordinate selection.
-            var actorOrigin = view is { TargetSlot: null }
-                ? view.Area.Layer == 0 ? background : foreground
+            var actorOrigin = logicalCamera
+                ? view!.Area.Layer == 0 ? background : foreground
                 : _camera + new Vector2(0, quake);
             // Clip in the same coordinate space as the actual main plane and actors.
             // The clamped modern camera can differ from an explicit source view;
@@ -610,7 +613,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
             CameraProjection = new { drawSequence = ++_drawSequence, processFrame = Engine.GetProcessFrames(),
                 sessionId = current.SessionId, revision = current.Revision, observationSequence = current.ObservationSequence,
                 simulationTick = story.SimulationTick, token = story.Wait?.Token.Value, cue = CueProjection,
-                map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null,
+                map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null, logicalView = view, quake,
                 x = 0, y = 0, width = viewport.X, height = viewport.Y, exteriorColor = exterior.ToHtml(),
                 legalScreen = new { x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y },
                 cameraX = _camera.X, cameraY = _camera.Y, legalBounds = Battles.BattleMapViewport.Rectangle(_viewport.Bounds),
@@ -618,7 +621,7 @@ internal sealed partial class ExplorationPresentation : IDisposable
             CameraCompactProjection = new { drawSequence = _drawSequence, processFrame = Engine.GetProcessFrames(),
                 sessionId = current.SessionId, revision = current.Revision, observationSequence = current.ObservationSequence,
                 simulationTick = story.SimulationTick, token = story.Wait?.Token.Value, cue = CueProjection,
-                map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null,
+                map = world.Map.Value, targetSlot = view?.TargetSlot, bound = view is not null, logicalView = view, quake,
                 x = 0, y = 0, width = viewport.X, height = viewport.Y, exteriorColor = exterior.ToHtml(),
                 legalScreen = new { x = _screen.Position.X, y = _screen.Position.Y, width = _screen.Size.X, height = _screen.Size.Y },
                 cameraX = _camera.X, cameraY = _camera.Y, legalBounds = Battles.BattleMapViewport.Rectangle(_viewport.Bounds),
@@ -861,7 +864,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
 
     private ExplorationRaster? BlockVariant(ExplorationMapVisual visual, WorkingMapLayout layout,
         int x, int y, Rect2I bounds, out bool contextual) =>
-        MapBlockTextures.Variant(visual, Painted(visual.Map), layout, x, y, bounds, _terrainPhase, out contextual);
+        MapBlockTextures.Variant(visual, Painted(visual.Map), layout, x, y, bounds, _terrainPhase, out contextual,
+            _mapTextures.HdPaletteBank);
 
     private static int AnimationHalf(ExplorationEntity entity) =>
         (sbyte)entity.Motion.AnimationCounter >= (entity.Sprite is 252 or 254 or 255 ? 16 : 15) ? 1 : 0;

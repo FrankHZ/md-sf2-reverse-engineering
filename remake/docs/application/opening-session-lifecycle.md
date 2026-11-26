@@ -560,9 +560,10 @@ replaced correctly by a global color lookup. Only the selected maps therefore ca
 128×320 byte index plane and sixteen base words. `MapBlockTextures` reconstructs its existing blocks
 with these slot colors. No whole-map migration or frame atlas is needed. Actor half-fade uses the
 same absolute channel offset on the existing source sprite; terrain-only tint/storm does not affect
-actors or UI. Installed HD sprites now retain the uniform channel fade. Map42 HD terrain uses the
-same bounded transform for uniform fades; arbitrary slot replacement falls back to indexed Original
-terrain for that interval. Map65 terrain and183/187 effects have no admitted HD assets.
+actors or UI. Installed HD sprites retain the uniform channel fade. HD terrain uses the
+same bounded transform for uniform fades. The [opening HD successor](#opening-hd-completion-2324)
+adds Map65 and183/187 resources and finite storm banks; absent optional palette coverage still
+falls back to indexed Original terrain for that interval.
 Reduced Flash holds a smaller presentation change for a pulse; logical replacement/restoration and
 wait completion remain unchanged.
 
@@ -588,6 +589,123 @@ indexed texture samples, actor/effect projection and error checks support this b
 This bounded pilot was accepted in #2251. Source structure does not prove original natural timing
 or human presentation quality; those remain **Unknown**. The original behavior owner remains
 [special screens](../../../docs/research/presentation/special-screens.md#boot-story-sequence).
+
+#### Opening HD completion (#2324)
+
+**Standard rigor:** the bounded outcome is HD Map65 terrain, sprites183/187, the
+existing four-scene palette transitions and the user's complete opening-camera audit.
+Startup, skip, title handoff, dialogue panels,
+black exterior and campaign/save behavior retain their accepted owners. Human visual
+approval and original hardware timing remain **Unknown**.
+
+The independent successor is produced from the published #2252 opening and the pinned
+graphics algorithms; neither a full campaign reconstruction nor a new extraction run is
+needed. Map42 and actors/portraits retain their existing resources. Map65's optional
+`scenePalette.hdBanks` contains exact sixteen-word palette selections and ordinary
+`hdBlocks`/`hdBlockContexts`. The producer keeps original palette-slot identity, freezes
+base-palette density/edge geometry, and recolors each generated OKLCH ramp from its original
+two slots. This avoids ambiguous RGB matching and prevents storm colors from changing
+the filtered geometry. Runtime uses exact palette equality; absent optional banks retain
+the indexed Original fallback. Uniform fades retain the accepted channel-offset treatment.
+Reduced Flash uses the same bank selection with its existing projected sixteen words.
+
+Owned implementation: `remake_opening_hd.py`, scene-palette definition/admission,
+`MapBlockTextures`, exploration's HD selection and an opening-specific native observation.
+Shared asset registries and aggregate documentation require serialized main-gate intake.
+The camera correction remains in exploration projection; the shared field/battle viewport
+and Domain/Application camera speeds and paths are unchanged.
+
+The first pilot covers three Map65 blocks under base plus nine alternate banks and all
+six direction strips for183/187. It took0.211s and wrote75,861 bytes. Initial plain locked
+Python launch failed before generation because Pillow was absent; use the existing
+`uv run --locked --with pillow==11.3.0` graphics dependency selection. Estimate full output
+under40MiB including the existing intro audio, under512MiB producer memory, under2GiB
+native memory and under2GiB total scratch. Work scales with selected blocks plus the
+18×19 Map65 plane for each of ten palettes, not with sequence duration. Run serially and
+reassess measured limits before expansion. No network/model/image-generation calls are used
+by production. The pilot fits this bounded plan; proceed to complete banks and actual texture
+observations, preserving the accepted lifecycle evidence unless host handoff changes.
+
+Acceptance requires mounted96×96 terrain and192×96 effect strips, exact palette selection,
+restoration, Original and absent-optional-bank fallback, actual effect draws, black exterior,
+scene disposal and error-free resource lifetime. Adapter compilation passed after the first
+implementation. HD, Reduced Flash, Original and absent-palette-bank short native observations
+passed, with both effects drawn, exact palette selection/restoration and black exterior.
+The complete private successor is `derived/issue2324/opening-hd-v1/opening/opening.json`.
+Production took2.446s, wrote27,250,723 bytes and peaked at77.91MiB; the world is7,162,097 bytes,
+with127 Map65 blocks,166 context rasters and nine additional color banks. It retains the
+source scripts, maps, Map42, other actors, portraits, audio and independent catalog unchanged.
+[Production and native reproduction](../content/hd-rollout.md#opening-terrain-and-palette-banks-2324).
+
+**Confirmed controlled camera defect:** at1920×1080 a target→entity130→target transition
+kept logical X2688 (168 source pixels), but the drawn origin changed from48 to−24 source
+pixels, a288-screen-pixel jump. Detached scene cameras used logical planes while entity
+following used ordinary field viewport clamping; Map65's432-pixel width is smaller than
+the modern480-source-pixel view. Admitted scene-palette maps now use the same logical
+plane projection in both modes, including actor origins. This preserves authored follow
+thresholds, destination speeds, layer offsets, quake and explicit reloads. It introduces
+no new speed multiplier, clamp or widescreen composition. The actual short native trace
+matches logical planes across the transition.
+
+**Confirmed static camera operands:** pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/data/scripting/map/cs_intro1.asm` through `cs_intro4.asm`, agree with the published
+programs below. `setCamDest` retains its operands; scene load/reload and entity following
+remain distinct. The [camera evidence owner](../../../docs/research/chapters/grans-opening/map3-messenger-acceptance.md)
+records `SetCameraDestination`'s coordinate×384 conversion and `SetViewDestination`'s plane
+factors/origins. The remake keeps1/16-pixel view units and existing24/32-unit service speeds;
+4× display density changes screen displacement, not the logical trajectory or service count.
+
+| Source scene | Load/reload origins | Explicit destinations in source order | Followed source entities |
+| --- | --- | --- | --- |
+| Intro1 | Map42(2,5); reload(15,0) | (15,5), (21,1) | Slade; neutral between rooms |
+| Intro2 | Map65(7,2); reload(7,2) | (7,4), (7,2) | 130; neutral before return |
+| Intro3 | Map42(21,1); reload(21,1), (0,3) | None | Slade |
+| Intro4 | Map65(7,3) | (0,5), (7,5), (7,5), (7,1) | 130,130,128,128; neutral before the second(7,5) |
+
+**Confirmed complete remake observation:** `run-full-camera-v2/observation.json` under the
+owning checkout's `local/issue2324/` ran the unchanged four source scripts through terminal
+in416.598s, with27,632 actual camera frames (11,816 Map42;15,816 Map65), including1,558
+moving frames. All four scene IDs occurred in order. Every observed foreground/background
+and actor origin matched the logical snapshot used by that draw, including quake and layer
+offsets. Both effects, HD terrain through pulses, exact palette restoration, unchanged party,
+black exterior and terminal palette release passed; the native log has no error or leak.
+This is controlled scene execution, not a new ordinary boot/Skip/New Game proof. Existing
+#2252 host lifecycle evidence remains applicable. A live sample near completion recorded
+830MiB peak working set, within the2GiB budget; final-process peak was not sampled.
+
+Published-input short observations `run-published-hd-v3`, `run-published-small-v3` and
+`run-published-reduced-v3` also pass actual uploaded color-bank pixel comparisons at1920×1080
+and the supported minimum1600×900. The expected pixels come from independently decoded
+published PNGs.1280×720 correctly reaches the existing minimum-size recovery UI. Two earlier
+pixel-comparison attempts failed because JSON floating-number arrays and native integer
+arrays did not match in GDScript; direct offline digest comparison proved the pixels identical.
+The observer now compares all sixteen words numerically before comparing RGBA pixels; no
+resource, palette expectation or production behavior was relaxed.
+
+After rebasing onto the accepted AQUA successor, `run-final-hd`, `run-final-original`,
+`run-final-missing` and `run-final-missing-art` passed from published-input witnesses with
+the original producer scratch path unavailable. The last case removes Map65 HD terrain
+and183/187 HD strips as well as storm banks; each absent variant selects Original while
+Map42 remains HD. A cold producer rebuild from the published #2252 input is byte-identical
+for every payload file; only the elapsed-time preparation receipt differs. No disposable
+save directory was created.
+
+The clean committed planner is run with `--scope engine`: the sole shared wiring edit
+registers this producer and changes no research extraction or gate execution semantics.
+Selected checks are engine-unit, adapter, private-admission, live-inspection and H4 comparison
+builds, plus public Ruff/design-contract/research-index checks. All pass locally; the engine
+result is3,383 passed and50 optional-private skips. No helper/producer tests were added, and
+no original-game normal/full profile is implied. PR required-check results and exact Git
+identities belong to the frozen independent-review handoff.
+
+Palette changes retire tinted textures while preserving the already validated immutable
+HD resource bank. Map changes/disposal still clear it. The initial implementation decoded
+all alternate banks again after every color change; the corrected same-witness run took
+4.785s instead of7.198s on this host. This is a bounded regression check, not a benchmark
+or portable latency promise. Initial native observer type-inference errors and a full-camera
+observer that omitted intentional quake offsets are retained failed observations, not
+passed product evidence. The latter now compares the draw's own logical snapshot and quake.
 
 #### Implementation order and acceptance
 

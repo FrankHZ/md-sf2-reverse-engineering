@@ -362,6 +362,70 @@ The `asset-inventory.md` trace receives consumer status after observed admission
    in-game observations to state, input and projection with existing probes. Activation of the
    play checkout follows independent acceptance and its own authorization.
 
+## Opening terrain and palette banks (#2324)
+
+The independent opening successor selects
+`derived/issue2324/opening-hd-v1/opening/opening.json`. Keep the accepted full-game world,
+battle scene, Witch and display-catalog selections independent. It supplies Map65's127
+96×96 base blocks and166 context rasters,183/187's six192×96 strips, and nine exact
+sixteen-word storm/Reduced Flash color banks. Map42 and prior actor/portrait HD resources
+are retained. The [mechanism and camera agreement](../application/opening-session-lifecycle.md#opening-hd-completion-2324)
+owns current acceptance and Unknowns.
+
+The producer reads the already published indexed #2252 opening and pinned graphics checkout
+`172662709b31cb296b55f51894754ce810c30f6c`. Slot-preserving density and edge filtering freezes
+geometry under its base palette, then re-evaluates generated OKLCH ramps from their two source
+slots for each alternate palette. It does not infer slot identity from equal RGB values,
+reclassify contours under lightning colors, or recolor actors/UI with terrain-only changes.
+Missing optional exact banks retain the indexed Original fallback. Malformed declared banks
+fail Content admission. Runtime matches all sixteen words, and never applies the uniform
+fade offset a second time to a selected precolored bank.
+
+From the explicit checkout after loading its private configuration, select the existing clean
+graphics checkout as `$gfx`. Use a fresh ignored `$output`, or a fresh versioned destination
+under registered `derived/`; immutable published versions are never overwritten:
+
+```powershell
+. ./local/private-inputs.ps1
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2252/pre-voyage-opening-v1/opening'
+uv run --locked --with pillow==11.3.0 python -m sf2tool.remake_opening_hd `
+    --base $base --graphics $gfx --output $output
+# Add --pilot for three representative blocks and both complete effect direction sets.
+$env:SF2_PRIVATE_OPENING_CONTENT = Join-Path $output 'opening.json'
+```
+
+The producer requires no runtime reference to its scratch, ROM, upstream checkout, retail
+library or graphics checkout. Registered #2252's original provenance remains attached;
+the new bank is a local private derivative, not a new original-game observation or a public
+asset license. A full run measured2.446s,77.91MiB peak and about26MiB closed output, including
+existing audio. The8MiB terrain companion and128MiB world admission bounds are unchanged.
+
+For a short native witness, run `remake/game/probes/prepare_opening_hd_observation.py` through
+the same configured `uv run --locked --with pillow==11.3.0 python`, with `--base` pointing at
+the published successor's `opening/` and `--output` a fresh ignored directory. It builds
+explicit scene-map/entity/palette/camera operations from the admitted inputs; it is not a
+replacement proof of natural four-script timing. `--missing` removes only optional palette
+banks to exercise the existing fallback. `--missing-art` also removes Map65 HD terrain and
+183/187 HD directions; the rest of the admitted HD resources remain independently selectable.
+Select the witness's world, party, catalog and six
+`opening-inputs` using the [controlled opening launch](presentation-assets.md#controlled-opening-scene-package-2250).
+Use the existing Debug adapter and `engine_opening_hd_observation.gd` with `--headless
+--audio-driver Dummy --fixed-fps 60`, the witness's `scene-1.json`, and explicit input settings.
+Confine saves to the authorized external disposable #2324 namespace; no saved journey is needed.
+
+`SF2_OPENING_HD_MODE` is `hd`, `original`, `missing` or `missing-art`; settings `graphicsMode`
+is `original` only for that named case and otherwise `hd`. Repeat the HD witness with `reducedFlash:true`. Set
+`SF2_OPENING_OUTPUT` to a fresh JSON path. `SF2_OPENING_HD_SIZE=small` selects1600×900;
+default is1920×1080. `SF2_OPENING_HD_FULL=1` runs the unmodified published world through
+all four source scripts with the same controlled start, checking scene order and every
+observed plane/actor origin against the draw's logical snapshot plus authored quake.
+For the short witness, set `SF2_OPENING_HD_PIXELS` to its `expected-hd-pixels.json` to compare
+actual uploaded pixels (normalized losslessly to RGBA8 for comparison) with decoded published
+color banks. The expected data are independently read from the published PNGs.
+No screenshots are collected. Require exit0, `passed:true`, no native errors, expected HD
+and Original dimensions, both effect identities, pulse/restoration, black exterior and
+released terminal palette. Human visual acceptance remains **Unknown**.
+
 ## Actor and portrait implementation (#2176)
 
 The [registered actor package](asset-inventory.md#pre-voyage-actors-and-portraits-2176) extends

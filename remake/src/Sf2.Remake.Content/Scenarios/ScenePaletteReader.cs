@@ -20,10 +20,24 @@ internal static class ScenePaletteReader
     internal static ScenePaletteDefinition? Resource(JsonElement map)
     {
         if (!map.TryGetProperty("scenePalette", out var row)) return null;
-        Object(row, "scenePalette", "indices", "colors");
+        ObjectOptional(row, "scenePalette", ["indices", "colors"], "hdBanks");
         byte[] indices = Convert.FromBase64String(Text(row, "indices"));
         Require(indices.Length == 128 * 320 && indices.All(index => index < 16), "scene-palette-indices", "map.scenePalette");
-        return new(indices, Colors(row, "colors"));
+        var banks = new List<ScenePaletteHdBank>();
+        if (row.TryGetProperty("hdBanks", out _))
+        {
+            foreach (var bank in Array(row, "hdBanks"))
+            {
+                ObjectOptional(bank, "scenePalette.hdBanks", ["colors", "hdBlocks"], "hdBlockContexts");
+                var colors = Colors(bank, "colors");
+                Require(!banks.Any(previous => previous.Colors.SequenceEqual(colors)), "duplicate-scene-hd-palette", "scenePalette.hdBanks");
+                int count = map.GetProperty("blocks").GetArrayLength();
+                banks.Add(new(colors, ExplorationAssetReader.OptionalFrames(bank, "hdBlocks", count, 96, 96)!,
+                    HdTerrainBankReader.BlockContexts(bank, count)));
+            }
+            Require(banks.Count is > 0 and <= 32, "scene-hd-palette-count", "scenePalette.hdBanks");
+        }
+        return new(indices, Colors(row, "colors"), banks);
     }
     internal static StoryInstruction? Instruction(JsonElement row, string opcode)
     {

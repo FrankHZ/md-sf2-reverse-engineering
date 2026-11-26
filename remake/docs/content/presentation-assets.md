@@ -146,7 +146,13 @@ identified.
 
 ## Four-scene startup package (#2252)
 
-The closed private successor is `derived/issue2252/pre-voyage-opening-v1` beneath the configured
+The current independent HD opening is
+`derived/issue2324/opening-hd-v1/opening/opening.json`; select it with the accepted full-game
+world, Witch and catalogs without replacing those packages.
+[HD production, palette banks and camera observations](hd-rollout.md#opening-terrain-and-palette-banks-2324)
+extend the lifecycle selection below. Human visual acceptance remains **Unknown**.
+
+The lifecycle baseline is `derived/issue2252/pre-voyage-opening-v1` beneath the configured
 shared input root. It reuses the accepted #2242 campaign, #2240 world catalog and registered Witch
 catalog; its `opening/` subdirectory independently contains both scene maps, all four scripts,
 all81 English/Chinese opening rows, default names, selected actors/portraits, finite audio and inputs.
@@ -199,19 +205,20 @@ Unselecting `SF2_PRIVATE_OPENING_CONTENT` preserves direct title startup. A sele
 unavailable opening produces a visible bounded diagnostic and the same title when entry assets
 are valid. Diagnostic starts, preview and explicit seeded Continue bypass the sequence.
 
-HD uses the existing per-asset preference. Map42 now carries its accepted external HD terrain bank;
-uniform scene fades transform those actual textures. Arbitrary palette-slot replacement needs
-Original indexed terrain for that effect interval. Map65 has no admitted HD terrain. Compatible
-HD actor directions and portraits remain selected through fades and do not inherit terrain-only
-fallback. Effects183/187 have Original resources only. The existing six-layer title/Witch HD bank
+HD uses the existing per-asset preference. Map42 retains its accepted external HD terrain bank;
+uniform scene fades transform those actual textures. The #2324 independent successor adds Map65's
+HD terrain and finite storm/Reduced Flash palette banks. Absent optional color banks retain indexed
+Original fallback. Compatible HD actor directions and portraits remain selected through fades and
+do not inherit terrain-only fallback;183/187 now have complete HD direction strips. The six-layer title/Witch HD bank
 retains its coherent entry selection. Original source palette accuracy, HD visual approval and
 original hardware timing are separate from actual resource consumption.
 
-The four scripts actually require sprites14/59/159/173/183/187/202/203/205/206. All except183/187
-have admitted HD directions in the baseline, including Slade's special pose59. Their non-null
+The four scripts actually require sprites14/59/159/173/183/187/202/203/205/206. All have admitted
+HD directions in the successor, including Slade's special pose59. Their non-null
 portrait bindings are5/32/45 and have HD rasters. The bounded selection also retains the population
 reader's required fallback/ally sprite bindings; these do not imply that every retained actor or
-portrait appears in the opening. No new HD imagery was generated.
+portrait appears in the opening. #2324 derives only the missing terrain/effects from published
+private inputs with the existing deterministic filter; it adds no generated-art direction.
 
 Native observation uses `engine_opening_scene_observation.gd` with `SF2_OPENING_SCENE=all`,
 `SF2_OPENING_LOCALE=en` or`zh-CN`, and a fresh `SF2_OPENING_OUTPUT`. It uses ordinary startup,
