@@ -10,6 +10,60 @@ Use a dedicated instance, disposable save root and fresh namespace.
 
 ## Launch and operate
 
+### Development default
+
+Use `remake/tools/debug_dev.py` after loading the checkout-local private-input configuration
+and building the Debug adapter. It requires one explicit target and a fresh disposable run
+directory outside Git checkouts. All paths supplied to the launcher resolve from the caller's working directory;
+the Godot project resolves from the launcher's checkout. Each run owns its save namespace,
+settings and stdout/stderr. The launcher stays attached until the game exits.
+
+On Windows, launch defaults to a separate, unshown native desktop: it does not activate a
+window on the user's desktop and still runs the real renderer and semantic port. A per-run
+read-only settings copy enables `runInBackground`; supplied settings and player preferences
+are unchanged. Use `--foreground` to launch visibly for visual/input review or focus-pause
+testing; that option also preserves the supplied/default background preference. This is a
+launch choice, not a second scene or a headless substitute for native presentation checks.
+Other operating systems currently require `--foreground`.
+Drive the hidden instance through the semantic client. Use its ordinary system-menu Quit
+to exit cleanly; interrupting the launcher stops only its own process tree. Close failures
+and rejected startup remain in the run's logs; an unshown window is not evidence of success.
+
+```powershell
+. ./local/private-inputs.ps1
+python remake/tools/debug_dev.py --port 42332 --run-dir G:/md-sf2/disposable-saves/debug-save-01 --save $seedCopy
+# Or start directly at an authored E2E scenario:
+python remake/tools/debug_dev.py --port 42332 --run-dir G:/md-sf2/disposable-saves/debug-scenario-01 --scenario remake/content/authored/harbor-arrival.json
+```
+
+`--save` uses the ordinary seed reader and restore validation, without mounting the opening,
+title or Witch. Select compatible complete content first; the launcher does not edit the seed
+or repair its story state. `--field` and `--battle` select the existing controlled-start files.
+Cancelling a direct seed load or leaving its error panel quits that instance; there is no
+underlying Witch or gameplay session to return to. Successful restore mounts normally.
+Use the [progression table](#preparing-a-progression-start) to choose a meaningful predecessor.
+Missing/conflicting targets are rejected before Godot starts. No target is inferred from a
+player namespace or latest slot. Ordinary player launches remain unchanged.
+
+Audio defaults to Godot's `Dummy` driver: playback logic and audio observations still run,
+but the instance is inaudible. Add `--audio` only for an explicit listening/audio-device check;
+this does not override saved volume preferences. Add `--settings` for an existing read-only
+settings override when a scenario needs a particular input setup.
+The endpoint still uses the same focus/clock rules below; silent does not mean paused.
+
+Opening/title/Witch validation is a deliberate exception: select `--entry` explicitly, and
+add `--audio` only if listening is part of acceptance. For example:
+
+```powershell
+python remake/tools/debug_dev.py --port 42332 --run-dir G:/md-sf2/disposable-saves/debug-entry-01 --entry --foreground --audio
+```
+
+The existing showcase client includes the full entry journey as part of its recording check;
+select `--entry` for that journey. A direct save start is for checks beginning at the restored
+state, not for claiming that the skipped entry journey was verified.
+
+### Direct endpoint and export setup
+
 From the checkout, after [development setup](../development-and-verification.md#locked-net-workflow)
 and a Debug adapter build, load the usual content selections (including Witch assets
 for the title example). For an export, use the [relocated candidate](../windows-local-candidate.md).
@@ -20,8 +74,9 @@ the install and any existing player roots. For example, in PowerShell:
 $env:SF2_SAVE_ROOT = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) ('Temp/sf2-debug-' + [guid]::NewGuid())
 $env:SF2_SAVE_NAMESPACE = 'debug-control'
 $env:SF2_DEBUG_PORT = '42332'
-& $env:GODOT_BIN --path remake/game
-# Or launch the relocated Sf2Remake.exe with these same three variables.
+& $env:GODOT_BIN --audio-driver Dummy --path remake/game -- --load-save $seedCopy
+# For the relocated export, keep the variables and pass the same arguments:
+# & $exportExe --audio-driver Dummy -- --load-save $seedCopy
 ```
 
 From a second shell use Python 3 and the checkout's standalone client. Both builds
@@ -29,7 +84,8 @@ serve the same commands while another application owns the foreground.
 
 ```powershell
 python remake/tools/debug_client.py 42332 hello 'observe host'
-python remake/tools/debug_title_round_trip.py 42332
+# Only for an explicitly selected --entry scenario:
+# python remake/tools/debug_title_round_trip.py 42332
 ```
 
 The round trip starts at opening or title, takes the ordinary skip to the title,
@@ -133,6 +189,30 @@ the connection between the chosen setup and that captured visit.
    in another build cannot close this export-specific **Unknown**.
 
 ## Native acceptance and reproduction
+
+**Confirmed (#2354):** the development launcher mounted authored `harbor-arrival.json` and
+the registered `handoffs/issue2245/map16/slot2.json` seed with `issue2315/aqua-v1` content at
+settled exploration input. Both reported no entry host and inactive opening over the v2 port.
+Use the launch commands above with a settings override containing `formatVersion: 1` and
+`runInBackground: true`, then read `observe host` and `observe state`. An invalid `{}` seed
+displayed the ordinary restore error; `menu back` exited with code 0. An explicit `--entry`
+with opening `issue2324/opening-hd-v1` mounted the opening. Missing and conflicting targets
+returned code 2 before launch. The default launch command selected `--audio-driver Dummy`.
+Background launches retained the same user-desktop foreground window for the authored,
+valid seed, invalid seed and entry checks. A separate default-settings authored run accepted
+`field down`, advanced revision 10 to 62 and exited through `menu open`, two `menu down`,
+`menu confirm`, then the ordinary Quit confirmation (exit 0). The launch settings reported
+`runInBackground: true`. Minimize-without-activation alone did not work reliably with this
+Godot installation; the separate native desktop replaced it. One initial background seed
+attempt exited 0 before the client's ready condition without a reported native error;
+its cause remains **Unknown**. Two subsequent isolated seed launches reached settled Map16.
+Successful observation instances were stopped by the operator after readback, so those runs
+do not claim graceful exit or a full campaign replay. Real-device listening remains **Unknown**;
+`--audio` omits the Dummy override without changing playback logic or preferences.
+
+The first local check supplied incorrectly capitalized settings keys and failed before port
+startup; corrected camelCase settings passed. Its client also lacked a deadline on successful
+connections that were not ready; the local observation was corrected before the completed runs.
 
 **Confirmed:** product commit `3077da05978fa7e415d41534f90393a284016561` served v2
 from the development main scene and a freshly built, relocated Windows x86_64 Release.

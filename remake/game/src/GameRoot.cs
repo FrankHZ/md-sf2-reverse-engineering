@@ -201,7 +201,7 @@ public sealed partial class GameRoot : Node
         else
         {
             StartEntryPreparation();
-            if (_seedFile is not null) { ShowEntry(); ShowContinue(loadSeed: true); }
+            if (_seedFile is not null) ShowContinue(loadSeed: true);
             else BeginOpening();
         }
     }

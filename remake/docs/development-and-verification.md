@@ -6,6 +6,11 @@ Use the [C# loopback debug port](verification/debug-port.md) for an explicitly e
 or exported game. The protocol owner includes the runnable client, title round-trip and inventory
 of scenario-specific probes.
 
+Development runs use the [explicit debug launch entry](verification/debug-port.md#development-default):
+select a save or E2E scenario, default to silent background launch, and opt into foreground
+presentation or audible playback only when needed. Do not spend ordinary debugging time traversing the opening and Witch; select their
+entry scenario explicitly when that is the behavior under review.
+
 ## Local Windows export
 
 The [private Windows candidate recipe](windows-local-candidate.md) owns the repeatable Release

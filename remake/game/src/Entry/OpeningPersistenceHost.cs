@@ -197,9 +197,16 @@ public sealed partial class GameRoot
         if (_slots is not null) return;
         _saveSelection = 0; _historyPage = 0;
         if (_entry is not null && !overEntry) _entry.Hide();
-        _slots = new SaveSlotView { Name = "SaveSlotView", Cancel = CloseSavePanel, OverEntry = overEntry, Input = _input };
+        _slots = new SaveSlotView { Name = "SaveSlotView", Cancel = BackFromSavePanel, OverEntry = overEntry, Input = _input };
         if (overEntry) _entry?.Setup(true);
         _hostUi.AddChild(_slots); CoverSystemMenu(); ApplyHostPause(); DisarmInput();
+    }
+    private void BackFromSavePanel()
+    {
+        // Direct seed startup has no previous scene to return to. Successful mounting
+        // still calls CloseSavePanel directly and must not take this user-cancel path.
+        if (_seedFile is not null && _session is null && _entry is null) GetTree().Quit();
+        else CloseSavePanel();
     }
     private void CloseSavePanel()
     {
@@ -221,10 +228,11 @@ public sealed partial class GameRoot
     private void SaveError(string code)
     {
         if (code == "save-publication-uncertain") _saveNeedsInspection = true;
-        _slots!.Cancel = CloseSavePanel;
+        _slots!.Cancel = BackFromSavePanel;
+        string back = GameText.Get(_seedFile is not null && _session is null && _entry is null ? "entry.quit" : "entry.back");
         _slots.ShowChoices(_saveNeedsInspection ? "save-uncertain" : "error", Explain(code),
             _saveNeedsInspection ? [(GameText.Get("entry.inspect"), ShowContinue),
-                (GameText.Get("entry.back"), CloseSavePanel)] : [(GameText.Get("entry.back"), CloseSavePanel)]);
+                (back, BackFromSavePanel)] : [(back, BackFromSavePanel)]);
         _slots.ShowDetail(GameText.Get("save.details", code));
     }
     private void QuitFromMenu() { CloseSavePanel(); RequestQuit(); }

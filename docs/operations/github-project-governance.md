@@ -289,6 +289,15 @@ the delivery limitation in the worker's final answer; do not bypass the rejectio
 
 #### Completion Intake
 
+Development/debug dispatches name the save predecessor or E2E scenario to start from, alongside
+the configured content and acceptance boundary. Use the [debug development entry](../../remake/docs/verification/debug-port.md#development-default),
+silent and in the background by default; use `--foreground` for visual/input review and enable
+audio explicitly only when listening or device behavior is needed. Background launch uses
+isolated launch settings so passive gameplay can run without focus; it does not change player preferences.
+Do not route routine checks through the opening/title/Witch. Those flows require an explicitly
+selected entry scenario. These defaults apply to development verification, not human play or
+ordinary product startup. Keep each run's writable saves and logs in its isolated disposable directory outside Git, as required by the save store.
+
 Main-gate owns dependency order, shared resource ownership and independent acceptance. The default
 is worker-initiated reporting, not a continuously active coordinating turn. This replaces routine
 renewal of bounded waits; an authorized end-to-end batch does not itself require a wait loop.
