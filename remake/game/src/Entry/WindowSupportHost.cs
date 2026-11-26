@@ -48,7 +48,6 @@ public sealed partial class GameRoot
             }
         }
         window.SizeChanged += RefreshWindowSupport;
-        window.FocusExited += SuspendWindowRecovery;
         _windowSupportConnected = true;
     }
     private void ReleaseWindowSupport()
@@ -56,7 +55,6 @@ public sealed partial class GameRoot
         if (!_windowSupportConnected) return;
         _windowSupportConnected = false;
         GetWindow().SizeChanged -= RefreshWindowSupport;
-        GetWindow().FocusExited -= SuspendWindowRecovery;
     }
     private void CenterWindow()
     {
@@ -150,17 +148,20 @@ public sealed partial class GameRoot
     }
     private void WindowPlacementRefused(string reason)
     { _windowRecovery?.Present(GetWindow().Size, WindowCanFit, FullscreenCanFit, reason); DisarmInput(); }
-    private void SuspendWindowRecovery() { _windowRecovery?.Suspend(); DisarmInput(); }
+
+    private bool WindowPausesPlayback => _windowRecovery is not null || _windowQuit is not null ||
+        !GetWindow().HasFocus() && _input?.Settings.RunInBackground != true;
 
     // These existing finite host modals share one resume decision, not a separate pause service.
     private void ApplyHostPause()
     {
         if (_preview is null) ApplyWindowCanvas();
         bool covered = _windowRecovery is not null || _windowQuit is not null;
-        if (_entry is not null) _entry.ProcessMode = covered || _settings is not null || _slots is not null
+        bool gamePaused = WindowPausesPlayback;
+        if (_entry is not null) _entry.ProcessMode = gamePaused || _settings is not null || _slots is not null
             ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
-        _entry?.PauseAudio(covered || _settings is not null);
-        bool paused = covered || _entry is not null || _settings is not null || _slots is not null || _nameEntry is not null || _systemMenu is not null;
+        _entry?.PauseAudio(gamePaused || _settings is not null);
+        bool paused = gamePaused || _entry is not null || _settings is not null || _slots is not null || _nameEntry is not null || _systemMenu is not null;
         if (paused) { _input?.AllowAcceleration(false); _exploration?.SuspendPacing(); _battle?.SuspendPacing(); }
         if (_exploration is not null) _exploration.ProcessMode = paused ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
         if (_battle is not null) _battle.ProcessMode = paused ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
@@ -169,8 +170,8 @@ public sealed partial class GameRoot
         if (_nameEntry is not null) _nameEntry.ProcessMode = covered ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
         if (_systemMenu is not null) _systemMenu.ProcessMode = covered || !_systemMenu.Visible ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
         _audio?.SetPaused(paused);
-        if (_opening?.View is { } openingView) openingView.ProcessMode = covered ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
-        _opening?.Audio?.SetPaused(covered || !GetWindow().HasFocus());
+        if (_opening?.View is { } openingView) openingView.ProcessMode = gamePaused ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
+        _opening?.Audio?.SetPaused(gamePaused);
     }
     private bool RouteWindowInput(InputEvent input)
     {

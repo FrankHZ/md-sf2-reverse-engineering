@@ -266,10 +266,17 @@ internal sealed partial class GameInput
         return null;
     }
 
-    internal void ReleaseSettingsHold()
+    internal void ReleaseMappedHolds()
     {
         DisarmMovement(); DisarmWait(); DisarmAcceleration();
         foreach (var action in _bindings.Keys) Godot.Input.ActionRelease(MapName(action));
+    }
+
+    internal void ReconcileFocusHolds()
+    {
+        ReconcileAccelerationNeutral();
+        WaitHeld = Godot.Input.IsActionPressed(MapName(GameAction.Wait));
+        _waitRequiresRelease = WaitHeld;
     }
 
     internal bool MenuPadAvailable => _bindings[GameAction.Menu].Any(input => input is InputEventJoypadButton or InputEventJoypadMotion);

@@ -312,7 +312,7 @@ internal sealed partial class BattleMapViewport : Control
     private int NeutralFacing => (int)((_boardTime % (40.0 / 60)) * 6);
     public override void _Process(double delta)
     {
-        if (!IsVisibleInTree() || !GetWindow().HasFocus()) return;
+        if (!IsVisibleInTree()) return;
         _boardTime += delta;
         long tick = (long)Math.Floor(_boardTime * 60 + 1e-8);
         foreach (var layer in _terrain) layer.PresentTime(tick);
@@ -537,7 +537,7 @@ internal sealed partial class BattleMapViewport : Control
     // BattleSessionView owns the one gameplay budget; inspection supplies real time.
     internal void AdvanceCamera(double delta)
     {
-        if (!IsVisibleInTree() || !GetWindow().HasFocus() || _mapSize == Vector2.Zero) return;
+        if (!IsVisibleInTree() || _mapSize == Vector2.Zero) return;
         if (_specialSprite is { Visible: true } head && SpecialSprite((int)head.GetMeta("mapsprite", -1)))
         {
             _specialPoseTime = (_specialPoseTime + delta) % (31.0 / 30);

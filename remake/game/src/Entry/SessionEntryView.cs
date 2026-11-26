@@ -163,6 +163,7 @@ public sealed partial class SessionEntryView : Control
         _backdrop.Speaking = !Revealed;
         RefreshHint();
     }
+    internal void SuspendPointer() => _pointer.Suspend();
     internal bool HandlePointerCancel(InputEvent input)
     {
         if (input is not InputEventMouseButton { ButtonIndex: MouseButton.Right } button) return false;

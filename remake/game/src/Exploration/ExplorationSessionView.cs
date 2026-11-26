@@ -229,7 +229,7 @@ public sealed partial class ExplorationSessionView : Control
         _choicePointer.ReleaseIfNeutral();
         if (_session is null) return;
         _input.AllowAcceleration(CanAccelerate);
-        if (!IsVisibleInTree() || !GetWindow().HasFocus() || !CanProcess() || PresentationFailure is not null)
+        if (!IsVisibleInTree() || !CanProcess() || PresentationFailure is not null)
         { SuspendClock(); return; }
         if (!_input.GameplayHeld) _skipRequiresRelease = false;
         if (_session.Current.Story.Wait is ChurchWait or ShopWait or CaravanWait)
@@ -285,7 +285,7 @@ public sealed partial class ExplorationSessionView : Control
             _tickTime = 0;
             return;
         }
-        if (_session.Current.Story.Wait is FieldTextWait { InterruptibleDelay: true } delay && _input.TextDelayInputHeld)
+        if (_session.Current.Story.Wait is FieldTextWait { InterruptibleDelay: true } delay && GetWindow().HasFocus() && _input.TextDelayInputHeld)
         { InterruptDelay(delay); return; }
         if (_session.Current.NeedsFieldWindowService)
         {

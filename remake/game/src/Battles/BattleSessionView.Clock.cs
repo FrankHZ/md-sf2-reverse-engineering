@@ -18,14 +18,14 @@ public sealed partial class BattleSessionView
     private bool _servicingPacing;
     private int _maxPacingSteps;
     private bool OwnsPacing => _session is { } session && SessionPresentationOwner.IsBattle(session.Current) && IsVisibleInTree();
-    private bool PacingReady => OwnsPacing && _startupFailure is null && !_inputSuspended && CanProcess() && GetWindow().HasFocus() &&
+    private bool PacingReady => OwnsPacing && _startupFailure is null && CanProcess() &&
         _session!.Current.StopReason is not (SessionStopReason.Unsupported or SessionStopReason.Faulted);
     private bool ReadingBoundary => _session!.Current is { } current &&
         (current.BattleSearch is not null || current.BattleGive is not null || current.BattleDiscard is not null ||
          current.BattleRetreat is { Phase: BattleRetreatPhase.Text } ||
          current.BattleRound is { Program: true } && current.Story.Wait is DialogueWait ||
          current.BattleScene is not null && _scene.WaitingForInput);
-    internal bool CanAccelerate => PacingReady && !_inspection.Active && !_inspectionRelease &&
+    internal bool CanAccelerate => PacingReady && !_inputSuspended && GetWindow().HasFocus() && !_inspection.Active && !_inspectionRelease &&
         _inspectionAfterReturn is null && !ReadingBoundary;
 
     internal void SuspendPacing()

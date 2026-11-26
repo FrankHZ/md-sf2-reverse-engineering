@@ -30,7 +30,6 @@ internal sealed partial class BattleSceneView : Control
     private readonly AbsorbEffectView _absorb = new();
     private bool PreparedAbsorb(BattleSceneState state) => Content is not null && AbsorbEffectView.Selector(state) is not null &&
         _audio?.CanSelectSceneEffects(_session.Current.Battle.GetActor(state.Actor).IsAlly ? 2 : 5, 89) == true;
-    private bool _suspended;
     private Node2D _canvas = null!;
     internal Control PresentationRoot { get; set; } = null!;
     private readonly Control _overlay = new() { Name = "SceneUi", MouseFilter = MouseFilterEnum.Ignore };
@@ -124,10 +123,7 @@ internal sealed partial class BattleSceneView : Control
     }
 
     public override void _EnterTree()
-    { GetWindow().FocusExited += Suspend; GetWindow().FocusEntered += Resume;
-        VisibilityChanged += SyncOverlay; SyncOverlay(); }
-    private void Suspend() => _suspended = true;
-    private void Resume() => _suspended = false;
+    { VisibilityChanged += SyncOverlay; SyncOverlay(); }
 
     internal void Configure(GameSession session, GameInput input, SessionAudio? audio)
     { _session = session; _input = input; _settings = input.Settings; _audio = audio; }
@@ -356,7 +352,7 @@ internal sealed partial class BattleSceneView : Control
     internal SessionCommand? Read(double delta)
     {
         if (_state is not { RequiresAcknowledgement: true } state || Error is not null || _completed ||
-            _suspended || !IsVisibleInTree() || !CanProcess() || Suppressed(state)) return null;
+            !IsVisibleInTree() || !CanProcess() || Suppressed(state)) return null;
         RefreshMessageHint(state);
         if (_detox.Active) _detox.Advance(delta);
         if (_debuff.Active) _debuff.Advance(delta);
@@ -373,7 +369,7 @@ internal sealed partial class BattleSceneView : Control
 
     internal SessionCommand? Consume(double delta)
     {
-        if (_state is not { } state || Error is not null || _completed || _suspended ||
+        if (_state is not { } state || Error is not null || _completed ||
             (!IsVisibleInTree() && !state.IsFieldDeath) || !CanProcess()) return null;
         if (state.IsFieldDeath)
         {
@@ -582,7 +578,7 @@ internal sealed partial class BattleSceneView : Control
 
     internal SessionCommand? Acknowledge(GameAction action)
     {
-        if (_suspended || !IsVisibleInTree() || !CanProcess()) return null;
+        if (!IsVisibleInTree() || !CanProcess()) return null;
         if (action == GameAction.Wait && _state is { Healing.AtTimedInput: true } waiting && Error is null)
             return new AdvanceSimulation(waiting.Token);
         if (action != GameAction.Confirm || _state is not { RequiresAcknowledgement: true } state || Error is not null || _completed || Suppressed(state)) return null;
@@ -887,7 +883,7 @@ internal sealed partial class BattleSceneView : Control
     internal object Observe() => new
     {
         aura = _state is { Spell.IsAura: true, Healing: null } ? _aura.Observe() : null,
-        suspended = _suspended,
+        suspended = !CanProcess(),
         laser = _state?.Laser is not null ? _laser.Observe() : null,
         attackSpell = _state?.AttackSpell is not null && (_state.AttackItem is null || _preparedAttackSpell) ? _attackSpell.Observe() : null,
         monsterBreath = _state?.IsMonsterBreath == true,
@@ -956,7 +952,6 @@ internal sealed partial class BattleSceneView : Control
         VisibilityChanged -= SyncOverlay;
         // The overlay shares BattleSessionView lifetime; reparenting a battle exits/re-enters
         // this tree without retiring its presenters or their reading state.
-        GetWindow().FocusExited -= Suspend; GetWindow().FocusEntered -= Resume;
     }
 
     public override void _Notification(int what)

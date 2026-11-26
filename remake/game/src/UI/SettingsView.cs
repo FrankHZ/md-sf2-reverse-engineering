@@ -106,7 +106,8 @@ internal sealed partial class SettingsView : Control
             new("speed", T("ui.settings.speed", _draft.CharactersPerSecond), ReadOnly)],
         Page.Assist => [new("flash", T("ui.settings.flash", Toggle(_draft.ReducedFlash)), ReadOnly),
             new("guidance", T("ui.settings.guidance", Toggle(_draft.ModernGuidance)), ReadOnly),
-            new("acceleration", T("ui.settings.acceleration", _draft.AccelerationMultiplier), ReadOnly)],
+            new("acceleration", T("ui.settings.acceleration", _draft.AccelerationMultiplier), ReadOnly),
+            new("background", T("ui.settings.background", Toggle(_draft.RunInBackground)), ReadOnly)],
         Page.Debug => [new("diagnostics", T("ui.settings.debug", Toggle(_draft.ShowDebugDiagnostics)), ReadOnly),
             new("victory", T("ui.settings.auto-victory", Toggle(_draft.DebugAutoVictory)), ReadOnly)],
         Page.Controls => [new("convention", T("ui.settings.confirm", T(_draft.ConfirmCancel == "standard" ? "ui.settings.standard" : "ui.settings.swapped")), ReadOnly),
@@ -180,6 +181,7 @@ internal sealed partial class SettingsView : Control
             Page.Display when BattleContext && id == "language" => T("ui.settings.battle-language"),
             Page.Display when BattleContext && id == "text" => T("ui.settings.battle-text"),
             Page.Assist when id == "guidance" => T("host.setting-description-10"),
+            Page.Assist when id == "background" => T("ui.settings.background-detail"),
             Page.Assist when id == "acceleration" => T("ui.settings.acceleration-detail", Input.CompactHint(GameAction.Accelerate)),
             Page.Debug when BattleContext && id == "victory" => T("ui.settings.battle-auto-victory"),
             Page.Battle => Notice ?? T("battle.speed.mapping"), _ => EditorMessage() };
@@ -237,7 +239,7 @@ internal sealed partial class SettingsView : Control
     }
 
     private static bool IsValue(string id) => id is "language" or "graphics" or "text" or "speed" or "convention" or
-        "flash" or "guidance" or "acceleration" or "diagnostics" or "victory" or "battle-speed" or "messages";
+        "flash" or "guidance" or "background" or "acceleration" or "diagnostics" or "victory" or "battle-speed" or "messages";
 
     internal bool RoutePointer(InputEvent input)
     {
@@ -283,6 +285,7 @@ internal sealed partial class SettingsView : Control
             case "language": _draft.Language = _draft.Language == "en" ? "zh-CN" : "en"; break;
             case "graphics": _draft.GraphicsMode = _draft.GraphicsMode == "original" ? "hd" : "original"; break;
             case "guidance": _draft.ModernGuidance = !_draft.ModernGuidance; break;
+            case "background": _draft.RunInBackground = !_draft.RunInBackground; break;
             case "acceleration": _draft.ChangeAccelerationMultiplier(direction); break;
             case "diagnostics": _draft.ShowDebugDiagnostics = !_draft.ShowDebugDiagnostics; break;
             case "victory": _draft.DebugAutoVictory = !_draft.DebugAutoVictory; break;

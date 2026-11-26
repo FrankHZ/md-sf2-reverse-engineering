@@ -32,7 +32,7 @@ public sealed partial class GameRoot : Node
         ReleaseDebugKeys();
         _entryPreparation.Dispose();
         ReleaseOpening();
-        ReleaseWindowSupport(); GetWindow().FocusExited -= SettingsFocusLost;
+        ReleaseWindowSupport(); GetWindow().FocusExited -= HostFocusLost;
         GetWindow().FocusEntered -= PacingFocusReturned; Godot.Input.JoyConnectionChanged -= PacingDeviceChanged;
         _audio?.Dispose(); ClearPreparedNewGame();
     }
@@ -40,9 +40,19 @@ public sealed partial class GameRoot : Node
 
     public override void _Input(InputEvent input)
     {
-        _input?.ObserveHintInput(input, GetWindow().HasFocus());
+        bool focused = GetWindow().HasFocus();
+        _input?.ObserveHintInput(input, focused);
         _input?.AllowAcceleration(!_releaseBarrier && (_exploration?.CanAccelerate == true || _battle?.CanAccelerate == true));
         _input?.ObserveAccelerationInput(input);
+        if (!focused)
+        {
+            // Drain device edges without routing actions or arming held movement.
+            _input?.Resolve(input);
+            _input?.DisarmMovement();
+            _input?.DisarmWait();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
         if (BlockSettingsRelease(input)) { GetViewport().SetInputAsHandled(); return; }
         if (_releaseBarrier && input is not InputEventMouse)
         {
@@ -52,7 +62,6 @@ public sealed partial class GameRoot : Node
         }
         if (RouteWindowInput(input)) return;
         if (RouteOpeningInput(input)) return;
-        if (_settings is not null && !GetWindow().HasFocus()) { GetViewport().SetInputAsHandled(); return; }
         if (_settings?.CaptureInput(input) == true)
         {
             _input?.Resolve(input); _input?.DisarmMovement(); _input?.DisarmWait();
@@ -143,7 +152,7 @@ public sealed partial class GameRoot : Node
     {
         PackagedStartup.Configure();
         _hostUi = UI.PresentationCanvas.Mount(this, "HostUi", UI.PresentationCanvas.Host);
-        GetWindow().FocusExited += SettingsFocusLost;
+        GetWindow().FocusExited += HostFocusLost;
         GetWindow().FocusEntered += PacingFocusReturned;
         Godot.Input.JoyConnectionChanged += PacingDeviceChanged;
         if (_preview is { } preview)
@@ -235,7 +244,15 @@ public sealed partial class GameRoot : Node
     private void PacingDeviceChanged(long device, bool connected)
     { _input?.HintDeviceChanged((int)device, connected); if (!connected) { _settings?.AbortCapture((int)device); _input?.ReleaseAccelerationDevice((int)device); _exploration?.SuspendPacing(); _battle?.SuspendPacing(); } }
 
-    private void PacingFocusReturned() { _settings?.SeedCaptureControls(); _input?.HintFocus(true, GetViewport().GetMousePosition()); _input?.ReconcileAccelerationNeutral(); }
+    private void PacingFocusReturned()
+    {
+        _settings?.SeedCaptureControls();
+        _input?.HintFocus(true, GetViewport().GetMousePosition());
+        _input?.ReconcileFocusHolds();
+        DisarmInput();
+        _opening?.View?.SuspendPacing();
+        ApplyHostPause();
+    }
 
     private void ReleaseSession()
     {

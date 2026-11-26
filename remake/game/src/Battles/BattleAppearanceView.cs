@@ -17,7 +17,7 @@ internal sealed partial class BattleAppearanceView : Control
     private InputSettings _settings = null!;
     private BattleRoundState? _state;
     private double _elapsed;
-    private bool _delivered, _suspended;
+    private bool _delivered;
     private string Stage => _state is null ? "idle" : _elapsed < 0.6 ? "spin" : _elapsed < 0.8 ? "settle" : "notice";
 
     public override void _Ready()
@@ -27,12 +27,6 @@ internal sealed partial class BattleAppearanceView : Control
         AddChild(_notice);
         Hide();
     }
-    public override void _EnterTree()
-    { GetWindow().FocusExited += Suspend; GetWindow().FocusEntered += Resume; }
-    public override void _ExitTree()
-    { GetWindow().FocusExited -= Suspend; GetWindow().FocusEntered -= Resume; }
-    private void Suspend() => _suspended = true;
-    private void Resume() => _suspended = false;
     internal void Configure(GameSession session, BattleMapViewport map, InputSettings settings)
     { _session = session; _map = map; _settings = settings; }
     internal void Present()
@@ -53,7 +47,7 @@ internal sealed partial class BattleAppearanceView : Control
     }
     internal SessionCommand? Consume(double delta)
     {
-        if (_state is null || _delivered || _suspended || !IsVisibleInTree() || !CanProcess()) return null;
+        if (_state is null || _delivered || !IsVisibleInTree() || !CanProcess()) return null;
         _elapsed += delta;
         Present();
         if (_elapsed < 1.5) return null;
@@ -62,6 +56,6 @@ internal sealed partial class BattleAppearanceView : Control
     }
     internal object Observe() => new { active = _state is not null, actor = _state?.Actor?.Value,
         cursor = _state?.Cursor, list = _state?.Appearances.Select(a => a.Value), token = _state?.Token.Value,
-        stage = Stage, elapsed = _elapsed, delivered = _delivered, suspended = _suspended,
+        stage = Stage, elapsed = _elapsed, delivered = _delivered, suspended = !CanProcess(),
         text = _notice.Text.Text, noticeVisible = _notice.IsVisibleInTree(), authored = true };
 }

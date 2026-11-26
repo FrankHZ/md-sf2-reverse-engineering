@@ -16,7 +16,7 @@ public sealed partial class ExplorationSessionView
     private bool FinishEntryHandoff()
     {
         if (!_battleHandoffPending) return false;
-        if (!_input.GameplayHeld && GetWindow().HasFocus())
+        if (CanProcess() && (!GetWindow().HasFocus() || !_input.GameplayHeld))
         {
             _battleHandoffPending = false; _handedOff = true;
             _enterBattle!(_result!);

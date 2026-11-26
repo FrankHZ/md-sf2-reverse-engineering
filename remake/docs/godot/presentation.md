@@ -126,7 +126,7 @@ hit target. Completion and Skip use one teardown/title handoff. Skip cancels the
 executing remaining instructions. Held keys, pointer gestures and detached load results cannot
 activate or replace the title. Existing New Game, Continue and Battle Entry Skip keep their semantics.
 
-Native focus loss and existing recovery/quit covers suspend scene time and audio. Reduced Flash
+Native focus loss suspends scene time and audio by default. [Run in background](host-ui.md#run-in-background) permits both during focus loss. Recovery and Quit covers still suspend them. Reduced Flash
 retains logical waits and completion while suppressing white flashes, positive scene offsets and
 shake; palette storms use the existing lower-contrast steady projection. Scene full fades transform
 terrain and actors through their existing logical service, without a second overlay fade. Uniform
@@ -1687,8 +1687,7 @@ transfer ends the action; Cancel backs up one stage. Slot numbers distinguish du
 The query/selection state remains authoritative; the adapter does not calculate transfer legality.
 
 `BattleGiveView` displays project-authored result text and completes the existing reveal token only
-after delivery. Confirm then acknowledges it. The parent battle view suspends Give input and
-reveal while unfocused/hidden; resumption advances only the pending stage. The existing instant or
+after delivery. Confirm then acknowledges it. The parent battle view gates Give input on focus. Reveal follows the host playback permission and visibility. The existing instant or
 adjustable text setting applies. This result text is a modern authored addition, not an original
 Give scene, sound or timing claim. No new media assets are introduced.
 
@@ -1708,8 +1707,8 @@ sprite and sprite-request identity. Sprite-ready completion follows a matching r
 an intentionally clipped off-map marker. No arbitrary acknowledgement skips the typed program.
 
 The same session supplies travel mode, current physical list, motion and waits. The host owns no
-vehicle position/controller authority. Hidden/unfocused views suspend automatic ticks and sprite
-completions; resume discards timing debt. Existing input envelopes and request IDs reject duplicate
+vehicle position/controller authority. Hidden or host-paused views suspend automatic ticks and sprite
+completions. Resume discards timing debt. Existing input envelopes and request IDs reject duplicate
 or stale completion. The authored package has no audio assets: source warp-sound observations are
 retained, but no original audible SFX parity is claimed. The finite witness reads actual state/input/
 draw/errors without screenshots, session injection or synthetic presentation completion.
@@ -1740,7 +1739,7 @@ view. The map focuses the current actor, hides later pending list members, and d
 0.6-second spin/fade, 0.2-second settle and 0.7-second notice in a shared `ContextHint` frame.
 The English and Chinese `battle.appearance` rows take one name from `DisplayNames.Battle`,
 including its source metadata, story overrides and existing authored-name fallback. Reduced-flash mode
-omits rotation. Focus loss suspends delivery. Only the actual view's completion submits the matching
+omits rotation. Host pause suspends delivery. Only the actual view's completion submits the matching
 `EntityEffect` token; the view never resets actors or generates a queue. Ordinary commands are blocked
 during this finite wait and resume after appearances and automatic work.
 
@@ -2830,7 +2829,7 @@ never supplies another service. [Behavior](../application/session-and-programs.m
 
 The existing mosaic/shiver renderer consumes the same effect tokens and restores engine fields on
 actual completion. Bound generic presentation waits suspend logical services and actual delivery
-while hidden/unfocused; the host clears debt and resumes with zero delta. The retained profile also
+while hidden or host-paused. The host clears debt and resumes with zero delta. The retained profile also
 suspends the battle loader's modern delivery-only fades. No extra presentation clock is introduced.
 
 Field palette helpers require an active exploration world. After initialization, retained field

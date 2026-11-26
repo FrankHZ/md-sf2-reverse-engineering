@@ -2125,6 +2125,12 @@ msgstr "{0}：阅读 · {1}：返回指令"
 msgid "ui.settings.guidance"
 msgstr "现代引导：{0}"
 
+msgid "ui.settings.background"
+msgstr "失焦后继续运行：{0}"
+
+msgid "ui.settings.background-detail"
+msgstr "切换到其他窗口时，自动剧情和声音继续播放。需要选择或确认时仍会等待输入。"
+
 msgid "ui.settings.acceleration"
 msgstr "按住加速：{0}×"
 

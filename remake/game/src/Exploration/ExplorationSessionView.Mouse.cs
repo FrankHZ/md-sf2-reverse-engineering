@@ -10,8 +10,8 @@ public sealed partial class ExplorationSessionView
     internal UI.MemberPageView? NativeMembers => _partyStatus?.NativeMembers;
     private readonly MenuPointer _choicePointer = new();
     private WaitToken? _pointerChoice;
-    private bool ChoiceButtonsHeld => _input.GameplayHeld || Godot.Input.IsMouseButtonPressed(MouseButton.Left) ||
-        Godot.Input.IsMouseButtonPressed(MouseButton.Right);
+    private bool ChoiceButtonsHeld => GetWindow().HasFocus() && (_input.GameplayHeld || Godot.Input.IsMouseButtonPressed(MouseButton.Left) ||
+        Godot.Input.IsMouseButtonPressed(MouseButton.Right));
 
     private void RefreshChoicePointer()
     {

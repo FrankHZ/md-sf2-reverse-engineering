@@ -1410,6 +1410,7 @@ English/Chinese UI and installed-key-map acceptance; it is not a private source-
 **Implemented [#2017](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2017):**
 the battle system Menu opens shared Settings and Help. Apply and Cancel return to Menu over the
 same selection or pending battle cue. Language and binding changes refresh the present battle UI.
+The [Run in background preference](godot/host-ui.md#run-in-background) controls unfocused automatic playback and audio in development and export.
 The [Hold speed preference](godot/host-ui.md#implemented-composition-and-return) applies to eligible exploration and
 battle while an installed Accelerate binding is held. Graphics uses installed battle artwork
 where available. Modern guidance applies in exploration. Debug auto-win can act once resumed play admits it.

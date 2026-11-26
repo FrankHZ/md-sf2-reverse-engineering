@@ -42,14 +42,21 @@ public sealed partial class GameRoot
         return true;
     }
 
-    private void SettingsFocusLost()
+    private void HostFocusLost()
     {
         _input?.HintFocus(false);
-        _input?.AllowAcceleration(false);
+        DisarmInput();
+        _input?.ReleaseMappedHolds();
+        _windowRecovery?.Suspend();
+        _entry?.SuspendPointer();
+        _slots?.SuspendPointer();
+        _windowQuit?.SuspendPointer();
+        _opening?.Pointer.Suspend();
+        ApplyHostPause();
         _systemMenu?.SuspendPointer();
         if (_settings is null && _settingsRelease is null) return;
         _settingsRelease = null; _releaseBarrier = false;
-        _input?.ReleaseSettingsHold(); _settings?.AbortCapture(); _settings?.SuspendPointer();
+        _settings?.AbortCapture(); _settings?.SuspendPointer();
     }
 
     private void SettingsNotification(int what)
