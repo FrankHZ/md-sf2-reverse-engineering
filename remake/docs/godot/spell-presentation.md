@@ -6,6 +6,116 @@ pre-voyage priority. Later private campaigns and controlled authored packages es
 boundaries. This inventory uses the existing rules, scene readers, presenters and private resource
 publisher. Each implementation slice owns its own acceptance.
 
+### ABSORB implementation boundary #2309
+
+**Standard**, because this is a bounded presentation binding with accepted equipment
+and result authorities. Bind pinned ABSORB selector10 for admitted Misty Knuckles30,
+Indra Staff92, Supply Staff96 and Demon Rod101. Preserve Item gestures, target MP loss
+then capped caster gain, zero cast payment, selected-slot wear, reward and next control.
+No learned/enemy admission, Battle27+, save-format change or #1716 work is included.
+
+Owned implementation paths are `remake/game/src/Battles/AbsorbEffectView.cs`,
+`remake/game/src/Battles/BattleSceneView.cs` and
+`remake/game/probes/engine_absorb_family_observation.gd`. Documentation ownership is this
+file, `battle-scenes.md`, `battle-interaction-baseline.md`, `../capability-status.md`,
+`../domain/equipment-use-repair-design.md`, `../content/asset-inventory.md` and
+`../content/presentation-assets.md`. Existing audio publication needs no new producer,
+schema, planner registration or raster group: source setup flashes and update returns.
+
+Acceptance uses an inherited-audio pilot, production-reader closure for all four equipment
+bindings, short ordinary-input drain/gain and full-caster/empty-target observations,
+representative Original/HD/settings coverage, affected engine/adapter checks and published
+input reproduction with producer scratch unavailable. The accepted complete package already
+contains the required cue and appearances, so no duplicate successor is needed. Any successor
+would remain below500MiB; scratch/peak RAM stays below2GiB and native samples run serially.
+Natural reach, hardware timing/palette fidelity and human aesthetics remain **Unknown**.
+
+## ABSORB family playback #2309
+
+**Confirmed source structure.** At pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, `spelldefs.asm` selects ABSORB10 for
+SPOIT1. `itemdefs.asm` has four SPOIT equipment rows: Misty Knuckles30 (MMNK),
+Indra Staff92 (WIZ/SORC/VICR), Supply Staff96 (WIZ/SORC) and Demon Rod101
+(WIZ/SORC/VICR). Whole-equipment admission already includes all four; the older
+Indra-only witness below its equipment owner is historical evidence, not today's limit.
+
+`animation/absorb.asm` at `0x1ACD8..0x1ACE4` plays `SFX_WARP`89 and calls
+`ExecuteSpellcastFlashEffect` with `$000F`. The setup loads no tiles; the ABSORB
+entry in `updatespellanimation.asm` is `RTS`. The shared flash writes palette1
+color0 and palette3 color1 for four4-tick pulses separated by3-tick black periods.
+Equipment's Use selector follows `battleactions/getspellanimation.asm` and retains
+the body's Item animation. These paths are relative to
+`disasm/code/gameflow/battle/battlescenes/` except the named battleactions and
+`disasm/data/stats/{spells,items}` tables.
+[Setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/absorb.asm) ·
+[Update](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/updatespellanimation.asm)
+
+**Modern delivery.** `AbsorbEffectView` pauses the existing Item pose across28/60
+seconds and projects source red onto the existing black backdrop. This follows the
+accepted BUFF approximation, not hardware palette-index emulation. Reduced Flash
+suppresses red while preserving timing, sound and results. Held1.5× uses the shared
+clock. The effect resets when ActionAnimation ends; it consumes no gameplay RNG and
+does not change MP, wear, EXP or next control. Existing content without selectable89
+keeps its prior Item/result presentation. Declared corrupt audio still fails admission.
+
+There is no ABSORB raster/HD group. Actor and weapon groups keep their existing atomic
+Original/HD selection. `derived/issue2307/desoul-v1` already supplies the complete
+content and warp cue. Battle music requests Timer198 and the registered explicit
+default selects the prepared Timer203 recording; no hardware-exact sound claim is made.
+No new media extraction, producer, schema or asset successor is required.
+
+### ABSORB reproduction and verification
+
+Retain the complete #2307 package plus independent #2252 opening, #2255 Witch and
+#2266 catalogs. The immutable `derived/issue2309/review-v1` supplies the consumer,
+controlled records and ordinary-input launchers. Build the Debug adapter using the
+[locked workflow](../development-and-verification.md#locked-net-workflow), then run
+from the repository root with a fresh sample and an absolute disposable save root:
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2309/review-v1'
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case indra `
+  -Sample absorb-review -SaveRoot $freshExternalSaveRoot
+# Other cases: demon-full and supply-empty.
+# Settings: demon-full -Graphics hd -Reduced -Fast; indra -Graphics hd -Variant incomplete.
+```
+
+**Confirmed in the remake.** Production admission checks104 SPOIT bindings and702
+equipment appearance selections across26 scenes, including Item gestures and complete
+body/weapon resources. It restores all three records. They derive from the published
+#2307 WIZ15 Kazin Battle26 record, keep his equipped wooden rod, replace held slot1
+with92/101/96, set Silence, use seed`0x0DA20000`, and set caster/target MP to0/37,
+60/37 and0/0 respectively. They are legal controlled prerequisites, not natural custody.
+
+The [native observer](../../game/probes/engine_absorb_family_observation.gd) drives
+Continue → Item → target → Confirm → next ActionChoice. Indra drains37→32 and gains0→5;
+Demon Rod drains37→32 while the full caster stays60; Supply Staff's empty target and
+caster stay0. Both reactions remain ordered even at zero, the selected bare copy is
+damaged once, one EXP award follows, and further input works. The WIZ Item sequence21,
+four flashes, one warp89, zero MP payment, preserved HP and unrelated slots all pass.
+HD/Reduced Flash/held1.5× and incomplete-HD whole-body fallback pass. With producer
+scratch moved out of its working path, the published reader and HD/full-caster entry
+passed again using only registered inputs. Misty Knuckles
+has reader/appearance closure; this slice does not rerun every unchanged equipment caller.
+
+Require `passed: true`, process exit0 and no script/adapter errors. The first empty-target
+observer incorrectly required two MP-change events at zero; its failed receipt is retained.
+The corrected observer requires both reactions but emits no expectation of an MP-change
+event unless the value changed. Existing engine tests retain capped recovery, zero target,
+wear/destruction and rewards; no tests of verification programs were added.
+
+Engine verification passed3383 with50 optional private-input skips. Debug/Release adapter
+builds pass. The retained complete package is178 files /374,714,972 bytes; the pilot decoded
+24,093 stereo frames (96,372 bytes) from its existing warp default. Initial native peak was
+1,328,558,080 bytes and producer scratch was395,500,164 bytes, within2GiB. Some successful runs retain four ObjectDB exit warnings
+under#1716. The frozen PR owns exact Git objects, selected gates and actual CI.
+
+**Unknown.** Natural acquisition/reach, later campaign consumers, original hardware cadence,
+palette-index behavior, actual GPU appearance and human visual acceptance. Original composition,
+modern timing/audio and headless state/input/resource observations are separate boundaries.
+
 ## Source and status
 
 **Confirmed** for table membership and selector assignments. The [USA ROM manifest](../../../manifests/roms/sf2-us.json)
@@ -122,7 +232,7 @@ update controls subsequent movement, mirroring and dust. [Enemy family evidence]
 
 | Retail rows | Original selector | Gameplay, package and scene | Remaining owner |
 | --- | --- | --- | --- |
-| SPOIT 1 | ABSORB v1 | **Partial** for admitted Indra Staff Item Use. It shows the gesture and ordered MP drain/gain notices; original absorb playback is absent. | [#2104] later absorb playback; equipment Use admission is accepted under [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268). [Indra witness](../domain/equipment-use-repair-design.md#indra-staff-reproduction) |
+| SPOIT 1 | ABSORB v1 | **Original mechanism bound** for Misty Knuckles30, Indra Staff92, Supply Staff96 and Demon Rod101 Item Use. Source warp89 and four red flashes accompany the existing Item gesture, ordered target MP loss and capped caster gain. | [ABSORB playback](#absorb-family-playback-2309) reuses the complete DESOUL package. No learned Magic or enemy admission. Equipment rules remain with [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268); natural late custody remains **Unknown**. |
 | HEALIN 1–3 | HEALING_FAIRY v1–v3 in table, NONE for consumable Use | **Original assets bound** for the ordinary private Herb scene's item gesture and recovery. Seed and Drop share the admitted HP item consumer, with a bounded Seed supply witness. Holy Lance equipment Use reads the actual selector. | Preserve [item recovery](battle-scenes.md#medical-herb-scenes). Holy Lance Use is admitted under [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268); [#2291](#equipment-recovery-playback-2291) binds its Item gesture and fairy presentation. |
 | FLAME 1–3 | FLAME_BREATH v1–v3 | **Unavailable** for these enemy spell rows. Kiwi's private converted Attack has separate assets and rules. | [#1818] first enemy caller and [#1369] rule admission, then [#2104] breath playback. |
 | SNOW 1–3 | SNOW_BREATH v2–v4 | **Unavailable** for these enemy spell rows. FREEZE already has a separate Magic path. | [#1818] first enemy caller and [#1369] rule admission, then [#2104] breath playback. |

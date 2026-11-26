@@ -16,7 +16,7 @@ Slice E completes the source-legal equipment consumer table and representative l
 the complete equipment consumer scope is independently accepted, recorded in
 [#2268](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2268).
 
-The current successor is `derived/issue2274/equipment-v2`, built from the accepted slice-C package.
+The accepted equipment-E publication is `derived/issue2274/equipment-v2`, built from the accepted slice-C package.
 The [E reproduction section](#complete-equipment-consumers-2274) owns its complete consumer checks.
 It retains SORC **v3** and its catalog, with independent
 opening and Witch selections retained. Do not substitute rejected v2, earlier v1, or a removed
@@ -25,6 +25,19 @@ registered prepared assets. No new equipment platform, second item catalog, save
 reference runner or per-item scenario framework is proposed. Ordinary source-backed definitions
 must remain independent of the controlled witnesses used to test them.
 
+
+## ABSORB equipment presentation (#2309)
+
+The current admitted SPOIT set is Misty Knuckles30, Indra Staff92, Supply Staff96 and
+Demon Rod101. All retain the accepted equipment Use rule: no cast payment, target MP
+loss then separately capped caster gain, selected-copy wear/destruction, EXP and return.
+The [ABSORB presenter](../godot/spell-presentation.md#absorb-family-playback-2309) binds
+the original no-tile warp/flash mechanism to the Item gesture using the complete #2307
+package. Production-reader closure covers all four; controlled native Indra, Demon Rod
+and Supply Staff observations cover actual gain, full caster and empty target, plus
+settings/fallback. Historical Indra Use/Repair and whole-equipment rule evidence below
+retain their own scopes. Learned SPOIT, enemy admission and natural late custody are
+not implied by this presentation binding.
 
 ## Complete equipment consumers (#2274)
 
@@ -771,7 +784,7 @@ the confirmed movement stop, and source processing order. [Menu slot return](htt
 | --- | --- | --- |
 | ATTACK 1 | Living teammate at distance 1–3, radius 0. The holder cannot self-center. | Write ATTACK bits `0xC000` before checking the previous ATTACK counter. Fresh target succeeds without an effect draw, with one full-word reaction and +5 status EXP contribution. An active target consumes one range-8 draw against threshold 8 and always fails the reaction. The write survives. The current ATT still uses its previous applied counter until that target refreshes. |
 | BOOST 1 | Teammate or self center at distance 0–1, radius 1 diamond around that center. A neighboring teammate can be outside center range. | Same construction and per-target recast behavior using BOOST's separate `0x3000`. Reuse the existing BOOST support effect, including fresh and failed targets in sorted order. The item does not enter the Magic book. |
-| SPOIT 1 | One living opponent at distance 1–2, radius 0. | Roll range 3 then add 3. Drain the lesser of that amount and the target's current MP. The recipient's MP gain is capped at its own max MP. Target then user react, preserving status; zero MP still takes the draw, reactions and +5 status EXP contribution. There is no HP damage, power scaling or status resistance gate in this effect. Bound to Indra Item Use. |
+| SPOIT 1 | One living opponent at distance 1–2, radius 0. | Roll range 3 then add 3. Drain the lesser of that amount and the target's current MP. The recipient's MP gain is capped at its own max MP. Target then user react, preserving status; zero MP still takes the draw, reactions and +5 status EXP contribution. There is no HP damage, power scaling or status resistance gate in this effect. Current Item consumers are Misty Knuckles, Indra Staff, Supply Staff and Demon Rod. |
 
 **Confirmed.** ATTACK's magnitude is `floor(base ATT × applied counter / 8)`. It uses earned
 base before weapon and ring contributions and the live ATT cap. For base 41, weapon +10,
@@ -1168,7 +1181,9 @@ caster and empty target, one damage draw and exact-slot destruction with no wear
 The [shop engine test](../../tests/Sf2.Remake.Engine.Tests/ShopServiceTests.cs) covers
 the 800-gold transaction at exact funds with a duplicate staff. Battle Use was
 observed on WIZ. VICR has controlled engine coverage, and SORC is a retained source
-mask bit. Other SPOIT equipment and a learned Magic action are outside this admission.
+mask bit in that historical witness. Current whole-equipment admission also includes
+Misty Knuckles, Supply Staff and Demon Rod; the [ABSORB binding](#absorb-equipment-presentation-2309)
+owns their current presentation. Learned SPOIT remains outside admission.
 
 ## Black Ring reproduction
 

@@ -1578,7 +1578,26 @@ serial and below500MiB; reader/native peaks stay within2GiB. Omitting graphics s
 no new HD claims. [Wind reproduction](../godot/spell-presentation.md#wind-reproduction-and-acceptance)
 uses published inputs without producer scratch and records failures and acceptance limits.
 
+### ABSORB resource reuse #2309
+
+Select the unchanged complete `derived/issue2307/desoul-v1`, retaining independent
+#2252 opening, #2255 Witch and #2266 catalogs. It already contains all four admitted
+SPOIT equipment appearances and eleven warp89 audio variants, with explicit Timer203
+default. The pilot validates its24,093 stereo samples /96,372 decoded bytes; actual
+allied scene playback requests Timer198 and selects that default. Exact hardware
+sound cadence is not claimed. No new media, capture, mount or raster group is needed.
+
+The package remains178 files /374,714,972 bytes, below the500MiB successor budget.
+`derived/issue2309/review-v1` contains controlled inputs, production-reader and native
+launchers; `verification-v1` retains checks and completed failures. Review publication
+is separate from the immutable #2307 content. The reader checks104 SPOIT definitions
+and702 equipment appearances over26 scenes. Native Original/HD, Reduced Flash/held
+speed and body-group fallback retain their [playback boundary](../godot/spell-presentation.md#absorb-reproduction-and-verification).
+
 ### DESOUL successor #2307
+
+The same complete package also supplies [ABSORB](#absorb-resource-reuse-2309); no
+duplicate successor is required for that no-tile mechanism.
 
 The registered `derived/issue2307/desoul-v1` is a complete successor to
 `derived/issue2306/blast-v1` with 178 files and 374,714,972 bytes. The publisher
