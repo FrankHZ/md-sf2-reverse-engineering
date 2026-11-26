@@ -47,7 +47,8 @@ public sealed partial class GameRoot
 
     private static void SendDebugKey(Key key, bool down)
     {
-        using var input = new InputEventKey { Keycode = key, PhysicalKeycode = key, Pressed = down };
+        // The ordinary settings release barrier can retain this event past dispatch.
+        var input = new InputEventKey { Keycode = key, PhysicalKeycode = key, Pressed = down };
         Godot.Input.ParseInputEvent(input);
         Godot.Input.FlushBufferedEvents();
     }

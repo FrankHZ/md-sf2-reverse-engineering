@@ -52,7 +52,9 @@ Send one printable ASCII command followed by LF over TCP. A CR immediately befor
 LF is accepted. Maximum line content is 64 bytes including optional CR. Read one
 UTF-8 JSON line per request. Replies including LF are limited to 1 MiB, the adapter's
 existing single observation record budget. The client must read each reply before
-sending the next command. A connection has 60 seconds to finish a command and read
+sending the next command. Complete a version-1 `hello` before submitting input. This
+keeps a waiting TCP client from sending keystrokes before the game serves it. The
+example client performs this handshake on connect. A connection has 60 seconds to finish a command and read
 its reply. The listener serves one client at a time with a TCP backlog of one.
 
 | Request | Successful `data` |

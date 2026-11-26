@@ -34,7 +34,10 @@ def connect(port):
         socket.create_connection(("127.0.0.1", port), timeout=10) as connection,
         connection.makefile("rb") as reader,
     ):
-        yield DebugClient(connection, reader)
+        client = DebugClient(connection, reader)
+        if client.request("hello")["data"]["version"] != 1:
+            raise ValueError("unsupported debug protocol version")
+        yield client
 
 
 def main():
