@@ -66,21 +66,44 @@ internal sealed partial class GameInput
         foreach (var (name, binding) in settings.Bindings)
         {
             if (name != "menu" && !bindings.ContainsKey(name)) throw new ArgumentException($"Unknown action: {name}.");
+            if (binding is null || binding.Keys is null || binding.Buttons is null || binding.Axes is null)
+                throw new ArgumentException($"{name} requires keys, buttons and axes arrays.");
             bindings[name] = binding;
         }
-        // Version-1 preferences predate Menu and may already claim its new defaults.
-        // Fill only unclaimed inputs; preserve every existing custom gameplay binding.
+        // Explicit rows are never migrated. An inherited Equipment row vacates Start
+        // only when Menu needs it; old explicit Menu configurations retain Equipment.
+        if (!settings.Bindings.ContainsKey("equipment") &&
+            (!bindings.TryGetValue("menu", out var menu) || menu.Buttons.Contains("Start")))
+        {
+            var used = bindings.Where(p => p.Key != "equipment").SelectMany(p => p.Value.Axes).ToHashSet();
+            string? axis = MenuAxes.FirstOrDefault(value => !used.Contains(value));
+            if (axis is not null) bindings["equipment"] = new(["E"], [], [axis]);
+        }
+        // Missing rows inherit current defaults without rewriting the preference file.
+        // Escape may share effective Cancel, but never Confirm or another action.
         if (!bindings.ContainsKey("menu"))
         {
-            var usedKeys = bindings.Values.Where(row => row?.Keys is not null).SelectMany(row => row.Keys).ToHashSet();
+            string cancel = settings.ConfirmCancel == "swapped" ? "confirm" : "cancel";
+            var usedKeys = bindings.Values.SelectMany(row => row.Keys).ToHashSet();
+            if (bindings[cancel].Keys.Contains("Escape") && bindings[cancel].Keys.Length > 1)
+                usedKeys.Remove("Escape");
+            var usedButtons = bindings.Values.SelectMany(row => row.Buttons).ToHashSet();
             var usedAxes = bindings.Values.Where(row => row?.Axes is not null).SelectMany(row => row.Axes).ToHashSet();
-            string key = new[] { "F10", "F9", "F8", "F7" }.Concat(Enum.GetNames<Key>())
+            string key = new[] { "Escape", "F10", "F9", "F8", "F7" }.Concat(Enum.GetNames<Key>())
                 .First(value => value is not ("None" or "Shift" or "Ctrl" or "Alt" or "Meta") && !usedKeys.Contains(value));
-            string? axis = new[] { "RightX+", "RightX-", "RightY-", "RightY+", "LeftX+", "LeftX-", "LeftY+", "LeftY-" }
-                .FirstOrDefault(value => !usedAxes.Contains(value));
-            bindings["menu"] = new([key], [], axis is null ? [] : [axis]);
+            string? axis = MenuAxes.FirstOrDefault(value => !usedAxes.Contains(value));
+            bindings["menu"] = !usedButtons.Contains("Start") ? new([key], ["Start"], []) :
+                new([key], [], axis is null ? [] : [axis]);
         }
         return bindings;
+    }
+
+    private static readonly string[] MenuAxes = ["RightX+", "RightX-", "RightY-", "RightY+", "LeftX+", "LeftX-", "LeftY+", "LeftY-"];
+
+    internal static bool BindingsConflict(string first, string second, InputSettings settings)
+    {
+        string cancel = settings.ConfirmCancel == "swapped" ? "confirm" : "cancel";
+        return !((first == "menu" && second == cancel) || (second == "menu" && first == cancel));
     }
 
     internal static bool MissingFamily(string name, ActionBinding row, bool explicitlyBound) =>
@@ -90,7 +113,7 @@ internal sealed partial class GameInput
     private static Dictionary<GameAction, List<InputEvent>> PrepareRows(InputSettings settings, Dictionary<string, ActionBinding> bindings)
     {
         Dictionary<GameAction, List<InputEvent>> prepared = [];
-        HashSet<string> identities = [];
+        Dictionary<string, string> identities = [];
         foreach (var (name, binding) in bindings)
         {
             if (binding is null || binding.Keys is null || binding.Buttons is null || binding.Axes is null ||
@@ -102,19 +125,19 @@ internal sealed partial class GameInput
                 if (!Enum.TryParse<Key>(key, false, out var code) || !Enum.IsDefined(code) ||
                     code is Key.None or Key.Ctrl or Key.Alt or Key.Meta || code == Key.Shift && name != "accelerate" || code.ToString() != key)
                     throw new ArgumentException($"Unknown key for {name}: {key}.");
-                Unique("key:" + key);
+                Unique("key:" + key, name);
                 events.Add(new InputEventKey { Keycode = code });
             }
             foreach (string button in binding.Buttons)
             {
                 JoyButton code = ButtonCode(button) ?? throw new ArgumentException($"Unknown button for {name}: {button}.");
-                Unique("button:" + button);
+                Unique("button:" + button, name);
                 events.Add(new InputEventJoypadButton { ButtonIndex = code, Device = -1 });
             }
             foreach (string axis in binding.Axes)
             {
                 (JoyAxis code, float value) = AxisCode(axis) ?? throw new ArgumentException($"Unknown axis for {name}: {axis}.");
-                Unique("axis:" + axis);
+                Unique("axis:" + axis, name);
                 events.Add(new InputEventJoypadMotion { Axis = code, AxisValue = value, Device = -1 });
             }
             // Godot 4.7.2 Input::MAX_EVENT is 32 across keys, buttons and signed axes.
@@ -125,10 +148,17 @@ internal sealed partial class GameInput
         }
         if (settings.ConfirmCancel == "swapped")
             (prepared[GameAction.Confirm], prepared[GameAction.Cancel]) = (prepared[GameAction.Cancel], prepared[GameAction.Confirm]);
+        var cancelOnly = prepared[GameAction.Cancel].Where(input =>
+            !prepared[GameAction.Menu].Any(menu => menu.AsText() == input.AsText())).ToArray();
+        if (!cancelOnly.Any(input => input is InputEventKey) ||
+            !cancelOnly.Any(input => input is InputEventJoypadButton or InputEventJoypadMotion))
+            throw new ArgumentException("Cancel needs a keyboard and gamepad alternative distinct from Menu for gameplay entry.");
         return prepared;
-        void Unique(string identity)
+        void Unique(string identity, string name)
         {
-            if (!identities.Add(identity)) throw new ArgumentException($"Duplicate binding: {identity}.");
+            if (identities.TryGetValue(identity, out var owner) && BindingsConflict(owner, name, settings))
+                throw new ArgumentException($"Duplicate binding: {identity} ({owner}, {name}).");
+            identities[identity] = name;
         }
     }
 
@@ -170,7 +200,7 @@ internal sealed partial class GameInput
         HintsChanged?.Invoke();
     }
 
-    internal GameAction? Resolve(InputEvent input, bool freshTargetNavigation = false)
+    internal GameAction? Resolve(InputEvent input, bool freshTargetNavigation = false, bool menuAtBase = false, bool menuBack = false)
     {
         // Shift is a pacing modifier, not a second action or direction edge. Preserve
         // exact matching for all other modifiers and never mutate the received event.
@@ -213,7 +243,13 @@ internal sealed partial class GameInput
         }
         else if (input is not (InputEventKey { Pressed: true, Echo: false } or InputEventJoypadButton { Pressed: true }))
             return null;
-        foreach (var action in _bindings.Keys)
+        // Resolve the shared edge once, after the ordinary release/neutral guards.
+        if (InputMap.EventIsAction(input, MapName(GameAction.Menu), true))
+        {
+            if (menuAtBase) return GameAction.Menu;
+            if (menuBack) return GameAction.Cancel;
+        }
+        foreach (var action in _bindings.Keys.Where(action => action != GameAction.Menu))
             if (InputMap.EventIsAction(input, MapName(action), true))
             {
                 // The target page rearms an axis at neutral, including when a

@@ -39,9 +39,104 @@ fall through to Godot’s default GUI actions while Settings is open.
 Use the existing `Prepare` rules for both candidate preview and final admission. Expose the resolved **base** rows before the swap from the same default expansion used by Prepare. Editing a default starts from that entire row. Store only explicit row overrides and the single `confirmCancel` value. Never serialize the swapped InputMap back as base rows. Detach the draft dictionary and clone all three arrays of each edited row before mutation. A category reset retains every unrelated draft value; Controls includes the convention and all bindings.
 
 - A row has `keys`, `buttons` and `axes` arrays and at most 32 events total. Keys use canonical logical Godot Keycode names. None, Ctrl, Alt, Meta and chords are ineligible. Shift alone is valid only for Accelerate. Ignore echoes and refuse unsupported captures with feedback. Pad choices are the four face positions, four D-pad directions, shoulders, Back/Start and stick clicks, plus either sign of LeftX, LeftY, RightX or RightY. The installed pad mappings apply to any device. Trigger axes, mouse rebinding, physical keyboard aliases and OS/controller profiles are outside this editor.
-- Every row needs at least one key. Every explicit row except Accelerate also needs a button or signed axis. Missing Accelerate inherits Shift with empty pad arrays. An absent Menu inherits the first unused F10/F9/F8/F7 or canonical fallback key and the first unused signed stick axis, normally RightX+. If all axes are used it may remain keyboard-only. Preserve that implicit row on unrelated edits and saves, including its existing dynamic fallback behavior. Editing Menu itself creates an explicit row and must satisfy explicit Menu admission. Show any resulting fallback change in the preview. [Menu migration and access](presentation.md#system-menu-agreement-1518)
-- Reject repeated identities, including duplicates within the same action, across both explicit and inherited base rows. Report identity and owning action(s). Offer the player a way to remove or replace the old assignment first. A removal may temporarily leave a row without a required family. Mark the row, keep installed Back reachable, and disable Apply until repaired. Refuse duplicate captures or a 33rd event without dropping other alternatives. Validation must permit repairing one row while another is incomplete.
+- Every row needs at least one key. Every explicit row except Accelerate also needs a button or signed axis. Missing Accelerate inherits Shift with empty pad arrays. Missing Menu now prefers Escape/Start with the contextual admission and compatibility fallback described below. An exhausted implicit Menu may remain keyboard-only. Keep inherited rows sparse on unrelated saves. Editing Menu creates an explicit row; preview changes to inherited Menu or Equipment before accepting it.
+- Reject repeated identities within a row and across actions, except Menu with **effective Cancel after the swap**. That pair has distinct base/child routing. Cancel must retain at least one keyboard and one pad alternative distinct from Menu so the field action menu and battle inspection remain reachable. Confirm, movement, Equipment and other actions cannot share Menu. The capture editor and Prepare use the same pair rule; final Prepare also checks reachability. Report identity and owning action(s). A removal may temporarily leave a row incomplete; keep installed Back usable, and refuse Apply until repaired. Refuse a 33rd event without dropping alternatives.
 - **Reset this page** stages only the category listed below. **Reset all settings** on the root includes bindings. Neither writes. Only root Reset all settings → Apply authorizes corrupt-file recovery and retains the invalid bytes in the existing backup; a page reset cannot authorize recovery.
+
+## System Menu defaults and input precedence (#2287)
+
+**High rigor**, retaining the [native input agreement](ui-architecture.md#one-event-from-device-to-page-and-back):
+one overlapping binding must not execute two player actions across a page transition. The scope is
+host/adapter routing, preference expansion and installed hints. No engine rules, save legality,
+content or new input framework change. Acceptance is adapter compilation plus bounded ordinary
+keyboard/pad input, migration and live remap checks below. Hardware/OS delivery remains Unknown.
+
+Fresh preferences and old format-1 files with no explicit rows inherit Menu **Escape / Start**.
+Cancel remains Escape/X and pad East; the field Adventure entry and its Help row display only
+the non-Menu alternatives (normally X / East). Equipment keeps E and inherits the first free
+signed stick axis (normally RightX+) when an inherited or explicit Menu needs Start. An explicit
+old Menu that does not use Start keeps the inherited Equipment Start. Every explicit row is retained,
+including an explicitly stored old F10/RightX+ Menu or Start Equipment. No file is rewritten on load,
+and no heuristic guesses whether a stored row was once a default or a deliberate choice.
+
+For absent Menu, Escape may share effective Cancel only when that row has another keyboard key.
+If Escape belongs to Confirm (including swapped defaults), movement or another action, choose the
+first unused F10/F9/F8/F7, then a canonical key. If Start is already assigned, choose the first free
+signed axis in RightX+, RightX−, RightY−, RightY+, LeftX+, LeftX−, LeftY+, LeftY− order. With no
+axis free, implicit Menu is keyboard-only and the existing no-pad notice applies. If Equipment
+cannot vacate Start because all axes are occupied, retain its Start and apply the same Menu fallback.
+Unrelated Apply preserves sparse inheritance. Reset stages current defaults; only Apply writes.
+
+| Active input owner | Mapped Menu | Cancel-only input |
+| --- | --- | --- |
+| Ordinary field movement, no child | Opens system Menu through the existing field settlement path | Opens field action menu |
+| Field action/Member/Prepare or church/shop/Caravan page | Returns through that page's Cancel operation | Same page-owned Cancel |
+| Field text/choice, automatic story or battle presentation | No Menu-only operation; a shared Cancel identity retains its original text/choice semantics | Original reveal/choice/skip semantics; never opens system Menu |
+| Battle player Movement, no movement delivery or inspection | Opens system Menu without moving or undoing the preview | Existing undo/inspection entry |
+| Battle ActionChoice, item/magic list, target or other selection | Returns through the active selection's Cancel; target → list → action root → Movement | Same selection-owned Cancel |
+| Battle Inspection and details | Returns one inspection layer | Same inspection-owned Cancel |
+| System Menu, slots, replacement entry, Settings and its children | Returns the active host page; root Menu closes | Existing Cancel, including swap |
+
+The top-right pointer button retains its existing cover/admission behavior, including viewing
+unavailable actions during story or a battle decision. Keyboard/pad Menu follows the table; it
+does not bypass a child to cover it. Naming and binding capture retain their dedicated input owners.
+There is no raw global Escape shortcut. A retired Escape stops operating Menu; if it remains Cancel,
+it continues that action. Direction holds, Wait, Accelerate, the host Apply drain, field/inspection
+release barriers and focus handling remain on their existing owners. Resolve chooses one action
+after the physical edge guard; a close cannot resolve again against the newly exposed base.
+
+### Bounded ordinary-input observation
+
+[`system_menu_input_observation.gd`](../../game/probes/system_menu_input_observation.gd) mounts Main
+with a disposable `issue2287-*` namespace and no screenshots. **Confirmed:** fresh and sparse old
+defaults, explicit old Menu, custom Menu/Cancel, swapped defaults and occupied Escape/Start load
+with matching hints and byte-identical preferences. Field Menu opens/closes with Escape/Start;
+Settings returns one layer while held. The default case edits Menu to F6 through capture/review/Apply,
+checks persisted explicit bindings and the now Cancel-only Escape. Synthetic focus signals retain
+the held opener until release. Connected Battle01 uses the offered Medical Herb target without
+committing it, returns through Items/Main/Movement and inspection, then admits a fresh host opener.
+NPC text consumes its own Cancel while Menu-only Start neither covers nor acknowledges it.
+A Galam shop child returns through service Cancel with held Escape and Start, never opening host Menu.
+
+Use the shared SDK/Godot, worktree-local build/import state and package selections from
+[host sample setup](host-ui.md#sample-setup-and-reset), selecting accepted `derived/issue2293/flame-v1`
+for world/scenes and the unchanged opening2252/witch2255/catalog2266 packages. Build Debug with
+`UseSharedCompilation=false` / `nodeReuse:false`; `uv run sf2 verify adapter` is the compilation gate.
+Create a fresh external disposable namespace for each case. Set `SF2_HOST_UI_OUTPUT` to an ignored
+absolute JSON path, `SF2_HOST_UI_CASE` to the case below, `SF2_HOST_UI_START` to the initial file,
+and leave `SF2_HOST_UI_STILLS` empty. Run from the repository root:
+
+```powershell
+& $env:GODOT_BIN --headless --audio-driver Dummy --max-fps 120 --path remake/game `
+    --script res://probes/system_menu_input_observation.gd --log-file "$run/godot.log"
+```
+
+Use the [in-game Load initial-field recipe](host-ui.md#in-game-load-observation-2286) at Map3 (32,13),
+or its Map57 Battle01 start for `battle`, and Map3 (28,13) for `story`. For `service`, use the
+[accepted Galam start](field-and-shop.md#verification-boundary-and-remaining-gaps): Map16 (35,26),
+facing1, speed32, flags0/1/2/32/33/34/663. These are initial detached
+admissions, never live state edits. Except `default`, create a format-1 preferences file with `language`.
+
+| Case | Additional starting preferences |
+| --- | --- |
+| `default` | No file; includes live F6 remap and synthetic focus-signal check |
+| `old-default`, `battle`, `story`, `service` | No explicit bindings |
+| `legacy` | `menu: {keys:[F10], buttons:[], axes:[RightX+]}` |
+| `custom` | Menu F6/Start; Cancel Q,X/East |
+| `swapped` | `confirmCancel: swapped` |
+| `occupied` | Confirm Escape,Enter/South; Cancel Q,X/East; Equipment E/Start |
+
+Each binding row uses JSON string arrays for `keys`, `buttons`, `axes` (empty when unused).
+Each process has a 55-second deadline and retains only selected state/logs; budget under 64 MiB,
+serial launches and no campaign sweep. Retain failed attempts: an observer Variant type annotation,
+wrong Settings row ID, mistaken Stay-target assumption, first actor without Magic, and an omitted
+Item-list return layer, and a shop initial facing0 instead of the accepted facing1. These were observer
+corrections, not gameplay exceptions. The first import
+used a relative log destination rejected by Godot; the corrected import uses an absolute local log.
+Existing ObjectDB shutdown warnings remain #1716. Headless input is not physical-controller,
+OS-focus or human visual acceptance. Older F10-based host probes retain historical results but
+are not current default-input acceptance: an explicit legacy Menu row restores that binding, while
+checks that intentionally cover text/ActionChoice must use the existing pointer entry.
 
 ## Apply, persistence and live feedback
 

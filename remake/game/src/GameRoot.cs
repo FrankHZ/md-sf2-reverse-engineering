@@ -63,7 +63,7 @@ public sealed partial class GameRoot : Node
                 if (settings.RoutePointer(input)) GetViewport().SetInputAsHandled();
                 return;
             }
-            var mapped = _input?.Resolve(input);
+            var mapped = _input?.Resolve(input, menuBack: true);
             if (mapped is { } actionId) HandleSettingsAction(actionId, input);
             GetViewport().SetInputAsHandled();
             return;
@@ -100,7 +100,10 @@ public sealed partial class GameRoot : Node
             return;
         }
         bool freshTargetNavigation = _battle?.NeedsFreshDirection == true;
-        var action = _input?.Resolve(input, freshTargetNavigation);
+        bool hostPage = _slots is not null || _entry is not null || _systemMenu is not null;
+        var action = _input?.Resolve(input, freshTargetNavigation,
+            menuAtBase: !hostPage && (_exploration?.SystemMenuBase == true || _battle?.SystemMenuBase == true),
+            menuBack: hostPage || _exploration?.MenuBack == true || _battle?.MenuBack == true);
         if (action is null)
         {
             if (members is not null) GetViewport().SetInputAsHandled();

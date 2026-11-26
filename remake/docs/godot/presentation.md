@@ -240,19 +240,16 @@ return one level; hidden global buttons cannot intercept gameplay pointers. Dire
 skips unavailable actions, whose reasons remain visible. Recovery/focus loss cancels an unfinished
 Menu mouse gesture before restoring the same panel.
 
-`GameAction.Menu` is integrated in existing `GameInput`/version1 `bindings`, held-state guards,
-actual hints and the existing Controls Help. Defaults are F10 and right stick right (`RightX+`).
-At settled field input Cancel opens the [gameplay diamond](#exploration-gameplay-diamond-agreement-1588); Cancel leaves the title unchanged. Battle Cancel
-continues to unwind gameplay, Start remains Equipment and Back remains Item. Within Menu, mapped
-Menu toggles Resume; Confirm/Cancel use the existing swap. Subpages keep their own Cancel semantics.
-
-Old preferences retain every binding. If Menu is absent, choose an unclaimed F10/F9/F8/F7 then an
-unclaimed named key, and the first free signed axis in RightX+,RightX−,RightY−,RightY+,LeftX+,LeftX−,
-LeftY+,LeftY− order. When all axes are assigned, implicit Menu remains keyboard/mouse accessible
-and visibly explains that pad access requires editing bindings. No Guide fallback or claim that a
-host delivers a system-reserved pad button is made. An explicit `menu` binding follows ordinary
-keyboard+pad and duplicate validation. Effective defaults do not rewrite old preferences; Settings
-retains implicit Menu on unrelated edits. Controls → Change controls edits Menu as an explicit row.
+`GameAction.Menu` uses existing `GameInput`/format-1 bindings, held guards and installed hints.
+Current defaults are **Escape / pad Start**. At basic field control or battle Movement it opens
+the system Menu; in child pages it returns the current layer. Shared Cancel retains text/choice
+semantics, while Menu-only input does nothing during text or automatic presentation. Non-Menu
+Cancel alternatives (normally X / East) open the [field gameplay menu](#exploration-gameplay-diamond-agreement-1588)
+or battle inspection. The pointer button keeps its existing cover behavior. The exact phase table,
+Confirm/Cancel swap, conflict admission, inherited Equipment relocation and explicit-row preservation
+are owned by [Menu defaults and input precedence](input-remapping.md#system-menu-defaults-and-input-precedence-2287).
+Loading old files never rewrites them; explicit old F10/RightX+ rows remain explicit. Unclaimed
+fallbacks preserve access when custom bindings occupy new defaults. No reserved Guide input is used.
 
 The owned implementation is GameRoot, the existing persistence/settings/window-support partials,
 one `Entry/SystemMenuView`, GameInput/ControlsHelp and the two existing locale catalogs/argument
@@ -332,10 +329,10 @@ The source/capability boundaries and retained earlier layout observations below 
 
 Standard rigor: a bounded multi-consumer presentation change with existing command authority.
 Outcome: ordinary field control exposes a four-cardinal gameplay menu without another top bar.
-Cancel (including the current remap/pad alternative) or the visible bottom-right Adventure entry
-opens it. Equipment (default E / Pad Start) keeps direct Party Status. Menu retains its independent
-system menu binding and Settings/Save/Quit; field Cancel now belongs to gameplay. Existing title,
-story and battle Cancel semantics remain with their consumers.
+A Cancel alternative not shared with Menu (normally X / East), or the visible bottom-right Adventure
+entry, opens it. Equipment keeps direct Party Status (fresh default E / RightX+). Menu defaults to
+Escape / Start and remains separate from gameplay. [Context and migration](input-remapping.md#system-menu-defaults-and-input-precedence-2287)
+own the overlap, child return and existing custom bindings; text/choice Cancel remains page-owned.
 
 **Confirmed:** pinned `SF2DISASM` revision `c834c652b6862bc5679fd7f69a38a7093206efc6`,
 `code/common/menus/menustringspointertable.asm:pt_FieldMenuNames`, `diamondmenu.asm:ExecuteDiamondMenu`

@@ -23,6 +23,8 @@ public sealed partial class ExplorationSessionView
     private FieldMenuView _fieldMenu = null!;
     private FieldGuidanceView _guidance = null!;
     private bool _fieldMenuActive;
+    internal bool SystemMenuBase => _session?.Current.HasOrdinaryFieldTime == true && !PartyMenuOpen && !_battleMounted;
+    internal bool MenuBack => PartyMenuOpen || _session?.Current.Story.Wait is ChurchWait or ShopWait or CaravanWait;
     private bool CanOpenFieldMenu => _session?.Current.CanWaitAtInput == true && !_battleMounted && !_partyStatus.Open &&
         !_handedOff && !_battleHandoffPending && !MenuEntryPending && PresentationFailure is null;
     private void BeginFieldMenu()

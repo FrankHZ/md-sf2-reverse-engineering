@@ -95,11 +95,20 @@ internal sealed partial class GameInput
 
     internal string Hint(GameAction action) => string.Join(" / ", _bindings[action].Select(Describe));
     internal string CompactHint(GameAction action)
+        => CompactHint(_bindings[action]);
+
+    internal string GameplayCancelHint() => CompactHint(_bindings[GameAction.Cancel]
+        .Where(input => !_bindings[GameAction.Menu].Any(menu => menu.AsText() == input.AsText())));
+
+    internal string GameplayCancelBindingsHint() => string.Join(" / ", _bindings[GameAction.Cancel]
+        .Where(input => !_bindings[GameAction.Menu].Any(menu => menu.AsText() == input.AsText())).Select(Describe));
+
+    private string CompactHint(IEnumerable<InputEvent> inputs)
     {
-        InputEvent? binding = _hintPad is null ? _bindings[action].OfType<InputEventKey>().FirstOrDefault() :
-            _bindings[action].FirstOrDefault(input => input is InputEventJoypadButton or InputEventJoypadMotion);
+        InputEvent? binding = _hintPad is null ? inputs.OfType<InputEventKey>().FirstOrDefault() :
+            inputs.FirstOrDefault(input => input is InputEventJoypadButton or InputEventJoypadMotion);
         // A missing pad binding remains explicitly keyboard-accessible, never a fictitious button.
-        return binding is null ? GameText.Get("input.keyboard-only", Describe(_bindings[action].OfType<InputEventKey>().First())) : Describe(binding);
+        return binding is null ? GameText.Get("input.keyboard-only", Describe(inputs.OfType<InputEventKey>().First())) : Describe(binding);
     }
     private string Describe(InputEvent input) => input switch
     {
