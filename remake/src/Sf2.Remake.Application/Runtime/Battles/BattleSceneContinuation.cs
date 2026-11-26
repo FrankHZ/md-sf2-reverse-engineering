@@ -78,6 +78,9 @@ public sealed class BattleSceneState
     public HealingSpellDefinition? RecoveryEffect => Spell ?? Item?.EquipmentEffect;
     public Sf2.Remake.Domain.Gameplay.Sf2.AttackSpellDefinition? AttackSpell => _action?.AttackSpell;
     public Sf2.Remake.Domain.Gameplay.Sf2.SupportSpellDefinition? SupportSpell => _action?.SupportSpell;
+    // The action caller overrides the spell table for non-equipment consumables.
+    public byte? AttackAnimationSelector => AttackItem is not null && _action?.EquipmentUse is null
+        ? (byte)0 : AttackSpell?.SourceAnimationSelector;
     public IReadOnlyList<ActorRef> SupportTargets => SupportSpell is null ? [] :
         AbsorbsMp ? [Action.Reactions[0].Target] : Action.Reactions.Select(r => r.Target).ToArray();
     public bool IsMonsterBreath => AttackSpell?.IsMonsterBreath == true;

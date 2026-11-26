@@ -9,6 +9,15 @@ namespace Sf2.Remake.Content.Scenarios;
 
 internal static class BattleSceneContentReader
 {
+    private static void ValidateFlameGroup(Dictionary<string, ExplorationRaster> rasters, string prefix,
+        (string Name, int Width, int Height)[] expected)
+    {
+        int count = rasters.Keys.Count(key => key.StartsWith(prefix, StringComparison.Ordinal));
+        Require(count == 0 || count == expected.Length && expected.All(row =>
+            rasters.TryGetValue(prefix + row.Name, out var image) && image.Width == row.Width && image.Height == row.Height),
+            "scene-" + prefix.TrimEnd('/'), "battleScenes.rasters");
+    }
+
     internal static BattleSceneDefinition Read(string path, PrivateBattleDefinitions definitions, IEnumerable<byte>? controlledMembers = null)
     {
         Require(Path.IsPathFullyQualified(path), "scene-content-selection", "battleScenes");
@@ -53,6 +62,13 @@ internal static class BattleSceneContentReader
         Require(blazeTwoCount == 0 || blazeTwoCount == blazeTwo.Length &&
             blazeTwo.All(row => rasters.TryGetValue(blazeTwoPrefix + row.Name, out var image) &&
                 image.Width == row.Width && image.Height == row.Height), "scene-blaze-2", "battleScenes.rasters");
+        ValidateFlameGroup(rasters, "blaze-large/",
+            [("flame-0", 32, 64), ("flame-1", 32, 64), ("meteor-0", 24, 24), ("meteor-1", 24, 24),
+             ("impact-0", 32, 32), ("impact-1", 32, 32)]);
+        ValidateFlameGroup(rasters, "blaze-dragon/",
+            [("head", 32, 32), ("body", 24, 24), ("tail-0", 16, 16), ("tail-1", 16, 16)]);
+        Require(!rasters.ContainsKey("blaze-dragon/head") || rasters.ContainsKey("blaze-large/flame-0"),
+            "scene-blaze-dragon", "battleScenes.rasters");
         (int Width, int Height)[] blast = [(8,8), (16,16), (16,24), (8,16), (16,16), (24,16),
             (16,16), (16,32), (16,24), (16,16), (32,16), (24,16), (16,16), (32,32), (16,24)];
         int blastCount = rasters.Keys.Count(key => key.StartsWith("blast-1/", StringComparison.Ordinal));

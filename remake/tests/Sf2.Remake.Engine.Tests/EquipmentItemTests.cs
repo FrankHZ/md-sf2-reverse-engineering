@@ -37,7 +37,7 @@ public sealed class EquipmentItemTests
             supportSpells: old.SupportSpells.Values,
             give: new(new Dictionary<byte, string> { [0] = "Herb", [24] = "Black Ring" }),
             discard: new([new(0, "Herb", false, false), new(24, "Black Ring", true, false)]),
-            attackItems: [new(24, "Black Ring", attackEffect ?? new(new("blaze", 2), 0, 10, 1, 2, 1, AttackSpellElement.Fire), Breakable: true),
+            attackItems: [new(24, "Black Ring", attackEffect ?? new(new("blaze", 2), 0, 10, 1, 2, 1, AttackSpellElement.Fire, 33), Breakable: true),
                 new(102, "Iron Ball", new(new("blaze",3),10,15,1,2,1,AttackSpellElement.Fire), Breakable: true),
                 new(110, "Taros Sword", new(new("bolt",2),15,16,1,3,2,AttackSpellElement.Lightning), Breakable: true)],
             supportItems:
@@ -316,6 +316,7 @@ public sealed class EquipmentItemTests
         Assert.Null(result.Failure);
         var scene = result.Snapshot.BattleScene!;
         Assert.Equal(new SpellRef("blaze", 2), scene.AttackSpell!.Spell);
+        Assert.Equal((byte)33, scene.AttackAnimationSelector);
         Assert.Equal(10, scene.AttackSpell.Power);
         Assert.Equal(1, scene.AttackSpell.Radius);
         Assert.Equal(preview.Recipients.Select(unit => unit.Actor), scene.AttackTargets);

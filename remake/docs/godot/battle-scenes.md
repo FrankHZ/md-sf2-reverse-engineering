@@ -25,6 +25,10 @@ The [prepared BLAZE1 scene](spell-presentation.md#prepared-blaze1-presentation) 
 Battles04–07 package and the separate Battle04 Kazin and Battle05 Galam Mage native witnesses.
 The [prepared BLAZE2 scene](spell-presentation.md#prepared-blaze2-presentation) adds the medium
 flame, ten small meteors and ordered Battle04 reactions for Kazin's learned radius-1 cast.
+The [flame-family successor](spell-presentation.md#flame-family-playback-2293) extends all
+admitted scene mounts to v3/v4, KATON aliases and equipment Use. v3 has fourteen large
+meteors; v4 has four and an eight-part dragon. Actual action selectors preserve Item gestures
+and NONE consumables. Application still owns payment, ordered results, rewards and return.
 
 ### Prepared DETOX presentation
 

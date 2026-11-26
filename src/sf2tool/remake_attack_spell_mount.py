@@ -9,13 +9,18 @@ from sf2tool.texture_extract import write_png_rgba
 
 
 def mount_attack_spells(
-    directory: Path, scratch: Path, package: Path, scenes: dict[int, Path], families: set[str]
+    directory: Path,
+    scratch: Path,
+    package: Path,
+    scenes: dict[int, Path],
+    families: set[str],
+    scale=None,
 ) -> None:
     from sf2tool.remake_private_package import installed_png, prepared_spell_tiles, read_json
 
     if "blast-1" in families:
         mount_blast(directory, scratch, package, scenes)
-    if not families & {"blaze", "blaze-2"}:
+    if not families & {"blaze", "blaze-2", "flame-family"}:
         return
     index = read_json(directory / "index.json")
     expected = dict(family="spell", id=2, tiles="spell-2.4bpp", palette="022e028e08ee")
@@ -30,7 +35,7 @@ def mount_attack_spells(
     if len(tiles) != 7104:
         raise ValueError("registered BLAZE tile stream length differs")
     sprites = {}
-    if "blaze" in families:
+    if families & {"blaze", "flame-family"}:
         # table_1BE2A. Both 2x4 entries share position and tiles.
         sprites.update(
             {
@@ -38,7 +43,7 @@ def mount_attack_spells(
                 "blaze-1/frame-1": (2, ((41, 4),)),
             }
         )
-    if "blaze-2" in families:
+    if families & {"blaze-2", "flame-family"}:
         # table_1BE2A stacks a 3x4 top over a 3x2 bottom.
         # table_1BE42, table_1BE52 and table_1BE5A select the small meteor and impact.
         sprites.update(
@@ -49,6 +54,22 @@ def mount_attack_spells(
                 "blaze-2/meteor-1": (2, ((153, 2),)),
                 "blaze-2/impact-0": (3, ((157, 3),)),
                 "blaze-2/impact-1": (3, ((166, 2),)),
+            }
+        )
+    if "flame-family" in families:
+        # table_1BE2A and table_1BE42+32; graphic_BlazeDragon (zero-based tiles).
+        sprites.update(
+            {
+                "blaze-large/flame-0": (4, ((85, 4), (101, 4))),
+                "blaze-large/flame-1": (4, ((117, 4), (133, 4))),
+                "blaze-large/meteor-0": (3, ((172, 3),)),
+                "blaze-large/meteor-1": (3, ((181, 3),)),
+                "blaze-large/impact-0": (4, ((190, 4),)),
+                "blaze-large/impact-1": (4, ((206, 4),)),
+                "blaze-dragon/head": (4, ((17, 4),)),
+                "blaze-dragon/body": (3, ((8, 3),)),
+                "blaze-dragon/tail-0": (2, ((4, 2),)),
+                "blaze-dragon/tail-1": (2, ((0, 2),)),
             }
         )
     rasters = {}
@@ -65,6 +86,19 @@ def mount_attack_spells(
             scratch / leaf, width, height, compose(tiles, palette, width, height, layout)
         )
         rasters[key] = installed_png(scratch, leaf)
+    variants = {}
+    if scale is not None:
+        from PIL import Image
+
+        from sf2tool.remake_hd_actors import encode
+        from sf2tool.remake_hd_battle_rasters import _check_masks, derive_frame
+
+        for key in rasters:
+            with Image.open(scratch / (key.replace("/", "-") + ".png")) as original:
+                hd, _ = derive_frame(original, 1, scale)
+                with hd:
+                    _check_masks(original, hd, key)
+                    variants[key] = encode(hd)
     for battle, relative in scenes.items():
         path = package / relative
         scene = read_json(path)
@@ -74,6 +108,9 @@ def mount_attack_spells(
         for key, raster in rasters.items():
             if current.setdefault(key, raster) != raster:
                 raise ValueError(f"conflicting prepared BLAZE frame {key}")
+        for key, raster in variants.items():
+            # Keep accepted variants when extending a complete predecessor.
+            scene.setdefault("hdRasters", {}).setdefault(key, raster)
         path.write_text(json.dumps(scene, separators=(",", ":")), encoding="utf-8")
 
 

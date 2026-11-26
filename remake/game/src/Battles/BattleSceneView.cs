@@ -151,15 +151,17 @@ internal sealed partial class BattleSceneView : Control
             _sceneBlack.Color = Colors.Black;
             if (state.Phase != BattleScenePhase.ActionAnimation) _buff.Reset();
             if (_debuff.Active && state.Phase is BattleScenePhase.Reward or BattleScenePhase.End) _debuff.Reset();
-            var preparedResources = state.AttackSpell switch
+            var preparedResources = state.AttackAnimationSelector switch
             {
-                { Spell.Value: "blaze", Spell.Level: 1, SourceAnimationSelector: 1 } => AttackSpellView.BlazeResources,
-                { Spell.Value: "blaze", Spell.Level: 2, SourceAnimationSelector: 33 } => BlazeTwoEffect.Resources,
-                { Spell.Value: "blast", Spell.Level: 1, SourceAnimationSelector: 5 } => BlastOneEffect.Resources,
+                1 => AttackSpellView.BlazeResources,
+                33 => BlazeMeteorEffect.SmallResources,
+                65 => BlazeMeteorEffect.LargeResources,
+                97 => BlazeMeteorEffect.DragonResources,
+                5 when state.AttackSpell?.Spell.Value == "blast" => BlastOneEffect.Resources,
                 _ => null,
             };
-            _preparedAttackSpell = state.AttackItem is null && preparedResources is not null &&
-                Content?.Rasters.ContainsKey(preparedResources[0]) == true;
+            _preparedAttackSpell = preparedResources is not null &&
+                Content is { } preparedContent && preparedResources.All(preparedContent.Rasters.ContainsKey);
             if (UsesMessagePlayback(state))
             {
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
@@ -248,7 +250,7 @@ internal sealed partial class BattleSceneView : Control
                 if (state.Phase == BattleScenePhase.ActionAnimation)
                 {
                     var sequences = (actor.IsAlly ? _allyVisual! : _enemyVisual!).Sequences;
-                    string sequence = state.Spell is not null || state.IsMonsterBreath || _preparedAttackSpell || (PreparedDebuff(state) || PreparedBuff(state)) && state.EquipmentItem is null ? "cast" : state.Item is not null || state.AttackItem is not null || state.EquipmentItem is not null ? "item" : "attack";
+                    string sequence = state.Spell is not null || state.IsMonsterBreath || _preparedAttackSpell && state.AttackItem is null || (PreparedDebuff(state) || PreparedBuff(state)) && state.EquipmentItem is null ? "cast" : state.Item is not null || state.AttackItem is not null || state.EquipmentItem is not null ? "item" : "attack";
                     if (sequence == "attack" && state.SpecialPhysicalAnimation) sequence = "special";
                     // battlesceneScript_PerformAnimation selects the ordinary sequence for these
                     // casters. Earlier packages expose it as ally idle or enemy attack.
@@ -835,7 +837,7 @@ internal sealed partial class BattleSceneView : Control
         aura = _state is { Spell.IsAura: true, Healing: null } ? _aura.Observe() : null,
         suspended = _suspended,
         laser = _state?.Laser is not null ? _laser.Observe() : null,
-        attackSpell = _state?.AttackSpell is not null && _state.AttackItem is null ? _attackSpell.Observe() : null,
+        attackSpell = _state?.AttackSpell is not null && (_state.AttackItem is null || _preparedAttackSpell) ? _attackSpell.Observe() : null,
         monsterBreath = _state?.IsMonsterBreath == true,
         phoenixWave = _phoenixWave.Observe(),
         detox = _detox.Observe(),
@@ -855,7 +857,7 @@ internal sealed partial class BattleSceneView : Control
         item = _state?.EquipmentItem?.ItemId ?? _state?.AttackItem?.ItemId ?? _state?.Item?.ItemId,
         equipmentWear = _state?.Wear.ToString(),
         spell = _state?.RecoveryEffect?.Spell ?? _state?.AttackSpell?.Spell ?? _state?.SupportSpell?.Spell ?? _state?.SilencedSpell,
-        spellAnimationSelector = BuffEffectView.Selector(_state) ?? DebuffSelector(_state) ?? (_state?.AttackItem is not null || _state?.EquipmentItem is not null ? 0 : _state?.AttackSpell is { } attack ? attack.SourceAnimationSelector : _state is { Spell.IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : DetoxSelector(_state) ?? (_state?.RecoveryEffect is { } recoveryEffect ? 4 + 32 * (recoveryEffect.Spell.Level - 1) : _state?.Item is not null ? 0 : (int?)null)),
+        spellAnimationSelector = BuffEffectView.Selector(_state) ?? DebuffSelector(_state) ?? _state?.AttackAnimationSelector ?? (_state?.AttackItem is not null || _state?.EquipmentItem is not null ? 0 : _state?.AttackSpell is { } attack ? attack.SourceAnimationSelector : _state is { Spell.IsAura: true, Healing: null } ? (int?)null : _state?.Laser is not null ? 149 : DetoxSelector(_state) ?? (_state?.RecoveryEffect is { } recoveryEffect ? 4 + 32 * (recoveryEffect.Spell.Level - 1) : _state?.Item is not null ? 0 : (int?)null)),
         healing = _state?.Healing is { } healing ? new { healing.Caller, healing.Remaining, healing.AtTimedInput,
             healing.LogicalComplete, healing.Delivered, healing.CastRequested, healing.CastFrame, healing.Fairy } : null,
         fairySprites = _fairyBodies.Concat(_fairyWings).Concat(_fairyDust).Where(sprite => sprite.Visible)

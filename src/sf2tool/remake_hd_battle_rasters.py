@@ -128,6 +128,8 @@ def selected_groups(
     effects = {
         "blaze-1": ["frame-0", "frame-1"],
         "blaze-2": ["flame-0", "flame-1", "meteor-0", "meteor-1", "impact-0", "impact-1"],
+        "blaze-large": ["flame-0", "flame-1", "meteor-0", "meteor-1", "impact-0", "impact-1"],
+        "blaze-dragon": ["head", "body", "tail-0", "tail-1"],
         "blast-1": [f"frame-{index}" for index in range(15)],
         "detox": [f"frame-{index}" for index in range(11)],
         "debuff-1": [f"frame-{index}" for index in range(3)],

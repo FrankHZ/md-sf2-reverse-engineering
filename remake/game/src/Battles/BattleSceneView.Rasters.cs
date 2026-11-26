@@ -73,7 +73,8 @@ internal sealed partial class BattleSceneView
             if (heal.Enemy is { } enemy) Group(enemy.Bodies.Concat(enemy.Wings).Concat(enemy.Dust));
         }
         if (content.FieldDeath is { } death) Group(death.ExitFrames);
-        foreach (var keys in new[] { AttackSpellView.BlazeResources, BlazeTwoEffect.Resources,
+        foreach (var keys in new[] { AttackSpellView.BlazeResources, BlazeMeteorEffect.SmallResources,
+            BlazeMeteorEffect.LargeResources, BlazeMeteorEffect.DragonResources,
             BlastOneEffect.Resources, BreathResources, PhoenixWaveView.Resources, DetoxEffectView.Resources, DebuffEffectView.Resources })
             if (keys.All(content.Rasters.ContainsKey)) Group(keys);
         return selected;
