@@ -6,6 +6,102 @@ pre-voyage priority. Later private campaigns and controlled authored packages es
 boundaries. This inventory uses the existing rules, scene readers, presenters and private resource
 publisher. Each implementation slice owns its own acceptance.
 
+## APOLLO family playback #2312
+
+**Standard scope.** Bind admitted SORC APOLLO1–2 to invocation3 and tileset19 through
+existing content, summon lifetime and action authority. Payment, actual-recipient division,
+ordered results/death/rewards and usable return remain unchanged. No new admission,
+promotion, recruitment, enemy AI, Battle27+, save schema or #1716 repair is included.
+
+Ownership: `ApolloEffectView.cs`, `BattleSceneView.cs` and its `Summon` partial;
+`PrivateAttackSpellBindings.cs`; `remake_apollo_mount.py`, the shared invocation decoder
+extracted from `remake_dao_mount.py`, existing attack-mount/private-package/retail hooks
+and engine-path registration; `engine_apollo_family_observation.gd`. This file,
+battle-scenes, church-promotion-design, presentation-assets, asset-inventory and
+capability-status own the serial documentation edits. The accepted DAO implementation
+is the dependency; no unmerged code, new lifecycle or gameplay state authority is used.
+
+### APOLLO source and delivery choices
+
+**Confirmed source structure:** USA ROM SHA256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`, pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. `spelldefs.asm` selects APOLLO18 and
+APOLLO|VARIATION2 (50); `PrivateAttackSpellBindings` now carries both actual selectors.
+The setup/update routines contain no rank branch. This is distinct from BLAZE.
+
+`animation/apollo.asm` (`0x1B0D0..0x1B21A`) calls the common invocation loader with3,
+plays lightning118 and lowers all16 body sprites by8 pixels for22 updates. Invocation3's
+header at ROM `0x12E988` is `(272,1,1)`, giving logical origin `(144,-127)` before lowering.
+Frame1 is loaded into the hidden bank while frame0 remains visible for30 updates; then
+the bank switches to frame1 and frame2 is preloaded. The mouth graphic at `(146,75)`
+blinks for20 updates with sound116. The common loader's cast77, four `$CCE` flashes,
+8-update entrance, palette-word0 skip and 16-tile VRAM gap match DAO's existing decoder.
+
+`animation/update/apollo.asm` (`0x1DE24..0x1DFD4`) alternates body banks and mouth
+positions every6 updates. Its first counter clears the damage hold at40. Up to20
+particles use two sizes, four frames at3-update intervals, source cosmetic RNG positions
+x0..127/y16..175 and flips; large flames drift left1 pixel/update and request116.
+`LoadSpellTilesetForInvocation` maps tiles0..23 to VRAM1920. Setup copies tiles24/40/56/72
+to VRAM384/528/1440/1776. Mouth frames use tiles0/4; small flames use20/16/12/8;
+large flames use72/56/40/24. Palette3 slots9/13/14 receive `$EEE/$26E/$02A`.
+The backdrop offset table is `[1,2,1,0,-1,-2,-1,0]`; the red pulse table is `$00F,8,1`.
+
+Paths are relative to `disasm/code/gameflow/battle/battlescenes/`; the loader is in
+`battlesceneengine_1/3.asm`, layout in `battlesceneengine_4.asm`, and the spell table in
+`disasm/data/stats/spells/spelldefs.asm`.
+[Setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/apollo.asm) ·
+[Update](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/apollo.asm).
+
+**Modern delivery:** the shared cast trigger starts a148/60-second minimum:28 flash,
+8 entrance,22 lowering,30 held-body,20 mouth and40 flame ticks. Body, mouth and flames
+continue across ordered recipients; Reward/End restores the caster/weapon/ground
+immediately using the existing lifecycle rather than reproducing the hardware palette
+fade. A fixed20-slot,2-tick spawn schedule with40-tick reuse replaces cosmetic RNG;
+visual scheduling consumes no gameplay RNG. Backdrop displacement and red flashes
+approximate the original plane/palette operations. Reduced Flash suppresses those
+flashes and displacement while preserving sprites/audio/outcomes. Held1.5× uses the
+shared clock. Existing sound77/116/118 recordings and explicit audio default selection
+are reused, with deterministic flame cues; no new audio capture or BLAZE assets are used.
+
+The13-frame Original/HD group is atomic. Partial HD selects all Original; partial
+Original reports `apollo-original-group-incomplete`. Packages with no APOLLO group
+retain explicit modern fallback. NEPTUN/ATLAS remain separate work.
+
+### APOLLO reproduction and verification
+
+Select complete `derived/issue2312/apollo-v1`, independent #2252 opening, #2255 Witch
+and #2266 catalogs. Build the Debug adapter with the [locked workflow](../development-and-verification.md#locked-net-workflow).
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2312/review-v1'
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case apollo1-single `
+  -Sample apollo-review -SaveRoot $freshExternalSaveRoot
+# Distinct rank/divided recipients: apollo2-multi -Graphics hd -Reduced -Fast.
+# Atomic fallback: apollo1-single -Graphics hd -Variant incomplete.
+```
+
+**Confirmed in the remake:** the production reader accepts52 rank bindings across26
+scenes and both controlled saves. They reuse the accepted Battle26 input and DAO
+controlled history, with Kazin SORC20, legal destination book `[93,94,31,63]`, the
+Wooden Rod and seed`0x0DA20000`. These are controlled prerequisites, not natural training.
+Ordinary Continue → Magic → target → Confirm observes APOLLO1 damage21 and APOLLO2
+ordered damage24/25 across two recipients, one10/17-MP payment, death cleanup,
+one action reward and usable next ActionChoice. The probe reads actual13 resource
+identities/dimensions, draw calls, caster replacement, selectors18/50 and sound receipts.
+Both ranks' art is the same. Existing summon unit assertions own division/accounting.
+
+With producer scratch unavailable, published-input reader, HD/Reduced Flash/held-speed
+and incomplete-HD atomic-fallback witnesses pass on the final Debug build. Engine
+verification passes3,383 with50 optional private-input skips. No helper tests or
+screenshots are added. An audit corrected the initially displayed preloaded pose before
+final playback checks. Retained setup failures are incorrect initial source-directory
+assumptions, a UTF-8 report read with the system encoding, and a formatter line-length
+failure; none is a runtime acceptance result. Some native exits retain8 ObjectDB warnings
+under#1716. **Unknown:** natural reach/training, hardware cadence/palette fidelity and
+human visual acceptance. Exact Git objects, selected gates and actual CI belong to the PR.
+
 ## DAO family playback #2310
 
 **Standard scope.** Admitted SORC DAO1–2 uses invocation0 and tileset3 on the existing
@@ -65,7 +161,8 @@ The11-resource group selects HD atomically. An incomplete optional HD group uses
 Original frames. A partial Original group reports `dao-original-group-incomplete`;
 older packages with no DAO group retain their explicit modern fallback. Another spell
 family is never substituted. Common summon responsibilities are confined to caster
-replacement and scene restoration; APOLLO/NEPTUN/ATLAS remain separate work.
+replacement and scene restoration; [APOLLO](#apollo-family-playback-2312) uses that boundary.
+NEPTUN/ATLAS remain separate work.
 
 ### DAO reproduction and verification
 
@@ -330,7 +427,7 @@ update controls subsequent movement, mirroring and dust. [Enemy family evidence]
 | KATON 1–3 | BLAZE v2–v4 | **Original assets bound** through the actual selector, with neutral gameplay rules unchanged. Native NINJ rank1 uses v2; rank3 uses v4. Rank2 has production binding coverage, without a new native cast. | [Flame family playback](#flame-family-playback-2293). Natural learning/acquisition remain **Unknown**. |
 | RAIJIN 1–3 | BOLT v2–v4 | **Original assets bound**, preserving distinct neutral gameplay. Controlled NINJ ranks1/3 use the shared selectors; rank2 has production-reader binding coverage. | [Lightning family](#lightning-family-playback-2301); natural learning/acquisition remain **Unknown**. |
 | DAO 1–2 | DAO v1–v2 | **Original assets bound** for admitted SORC casts: invocation0, rising rocks, scene deformation and sound. Both ranks preserve actual-recipient division. | [DAO playback and limits](#dao-family-playback-2310). Natural training, hardware timing and human visual acceptance remain **Unknown**. |
-| APOLLO 1–2 | APOLLO v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns this family's original effect composition and playback. |
+| APOLLO 1–2 | APOLLO v1–v2 | **Original assets bound** for admitted SORC casts: invocation3, mouth and two flame sizes, selectors18/50. | [APOLLO playback](#apollo-family-playback-2312) covers controlled single/divided recipients and atomic Original/HD; natural training, hardware timing and human visual acceptance remain **Unknown**. |
 | NEPTUN 1–2 | NEPTUN v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns this family's original effect composition and playback. |
 | ATLAS 1–2 | ATLAS v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. Enemy HEAL rank selection can read an ATLAS operand as part of its original rank-probing behavior. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns this family's original effect composition and playback. |
 

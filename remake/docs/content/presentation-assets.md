@@ -1423,7 +1423,8 @@ Use its world, main scene and six opening inputs with
 `derived/issue2266/catalogs-v1/world.zh-CN.json`. Keep #2252 opening and #2255 Witch entry
 selected separately as above. The catalog adds only accepted class18 and spell29–32 names.
 This older promotion package used modern summon fallback. The
-[DAO successor](#dao-successor-2310) adds both DAO ranks; APOLLO/NEPTUN/ATLAS remain
+[DAO successor](#dao-successor-2310) adds both DAO ranks; the [APOLLO successor](#apollo-successor-2312)
+adds both APOLLO ranks. NEPTUN/ATLAS remain
 with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
 
 ```powershell
@@ -1594,6 +1595,35 @@ launchers; `verification-v1` retains checks and completed failures. Review publi
 is separate from the immutable #2307 content. The reader checks104 SPOIT definitions
 and702 equipment appearances over26 scenes. Native Original/HD, Reduced Flash/held
 speed and body-group fallback retain their [playback boundary](../godot/spell-presentation.md#absorb-reproduction-and-verification).
+
+### APOLLO successor #2312
+
+Complete `derived/issue2312/apollo-v1` extends accepted `derived/issue2310/dao-v2`.
+It contains178 files /378,106,698 bytes; only26 scene documents change. All inherited
+world, audio, actor, terrain, equipment and effect values remain equal. Preserve independent
+#2252 opening, #2255 Witch and #2266 catalogs. Each scene adds13 Original rasters and
+13 optional HD companions: three128×128 body poses, two16×16 mouth frames and four
+frames each of16×16 and32×32 flame particles. Existing77/116/118 audio is sufficient.
+
+The serial estimate was less than5MB additional data, complete output below500MiB and
+scratch/peak below2GiB. The one-scene pilot took0.35 seconds and added48,624 bytes;
+whole-package increase is1,264,224 bytes. Complexity is linear in frame pixels plus
+package bytes, holding one scene and the small raster bank. The published reader peaks
+below1GiB and native witnesses below1.3GiB. Producer scratch plus fallback/review outputs
+stay below2GiB. Replan if these bounds are exceeded; no full frame collection is used.
+The extracted shared invocation decoder reproduces existing DAO Original rasters unchanged.
+
+```powershell
+. ./local/private-inputs.ps1
+$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2310/dao-v2'
+uv run --with pillow python -m sf2tool.remake_retail_assets --root $library --base $base `
+  --mount $freshAbsolutePackage --family apollo-family --gfx-root $registeredGraphicsRoot
+```
+
+Use the registered graphics checkout `172662709b31cb296b55f51894754ce810c30f6c`.
+[Source, delivery and reproduction](../godot/spell-presentation.md#apollo-family-playback-2312)
+own palette/bank mapping, deterministic choices, published-input witnesses and Unknowns.
 
 ### DAO successor #2310
 

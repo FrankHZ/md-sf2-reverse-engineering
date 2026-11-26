@@ -571,7 +571,8 @@ destination learning, usable summon Magic and independent field/battle Continue.
 The existing transaction, growth, content and save owners remain authoritative. No new
 save version, chapter, parallel damage rule or full spell-animation project is included.
 [DAO1–2 original assets](../godot/spell-presentation.md#dao-family-playback-2310) now
-use the admitted SORC action and unchanged division rule. APOLLO/NEPTUN/ATLAS original
+use the admitted SORC action and unchanged division rule, as does
+[APOLLO1–2](../godot/spell-presentation.md#apollo-family-playback-2312). NEPTUN/ATLAS original
 animations remain with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
 
 ### Mechanism audit and selected design
@@ -645,7 +646,9 @@ natural higher-rank training, original natural summon dispatch and original audi
 timing. The original SORC witness used modern fallback. The separate
 [DAO presentation witness](../godot/spell-presentation.md#dao-reproduction-and-verification)
 covers both ranks and single/divided recipients through controlled ordinary input;
-APOLLO/NEPTUN/ATLAS effects remain with #2104.
+[APOLLO presentation](../godot/spell-presentation.md#apollo-family-playback-2312) covers
+selectors18/50, single/divided recipients and the original body/flame composition.
+NEPTUN/ATLAS effects remain with #2104.
 
 ### Reproduce the SORC consumers
 
