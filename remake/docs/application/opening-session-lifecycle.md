@@ -683,6 +683,22 @@ arrays did not match in GDScript; direct offline digest comparison proved the pi
 The observer now compares all sixteen words numerically before comparing RGBA pixels; no
 resource, palette expectation or production behavior was relaxed.
 
+After rebasing onto the accepted AQUA successor, `run-final-hd`, `run-final-original`,
+`run-final-missing` and `run-final-missing-art` passed from published-input witnesses with
+the original producer scratch path unavailable. The last case removes Map65 HD terrain
+and183/187 HD strips as well as storm banks; each absent variant selects Original while
+Map42 remains HD. A cold producer rebuild from the published #2252 input is byte-identical
+for every payload file; only the elapsed-time preparation receipt differs. No disposable
+save directory was created.
+
+The clean committed planner is run with `--scope engine`: the sole shared wiring edit
+registers this producer and changes no research extraction or gate execution semantics.
+Selected checks are engine-unit, adapter, private-admission, live-inspection and H4 comparison
+builds, plus public Ruff/design-contract/research-index checks. All pass locally; the engine
+result is3,383 passed and50 optional-private skips. No helper/producer tests were added, and
+no original-game normal/full profile is implied. PR required-check results and exact Git
+identities belong to the frozen independent-review handoff.
+
 Palette changes retire tinted textures while preserving the already validated immutable
 HD resource bank. Map changes/disposal still clear it. The initial implementation decoded
 all alternate banks again after every color change; the corrected same-witness run took

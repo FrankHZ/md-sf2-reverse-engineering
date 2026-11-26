@@ -97,6 +97,7 @@ func run() -> void:
                 var pixels: int = layer.first.get("selector",{}).get("pixels",0)
                 var wanted := 96 if expected_hd else 24
                 if mode == "missing" and pulse and not restoring: wanted = 24
+                if mode == "missing-art" and state.map == "map-65": wanted = 24
                 if pixels != wanted:
                     samples.append({"state":state,"wanted":wanted,"actual":pixels})
                     finish("Unexpected mounted terrain dimensions")
@@ -113,7 +114,7 @@ func run() -> void:
                     return
             for actor in draw.get("actors",[]):
                 if actor.visible and actor.sprite in [183,187]:
-                    if actor.resourceSelector.get("hd",false) != expected_hd:
+                    if actor.resourceSelector.get("hd",false) != (expected_hd and mode != "missing-art"):
                         finish("Effect did not select requested graphics mode")
                         return
                     proofs["effect-"+str(actor.sprite)] = actor.resourceSelector
@@ -125,7 +126,7 @@ func run() -> void:
                 failures.append("Both effects must actually draw")
             if not proofs.has("map-65-pulse") or not proofs.has("map-65-restore"):
                 failures.append("Missing pulse/restoration draw")
-            if not pixel_banks.is_empty() and expected_hd and mode != "missing" and pixel_proofs == 0:
+            if not pixel_banks.is_empty() and expected_hd and mode not in ["missing","missing-art"] and pixel_proofs == 0:
                 failures.append("No uploaded palette pixels were compared")
             finish("")
             return

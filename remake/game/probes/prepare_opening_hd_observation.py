@@ -18,6 +18,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--base", type=Path, required=True)
 parser.add_argument("--output", type=Path, required=True)
 parser.add_argument("--missing", action="store_true")
+parser.add_argument("--missing-art", action="store_true")
 args = parser.parse_args()
 output = private_output(args.output)
 if output.exists():
@@ -66,9 +67,17 @@ for number, sprite, camera in ((1, 183, {"x": 2, "y": 5}), (2, 187, {"x": 7, "y"
     sequence += [{"op": "scene-palette-fade", "banks": 15, "offsets": [-7], "period": 6}]
 sequence += [{"op": "close-text"}, {"op": "end-scene"}]
 programs["opening-sequence"]["instructions"] = sequence
-if args.missing:
+if args.missing or args.missing_art:
     for visual in world["presentation"]["maps"]:
         visual["scenePalette"].pop("hdBanks", None)
+if args.missing_art:
+    for visual in world["presentation"]["maps"]:
+        if visual["map"] == "map-65":
+            visual.pop("hdBlocks", None)
+            visual.pop("hdBlockContexts", None)
+    for sprite in world["presentation"]["sprites"]:
+        if sprite["sprite"] in (183, 187):
+            sprite.pop("hdDirections", None)
 write(output / "world.json", document)
 expected = []
 for visual in world["presentation"]["maps"]:

@@ -405,14 +405,16 @@ the same configured `uv run --locked --with pillow==11.3.0 python`, with `--base
 the published successor's `opening/` and `--output` a fresh ignored directory. It builds
 explicit scene-map/entity/palette/camera operations from the admitted inputs; it is not a
 replacement proof of natural four-script timing. `--missing` removes only optional palette
-banks to exercise the existing fallback. Select the witness's world, party, catalog and six
+banks to exercise the existing fallback. `--missing-art` also removes Map65 HD terrain and
+183/187 HD directions; the rest of the admitted HD resources remain independently selectable.
+Select the witness's world, party, catalog and six
 `opening-inputs` using the [controlled opening launch](presentation-assets.md#controlled-opening-scene-package-2250).
 Use the existing Debug adapter and `engine_opening_hd_observation.gd` with `--headless
 --audio-driver Dummy --fixed-fps 60`, the witness's `scene-1.json`, and explicit input settings.
 Confine saves to the authorized external disposable #2324 namespace; no saved journey is needed.
 
-`SF2_OPENING_HD_MODE` is `hd`, `original` or `missing`; settings `graphicsMode` is respectively
-`hd`, `original` or `hd`. Repeat the HD witness with `reducedFlash:true`. Set
+`SF2_OPENING_HD_MODE` is `hd`, `original`, `missing` or `missing-art`; settings `graphicsMode`
+is `original` only for that named case and otherwise `hd`. Repeat the HD witness with `reducedFlash:true`. Set
 `SF2_OPENING_OUTPUT` to a fresh JSON path. `SF2_OPENING_HD_SIZE=small` selects1600×900;
 default is1920×1080. `SF2_OPENING_HD_FULL=1` runs the unmodified published world through
 all four source scripts with the same controlled start, checking scene order and every
