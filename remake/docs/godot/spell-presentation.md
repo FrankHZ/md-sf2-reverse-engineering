@@ -1243,31 +1243,29 @@ ObjectDB shutdown warnings under #1716, which this slice does not repair.
 
 ### Supported historical AURA partition defect
 
-**Confirmed existing compatibility defect, not Unknown.** The unmodified #2273
-`review-v1/seeds/aura.json` is an accepted recipe10 Battle26 record with20 allies and15
-enemies and no retained allies. With complete buff-v1, Continue restores ordinary VICR
-Sarah control, but White Ring's item choice is disabled with `aura-source-slots`, field
-`initialization.sourceCombatants`. `aura-a` preserves this refusal using a disposable copy; the HP/status/slot values relevant to AURA match that source record.
+**Confirmed historical compatibility defect; corrected by accepted #2295.** The unmodified
+#2273 `review-v1/seeds/aura.json` is an accepted recipe10 Battle26 record with20 allies and15
+enemies and no retained allies. On the pre-fix base, complete buff-v1 restored ordinary VICR
+Sarah control, but disabled White Ring's item choice with `aura-source-slots`, field
+`initialization.sourceCombatants`. The retained `aura-a` receipt preserves this refusal using
+a disposable copy; the HP/status/slot values relevant to AURA match that source record.
 
-`Runtime/Persistence/BattleRestore.cs` intentionally restores the saved deployment
-partition using `WithDeployments`; that copy retains the package's45-entry Initialization
-source mapping while the saved battle contains35 deployments. `HealingTargetRules` then
-requires equal counts. The missing10 allies are correctly retained by the existing recipe
-upgrade, but their slot entries remain in this battle definition. This is a supported
-old-record/new-package combination and a reproducible rejected action, not evidence that
-the old save itself is invalid. The retained `aura-a` before/selection projections keep
-all actor data and both RNG seeds unchanged; the only event is entry to ActionChoice,
-with no Item commit, wear, HP/status write or result scene. Complete roster inputs allow this ticket's presentation
-acceptance without changing compatibility code.
+`BattleRestore.Build` restored the saved35-actor deployment partition using `WithDeployments`,
+whose copy formerly retained the package's45-entry Initialization source mapping.
+`HealingTargetRules` required equal counts. The other10 allies were correctly retained by the
+existing recipe upgrade, but their source-slot entries remained in the battle definition.
+This was a supported old-record/new-package combination, not an invalid old save. The retained
+before/selection projections keep all actor data and both RNG seeds unchanged; the only event
+is entry to ActionChoice, with no Item commit, wear, HP/status write or result scene.
+Complete-roster inputs supplied #2291's presentation acceptance without a compatibility edit.
 
-Follow-up scope: reconcile the historical battle partition and source-slot mapping in the
-owning restore/definition mechanism, preserve the retained party and source ordering,
-then exercise AURA on this exact old record plus its direct save/restore round trip.
-Reproduce the minimal refusal with `-Case aura -Seed old-aura.json` using the same Boot.
-[#2295](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2295) owns the queued
-compatibility correction. No blanket validator weakening, new save format, campaign
-replay or compatibility repair is included in #2291.
-
+The shared partition correction now preserves only mappings for actors in the restored battle,
+without renumbering source slots or weakening the consumer validator. Current behavior,
+old/current-record AURA acceptance, resave/cold Continue evidence and reproduction are owned by
+[battle save and Continue](../application/battle-save-and-continue.md#historical-battle-source-slot-partition).
+The original failed observation remains historical evidence. Reproduce that refusal only on the
+named pre-fix base with `-Case aura -Seed old-aura.json`; it is no longer a current defect or
+queued follow-up. No compatibility implementation is added by this presentation slice.
 
 ## Flame family playback #2293
 
