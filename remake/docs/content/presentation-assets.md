@@ -1554,3 +1554,26 @@ The serial pilot took0.37s, peaked at76,832,768 bytes and produced a6,580,921-by
 retaining all older fields/resources. Complete publication remains below500MiB; final
 published reader peak is about0.96GB and representative native peak about1.33GB, within
 the2GiB allowance. No new capture, ROM acquisition or asset platform is used.
+
+### Wind successor #2306
+
+`derived/issue2306/blast-v1` extends complete #2301 bolt-v1:177 files /374,345,380 bytes.
+All26 scenes contain23 Original/HD BLAST resources. Direct decoded comparison preserves
+every previous field/resource; all other files, including audio114, are byte-identical.
+Independent #2252 opening, #2255 Witch and #2266 catalog remain selected.
+
+```powershell
+. ./local/private-inputs.ps1
+$derived = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived'
+uv run --with pillow python -m sf2tool.remake_retail_assets `
+  --root (Join-Path $derived 'issue2001/retail-v1') `
+  --base (Join-Path $derived 'issue2301/bolt-v1') `
+  --mount $freshAbsolutePackage --family blast-family --gfx-root $pinnedGraphicsCheckout
+```
+
+The fixed graphics checkout remains172662709b31cb296b55f51894754ce810c30f6c.
+The existing publisher preserves the dependency closure and copies scenes before mutation.
+One-scene pilot is6,613,630 bytes,0.29s and76,963,840-byte peak. Publication is linear,
+serial and below500MiB; reader/native peaks stay within2GiB. Omitting graphics source adds
+no new HD claims. [Wind reproduction](../godot/spell-presentation.md#wind-reproduction-and-acceptance)
+uses published inputs without producer scratch and records failures and acceptance limits.

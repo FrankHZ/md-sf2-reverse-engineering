@@ -132,6 +132,12 @@ def selected_groups(
         "blaze-dragon": ["head", "body", "tail-0", "tail-1"],
         "bolt": [f"frame-{index}" for index in range(30)],
         "freeze": [f"frame-{index}" for index in range(14)],
+        "blast": [
+            "large-diagonal",
+            "large-horizontal",
+            *[f"cyclone-{i}" for i in range(3)],
+            *[f"dust-{i}" for i in range(3)],
+        ],
         "blast-1": [f"frame-{index}" for index in range(15)],
         "detox": [f"frame-{index}" for index in range(11)],
         "debuff-1": [f"frame-{index}" for index in range(3)],

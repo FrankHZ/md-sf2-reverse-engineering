@@ -23,8 +23,8 @@ def mount_attack_spells(
         mount_bolt(directory, scratch, package, scenes, scale)
     if "freeze-family" in families:
         mount_freeze(directory, scratch, package, scenes, scale)
-    if "blast-1" in families:
-        mount_blast(directory, scratch, package, scenes)
+    if families & {"blast-1", "blast-family"}:
+        mount_blast(directory, scratch, package, scenes, scale, "blast-family" in families)
     if not families & {"blaze", "blaze-2", "flame-family"}:
         return
     index = read_json(directory / "index.json")
@@ -176,7 +176,7 @@ def mount_freeze(directory, scratch, package, scenes, scale):
         path.write_text(json.dumps(scene, separators=(",", ":")), encoding="utf-8")
 
 
-def mount_blast(directory, scratch, package, scenes):
+def mount_blast(directory, scratch, package, scenes, scale=None, family=False):
     from sf2tool.remake_private_package import installed_png, prepared_spell_tiles, read_json
 
     index = read_json(directory / "index.json")
@@ -209,17 +209,45 @@ def mount_blast(directory, scratch, package, scenes):
         (191, 4, 4),
         (207, 2, 3),
     ]
-    rasters = {}
-    for slot, (first, columns, rows) in enumerate(sprites):
-        leaf = f"blast-1-{slot}.png"
-        layout = [first + x * rows + y for y in range(rows) for x in range(columns)]
+    keys = [f"blast-1/frame-{i}" for i in range(15)]
+    if family:
+        # Even variations grow to the second bank; v3/v4 stack two 4x4
+        # cyclone parts, then attach three 2x2 dust frames (source tile offsets).
+        sprites += [(11, 3, 4), (35, 4, 2)]
+        sprites += [(first, 4, 8) for first in (43, 75, 107)]
+        sprites += [(first, 2, 2) for first in (139, 143, 147)]
+        keys += ["blast/large-diagonal", "blast/large-horizontal"]
+        keys += [f"blast/cyclone-{i}" for i in range(3)]
+        keys += [f"blast/dust-{i}" for i in range(3)]
+    rasters, variants = {}, {}
+    for key, (first, columns, rows) in zip(keys, sprites, strict=True):
+        leaf = key.replace("/", "-") + ".png"
+        # The cyclone is two consecutive 4x4 VDP sprites, not one 4x8 tile grid.
+        part_rows = 4 if rows == 8 else rows
+        layout = [
+            first + part * columns * part_rows + x * part_rows + y
+            for part in range(rows // part_rows)
+            for y in range(part_rows)
+            for x in range(columns)
+        ]
         write_png_rgba(
             scratch / leaf,
             columns * 8,
             rows * 8,
             compose(tiles, palette, columns * 8, rows * 8, layout),
         )
-        rasters[f"blast-1/frame-{slot}"] = installed_png(scratch, leaf)
+        rasters[key] = installed_png(scratch, leaf)
+        if scale is not None:
+            from PIL import Image
+
+            from sf2tool.remake_hd_actors import encode
+            from sf2tool.remake_hd_battle_rasters import _check_masks, derive_frame
+
+            with Image.open(scratch / leaf) as original:
+                hd, _ = derive_frame(original, 1, scale)
+                with hd:
+                    _check_masks(original, hd, key)
+                    variants[key] = encode(hd)
     for battle, relative in scenes.items():
         path = package / relative
         scene = read_json(path)
@@ -228,6 +256,8 @@ def mount_blast(directory, scratch, package, scenes):
         for key, raster in rasters.items():
             if scene["rasters"].setdefault(key, raster) != raster:
                 raise ValueError(f"conflicting prepared BLAST frame {key}")
+        for key, raster in variants.items():
+            scene.setdefault("hdRasters", {}).setdefault(key, raster)
         path.write_text(json.dumps(scene, separators=(",", ":")), encoding="utf-8")
 
 

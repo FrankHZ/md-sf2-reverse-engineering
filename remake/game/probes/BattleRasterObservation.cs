@@ -179,7 +179,7 @@ public partial class BattleRasterObservation : Node
         bool hd = false;
         BattleSceneRaster Frame(int _) => new(hd ? hdTexture : originalTexture, new(24, 16), hd);
         var fire = new BlazeMeteorEffect(Frame, false, true, 2);
-        var wind = new BlastOneEffect(Frame, true, true);
+        var wind = new BlastEffect(Frame, true, true);
         foreach (Func<double, object> observe in new Func<double, object>[] { fire.Observe, wind.Observe })
         {
             hd = false;

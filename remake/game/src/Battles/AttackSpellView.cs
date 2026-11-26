@@ -15,7 +15,7 @@ internal sealed partial class AttackSpellView : Node2D
     private Func<int, BattleSceneRaster>? _breath;
     private Func<int, BattleSceneRaster>? _blaze;
     private BlazeMeteorEffect? _blazeMeteors;
-    private BlastOneEffect? _blast;
+    private BlastEffect? _blast;
     private BoltEffect? _bolt;
     private int _boltCue = -1;
     private FreezeEffect? _freeze;
@@ -48,7 +48,7 @@ internal sealed partial class AttackSpellView : Node2D
         else if (scene.AttackAnimationSelector is 2 or 34 or 66 or 98)
             _freeze = new(frames, targetIsAlly, reducedFlash, (scene.AttackAnimationSelector.Value >> 5) + 1);
         else if (scene.AttackSpell!.Spell.Value == "blast")
-            _blast = new(frames, targetIsAlly, reducedFlash);
+            _blast = new(frames, targetIsAlly, reducedFlash, (scene.AttackAnimationSelector!.Value >> 5) + 1);
         else if (scene.AttackAnimationSelector is 33 or 65 or 97)
             _blazeMeteors = new(frames, targetIsAlly, reducedFlash, (scene.AttackAnimationSelector.Value >> 5) + 1);
         else
@@ -61,7 +61,7 @@ internal sealed partial class AttackSpellView : Node2D
         Show();
     }
 
-    internal double PreparedDuration => _bolt is not null ? BoltEffect.Duration : _freeze is not null ? FreezeEffect.Duration : _blast is not null ? BlastOneEffect.Duration : _blazeMeteors is null ? BlazeDuration : _blazeMeteors.Duration;
+    internal double PreparedDuration => _bolt is not null ? BoltEffect.Duration : _freeze is not null ? FreezeEffect.Duration : _blast is not null ? BlastEffect.Duration : _blazeMeteors is null ? BlazeDuration : _blazeMeteors.Duration;
 
     internal void AdvancePrepared(double age)
     {

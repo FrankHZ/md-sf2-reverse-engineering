@@ -408,7 +408,7 @@ DETOX 4 admits [area treatment in Battle and one recipient in Field](domain/deto
 [Current battle spells](application/church-promotion-design.md#current-battle-spells) ·
 [High-rank observation](development-and-verification.md#high-rank-elemental-magic-observation)
 Battles04–07 can mount the prepared BLAZE1 flame with the actual caster, target and scene art.
-Prepared Battles04–07 bind BLAZE2 and BLAST1 original assets. Controlled Sarah BLAST1 preserves the scene, cues, settlement and next control. [BLAST1 evidence and limits](godot/spell-presentation.md#prepared-blast1-presentation). [Pre-voyage implementation scope](godot/spell-presentation.md#pre-voyage-dispatch) · [BLAZE1 native observations](godot/spell-presentation.md#prepared-blaze1-presentation)
+Prepared BLAZE2 retains its accepted scope. The [wind successor](godot/spell-presentation.md#wind-family-playback-2306) binds BLAST1–4 across all26 admitted scenes, with controlled Sarah ranks and Dark Bishop BLAST3. The existing scene, cues, settlement and next control remain shared. [BLAST1 evidence and limits](godot/spell-presentation.md#prepared-blast1-presentation). [Pre-voyage implementation scope](godot/spell-presentation.md#pre-voyage-dispatch) · [BLAZE1 native observations](godot/spell-presentation.md#prepared-blaze1-presentation)
 The [flame-family successor](godot/spell-presentation.md#flame-family-playback-2293) binds
 BLAZE1–4/KATON1–3 and admitted equipment BLAZE2/3 across26 scene mounts. Controlled native
 higher ranks, KATON aliases, Item and enemy-side playback retain cost/wear, ordered damage,

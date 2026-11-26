@@ -159,7 +159,7 @@ internal sealed partial class BattleSceneView : Control
                 97 => BlazeMeteorEffect.DragonResources,
                 7 or 39 or 71 or 103 => BoltEffect.Resources,
                 2 or 34 or 66 or 98 => FreezeEffect.Resources,
-                5 when state.AttackSpell?.Spell.Value == "blast" => BlastOneEffect.Resources,
+                5 or 37 or 69 or 101 => BlastEffect.ResourcesFor((state.AttackAnimationSelector.Value >> 5) + 1),
                 _ => null,
             };
             _preparedAttackSpell = preparedResources is not null &&
