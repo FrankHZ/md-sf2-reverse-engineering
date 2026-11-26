@@ -1496,3 +1496,35 @@ neutral/Fire rules and equipment bindings. The [spell owner](../godot/spell-pres
 owns ordinary playback and retained failed runs. Native startup measured about1.30GB peak working
 set and direct reader about0.96GB, below the2GiB plan. These are observed host peaks, not a
 portable performance promise. Public files contain no generated graphics or private saves.
+
+### FREEZE successor #2298
+
+`derived/issue2298/freeze-v1` extends complete #2293 flame-v1 using prepared #2001 tileset11
+and sound120. It contains176 files/370,341,646 bytes (636,414 bytes above the predecessor).
+All26 scenes gain14 Original/4x HD rasters; world gains one prepared120 cue and one94,388-byte
+PCM file is added. Every old scene field/raster, audio row and all other files are preserved.
+Opening #2252, Witch #2255 and catalog #2266 remain independent. Select world, main scene
+and all six opening inputs from this successor together.
+
+```powershell
+. ./local/private-inputs.ps1
+$derived = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived'
+uv run --with pillow python -m sf2tool.remake_retail_assets `
+  --root (Join-Path $derived 'issue2001/retail-v1') `
+  --base (Join-Path $derived 'issue2293/flame-v1') `
+  --mount $freshAbsolutePackage --family freeze-family --gfx-root $pinnedGraphicsCheckout
+```
+
+The fixed clean graphics checkout remains172662709b31cb296b55f51894754ce810c30f6c.
+Publish with the existing `sf2tool.remake_private_package` world/scene/entry/opening-inputs
+closure, then move producer scratch aside before using the published selection. Missing
+`--gfx-root` retains old HD but creates no new FREEZE HD claims. A missing HD member falls
+back to all14 Original frames; missing Original groups retain the existing placeholder.
+
+The Battle26 pilot is6,460,629 bytes/0.21s; complete publication is linear/serial, below500MiB.
+One successor plus staging and retained small pilot fits the2GiB scratch plan. Production
+reader peak was about0.96GB. The representative HD native process plus console launcher peaked at1,300,553,728 bytes;
+final receipts are retained in review-v1. These are host measurements, not portable bounds.
+The reader admits26 scenes and all seven restored records; ordinary playback is bounded
+separately by the [spell owner](../godot/spell-presentation.md#freeze-reproduction-and-limits).
+No original media, private saves or machine paths enter Git.

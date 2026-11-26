@@ -18,6 +18,8 @@ def mount_attack_spells(
 ) -> None:
     from sf2tool.remake_private_package import installed_png, prepared_spell_tiles, read_json
 
+    if "freeze-family" in families:
+        mount_freeze(directory, scratch, package, scenes, scale)
     if "blast-1" in families:
         mount_blast(directory, scratch, package, scenes)
     if not families & {"blaze", "blaze-2", "flame-family"}:
@@ -110,6 +112,63 @@ def mount_attack_spells(
                 raise ValueError(f"conflicting prepared BLAZE frame {key}")
         for key, raster in variants.items():
             # Keep accepted variants when extending a complete predecessor.
+            scene.setdefault("hdRasters", {}).setdefault(key, raster)
+        path.write_text(json.dumps(scene, separators=(",", ":")), encoding="utf-8")
+
+
+def mount_freeze(directory, scratch, package, scenes, scale):
+    from sf2tool.remake_private_package import installed_png, prepared_spell_tiles, read_json
+
+    index = read_json(directory / "index.json")
+    expected = dict(family="spell", id=11, tiles="spell-11.4bpp", palette="0e880eca0eee")
+    if (
+        index["rom"] != ACCEPTED_ROM_SHA256
+        or index["upstream"] != ACCEPTED_UPSTREAM_COMMIT
+        or [r for r in index["records"] if r.get("family") == "spell" and r["id"] == 11]
+        != [expected]
+    ):
+        raise ValueError("registered FREEZE effects identity differs")
+    tiles, palette = prepared_spell_tiles(directory, 11)
+    if len(tiles) != 2752:
+        raise ValueError("registered FREEZE tile stream length differs")
+    # table_1C18A/table_1C19A: six sizes, two brightness banks. v4 adds tiles80/83.
+    sprites = [
+        (first + bank, size, size)
+        for bank in (0, 40)
+        for first, size in ((0, 1), (1, 1), (2, 2), (6, 3), (15, 3), (24, 4))
+    ]
+    sprites += [(80, 1, 3), (83, 1, 3)]
+    rasters, variants = {}, {}
+    for slot, (first, columns, rows) in enumerate(sprites):
+        leaf, key = f"freeze-{slot}.png", f"freeze/frame-{slot}"
+        layout = [first + x * rows + y for y in range(rows) for x in range(columns)]
+        write_png_rgba(
+            scratch / leaf,
+            columns * 8,
+            rows * 8,
+            compose(tiles, palette, columns * 8, rows * 8, layout),
+        )
+        rasters[key] = installed_png(scratch, leaf)
+        if scale is not None:
+            from PIL import Image
+
+            from sf2tool.remake_hd_actors import encode
+            from sf2tool.remake_hd_battle_rasters import _check_masks, derive_frame
+
+            with Image.open(scratch / leaf) as original:
+                hd, _ = derive_frame(original, 1, scale)
+                with hd:
+                    _check_masks(original, hd, key)
+                    variants[key] = encode(hd)
+    for battle, relative in scenes.items():
+        path = package / relative
+        scene = read_json(path)
+        if scene["encounter"] != f"battle-{battle}":
+            raise ValueError("FREEZE encounter differs")
+        for key, raster in rasters.items():
+            if scene["rasters"].setdefault(key, raster) != raster:
+                raise ValueError(f"conflicting prepared FREEZE frame {key}")
+        for key, raster in variants.items():
             scene.setdefault("hdRasters", {}).setdefault(key, raster)
         path.write_text(json.dumps(scene, separators=(",", ":")), encoding="utf-8")
 

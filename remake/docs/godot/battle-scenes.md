@@ -30,6 +30,14 @@ admitted scene mounts to v3/v4, KATON aliases and equipment Use. v3 has fourteen
 meteors; v4 has four and an eight-part dragon. Actual action selectors preserve Item gestures
 and NONE consumables. Application still owns payment, ordered results, rewards and return.
 
+### Prepared FREEZE presentation
+
+The [FREEZE family](spell-presentation.md#freeze-family-playback-2298) binds original1–4
+crystal growth and v4 glints in all26 successor scenes. Controlled learned casts, Dark Madam
+FREEZE2 and Freeze Staff Item3 preserve the existing scene and ordered result continuation.
+Blizzard remains source NONE. Original art and composition are distinct from the finite
+modern clock, smooth fading and audio cadence.
+
 ### Prepared DETOX presentation
 
 The [DETOX scene](spell-presentation.md#prepared-detox-presentation) uses the existing caster pose,

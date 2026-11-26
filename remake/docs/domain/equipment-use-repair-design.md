@@ -1270,3 +1270,11 @@ The [historical AURA partition defect](../godot/spell-presentation.md#supported-
 is a confirmed supported-old-save/current-package action refusal. The complete roster
 witness does not resolve it; restore/source-slot reconciliation is queued separately in
 [#2295](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2295).
+
+### Freeze Staff presentation
+
+The [FREEZE successor](../godot/spell-presentation.md#freeze-family-playback-2298) binds
+Freeze Staff98 Use to original FREEZE3 art while retaining Item animation21, zero MP,
+silence immunity, one wear draw and ordered damage/death/reward return. A controlled
+silenced WIZ Kazin witness covers this shared consumer; natural acquisition remains Unknown.
+Blizzard17 remains a consumable NONE presentation, not the table's FREEZE3 selector.

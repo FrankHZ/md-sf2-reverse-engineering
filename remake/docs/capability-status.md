@@ -398,7 +398,8 @@ from recruiting Kazin, importing another battle or connecting the entire Battle0
 The [spell coverage inventory](godot/spell-presentation.md#coverage-by-family-and-rank) tracks
 admitted, authored-only and unavailable ranks, with separate asset and observation boundaries.
 Battle26 exercises learned player BOLT 1 and HEAL 4. Controlled WIZ Tyrin casts BLAZE 4,
-FREEZE 3–4 and BOLT 3–4 through ordinary Magic with the shared elemental placeholders.
+FREEZE 3–4 and BOLT 3–4 through ordinary Magic. BOLT3–4 retain the shared elemental
+placeholders; current BLAZE/FREEZE resource bindings are described below.
 AURA 2–4 have [controlled ordinary casting and cold Continue](domain/gameplay-rules.md#private-learned-aura-ranks).
 DETOX 4 admits [area treatment in Battle and one recipient in Field](domain/detox-ranks-design.md#detox-4-area-and-field-admission).
 [Current battle spells](application/church-promotion-design.md#current-battle-spells) ·
@@ -410,6 +411,11 @@ BLAZE1–4/KATON1–3 and admitted equipment BLAZE2/3 across26 scene mounts. Con
 higher ranks, KATON aliases, Item and enemy-side playback retain cost/wear, ordered damage,
 death/rewards and usable return. Shining Ball remains NONE; source steering/art and modern
 timing are documented separately. Static binding coverage does not imply native or natural reach.
+The [FREEZE successor](godot/spell-presentation.md#freeze-family-playback-2298) binds
+FREEZE1–4 and Freeze Staff3 across26 scene mounts, retaining all flame/BUFF and earlier resources.
+Controlled Tyrin, Dark Madam and Item playback cover distinct variants, both sides, HD/group
+fallback and relevant settings; Blizzard remains NONE. Source art/composition and modern
+motion/audio timing have separate evidence boundaries.
 Natural pre-departure levels/opportunities and original presentation timing remain Unknown. The
 older completed private comparison failures remain with their evidence owners.
 

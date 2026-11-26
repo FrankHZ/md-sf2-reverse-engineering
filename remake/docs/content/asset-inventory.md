@@ -1373,3 +1373,15 @@ All26 current scene bindings pass the production reader. The complete175-file cl
 spell families, audio and opening inputs compare unchanged. Native bounded witnesses verify
 actual textures, draw extents, actor frames and return separately from these static checks.
 Natural acquisition, every encounter's playback and exact original timing remain Unknown.
+
+### FREEZE family #2298
+
+The [complete successor](presentation-assets.md#freeze-successor-2298) consumes prepared
+spell tileset11 (2,752 bytes) with palette replacements0e88/0eca/0eee. `freeze/frame-0..13`
+contains six growth shapes, their second brightness bank and two v4 glints. All14 form one
+atomic Original/HD group, with4x HD at unchanged logical extents. Source tables and actual
+side/rank composition are in the [FREEZE owner](../godot/spell-presentation.md#freeze-source-composition).
+Prepared120 is23,586 stereo samples at44,100Hz,94,388 bytes; the existing PSG tone3 replacement
+policy plays it with the modern cadence. All26 scene mounts retain previous groups, actors,
+weapons, maps and audio. Resource admission, native texture/input witnesses and natural reach
+are distinct claims; exact original timing and human aesthetics remain Unknown.

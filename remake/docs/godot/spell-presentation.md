@@ -64,7 +64,7 @@ of recipients and actual reaction results follow the committed action.
 
 ## Graphics variants
 
-Prepared BLAZE1–4, BLAST1, breath and wave rasters can select a complete optional HD
+Prepared BLAZE1–4, FREEZE1–4, BLAST1, breath and wave rasters can select a complete optional HD
 frame group from the battle scene. The light fairy uses a single group for body, wings and
 dust. Partial groups use the complete Original art. Effect positions, mirroring, opacity
 and Reduced Flash read the existing playback state. Higher density keeps the Original
@@ -105,8 +105,8 @@ update controls subsequent movement, mirroring and dust. [Enemy family evidence]
 | BLAZE 2 | BLAZE v2 | **Original assets bound** across the 26 admitted scene mounts in the flame successor, including Black Ring/Heat Axe/Mage Staff consumers. Controlled learned Battle04 and Item Battle26 witnesses use ten small meteors. | [Flame family playback](#flame-family-playback-2293); natural reach remains encounter-owned. |
 | BLAZE 3 | BLAZE v3 | **Original assets bound** across admitted scenes: large flame and fourteen large meteors. Controlled Battle26 WIZ Kazin, Wizard enemy and Atlas Axe Use cover both factions and Item. | [Flame family playback](#flame-family-playback-2293). No new acquisition or encounter admission. |
 | BLAZE 4 | BLAZE v4 | **Original assets bound**: large flame, four large meteors and eight-part flame dragon. Controlled Battle26 WIZ casts hit one opponent. | [Flame family playback](#flame-family-playback-2293); modern clock and floating-point trajectory are distinct from original timing. |
-| FREEZE 1–2 | FREEZE v1–v2 | **Placeholder** on admitted learned/AI attack paths. Current bindings use ice shapes. Private caster reach and ordinary casts are bounded by each encounter's admitted books. | [#2104] later ice effects. Coordinate with [#2016] player ranks and BREZAD/Freeze Staff only where the original caller shares the selector. |
-| FREEZE 3–4 | FREEZE v3–v4 | **Placeholder** on learned private Magic. Both reach three cells. Rank 3 hits within radius 1 and rank 4 hits one opponent. Blizzard's BREZAD1 and Freeze Staff Use share the original v3 selector. | [#2104] ice playback; equipment Use admission is accepted under [#2268](../domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268). [Battle26 witness](../development-and-verification.md#high-rank-elemental-magic-observation) |
+| FREEZE 1–2 | FREEZE v1–v2 | **Original assets bound** in all26 freeze-successor scenes. Controlled WIZ Tyrin casts cover both ranks; Battle19 Dark Madam covers enemy FREEZE2, with source-side origins and opposite rotation. | [FREEZE family](#freeze-family-playback-2298), including modern clock and natural-reach limits. |
+| FREEZE 3–4 | FREEZE v3–v4 | **Original assets bound** through admitted learned casts; Freeze Staff Item uses v3. Controlled WIZ Tyrin covers area v3 and single-target v4 with its extra glint. Blizzard consumable remains NONE despite its table row. | [FREEZE family](#freeze-family-playback-2298). No new equipment acquisition or encounter admission. |
 | BOLT 1–2 | BOLT v1–v2 | **Placeholder**. Bowie BOLT1 in Battle26 and Taros Sword BOLT2 enemy Use in Battle18 have actual private combat witnesses. The lightning presenter is primitive. Taros's item-origin attack uses zero MP. Its class mask prevents ordinary player Use. | [#2104] later lightning effects. Keep actual cast versus sword origin, recipient order and payment. [Bowie witness](../application/church-promotion-design.md#current-battle-spells) · [Taros witness](../application/taros-caravan.md) |
 | BOLT 3–4 | BOLT v3–v4 | **Placeholder** on learned private Magic. Both reach three cells. Rank 3 hits within radius 2 and rank 4 hits one opponent. RAIJIN2/3 have independent neutral rules and share the original selectors. THUNDR1 uses v3 in the source table. | [#2104] lightning playback. [Battle26 witness](../development-and-verification.md#high-rank-elemental-magic-observation) |
 | BLAST 1 | BLAST v1 | **Original assets bound** in the prepared Battles04–07 mount. Controlled Sarah PRST level 10 casts on one adjacent enemy with current actors and backdrop. | [Prepared BLAST1](#prepared-blast1-presentation) owns the tileset-15 fragments, slashes, cues and observations. |
@@ -169,7 +169,7 @@ foreground visual acceptance remain **Unknown** where no named witness covers th
   the first DEBUFF consumer. The [DEBUFF family](#debuff-family-playback-2280) extends it to
   admitted SLOW/MUDDLE/SLEEP and two equipment callers. The [BUFF family](#buff-family-playback-2282) has its own no-tile mechanism and consumer acceptance. [#1456] governs foreground acceptance and [#1616] the wider design review.
 - **P3 for current later content.** [#2104] groups the remaining elemental variants and shared
-  RAIJIN art, then any additional support callers as admitted. The [flame family](#flame-family-playback-2293) covers admitted KATON. Private allied AURA2–4
+  RAIJIN art, then any additional support callers as admitted. The [flame family](#flame-family-playback-2293) covers admitted KATON; the [FREEZE family](#freeze-family-playback-2298) covers admitted ice ranks and Freeze Staff. Private allied AURA2–4
   has [controlled ordinary coverage](../domain/gameplay-rules.md#private-learned-aura-ranks).
   [#2016], [#1967] and [#1926] own missing gameplay and item admission. Keep item gestures where
   the original selector path calls for them. Schedule equipment effect reuse at its first legal
@@ -1399,3 +1399,136 @@ three direct research-public checks (Ruff, design-contracts and research-index),
 unclassified paths. The engine behavior result above remains valid across the settings-only
 accepted-main advance; the rebased adapter and both selected tool builds pass, as do the
 three public checks. No legacy aggregate, H3 or full research suite is selected or claimed.
+
+## FREEZE family playback #2298
+
+**Standard scope.** Extend admitted FREEZE1–4 learned/enemy casts and Freeze Staff
+FREEZE3 through the existing action selector, AttackSpellView and continuation. Blizzard
+consumable Use retains NONE. No gameplay, campaign, save or lifecycle expansion.
+
+Owned paths: `remake/game/src/Battles/{AttackSpellView.cs,BattleSceneView.cs,
+BattleSceneView.Rasters.cs,FreezeEffect.cs}`;
+`remake/src/Sf2.Remake.Content/Scenarios/PrivateAttackSpellBindings.cs`;
+`src/sf2tool/{remake_attack_spell_mount.py,remake_private_package.py,
+remake_retail_assets.py,remake_hd_battle_rasters.py}`;
+`remake/game/probes/engine_freeze_family_observation.gd`;
+`remake/game/src/Audio/SessionAudio.cs` for command120's existing voice-slot mapping; this owner and the bounded
+FREEZE entries in battle-scenes, equipment-use-repair-design, presentation-assets and
+asset-inventory. Existing engine assertions already cover Ice equipment wear/payment;
+only actual engine behavior changes warrant additional unit assertions. Capability-status
+contains only the released FREEZE capability entry. No second scene, registry or result authority.
+
+**Plan and budget.** Start with prepared #2001 tileset11 and complete #2293 flame-v1
+(175 files,369,705,232 bytes), preserving old resources. Pilot Battle26 Original/HD
+composition before one complete immutable successor below500MiB. Allow staging plus output
+within2GiB scratch/peak memory. Linear serial processing; no new ROM acquisition, API/model
+processing or emulator capture. Production readers admit every scene; bounded native input
+covers distinct variants, Item, enemy side, NONE and representative HD/group fallback,
+Reduced Flash and1.5x. Preserve failures; stop/replan if measured budgets exceed limits.
+Published-input reproduction must work after producer scratch is moved aside. Exact hardware
+motion/audio timing, natural reach and human aesthetics are separate Unknown boundaries.
+
+The representative Battle26 pilot adds14 Original and14 HD rasters, preserves every old
+field/resource and measures6,460,629 bytes/0.21s, below the existing8MiB scene reader limit.
+
+### FREEZE source composition
+
+**Confirmed source.** Pinned `c834c652b6862bc5679fd7f69a38a7093206efc6`
+[`getspellanimation.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/getspellanimation.asm)
+selects FREEZE values2/34/66/98 for learned ranks1–4 and66 for Freeze Staff98 Use.
+The adapter's selector excludes the separately projected enemy-side bit128. Consumable
+Blizzard17 keeps NONE, not its BREZAD table's FREEZE-v3 value. Item keeps its gesture,
+zero MP, silence immunity and one selected-copy wear/consumption authority.
+
+[`animation/freeze.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/freeze.asm)
+(`0x1A654..0x1A73A`, `table_1A6DA`) loads tileset11 with cast77 and flash color0xE22.
+The four initial radii are0x1000/1600/1C00/2200 and growth increments0xA0/C0/E0/100.
+Unmirrored entry is VDP X368 plus0..7, Y140 plus0..39, heading158, turn-1 then-6,
+orbit X200. Mirrored entry uses X128, Y156, heading226, turn+1 then+6, orbit X312.
+Subtract128 for local canvas coordinates. Both sides keep the same unflipped crystal art.
+[`graphics_1.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/graphics/graphics_1.asm)
+`sub_179C`/`sub_1812` and
+[`data/tech/spellanimations.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/tech/spellanimations.asm)
+resolve the `(cos,-sin)` axes and quarter-height orbit.
+
+[`update/freeze.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/freeze.asm)
+(`0x1BE9E..0x1C248`) uses `table_1C18A` initial tiles0/1/2/6 and
+`table_1C19A` transitions at ages8/13/18/23/28/34/40. Zero-based tiles0/1/2/6/15/24
+have sizes8/8/16/24/24/32 square, with the second brightness bank at+40. v4 adds
+8x24 glints at tiles80/83 in a48-square window at local(56,72)/(160,88).
+Particles chain at age4, enter the expanding ascending orbit at28 and retire at46.
+The source loops until the scene-script stop, flickers sprites, changes palette entries,
+and repeats sound120 after randomized10..23-tick delays.
+[`sounddriver.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/sound/sounddriver.asm)
+`sfx_38` has one active type1 pointer, slot8 (`byte_1EBE`), hence PSG tone3.
+
+**Modern presentation.** FreezeEffect plays16 deterministically spaced crystals over96/60s,
+with source growth tables, side origins, turn/radius parameters and v4 glints. Floating-point
+trigonometry and fixed local spreads replace original integer rounding and random choices.
+It does not consume session RNG. Smooth fades replace alternating sprite hiding and global
+palette flashes. Reduced Flash keeps crystal growth but uses one brightness bank and reduced
+glint intensity. The prepared120 clip uses a0.3s replacement cadence after cast77; these are
+source media and voice ownership, not hardware-exact audio timing or palette behavior.
+The existing scene owns actor/weapon/background composition and waits for pose plus effect
+completion, then ordered damage, deaths, rewards and next control. No second lifecycle exists.
+
+### FREEZE reproduction and limits
+
+Select `derived/issue2298/freeze-v1` for world/main scene/six opening inputs. Keep #2252
+opening, #2255 Witch/entry catalog and #2266 world catalog independent. The published
+`derived/issue2298/review-v1` contains controlled records, the production reader, launchers,
+closure comparison and receipts. Seeds reuse #2293 recipe11; WIZ Tyrin has an explicit
+source-compatible four-family book and controlled level40. Freeze Staff uses silenced WIZ
+Kazin at0 MP. The enemy record uses production Battle19 deployments and the original
+Dark Madam FREEZE2 book, with controlled active flag, positions, orders, queue and seeds.
+These are legal restored inputs, not proof of natural training, acquisition or arrival.
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2298/review-v1'
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case freeze4 `
+  -Sample freeze4-review -SaveRoot $freshExternalSaveRoot -Graphics hd
+# Cases: freeze1, freeze2, freeze3, freeze4, staff, none, enemy.
+# freeze4 -Graphics hd -Reduced -Fast; freeze4 -Graphics hd -Variant incomplete.
+```
+
+Build the locked Debug adapter first, using configured absolute SDK/editor and protected
+CLI home. Each case uses its own disposable namespace and worktree-local runtime profile.
+Require receipt `passed:true`, exit0 and no script/adapter errors together. Production restore
+precedes native launch. No screenshots, frame dumps, grinding or chapter replay are involved.
+
+**Confirmed in the remake.** The production reader admits all26 scenes,104 FREEZE spell
+bindings and26 Freeze Staff bindings, plus all seven controlled restores. Native witnesses
+cover the four distinct variants, enemy-side2 and Item3, with actual mounted textures,
+16 crystal slots, v4 glint, retained scene actors/weapons/scenery and early-Confirm token
+protection. Two-target cases include lethal and surviving recipients. Single payment/wear,
+ordered results and usable next action menu remain intact. Blizzard consumes once and draws
+no FREEZE despite the table alias. HD/partial-group fallback/Reduced Flash/1.5x are mechanism
+representatives, not every scene/rank/character permutation. Producer scratch is unavailable
+during final published-input observations and reader reproduction.
+
+**Retained failures.** Initial documentation append used the host's non-UTF8 default and
+failed before writing; corrected commands use explicit UTF8. The first Ruff check found one
+long line. Consumer setup initially lacked its copied source directory. Tyrin restore rejected
+missing joined/active flags. Enemy preparation rejected missing custody, initialization,
+active formation and mismatched deployment positions; all were corrected before native use.
+Two enemy pilots stayed in source standby until the controlled activation bit was set; they
+proved no cast. The first package comparison treated the audio list as a dictionary and failed;
+the corrected comparison checks retained rows. Initial native playback reached Reaction then
+stopped at `sfx-slots-unavailable`: command120 lacked a sound-slot mapping. An interim hypothesis
+and one-cue attempt incorrectly blamed replay count; the source-backed PSG tone3 mapping fixes
+the actual defect. Final cadence uses the existing replacement policy. The first trajectory
+used swapped trig axes; final source-table review corrected it before the published runs.
+These setup/native receipts remain failures, never relabeled as interrupted or successful.
+Some completed processes retain ObjectDB exit warnings under #1716.
+Initial memory receipts captured the console/conhost launcher; only the final named-game
+child measurement establishes the approximately1.30GB native peak. The reader peaked at0.96GB.
+
+**Unknown.** Natural original/player reach, all encounter/character/equipment permutations,
+exact fixed-point motion, palette/priority flicker, random streams, hardware audio cadence
+and human aesthetics. This slice makes no Battle27+, lifecycle or public-media distribution claim.
+
+The public engine gate passes3378 tests with50 optional private-input skips; the adapter
+Release build passes with zero warnings/errors. The dedicated published reader and native
+receipts, rather than those skips, establish the private observations above.
