@@ -16,6 +16,7 @@ REMAKE_PRODUCER_PATHS = frozenset(
         "src/sf2tool/remake_promotion_appearances.py",
         "src/sf2tool/remake_private_inventory.py",
         "src/sf2tool/remake_attack_spell_mount.py",
+        "src/sf2tool/remake_desoul_mount.py",
         "src/sf2tool/remake_enemy_healing.py",
         "src/sf2tool/remake_detox_art.py",
         "src/sf2tool/remake_dispel_art.py",
