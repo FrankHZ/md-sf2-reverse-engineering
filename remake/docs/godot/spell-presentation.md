@@ -97,7 +97,7 @@ these bounded scenes do not independently re-prove natural victory or death.
 Published-input Original, HD/Reduced Flash/held-speed and incomplete-HD runs pass with the
 producer package path absent. Draw/state observations cover all seven frames, actual body/
 sequence, scenery, texture density,104, early Confirm refusal and returned control. Reader
-peak stays below896MB; final native peaks are below1.31GB and each takes under4.4 seconds.
+peak stays below900MB; final native peaks are below1.31GB and each takes under4.4 seconds.
 Engine verification passes3,383 with50 optional-fixture skips; Release/Debug builds pass.
 No helper tests, gameplay screenshots, bulk frames or new audio acquisition were added.
 

@@ -1609,7 +1609,7 @@ The one-scene pilot adds17,648 bytes in0.15s with55.5MB peak working memory. Ser
 publication takes1.52s and adds572,399 bytes overall. Processing is O(package bytes plus
 frame pixels), with one scene and raster bank live. Before scaling the estimate was under
 30MiB added,1GiB working memory/scratch and minutes; publication remains below500MiB.
-The hard scratch/peak limit is2GiB. Reader peak is below896MB and native peak below1.31GB;
+The hard scratch/peak limit is2GiB. Reader peak is below900MB and native peak below1.31GB;
 replan if these limits fail. One fallback rewrites only Battle23's rank2 HD group and
 links unchanged immutable inputs. The producer package path is absent during acceptance.
 
