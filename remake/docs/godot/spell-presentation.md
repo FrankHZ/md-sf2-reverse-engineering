@@ -1792,3 +1792,38 @@ both tool Release builds pass with zero warnings/errors. Ruff, design-contracts 
 research-index direct checks pass. No rules changed and no verification-tool tests were
 added. Native evidence is independent of optional unit skips. The Draft PR records actual
 remote CI and the frozen head/tree/base for independent main-gate acceptance.
+
+## DESOUL family playback #2307
+
+**Standard scope.** Complete admitted learned DESOUL1/2 and Dark Sword70 Use through
+the existing scene continuation. Preserve rules, MP, silence, selected-copy wear,
+target order, death/custody/rewards and terminal return. No enemy/automatic admission,
+save format, acquisition, Battle27+ or #1716 work.
+
+Own `DesoulEffectView.cs`, `BattleSceneView.cs`, `BattleSceneView.Rasters.cs`,
+`PrivateAttackSpellBindings.cs`, `SessionAudio.cs`, `remake_desoul_mount.py`, attack-mount/package/retail/HD
+command wiring and `engine_desoul_family_observation.gd`. Shared documentation is this
+owner and narrow battle-scenes, hostile-spells-design, equipment-use-repair-design,
+presentation-assets, asset-inventory and capability entries. No competing open PR was
+found at dispatch; other worktrees are excluded.
+
+Consume #2306 blast-v1 and #2001 retail-v1 read-only, preserving independent #2252
+opening, #2255 Witch and #2266 catalogs. One serial O(package bytes) immutable successor
+must stay below500MiB, with staging and peak RAM below2GiB. The predecessor is about
+375MB; four Original/HD DESOUL rasters per scene should add less than5MB. Pilot Battle26
+before publishing all26 scenes; replan on budget failure. Acceptance uses production
+reader closure, legal controlled ordinary Magic1/2, mixed outcomes and Dark Sword Use,
+one HD/fallback/settings representative and published-input reproduction with producer
+scratch unavailable. Run selected engine/adapter and committed planner gates; do not
+add verification-program tests.
+
+**Confirmed source.** Pinned USA c834c652 setup `animation/desoul.asm` (0x1A73A..1A848)
+selects tileset13, cast77 and selector3/35. Dark Sword70 Use selects DESOUL1 while
+retaining Item gesture. Learned silence selects NONE. `update/desoul.asm`
+(0x1C248..1C53E) composes a64x48 reaper from four column-major sprites; rank2 adds
+two16x16 souls, alternating every6 ticks, reversing every60 ticks with upper/lower
+offsets -16/+32. Setup origins after VDP bias are(64,24)/(144,40). Hover cue110
+accompanies orientation changes. `battlesceneengine_0.asm` loc_18F26/loc_19076 triggers
+the strike only on successful death:20-tick preparation, strike tiles, cue106 and
+32-tick recovery. Ineffective targets retain hover. The existing death/result owner
+remains authoritative. Hardware cadence/palette and natural reach remain **Unknown**.

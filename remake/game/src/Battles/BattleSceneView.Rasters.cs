@@ -75,7 +75,7 @@ internal sealed partial class BattleSceneView
         if (content.FieldDeath is { } death) Group(death.ExitFrames);
         foreach (var keys in new[] { AttackSpellView.BlazeResources, BlazeMeteorEffect.SmallResources,
             BlazeMeteorEffect.LargeResources, BlazeMeteorEffect.DragonResources,
-            FreezeEffect.Resources, BoltEffect.Resources,
+            FreezeEffect.Resources, BoltEffect.Resources, DesoulEffectView.Resources,
             BlastEffect.RankOneResources, BlastEffect.RankTwoResources, BlastEffect.Resources, BreathResources, PhoenixWaveView.Resources, DetoxEffectView.Resources, DebuffEffectView.Resources })
             if (keys.All(content.Rasters.ContainsKey)) Group(keys);
         return selected;
@@ -89,6 +89,7 @@ internal sealed partial class BattleSceneView
         _phoenixWave.RefreshTextures();
         _detox.RefreshTextures();
         _debuff.RefreshTextures();
+        _desoul.QueueRedraw();
     }
 
     private RasterBinding Raster(string key, bool groupHasHd, float originalScale)

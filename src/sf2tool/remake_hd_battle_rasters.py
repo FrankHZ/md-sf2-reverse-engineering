@@ -130,6 +130,7 @@ def selected_groups(
         "blaze-2": ["flame-0", "flame-1", "meteor-0", "meteor-1", "impact-0", "impact-1"],
         "blaze-large": ["flame-0", "flame-1", "meteor-0", "meteor-1", "impact-0", "impact-1"],
         "blaze-dragon": ["head", "body", "tail-0", "tail-1"],
+        "desoul": ["hover", "strike", "soul-0", "soul-1"],
         "bolt": [f"frame-{index}" for index in range(30)],
         "freeze": [f"frame-{index}" for index in range(14)],
         "blast": [
