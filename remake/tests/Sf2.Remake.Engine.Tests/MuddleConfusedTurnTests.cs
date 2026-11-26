@@ -369,9 +369,29 @@ public sealed class MuddleConfusedTurnTests
             false, 0, [], physical, BattleMover.Hovering, mage.SourceLoadout);
         var kiwi = new BattleActorState(mage.Deployment with { Definition = profile }, mage.Hp, mage.Mp, mage.Exp,
             mage.Position, 0, 0, status: 0x18, activationWord: 0);
-        var breath = new AttackSpellDefinition(new("kiwi", 1), 0, 28, 1, 1, 0, AttackSpellElement.Fire);
+        var breath = new AttackSpellDefinition(new("kiwi", 1), 0, 28, 1, 1, 0, AttackSpellElement.Fire, 76);
         battle = Replace(battle, kiwi, extraSpells: [breath]);
-        var (end, events) = Play(battle, Mage, Priest, 1);
+        bool castSeen = false, reactionSeen = false;
+        var (end, events) = Play(battle, Mage, Priest, 1, scene =>
+        {
+            if (!scene.IsMonsterBreath) return;
+            if (scene.Phase == BattleScenePhase.ActionAnimation)
+            {
+                castSeen = true;
+                Assert.Equal((byte?)76, scene.AttackAnimationSelector);
+                Assert.Equal(Mage, scene.DisplayedAlly);
+                Assert.Equal(Priest, scene.Target);
+                Assert.Null(scene.DisplayedEnemy);
+                Assert.Null(scene.MuddleActionMessage);
+            }
+            if (scene.Phase == BattleScenePhase.Reaction)
+            {
+                reactionSeen = true;
+                Assert.Equal(Priest, scene.DisplayedAlly);
+                Assert.Null(scene.DisplayedEnemy);
+            }
+        });
+        Assert.True(castSeen && reactionSeen);
         Assert.Equal(Priest, Assert.Single(events, e => e.Kind == "ai-target").Target);
         Assert.Equal((ushort?)0, Assert.Single(events, e => e.Kind == "rng-kiwi-conversion").RandomValue);
         Assert.Single(events, e => e.Kind == "attack-spell" && e.Target == Priest);

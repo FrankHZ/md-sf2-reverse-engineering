@@ -164,6 +164,7 @@ internal sealed partial class BattleSceneView : Control
             if (_debuff.Active && state.Phase is BattleScenePhase.Reward or BattleScenePhase.End) _debuff.Reset();
             var preparedResources = state.AttackAnimationSelector switch
             {
+                76 when state.IsMonsterBreath => KiwiBreathEffect.Resources,
                 22 or 54 => AquaEffect.ResourcesFor(state.AttackSpell!.Spell.Level),
                 1 => AttackSpellView.BlazeResources,
                 33 => BlazeMeteorEffect.SmallResources,
@@ -177,6 +178,9 @@ internal sealed partial class BattleSceneView : Control
             if (state.AttackAnimationSelector is 22 or 54 && Content is { } aquaContent &&
                 preparedResources!.Any(aquaContent.Rasters.ContainsKey) && !preparedResources!.All(aquaContent.Rasters.ContainsKey))
                 throw new InvalidOperationException("aqua-original-group-incomplete");
+            if (state.IsMonsterBreath && Content is { } kiwiContent &&
+                KiwiBreathEffect.Resources.Any(kiwiContent.Rasters.ContainsKey) && !KiwiBreathEffect.Resources.All(kiwiContent.Rasters.ContainsKey))
+                throw new InvalidOperationException("kiwi-original-group-incomplete");
             _preparedAttackSpell = preparedResources is not null &&
                 Content is { } preparedContent && preparedResources.All(preparedContent.Rasters.ContainsKey);
             if (UsesMessagePlayback(state))
@@ -300,7 +304,7 @@ internal sealed partial class BattleSceneView : Control
                         int trigger = _frames.Take(Math.Max(0, animation.Trigger - 1 - skippedFrames)).Sum(frame => frame.Ticks);
                         _detox.Begin(Frames(DetoxEffectView.Resources), trigger);
                     }
-                    if (state.IsMonsterBreath)
+                    if (state.IsMonsterBreath && !_preparedAttackSpell)
                         _attackSpell.Present(state, Frames(BreathResources));
                     if (_frames.Length != 0 && sequence == "attack" && animation.Spell == PhoenixWaveView.Selector &&
                         PhoenixWaveView.Resources.All(Content!.Rasters.ContainsKey))
@@ -543,13 +547,13 @@ internal sealed partial class BattleSceneView : Control
                 _blastSoundPlayed = true;
                 _audio?.PlayEffect(114);
             }
-            if (!_castSoundPlayed && state.AttackAnimationSelector is not (22 or 54) && _elapsed >= _attackSpellStart)
+            if (!_castSoundPlayed && state.AttackAnimationSelector is not (22 or 54 or 76) && _elapsed >= _attackSpellStart)
             {
                 _castSoundPlayed = true;
                 _audio?.PlayEffect(77);
             }
         }
-        if (state.IsMonsterBreath && state.Phase == BattleScenePhase.ActionAnimation)
+        if (state.IsMonsterBreath && !_preparedAttackSpell && state.Phase == BattleScenePhase.ActionAnimation)
         {
             duration = Math.Max(duration, 0.6);
             _attackSpell.Advance(_elapsed);

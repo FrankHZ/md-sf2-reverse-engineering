@@ -722,8 +722,9 @@ variance draws and normal drop/reward handling. The shared damage rule applies p
 power before FIRE resistance. A physical result instead begins dodge/strike resolution
 from the advanced seed. Counter strikes do not visit the conversion gate again. KIWI
 uses FLAME_BREATH variant 3 (selector 76) and the source MNST body pose. The adapter
-plays a finite stream with prepared particle tiles 1 and 9 using the source palette.
-Exact original particle motion and timing remain **Unknown**.
+uses the [complete Kiwi growth group](../godot/spell-presentation.md#kiwi-converted-attack-playback-2316)
+with source tiles0/1/2/6/10/19 and horizontal mirroring. The earlier two-tile interpretation
+is corrected there; original hardware timing remains **Unknown**.
 [Conversion and call order](../../../docs/design/contracts/battle/battle-functions-control-flow.md#kiwi-conversion-gate) ·
 [Critical dispatch](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/castspell.asm) ·
 [Power adjustment](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/calculatespelldamage.asm) ·

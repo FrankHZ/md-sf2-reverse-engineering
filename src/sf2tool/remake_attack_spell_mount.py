@@ -19,6 +19,10 @@ def mount_attack_spells(
 ) -> None:
     from sf2tool.remake_private_package import installed_png, prepared_spell_tiles, read_json
 
+    if "kiwi-family" in families:
+        from sf2tool.remake_kiwi_mount import mount_kiwi
+
+        mount_kiwi(directory, scratch, package, scenes, scale)
     if "aqua-family" in families:
         from sf2tool.remake_aqua_mount import mount_aqua
 

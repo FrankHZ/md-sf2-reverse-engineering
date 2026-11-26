@@ -1603,6 +1603,34 @@ is separate from the immutable #2307 content. The reader checks104 SPOIT definit
 and702 equipment appearances over26 scenes. Native Original/HD, Reduced Flash/held
 speed and body-group fallback retain their [playback boundary](../godot/spell-presentation.md#absorb-reproduction-and-verification).
 
+### Kiwi successor #2316
+
+Complete `derived/issue2316/kiwi-v1` inherits accepted AQUA and contains181 files /
+380,806,286 bytes, adding269,724 bytes across26 scenes. Every inherited JSON value and
+unaffected file compares equal. Registered tileset1 already has all35 tiles; the producer
+adds six Original and six HD growth resources without replacing the retained legacy pair.
+World command92/CB already exists. No body, audio or source acquisition is needed.
+Independent #2324 opening, #2255 Witch and #2266 catalogs are selected separately.
+
+Before processing, the estimate was under1MiB added, one scene/raster bank in memory,
+O(package bytes plus frame pixels), one serial run, complete output below500MiB and
+scratch/peak below2GiB. The one-scene pilot takes0.14s and adds10,374 bytes; reader peak
+is882MB and native peak below1.33GB. Replan on budget failure. Published-input acceptance
+runs with the producer package path absent; one fallback only rewrites Battle26's HD group.
+
+```powershell
+. ./local/private-inputs.ps1
+$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2315/aqua-v1'
+uv run --locked --with pillow==13.0.0 python -m sf2tool.remake_retail_assets `
+  --root $library --base $base --mount $freshAbsolutePackage `
+  --family kiwi-family --gfx-root $registeredGraphicsRoot
+```
+
+Use a fresh worktree-local ignored destination and the registered graphics selection.
+`derived/issue2316/review-v1` owns reader/Boot recipes and retained receipts.
+[Source correction, results and limits](../godot/spell-presentation.md#kiwi-converted-attack-playback-2316).
+
 ### AQUA successor #2315
 
 Complete `derived/issue2315/aqua-v1` consumes accepted #2314 and prepared

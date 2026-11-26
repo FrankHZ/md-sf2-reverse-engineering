@@ -6,6 +6,103 @@ pre-voyage priority. Later private campaigns and controlled authored packages es
 boundaries. This inventory uses the existing rules, scene readers, presenters and private resource
 publisher. Each implementation slice owns its own acceptance.
 
+## Kiwi converted Attack playback #2316
+
+**Standard scope.** Complete the already admitted MNST physical Attack conversion's
+FLAME_BREATH variation3 presentation. All four KIWI power ranks use selector76 and one
+resource/effect implementation. Gameplay conversion probability/RNG, adjacent target, damage,
+death/reward, empty learned book and zero MP cost remain owned by the existing rules.
+No learned KIWI, enemy FLAME1–3, campaign/training, save format or #1716 work is included.
+
+Owned paths are `game/src/Battles/KiwiBreathEffect.cs`, `AttackSpellView.cs`,
+`BattleSceneView.cs`/`.Rasters.cs`, `src/sf2tool/remake_kiwi_mount.py` and the existing
+attack-spell/private-package/retail CLI/engine-path registrations and the existing
+`MuddleConfusedTurnTests` Monster case. The exact observer is
+`game/probes/engine_kiwi_breath_observation.gd`; serial documentation owners are this page,
+battle-scenes, ordinary-promotion-classes, presentation-assets, asset-inventory and capability.
+Accepted AQUA complete input and registered prepared graphics are the only asset dependencies.
+Reader closure, one lawful controlled conversion, and representative graphics/settings checks
+are acceptance; no new verification framework or helper tests are required.
+
+### Kiwi source and finite delivery
+
+**Confirmed source structure:** USA ROM SHA256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`, SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. The existing
+[conversion contract](../../../docs/design/contracts/battle/battle-functions-control-flow.md#kiwi-conversion-gate)
+and [Monster rank table](../application/ordinary-promotion-classes.md#monster-controlled-reproduction-and-ordinary-pilot)
+own the Attack gate, rank thresholds and draw order. Setup at`0x1AD3E..0x1ADA4` loads
+FLAME_BREATH tileset1, angle endpoints64/128 for the allied side, variation3 lifetime50,
+and hold285. Enemy-side endpoints192/0 and species-specific origins do not admit enemy FLAME.
+[Setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/flamebreath.asm).
+
+Update at`0x1D2E6..0x1D4E6` starts at VDP(284,222), logical(156,94). State2 emits92;
+state6 spawns a successor with angle stepping by4 between endpoints. Velocity is three
+fixed-point trigonometric units. States5/10/15/20/25 select tile offsets1/2/6/10/19 with
+sizes8/16/16/24/32. Initial SPELLTILE1 is zero-based0; the stream contains35 tiles.
+Byte bit3 at `VDPSPRITE_OFFSET_TILE` changes word bit11, horizontal mirroring, **not**
+tile1/9. This corrects the old two-particle interpretation. First retirement releases the
+source damage wait; hold285 is not the whole action duration.
+[Update](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/flamebreath.asm) ·
+[Growth helper](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/updatespellanimation.asm) ·
+[VDP fields](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/enums/vdp.asm).
+
+**Modern delivery:** one329/60-second interval uses four-tick emissions through tick280,
+finite growth/drain and floating-point trigonometry. It waits for the effect before the
+unchanged result continuation, rather than claiming the original overlapping damage wait.
+The renderer consumes neither gameplay nor cosmetic RNG. Body27/palette0 uses cast sequence84;
+its frame15 retains the current pose. Direction binds the displayed caster side, while the
+observation retains the actual target faction. The accepted MUDDLE own-side conversion is
+not message-only: its ActionAnimation displays the allied caster alone; Reaction replaces
+it with the friendly target on that same side. Thus target faction cannot infer breath
+origin/direction. The existing focused Monster confusion test covers this projection and
+selector76 without extending gameplay admission. Existing command92/CB and YM4/YM5 replacement slots
+supply whole-clip sound; no generic cast77 is added. Reduced Flash suppresses horizontal
+flipping while preserving motion/growth; held1.5× uses shared pacing. Six resources select HD
+atomically; incomplete HD falls back wholly, partial Original fails, and whole group absence
+retains the legacy two-tile fallback. **Unknown:** natural reach, hardware cadence, palette/
+plane/GPU fidelity, physical listening and human aesthetic acceptance.
+
+### Kiwi verification
+
+Use complete `derived/issue2316/kiwi-v1`, independent #2324 opening, #2255 Witch and #2266
+catalogs. After the [locked Debug build](../development-and-verification.md#locked-net-workflow):
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2316/review-v1'
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case kiwi `
+  -Sample kiwi-original-review -SaveRoot $freshExternalSaveRoot
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case kiwi `
+  -Sample kiwi-hd-review -Graphics hd -Reduced -Fast -SaveRoot $freshExternalSaveRoot
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case kiwi `
+  -Sample kiwi-fallback-review -Graphics hd -Variant incomplete -SaveRoot $freshExternalSaveRoot
+```
+
+**Confirmed in the remake:** reader admits26 scenes,104 KIWI bindings and the unchanged
+published #1956 controlled Monster record. This is controlled prerequisite evidence, not
+natural promotion/training. Ordinary Continue → Confirm → Attack → Confirm converts the
+adjacent enemy12 commit: body27/sequence84, selector76, all six growth states, audible-request92,
+early Confirm refusal,39 damage,48 EXP once, zero MP delta and usable next ActionChoice.
+Original, HD/Reduced Flash/held-speed and incomplete-HD runs pass with the producing package
+path absent. Focused `PromotedMonsterConvertsAnAdmittedOwnSideStrikeAfterTheGuard` passes with
+cast/recipient projection assertions; this own-side seam is engine evidence, not a native
+friendly-target observation. A normal private native Attack passes again after the side-binding
+correction. Existing `MonsterBreathTests` retain all rank thresholds, gate/draw order,
+no learned spell and no MP-payment assertions. Reader peak is882MB; native peaks stay below
+1.33GB and successful runs below4.7 seconds. No screenshots, helper tests or native training.
+
+Retained failures: first publisher attempted an unavailable separate92 candidate; inspection
+found92 already in the inherited world, so no acquisition was needed. First native run
+completed gameplay but its probe expected an unprefixed body key; the actual accepted key is
+`equipment/ally27-palette0/`. The corrected narrow runs pass. Earlier setup retained an
+unquoted Git tree expression, incorrect CLI help path and one import-order lint failure.
+A recipe check with older Pillow11.3 differed in PNG encoding but all decoded pixels matched;
+the reproduction now pins the actual producer Pillow13.0.
+Fresh-process engine verification passes3,383 with50 optional-private skips; these skips are
+not private passes. Release/Debug adapter builds pass. Successful exits retain0–8 ObjectDB warnings under#1716; no cleanup or visual acceptance claim.
+
 ## AQUA family playback #2315
 
 **Standard scope.** Prepared BUBBLE_BREATH replaces primitive bubbles for Kraken Head in
@@ -755,7 +852,7 @@ update controls subsequent movement, mirroring and dust. [Enemy family evidence]
 | BREZAD 1 | FREEZE v3 in table, NONE for consumable Use | **Original item gesture bound** for Blizzard with ordinary private damage, custody and return. | Preserve the distinct item route with [#2104] and the [offensive-item owner](../domain/offensive-items-design.md#ordinary-remake-observations). |
 | THUNDR 1 | BOLT v3 in table, NONE for consumable Use | **Unavailable** as Holy Thunder private Item Use. | [#1818] item rule/admission. Reuse the ordinary item scene when admitted. |
 | AQUA 1–2 | BUBBLE_BREATH v1–v2 | **Original assets bound**: seven frames per rank, distinct palettes, actual Kraken Head and Battle23 Bubbling Ooze bodies/terrain. Willard itself has no spell. | [AQUA playback](#aqua-family-playback-2315): reader closure, ordinary enemy actions and atomic Original/HD/settings; natural/hardware/human acceptance remains Unknown. |
-| KIWI 1–4 | FLAME_BREATH v3 for all | **Partial** original assets. The optional MNST mount supplies the dedicated cast sequence and two prepared Flame Breath tiles. A controlled private Attack conversion projects the modern particle stream. All four ranks differ by level/power and share the visual path. | [#2104] later breath group can reuse the mounted assets when appropriate. Natural MNST promotion/breath in the connected pilot and exact particle motion remain **Unknown**. [Controlled Monster pilot](../application/ordinary-promotion-classes.md#monster-controlled-reproduction-and-ordinary-pilot) |
+| KIWI 1–4 | FLAME_BREATH v3 for all | **Original assets bound** through one six-state growth group and MNST sequence84; actual controlled Attack conversion preserves rules and result authority. | [Kiwi playback](#kiwi-converted-attack-playback-2316) covers production ranks and Original/HD/settings. Natural training, hardware and human presentation remain **Unknown**. |
 | SHINE 1 | NONE | **Unavailable**. Right of Hope from the Fairy Woods trial is outside the current campaign. | [#1818] trial/item caller, with the accepted field/item delivery boundary. [Flag and receipt](../content/campaign-flags.md) |
 | ODDEYE 1 | ODD_EYE_BEAM v1 | **Unavailable** in the connected campaign. | [#1818] first encounter, [#1369] action rules and [#2104] beam effect. |
 
