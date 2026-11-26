@@ -176,6 +176,112 @@ checks. The private comparison exercises the command and persistence entry point
 .NET process. The native title UI and disk replacement observations belong to the
 [battle save verification owner](../verification/battle-save.md).
 
+### Historical battle source-slot partition
+
+**High rigor; [#2295](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2295).**
+The supported historical roster must restore a usable battle, including ordinary area healing,
+without moving retained members onto the board. Scope is the immutable deployment/source-slot
+copy and its existing restore consumer. No save version, source-slot validator, roster growth,
+spell rules, scene content or host lifecycle changes are needed. Acceptance covers the original
+failure, source faction/order, unchanged saved values and both RNG words, current records,
+ordinary recovery and cold Continue/resave. Independent integration remains required.
+
+**Confirmed in the remake:** the published #2291 `old-aura.json` (the #2273 recipe10 Battle26
+record) reproduces `aura-source-slots` on accepted base `ae2fe1b8`. Continue succeeds, but the
+White Ring choice is disabled before commit. The record has20 allies/15 enemies; the current
+complete buff-v1 definition has45 deployments. `BattleRestore.Build` correctly retains the
+saved35-actor battle and upgrades the other10 allies into retained party. Its `WithDeployments`
+copy formerly kept all45 source mappings. The baseline observation contains only the
+`action-choice` event, with no payment, wear or recovery. The existing
+[presentation finding](../godot/spell-presentation.md#supported-historical-aura-partition-defect)
+retains that discovery; this section owns the compatibility correction.
+
+`BattleDefinition.WithDeployments` now materializes its replacement rows once and asks
+`BattleInitializationDefinition.ForCombatants` to retain only source mappings whose actors
+remain in the partition. It preserves the original slot keys, values and enumeration order,
+regions/programs, formation, AI points (including the point after the table) and source enemy
+count. It never synthesizes a mapping for an added actor or renumbers a retained one.
+Unchanged membership reuses the original initialization. The audited production callers—class
+resolution in turn start/restore, repeat enemy binding, growth and field equipment preparation—
+replace definitions under the same actor identities, so retain their complete mapping.
+`BattleRestore.Build` continues to own partition selection and all saved-value validation.
+Area AURA, party recovery items and radius cure share `HealingTargetRules` source-slot checks;
+those checks remain unchanged. Source mappings are encounter metadata, not an extra saved roster.
+
+**Confirmed:** `BattlePartitionTests` covers a reduced partition's original keys and ordered
+AURA/cure recipients, unchanged-membership copies and refusal of a new unmapped actor.
+`HistoricalSaveRosterTests.ExpandedContentRestoresSavedBattleSlotsAndKeepsNewMembersRetained`
+restores an old record against a larger encounter, compares the complete battle continuation
+(including both seeds/queue) and every existing retained record, and checks new members remain
+retained. Existing historical and healing behavior tests cover the surrounding consumers.
+
+**Confirmed by bounded native input/state observation:** with the published complete buff-v1,
+`engine_battle_partition_observation.gd` continues the unmodified old record from numbered history,
+saves it, selects White Ring normally, delivers AURA2 in slot order
+`0,1,4,7,9,11,15`, returns to ordinary control and saves again. There is one `rng-item-wear`
+draw and zero MP payment; Sarah's action recovery is10→25 before later end-turn recovery.
+Initial resave preserves the entire decoded `battle` object exactly; the only story difference
+is the existing roster upgrade's retained-player list. The saved partition stays35 actors with
+10 retained allies. A second process continues the post-action slot, compares the complete
+captured progress, saves again, and produces identical decoded `data` (header sequence/time
+excluded). The published current recipe11 `aura.json` independently passes the same ordinary
+action/save route with45 actors and no retained allies. No player save was read or written.
+
+The observer reuses the existing recovery probe and persistence read API. Save preparation
+records actual audio history through `ObserveSaveMusic`; the probe permits only that field to
+change before publication and compares the entire synchronized progress after publication.
+It does not weaken battle/party/RNG comparison. Cold Continue compares the whole saved progress.
+The observations claim remake state/input behavior, not original hardware timing or aesthetic
+acceptance. Some successful processes retain2–6 ObjectDB shutdown warnings under #1716.
+
+Reproduce the baseline on the named accepted base with the published #2291 `Boot.ps1`
+(`-Case aura -Seed old-aura.json`) as described in the presentation owner. For the corrected
+native route, build the adapter Debug configuration with the
+[locked SDK workflow](../development-and-verification.md#locked-net-workflow), then stage that
+published review into this checkout's ignored `local/issue2291-reproduction` using Boot. Its
+`Run.ps1` is the input-selection authority: complete buff-v1, opening2252, witch2255 and
+catalog2266 remain separate. Make a local copy of Run for this observation with these exact
+changes; do not modify the published review:
+
+1. Replace script `engine_equipment_recovery_observation.gd` with
+   `engine_battle_partition_observation.gd`. In Run's generated settings object, explicitly add
+   `bindings = @{ menu = @{ keys = @('F10'); buttons = @(); axes = @('RightX+') };
+   cancel = @{ keys = @('Escape','X'); buttons = @('East'); axes = @() } }`.
+   Use `ConvertTo-Json -Depth 8` when writing this nested settings object.
+   These are the installed bindings used by the original observation, now independent of
+   changing defaults under #2287. The probe checks the installed Menu/Cancel keys before Save;
+   this is a review configuration, not a production input change.
+2. Before process launch, copy the selected seed to a fresh disposable
+   `$SaveRoot/$Sample/sf2-opening/slot1.json`, refusing an existing namespace. Remove the
+   `--load-save` option and its value from the Godot arguments. This exercises title Continue
+   against that numbered slot. Preserve the script's60-second process bound, settings,
+   environment selection, explicit working directory and isolated logs/TEMP.
+3. Run `-Case aura -Seed old-aura.json`, then separately `-Case aura -Seed aura.json` with fresh
+   sample names. Both must report `passed: true`; retain `native.json`, `console.log`, `exit.txt`
+   and the disposable slots. The probe's `restoredProgressSaved` and `afterActionProgressSaved`
+   samples contain the exact comparison values.
+4. Copy the first run's post-action `slot1.json` into local review scratch as `cold-aura.json`.
+   Write its `afterActionProgressSaved` sample as a JSON file and set `SF2_PARTITION_EXPECTED`
+   to that absolute path, plus `SF2_PARTITION_SAVE_ONLY=1`. Run with `-Seed cold-aura.json`
+   in a fresh namespace. Compare the original and cold-resaved envelopes' decoded `data`.
+   Clear both environment switches before another action run.
+
+Budget each native case at60 seconds with one copied record and bounded JSON observations;
+no content production or broad campaign replay is required. All private inputs are available
+from the registered published review even when the producer's scratch is absent.
+
+Completed failures are retained: `old-baseline-2295` refused ordinary target selection;
+`ReducedPartitionKeepsOriginalSlotsAndOrderedAuraRecipients` failed8 expected versus9 source
+slots before the correction. `old-fixed-2295` completed the action but its first observer compared
+pre-synchronization audio history against the saved history; `old-fixed-b-2295`, `cold-2295`
+and `current-2295` passed the corrected boundary. The first added historical test compile used
+the nonexistent `ScenarioDefinition.Id`; using its actual `Package` property fixed that error.
+These are distinct from the original compatibility failure. The explicit-binding follow-up's
+`bound-old-2295` first wrote truncated nested settings with PowerShell's default JSON depth and
+failed startup (the inherited probe also reported a null panel). `-Depth 8` corrects the launcher;
+`bound-old-b-2295` and `bound-cold-2295` pass, with complete restored/action progress identical
+to the prior successful observations. Reproduction outputs remain ignored.
+
 ## Implemented versioned codec and shared storage (B)
 
 **Confirmed in the remake; [#1637](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1637).**

@@ -10,6 +10,40 @@ namespace Sf2.Remake.Engine.Tests;
 
 public sealed class HistoricalSaveRosterTests
 {
+    [Fact]
+    public void ExpandedContentRestoresSavedBattleSlotsAndKeepsNewMembersRetained()
+    {
+        var (basis, snapshot) = BattleSaveFixture.Create(encounterId: "battle-1");
+        var latest = Package(4, 11, basis);
+        var seed = BattleSaveFixture.Capture(basis, snapshot);
+        var old = basis.Encounters["battle-1"];
+        var init = old.Initialization!;
+        var extra = latest.Encounters["opening"].Deployments.Where(d => d.Actor.Value != "ally-0").ToArray();
+        var slots = init.SourceCombatants.Concat(extra.Select(d => KeyValuePair.Create(d.ProcessingOrder, d.Actor)))
+            .ToDictionary(p => p.Key, p => p.Value);
+        var expanded = new BattleDefinition(old.Encounter, old.Map, old.Width, old.Height, old.Terrain,
+            old.Deployments.Concat(extra), old.Spells.Values, old.Rewards,
+            new(init.Regions, init.RegionProgram, init.AllyFormation, init.AiPoints, slots, init.EnemyCount, init.RegionPrograms), old.Outcome);
+        latest = new ScenarioDefinition(latest.Package, latest.Encounters.Values.Select(e => e.Encounter == old.Encounter ? expanded : e),
+            latest.PrivateDefinitions, latest.Exploration) { Persistence = latest.Persistence };
+        var retained = Enumerable.Range(1, 6).Select(id => seed.Story.Player.RetainedAllies[0] with { Actor = new($"ally-{id}") }).ToArray();
+        var data = seed with
+        {
+            Compatibility = OpeningSave.FieldCompatibility(latest, RuleCompositions.Sf2()) with { RecipeRevision = 1 },
+            Story = seed.Story with { Player = seed.Story.Player with { RetainedAllies = retained } },
+        };
+        var restored = GameSession.RestoreBattle(latest, data, RuleCompositions.Sf2());
+        Assert.True(restored is SessionStarted, (restored as SessionStartFailed)?.Failure.Code);
+        var session = ((SessionStarted)restored).Session;
+        Assert.Equal(init.SourceCombatants, session.Current.Battle.Definition.Initialization!.SourceCombatants);
+        var captured = session.CaptureBattleSave(session.Current.SessionId, session.Current.Revision);
+        Assert.Null(captured.Error);
+        Assert.True(BattleContinuationValues.Same(data.Battle, captured.Data!.Battle));
+        Assert.Equal(10, captured.Data.Story.Player.RetainedAllies.Count);
+        foreach (var member in retained)
+            Assert.True(BattleContinuationValues.SameCarried(member, captured.Data.Story.Player.RetainedAllies.Single(a => a.Actor == member.Actor)));
+    }
+
     [Theory]
     [InlineData(0u)]
     [InlineData(1507850002u)]

@@ -299,14 +299,19 @@ public sealed class BattleDefinition
     private BattleDefinition(BattleDefinition source, IEnumerable<BattleDeploymentDefinition>? deployments = null,
         BattleOutcomeDefinition? outcome = null, IEnumerable<RetreatSpellDefinition>? retreatSpells = null,
         IEnumerable<RetreatItemDefinition>? retreatItems = null, BattleGiveDefinition? give = null,
-        BattleDiscardDefinition? discard = null, BattleSearchDefinition? search = null, EnemyItemDropDefinition? drops = null) : this(source.Encounter, source.Map, source.Width, source.Height,
-        source.Terrain, deployments ?? source.Deployments, source.Spells.Values, source.Rewards, source.Initialization,
+        BattleDiscardDefinition? discard = null, BattleSearchDefinition? search = null, EnemyItemDropDefinition? drops = null,
+        BattleInitializationDefinition? initialization = null) : this(source.Encounter, source.Map, source.Width, source.Height,
+        source.Terrain, deployments ?? source.Deployments, source.Spells.Values, source.Rewards, initialization ?? source.Initialization,
         outcome ?? source.Outcome, source.HealingItems.Values, source.SourceMapRegion, retreatSpells ?? source.RetreatSpells.Values,
         retreatItems ?? source.RetreatItems.Values, source.TarosEffectiveness, source.LeaderCleanup, drops ?? source.ItemDrops, source.PrismLaser,
         give ?? source.Give, discard ?? source.Discard, source.Poison, source.AttackSpells.Values, source.SupportSpells.Values, search ?? source.Search, source.AttackItems.Values, source.SupportItems.Values) { }
     internal BattleDefinition WithOutcome(BattleOutcomeDefinition outcome, IEnumerable<RetreatSpellDefinition>? retreatSpells = null,
         IEnumerable<RetreatItemDefinition>? retreatItems = null) => new(this, outcome: outcome, retreatSpells: retreatSpells, retreatItems: retreatItems);
-    internal BattleDefinition WithDeployments(IEnumerable<BattleDeploymentDefinition> deployments) => new(this, deployments);
+    internal BattleDefinition WithDeployments(IEnumerable<BattleDeploymentDefinition> deployments)
+    {
+        var rows = deployments.ToArray();
+        return new(this, rows, initialization: Initialization?.ForCombatants(rows.Select(row => row.Actor).ToHashSet()));
+    }
     internal BattleDefinition WithGive(BattleGiveDefinition give) => new(this, give: give);
     internal BattleDefinition WithDiscard(BattleDiscardDefinition discard) => new(this, discard: discard);
 
