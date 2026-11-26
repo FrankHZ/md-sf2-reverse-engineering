@@ -19,6 +19,10 @@ def mount_attack_spells(
 ) -> None:
     from sf2tool.remake_private_package import installed_png, prepared_spell_tiles, read_json
 
+    if "apollo-family" in families:
+        from sf2tool.remake_apollo_mount import mount_apollo
+
+        mount_apollo(directory, scratch, package, scenes, scale)
     if "dao-family" in families:
         from sf2tool.remake_dao_mount import mount_dao
 

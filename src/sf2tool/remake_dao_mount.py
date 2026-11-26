@@ -4,7 +4,7 @@ import json
 
 from sf2tool.remake_asset_build import ACCEPTED_ROM_SHA256, ACCEPTED_UPSTREAM_COMMIT
 from sf2tool.remake_battle_scene_content import compose
-from sf2tool.texture_extract import md_palette_color, write_png_rgba
+from sf2tool.texture_extract import write_png_rgba
 
 
 def mount_dao(directory, scratch, package, scenes, scale):
@@ -26,34 +26,9 @@ def mount_dao(directory, scratch, package, scenes, scale):
         or [r for r in index["records"] if r.get("family") == "spell" and r["id"] == 3] != [rock]
     ):
         raise ValueError("registered DAO effects identity differs")
-    # Header palette word0 is not copied: LoadInvocationSpriteFrameToVram
-    # advances2 bytes and writes the remaining15 into palette1 colors1..15.
-    words = bytes.fromhex(invocation["palette"])[2:]
-    palette = [(0, 0, 0)] + [
-        md_palette_color(int.from_bytes(words[i : i + 2], "big")) for i in range(0, 30, 2)
-    ]
-    # layout_Invocation: four columns of 32x32 sprites. The second stream
-    # starts at tile144 after the first128 tiles and16 unused VRAM tiles.
-    layout = [
-        (x // 4) * 32 + (y // 4 % 2) * 16 + (144 if y >= 8 else 0) + (x % 4) * 4 + y % 4
-        for y in range(16)
-        for x in range(16)
-    ]
-    sprites = []
-    for frame in range(8):
-        streams = [
-            (directory / f"invocation-0-{frame}-{part}.4bpp").read_bytes() for part in range(2)
-        ]
-        if any(len(stream) != 4096 for stream in streams):
-            raise ValueError("registered DAO invocation stream length differs")
-        sprites.append(
-            (
-                f"summon-{frame}",
-                128,
-                128,
-                compose(streams[0] + bytes(512) + streams[1], palette, 128, 128, layout),
-            )
-        )
+    from sf2tool.remake_invocation_mount import invocation_sprites
+
+    sprites = invocation_sprites(directory, 0, 8, invocation["palette"])
     tiles, palette = prepared_spell_tiles(directory, 3)
     if len(tiles) != 608:
         raise ValueError("registered DAO rock stream length differs")

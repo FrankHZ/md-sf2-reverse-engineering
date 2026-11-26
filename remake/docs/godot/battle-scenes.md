@@ -21,7 +21,9 @@ with the prepared invocation body, presents rising rocks, backdrop shake and tar
 deformation across ordered recipients, then restores the ordinary scene at Reward/End.
 One MP payment, target-count division and all results remain application-owned. Its
 complete Original/HD group, Reduced Flash and held speed use existing consumers;
-the other three summons retain their modern presentation pending their own slices.
+[APOLLO1–2](spell-presentation.md#apollo-family-playback-2312) uses the same lifetime
+with its own descending/alternating body, mouth and flame composition. NEPTUN/ATLAS
+retain modern presentation pending their own slices.
 
 [ABSORB equipment playback](spell-presentation.md#absorb-family-playback-2309) uses the
 source warp89 and four red backdrop pulses with the existing Item pose. It loads no

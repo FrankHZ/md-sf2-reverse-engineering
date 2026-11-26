@@ -5,6 +5,52 @@ namespace Sf2.Remake.GodotAdapter.Battles;
 
 internal sealed partial class BattleSceneView
 {
+    private ApolloEffectView _apollo = null!;
+    private void CreateSummons()
+    {
+        _dao = new DaoEffectView { Name = "DaoEffect", ZIndex = 4 }; _canvas.AddChild(_dao);
+        _apollo = new ApolloEffectView { Name = "ApolloEffect", ZIndex = 4 }; _canvas.AddChild(_apollo);
+    }
+    private void ResetSummons() { _dao.Reset(); _apollo.Reset(); _enemy.Material = null; }
+    private void PresentSummons(BattleSceneState state)
+    {
+        _dao.Present(state); _apollo.Present(state); _enemy.Material = null;
+    }
+    private bool PreparedSummon(BattleSceneState state) => PreparedDao(state) || PreparedApollo(state);
+    private bool PreparedApollo(BattleSceneState state)
+    {
+        if (state.AttackAnimationSelector is not (18 or 50) || state.IsSilencedCast || Content is not { } content)
+            return false;
+        int available = ApolloEffectView.Resources.Count(content.Rasters.ContainsKey);
+        if (available != 0 && available != ApolloEffectView.Resources.Length)
+            throw new InvalidOperationException("apollo-original-group-incomplete");
+        return available != 0;
+    }
+    private void BeginSummon(BattleSceneState state, double trigger)
+    {
+        BeginDao(state, trigger);
+        if (PreparedApollo(state))
+            _apollo.Begin(Frames(ApolloEffectView.Resources), trigger,
+                (state.AttackAnimationSelector!.Value >> 5) + 1, _settings.ReducedFlash);
+    }
+    private void AdvanceSummons(double delta)
+    {
+        if (_dao.Active) _dao.Advance(delta, cue => _audio?.PlayEffect(cue));
+        if (_apollo.Active) _apollo.Advance(delta, cue => _audio?.PlayEffect(cue));
+        ProjectSummons();
+    }
+    private double SummonDuration(double duration) => _dao.Active ? Math.Max(duration, _dao.CastDuration)
+        : _apollo.Active ? Math.Max(duration, _apollo.CastDuration) : duration;
+    private void ProjectSummons()
+    {
+        ProjectDao();
+        if (!_apollo.Active) return;
+        if (_apollo.ReplacesCaster) { _ally.Hide(); _weapon.Hide(); _ground.Hide(); }
+        _background.Position = new Vector2(0, 56) + _apollo.Shake;
+        _backgroundWrap.Position = new Vector2(256, 56) + _apollo.Shake;
+        _sceneBlack.Color = _settings.ReducedFlash ? Colors.Black : _apollo.Flash ? new Color(1, 12f/14, 12f/14)
+            : _apollo.FlameFlash ? new Color(1, 0, 0) : Colors.Black;
+    }
     private DaoEffectView _dao = null!;
     private readonly ShaderMaterial _daoDistortion = new()
     {
