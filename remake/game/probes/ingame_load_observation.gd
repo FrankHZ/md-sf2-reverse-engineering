@@ -62,10 +62,15 @@ func run() -> void:
     check(selected_menu() == "Load" and gameplay() == before, "history Cancel preserves exact old session and Load focus")
     for kind in ["future", "incompatible"]:
         var envelope: Dictionary = JSON.parse_string(original.get_string_from_utf8())
-        var record: Dictionary = JSON.parse_string(Marshalls.base64_to_utf8(envelope.payload))
-        if kind == "future": record.formatVersion = 99
-        else: record.data.compatibility.rules = "incompatible-load-control"
-        var raw := JSON.stringify(record)
+        # Preserve integer wire spelling; Godot JSON parse/stringify makes 6 into 6.0.
+        var raw := Marshalls.base64_to_utf8(envelope.payload)
+        var pattern := RegEx.new()
+        if kind == "future":
+            pattern.compile('"formatVersion"\\s*:\\s*[0-9]+')
+            raw = pattern.sub(raw, '"formatVersion":99')
+        else:
+            pattern.compile('"rules"\\s*:\\s*"[^"]+"')
+            raw = pattern.sub(raw, '"rules":"incompatible-load-control"')
         envelope.payload = Marshalls.utf8_to_base64(raw)
         envelope.sha256 = raw.sha256_text().to_upper()
         write_bytes("slot2.json", JSON.stringify(envelope).to_utf8_buffer())
@@ -73,6 +78,8 @@ func run() -> void:
         await choose("2")
         if not await wait_slots("error"): finish(); return
         check(gameplay() == before, kind + " record preserves old session")
+        if kind == "incompatible":
+            check(slots().message in ["This save needs the matching content/rules. The file has been kept.", "此存档需要匹配的内容／规则，文件已保留。"], "incompatible rules reach compatibility refusal")
         sample(kind + "-record")
         await key(KEY_ESCAPE)
     write_bytes("slot2.json", original)

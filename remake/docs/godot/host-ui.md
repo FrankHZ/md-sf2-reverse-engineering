@@ -567,7 +567,7 @@ its old namesake exposed a stable-node-name collision. Those were corrected befo
 Early observer assertions compared changing presentation/ordinary field-clock revisions, expected a
 clean field after resumed clock ticks, or used an English slot prefix in Chinese. The battle approach
 has no text wait, so it cannot prove story refusal; an initial Map3 story coordinate was rejected.
-The corrected story start above uses ordinary Talk to the adjacent NPC. Existing two/four ObjectDB
+The corrected story start above uses ordinary Talk to the adjacent NPC. Final error-classification review also found that Godot JSON reserialization changed integer wire spelling in the incompatibility control; the observer now edits only the original rules string and checks the specific compatibility message in both languages. Existing two/four ObjectDB
 shutdown warnings remain #1716. No production exception or save mutation outside the disposable
 selected namespace was observed. Local reports retain each completed failure; no slow aggregate
 suite or full campaign was rerun to replace them.
