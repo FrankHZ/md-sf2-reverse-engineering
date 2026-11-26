@@ -64,6 +64,7 @@ internal static class PrivateAttackSpellBindings
             if (source.Code == "DESOUL")
             {
                 string selector = source.Level == 1 ? "DESOUL" : "DESOUL|VARIATION2";
+                animation = (byte)(3 | (source.Level - 1) << 5);
                 Require(source.AnimationExpression == selector, "source-attack-animation", "spells.animation", true);
             }
             if (source.Code is "BLAZE" or "FREEZE" or "BOLT")

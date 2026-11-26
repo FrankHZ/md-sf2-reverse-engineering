@@ -64,8 +64,8 @@ of recipients and actual reaction results follow the committed action.
 
 ## Graphics variants
 
-Prepared BLAZE1–4, FREEZE1–4, BOLT1–4, BLAST1–4, breath and wave rasters can select a complete optional HD
-frame group from the battle scene. The light fairy uses a single group for body, wings and
+Prepared BLAZE1–4, FREEZE1–4, BOLT1–4, BLAST1–4, DESOUL1–2, breath and wave rasters can select a
+complete optional HD frame group from the battle scene. The light fairy uses a single group for body, wings and
 dust. Partial groups use the complete Original art. Effect positions, mirroring, opacity
 and Reduced Flash read the existing playback state. Higher density keeps the Original
 draw extents and does not change cast or result delivery. Placeholder effects remain as
@@ -88,7 +88,7 @@ listed by rank below. [Binding contract](../content/asset-inventory.md#battle-ra
 | ATTACK 1 | BUFF1 v1 | **Original mechanism bound** for admitted equipment Use. Power Ring, Protect Ring, Valkyrie and Wish Staff have controlled native witnesses. Private learned ATTACK and ordinary enemy AI admission remain outside this binding. | [BUFF playback](#buff-family-playback-2282); [equipment authority](../domain/equipment-use-repair-design.md). |
 | DISPEL 1 | DEBUFF1 v1 | **Original assets bound** for learned Kazin and existing Dark Smoke AI in the [DISPEL successor](../content/presentation-assets.md#dispel-successor). Controlled mixed results, paid silence and Original/HD fallback use ordinary input and completion. | [DISPEL playback](#dispel-playback-implementation-2238) records the source, responsibilities and reproduction. Natural learning/reach and hardware timing remain **Unknown**. Grand Cannon Use has [controlled Item-gesture playback](#debuff-family-playback-2280). |
 | MUDDLE 1–2 | DEBUFF1 v1 for both | **Original assets bound**. Both learned Kazin ranks share DEBUFF1; controlled Battle26 mixed-result casts and Giant Knuckles Use mount the same clouds. Item retains its own gesture and wear. Controlled Battle25 rank-2 automatic actions and cold Continue retain their gameplay witnesses. | [DEBUFF family playback](#debuff-family-playback-2280). [Accepted MUDDLE evidence](../domain/hostile-spells-design.md#controlled-muddle-2-and-cold-continue-in-battle25) |
-| DESOUL 1–2 | DESOUL v1–v2 | **Learned Magic bound.** Controlled Battle26 Kazin casts both ranks with spell-8 icons and localized cast, instant-death, ineffective and reward messages on black. Dark Sword Use is admitted by the accepted equipment effect rules; original DESOUL presentation remains pending. | [#2104] owns original effects and timing. [DESOUL reproduction](../domain/hostile-spells-design.md#controlled-kazin-input-and-cold-continue) |
+| DESOUL 1–2 | DESOUL v1–v2 | **Original assets bound** for learned Magic and Dark Sword Use in all 26 admitted scenes with the DESOUL package. Rank 2 adds two souls. Only an instant-death result strikes. Dark Sword uses variation 1 with its Item gesture. | [Playback and evidence](#desoul-family-playback-2307) · [Rule and settled-save evidence](../domain/hostile-spells-design.md#desoul-12-implementation-and-evidence) |
 | SLEEP 1 | DEBUFF1 v1 | **Original assets bound**. A controlled Tyrin 25 Battle26 slot exercises private Magic, both original icons, localized result/no-effect feedback and cold Continue with an active sleep count. The shared DEBUFF cloud scene now carries ordered effective/ineffective results. Natural Tyrin progression to a cast remains **Unknown**. | [DEBUFF family playback](#debuff-family-playback-2280). [SLEEP boundary](../domain/hostile-spells-design.md#sleep-1-implementation-and-evidence) |
 | EGRESS 1 | NONE | **Modern presentation**. Eligible retreat uses the same text, pulse, tone and fade for spell and Angel Wing, with different payment. Battle02 native witnesses cover cancellation, return and walking retry. Later encounters supply their own retreat destinations. | Preserve the accepted [retreat delivery](battle-scenes.md#authored-egress-delivery). Encounter admission belongs to [#1818]. Original visual/audio parity is **Unknown**. |
 
@@ -1792,3 +1792,101 @@ both tool Release builds pass with zero warnings/errors. Ruff, design-contracts 
 research-index direct checks pass. No rules changed and no verification-tool tests were
 added. Native evidence is independent of optional unit skips. The Draft PR records actual
 remote CI and the frozen head/tree/base for independent main-gate acceptance.
+
+## DESOUL family playback #2307
+
+**Standard scope.** Learned DESOUL 1/2 and Dark Sword (70) Use share the reaper effect and
+the existing battle scene continuation through Battle26. The effect follows the typed
+result. The existing action owns MP, silence, selected-copy wear, target order,
+death, custody, rewards and the outcome or next turn.
+
+### DESOUL source and delivery
+
+**Confirmed source.** At USA SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+the two learned ranks select animation 3 and 35. The Item caller resolves the item's
+spell operand while keeping the Item gesture. Dark Sword selects DESOUL 1.
+Learned silence selects NONE.
+[Spell definitions](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/stats/spells/spelldefs.asm) ·
+[Caller selection](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/getspellanimation.asm)
+
+Setup (`0x1A73A..0x1A848`) loads tileset 13, plays cast cue 77 and assigns a 16-entry
+horizontal backdrop offset table. After VDP bias, the two side origins are (64,24)
+and (144,40). Update (`0x1C248..0x1C53E`) composes the 64×48 reaper from four
+column-major sprites and plays cue 110 on orientation changes. Variation 2 adds two
+16×16 souls at vertical offsets −16 and +32. Their frames alternate every six ticks
+and they reverse every 60 ticks after staggered starts. The death branch
+(`loc_18F26` / `loc_19076`) signals the strike, with 20 ticks of preparation,
+strike tiles and cue 106, then 32 ticks of recovery. Ineffective results retain hover.
+[Setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/desoul.asm) ·
+[Update](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/desoul.asm) ·
+[Result caller](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/battlesceneengine_0.asm)
+
+**Modern presentation.** The actor animation trigger starts a one-second cast window.
+After a 28/60-second flash interval, the reaper hovers on a deterministic schedule while
+the backdrop shader uses the source offsets over its upper 96 logical rows. Each
+`InstantDeath` reaction holds the scene for at least 52/60 second, starting its strike
+and cue at 20/60 second. Ineffective reactions keep the hover without a strike or cue 106.
+The view resets at reward, scene end or field death. Reduced Flash removes the caster
+flash and ripple, flattens the hover bob and holds the soul frame. Held 1.5× uses the
+shared scene clock. Playback draws no gameplay RNG. Cast 77 and hover 110 use inherited
+audio. The package adds the prepared strike 106, using the session's YM5 replacement slot.
+[Presenter](../../game/src/Battles/DesoulEffectView.cs) ·
+[Scene and completion](../../game/src/Battles/BattleSceneView.cs) ·
+[Audio routing](../../game/src/Audio/SessionAudio.cs)
+
+All four rasters form one atomic group for both variations. Complete 4× HD retains
+Original logical extents. An incomplete HD group uses all four Original bindings.
+Without the complete Original group, learned DESOUL and Dark Sword Use both present
+their battle messages on black. Silenced Magic keeps paid
+suppression feedback. [Asset inventory](../content/asset-inventory.md#desoul-raster-family-2307)
+
+### DESOUL reproduction and verification
+
+Select `derived/issue2307/desoul-v1` together with independent #2252 opening, #2255
+Witch and #2266 catalog inputs. The registered review package supplies the selectors,
+five controlled records, consumer and ordinary-input launchers. Use the
+[locked Debug adapter workflow](../development-and-verification.md#locked-net-workflow)
+before native input. Run the launchers from the repository root with a fresh sample
+name and an absolute disposable external save root.
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2307/review-v1'
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case desoul2 `
+  -Sample desoul2-review -SaveRoot $freshExternalSaveRoot -Graphics hd
+# Other cases: desoul1, miss, silence, dark-sword.
+# For desoul2, also use -Graphics hd -Reduced -Fast and -Graphics hd -Variant incomplete.
+```
+
+**Confirmed in the remake.** The production reader admitted 26 scenes, 52 learned
+rank bindings and 26 Dark Sword bindings, and restored all five controlled records.
+The [native observer](../../game/probes/engine_desoul_family_observation.gd) checks
+ordinary input, actor/scenery and texture projection, one payment for Magic, ordered
+HP application and death cleanup, one action reward and usable next input. Require
+`passed: true`, process exit 0 and no script or adapter errors. Battle26 covered
+Kazin rank 1 death, rank 2 ordered death then ineffective, all-ineffective rank 1,
+paid silence without an effect, and Dark Sword Item at zero MP while silenced, with
+one selected-copy wear draw. HD, Reduced Flash with held 1.5×, and incomplete-HD
+fallback passed. With producer scratch unavailable, the published reader and HD
+settings entry passed. Independent review repeated the locked Debug build, reader,
+DESOUL 2 HD and Dark Sword Original from the published inputs. The two native runs
+exited 0 and accepted further input. The HD run retained eight ObjectDB exit
+warnings under [#1716](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1716).
+
+The implementation gates reported 3,383 engine passes with 50 optional private-input
+skips, passing locked Debug/Release adapter builds, both tool Release builds, H4
+compile and direct Ruff, design-contract and research-index checks. The committed
+engine-scope plan includes the DESOUL mount with no unclassified paths. The
+[Draft PR](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/2318) owns the
+CI results. `derived/issue2307/verification-v1` retains the receipts, including
+preparation interpreter/format/audio-selection failures, the initial missing audio
+slot, the first Item observer's incorrect expectations and the unregistered-mount
+planner refusal. Some successful native runs retained six to eight ObjectDB exit
+warnings.
+
+**Unknown.** Natural learning, acquisition and reach, retail hardware cadence and
+palette behavior, actual GPU ripple appearance and human visual acceptance. These
+headless witnesses establish state, input and resource projection through nonterminal
+return. Terminal, immunity, reward and custody behavior retain their
+[engine evidence](../domain/hostile-spells-design.md#desoul-12-implementation-and-evidence).

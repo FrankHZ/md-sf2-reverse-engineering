@@ -473,6 +473,7 @@ def mount(
         "freeze-family",
         "bolt-family",
         "blast-family",
+        "desoul-family",
         "blast-1",
     }
     if "equipment" in families and upstream is None:
@@ -527,9 +528,16 @@ def mount(
             "freeze-family",
             "bolt-family",
             "blast-family",
+            "desoul-family",
             "blast-1",
         }
-        complete_spell_families = {"flame-family", "freeze-family", "bolt-family", "blast-family"}
+        complete_spell_families = {
+            "flame-family",
+            "freeze-family",
+            "bolt-family",
+            "blast-family",
+            "desoul-family",
+        }
         spell_only = selected == spell_families and bool(spell_families)
         if spell_families:
             for row in world["encounters"]:
@@ -546,7 +554,13 @@ def mount(
             main = read_json(base / "main-scenes.json")
             spell_scenes[int(main["encounter"].split("-")[-1])] = Path("main-scenes.json")
         spell_paths = set(spell_scenes.values())
-        if spell_families & {"blast-1", "freeze-family", "bolt-family", "blast-family"}:
+        if spell_families & {
+            "blast-1",
+            "freeze-family",
+            "bolt-family",
+            "blast-family",
+            "desoul-family",
+        }:
             spell_paths.add(Path("world.json"))
         indra_only = selected == {"indra"}
         battle26_scene = Path("inputs/battle26/battle-scenes.json")
@@ -579,12 +593,19 @@ def mount(
                 spell_families,
                 load_filter(gfx_root)[1] if gfx_root is not None else None,
             )
-            if spell_families & {"blast-1", "freeze-family", "bolt-family", "blast-family"}:
+            if spell_families & {
+                "blast-1",
+                "freeze-family",
+                "bolt-family",
+                "blast-family",
+                "desoul-family",
+            }:
                 for family, command in (
                     ("blast-1", 114),
                     ("freeze-family", 120),
                     ("bolt-family", 119),
                     ("blast-family", 114),
+                    ("desoul-family", 106),
                 ):
                     if family in spell_families:
                         mount_prepared_audio(
@@ -668,6 +689,8 @@ def mount(
             bind_promotion_progression(world, upstream, promotions)
         if spell_families & {"blast-1", "blast-family"}:
             mount_prepared_audio(root / "sfx/114", 114, dest, presentation)
+        if "desoul-family" in spell_families:
+            mount_prepared_audio(root / "sfx/106", 106, dest, presentation)
         if "bolt-family" in spell_families:
             mount_prepared_audio(root / "sfx/119", 119, dest, presentation)
         if "freeze-family" in spell_families:

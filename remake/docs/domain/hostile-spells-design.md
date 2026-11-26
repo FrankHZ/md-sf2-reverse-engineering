@@ -291,9 +291,10 @@ after-action continuation. The shared death batch owns actual and forced deaths 
 accounting. The settled save persists the existing fields, including the next queue position,
 both RNG values, MP, EXP, kills, gold and custody. No new persisted effect field is needed.
 Private Content admits the exact source ranks and flags, including their source animation
-expressions. That admission is independent of the icon mount. Godot renders the ordinary
-localized cast, death, ineffective and award messages on black. Source DESOUL animation v1/v2
-is tracked by [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
+expressions. That admission is independent of the icon mount. With the prepared DESOUL
+package, Godot shows the reaper during learned Magic and Dark Sword Use. The typed
+`InstantDeath` reaction triggers the strike and leaves HP, removal and rewards with the
+existing result sequence. [Current playback](../godot/spell-presentation.md#desoul-family-playback-2307)
 
 **Confirmed** in [engine behavior cases](../../tests/Sf2.Remake.Engine.Tests/DesoulSpellTests.cs).
 Rank 1 checks each resistance threshold, the all-miss award and halving, and the old HP/MP/status
@@ -302,14 +303,18 @@ legal area settlement. The connected cases exercise a leader kill, one chance dr
 next target draw, a pre-set flag, full-pack delivery to Deals, reward and forced cleanup before
 field return. A separate kill/miss/kill verifies two kill EXP and gold contributions, actual
 kill credit, and the caster's existing lethal after-turn poison producing defeat when the immune
-enemy survives. The zero-enemy variant reaches victory before that poison tick. Ordinary player
-admission excludes friendly targets. Enemy/automatic DESOUL and item-origin DESOUL are outside
-this binding.
+enemy survives. The zero-enemy variant reaches victory before that poison tick. These
+cases cover the learned opposing-target action. Dark Sword (70) has its own admitted
+Item action under #2273 and shares variation 1 under #2307. Enemy and automatic
+DESOUL remain outside current admission.
+[Equipment Use and wear](equipment-use-repair-design.md#dark-sword-presentation-2307)
 
 ### Controlled Kazin input and cold Continue
 
-**Confirmed** in the remake. Start with the registered issue1966 zh-CN-learned01 Battle26 slot used
-above. Kazin already has MAGE 29, 55 MP and packed `[139,71,6,72]`. Keep the class, party, book,
+**Confirmed** in the remake before the DESOUL art mount. This witness covers the
+localized message-only path, settled save and field return. Start with the registered
+issue1966 zh-CN-learned01 Battle26 slot used above. Kazin has MAGE 29, 55 MP and packed
+`[139,71,6,72]`. Keep the class, party, book,
 progress, deployment square, story and both seeds. In a disposable copy only, move Kazin from
 (5,25) to the free tile (11,24). At round 6 cursor 18, swap the actor identities at zero-based
 queue positions 2 and 18 (Kazin and Janet). Keep the stored queue scores. Write two copies of the

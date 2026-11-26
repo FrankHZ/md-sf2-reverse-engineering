@@ -23,6 +23,9 @@ internal sealed partial class BattleSceneView : Control
     private PhoenixWaveView _phoenixWave = null!;
     private DetoxEffectView _detox = null!;
     private DebuffEffectView _debuff = null!;
+    private DesoulEffectView _desoul = null!;
+    private bool PreparedDesoul(BattleSceneState state) => state.AttackAnimationSelector is 3 or 35 &&
+        !state.IsSilencedCast && Content is { } content && DesoulEffectView.Resources.All(content.Rasters.ContainsKey);
     private readonly BuffEffectView _buff = new();
     private bool _suspended;
     private Node2D _canvas = null!;
@@ -73,7 +76,7 @@ internal sealed partial class BattleSceneView : Control
 
     private bool UsesMessagePlayback(BattleSceneState state) =>
         state.SupportSpell is not null && state.EquipmentItem is null && !PreparedDebuff(state) && !PreparedBuff(state) || state.IsSilencedCast ||
-        state.AttackSpell?.IsInstantDeath == true || state.MuddleActionMessage is not null;
+        state.AttackSpell?.IsInstantDeath == true && !PreparedDesoul(state) || state.MuddleActionMessage is not null;
 
     private bool Suppressed(BattleSceneState state) => _settings.SuppressBattleHitCoinMessages && state.CanSuppressHitCoinMessage;
     internal bool WaitingForInput => _state is { RequiresAcknowledgement: true } state && !Suppressed(state) &&
@@ -93,6 +96,8 @@ internal sealed partial class BattleSceneView : Control
         _ground = Sprite("Ground", new(136, 140));
         _ally = Sprite("Ally", new(136, 64)); _ally.ZIndex = 2;
         _weapon = Sprite("Weapon", new(136, 64));
+        _desoul = new DesoulEffectView { Name = "DesoulEffect", ZIndex = 4 }; _canvas.AddChild(_desoul);
+        _desoul.ConfigureBackdrop(_background, _backgroundWrap);
         _debuff = new DebuffEffectView { Name = "DebuffEffect" }; _canvas.AddChild(_debuff);
         _detox = new DetoxEffectView { Name = "DetoxEffect" }; _canvas.AddChild(_detox);
         _canvas.MoveChild(_detox, _enemy.GetIndex());
@@ -133,6 +138,7 @@ internal sealed partial class BattleSceneView : Control
             Hide(); _laser.Hide(); _aura.Hide(); ResetRasterEffects();
             if (_detox.Active) _detox.Reset();
             if (_debuff.Active) _debuff.Reset();
+            _desoul.Reset();
             _buff.Reset(); _sceneBlack.Color = Colors.Black;
             RetireRasters(); _state = null;
             return;
@@ -172,7 +178,7 @@ internal sealed partial class BattleSceneView : Control
                 _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
                 return;
             }
-            if (state.AttackSpell is not null && state.AttackItem is null && !state.IsMonsterBreath && !state.IsFieldDeath && !_preparedAttackSpell)
+            if (state.AttackSpell is not null && state.AttackItem is null && !state.IsMonsterBreath && !state.IsFieldDeath && !_preparedAttackSpell && !PreparedDesoul(state))
             {
                 foreach (var node in new CanvasItem[] { _background, _backgroundWrap, _ground, _ally, _enemy, _weapon }) node.Hide();
                 foreach (var sprite in _fairyBodies.Concat(_fairyWings).Concat(_fairyDust)) sprite.Hide();
@@ -252,11 +258,11 @@ internal sealed partial class BattleSceneView : Control
                 if (state.Phase == BattleScenePhase.ActionAnimation)
                 {
                     var sequences = (actor.IsAlly ? _allyVisual! : _enemyVisual!).Sequences;
-                    string sequence = state.Spell is not null || state.IsMonsterBreath || _preparedAttackSpell && state.AttackItem is null || (PreparedDebuff(state) || PreparedBuff(state)) && state.EquipmentItem is null ? "cast" : state.Item is not null || state.AttackItem is not null || state.EquipmentItem is not null ? "item" : "attack";
+                    string sequence = state.Spell is not null || state.IsMonsterBreath || (_preparedAttackSpell || PreparedDesoul(state)) && state.AttackItem is null || (PreparedDebuff(state) || PreparedBuff(state)) && state.EquipmentItem is null ? "cast" : state.Item is not null || state.AttackItem is not null || state.EquipmentItem is not null ? "item" : "attack";
                     if (sequence == "attack" && state.SpecialPhysicalAnimation) sequence = "special";
                     // battlesceneScript_PerformAnimation selects the ordinary sequence for these
                     // casters. Earlier packages expose it as ally idle or enemy attack.
-                    if ((_preparedAttackSpell || PreparedDebuff(state) || PreparedBuff(state)) && sequence == "cast" && !sequences.ContainsKey(sequence)) sequence = actor.IsAlly ? "idle" : "attack";
+                    if ((_preparedAttackSpell || PreparedDesoul(state) || PreparedDebuff(state) || PreparedBuff(state)) && sequence == "cast" && !sequences.ContainsKey(sequence)) sequence = actor.IsAlly ? "idle" : "attack";
                     var animation = sequences[sequence];
                     _animationIndex = animation.Index;
                     int skippedFrames = actor.IsAlly ? 1 : 0;
@@ -266,6 +272,10 @@ internal sealed partial class BattleSceneView : Control
                         _attackSpellStart = _frames.Take(Math.Max(0, animation.Trigger - 1 - skippedFrames)).Sum(frame => frame.Ticks) / 60.0;
                         _attackSpell.PrepareAttackSpell(state, Frames(preparedResources!), target.IsAlly, _settings.ReducedFlash);
                     }
+                    if (PreparedDesoul(state))
+                        _desoul.Begin(Frames(DesoulEffectView.Resources),
+                            _frames.Take(Math.Max(0, animation.Trigger - 1 - skippedFrames)).Sum(frame => frame.Ticks) / 60.0,
+                            (state.AttackAnimationSelector!.Value >> 5) + 1, target.IsAlly, _settings.ReducedFlash);
                     if (PreparedBuff(state))
                         _buff.Begin(_frames.Take(Math.Max(0, animation.Trigger - 1 - skippedFrames)).Sum(frame => frame.Ticks));
                     if (PreparedDebuff(state))
@@ -287,6 +297,7 @@ internal sealed partial class BattleSceneView : Control
                 if (state.Phase == BattleScenePhase.Reaction && state.ReactionKind == "Dodge")
                     _frames = (target.IsAlly ? _allyVisual! : _enemyVisual!).Sequences["dodge"].Frames.Skip(target.IsAlly ? 1 : 0).ToArray();
             }
+            _desoul.Present(state);
             _ally.Position = new(136, 64); _enemy.Position = new(16, 48);
             _background.Position = new(0,56); _backgroundWrap.Position = new(256,56); _ground.Position = new(136,140);
             _ally.Modulate = _enemy.Modulate = Colors.White;
@@ -332,6 +343,7 @@ internal sealed partial class BattleSceneView : Control
         RefreshMessageHint(state);
         if (_detox.Active) _detox.Advance(delta);
         if (_debuff.Active) _debuff.Advance(delta);
+        if (_desoul.Active) _desoul.Advance(delta, cue => _audio?.PlayEffect(cue));
         _revealed += delta * _settings.CharactersPerSecond;
         if (_message.VisibleCharacters >= 0) _message.VisibleCharacters = (int)_revealed;
         if (state.IsHealingMessage && state.Healing is { Delivered: false } message &&
@@ -356,6 +368,13 @@ internal sealed partial class BattleSceneView : Control
         }
         RefreshMessageHint(state);
         _elapsed += delta;
+        if (_desoul.Active && !state.RequiresAcknowledgement) _desoul.Advance(delta, cue => _audio?.PlayEffect(cue));
+        bool desoulCast = _desoul.Active && state.Phase == BattleScenePhase.ActionAnimation;
+        if (desoulCast)
+        {
+            var caster = _session.Current.Battle.GetActor(state.Actor).IsAlly ? _ally : _enemy;
+            caster.Modulate = !_settings.ReducedFlash && _desoul.Flash ? new Color(1f/7, 1f/7, 1f/7) : Colors.White;
+        }
         bool buffCast = _buff.Active && state.Phase == BattleScenePhase.ActionAnimation;
         if (buffCast)
         {
@@ -399,7 +418,7 @@ internal sealed partial class BattleSceneView : Control
             if (_elapsed < 0.25) return null;
             _completed = true; return new CompletePresentation(state.Token, state.CompletionKind);
         }
-        if (state.AttackSpell is not null && state.AttackItem is null && !state.IsMonsterBreath && !_preparedAttackSpell)
+        if (state.AttackSpell is not null && state.AttackItem is null && !state.IsMonsterBreath && !_preparedAttackSpell && !PreparedDesoul(state))
         {
             if (!_attackSpell.Advance(_elapsed)) return null;
             _completed = true;
@@ -522,6 +541,9 @@ internal sealed partial class BattleSceneView : Control
             _phoenixWave.Advance(_elapsed - start);
             duration = Math.Max(duration, start + PhoenixWaveView.Duration);
         }
+        if (desoulCast) duration = Math.Max(duration, _desoul.CastDuration);
+        if (_desoul.Active && state.Phase == BattleScenePhase.Reaction && state.IsInstantDeath)
+            duration = Math.Max(duration, DesoulEffectView.StrikeDuration);
         if (buffCast) duration = Math.Max(duration, _buff.Duration - 28.0 / 60);
         if (debuffCast) duration = Math.Max(duration, _debuff.MinimumCastDuration);
         if ((detoxCast ? _detox.CastElapsed(_elapsed) : debuffCast ? _debuff.CastElapsed(_elapsed) : buffCast ? _buff.CastElapsed(_elapsed) : _elapsed) < duration ||
@@ -843,6 +865,7 @@ internal sealed partial class BattleSceneView : Control
         attackSpell = _state?.AttackSpell is not null && (_state.AttackItem is null || _preparedAttackSpell) ? _attackSpell.Observe() : null,
         monsterBreath = _state?.IsMonsterBreath == true,
         phoenixWave = _phoenixWave.Observe(),
+        desoul = _desoul.Observe(),
         detox = _detox.Observe(),
         debuff = _debuff.Observe(),
         buff = _buff.Observe(), buffBackdrop = _sceneBlack.Color.ToHtml(),
