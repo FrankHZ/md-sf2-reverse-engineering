@@ -82,6 +82,9 @@ internal sealed partial class SettingsView
             var preview = Preview(pending);
             var oldMenu = GameInput.BaseRows(_draft)["menu"]; var nextMenu = GameInput.BaseRows(preview)["menu"];
             if (_action != "menu" && !All(oldMenu).SequenceEqual(All(nextMenu))) text += "\n" + S("fallback", ListText(All(nextMenu)));
+            var oldEquipment = GameInput.BaseRows(_draft)["equipment"]; var nextEquipment = GameInput.BaseRows(preview)["equipment"];
+            if (_action != "equipment" && !All(oldEquipment).SequenceEqual(All(nextEquipment)))
+                text += "\n" + S("equipment") + ": " + S("pending", ListText(All(nextEquipment)));
         }
         return text;
     }
@@ -135,7 +138,8 @@ internal sealed partial class SettingsView
         var pending = new ActionBinding(Codes(Kind.Key), Codes(Kind.Button), Codes(Kind.Axis));
         if (next != null)
         {
-            var other = GameInput.BaseRows(Preview(pending)).FirstOrDefault(p => p.Key != _action && All(p.Value).Contains(next));
+            var other = GameInput.BaseRows(Preview(pending)).FirstOrDefault(p => p.Key != _action &&
+                GameInput.BindingsConflict(p.Key, _action, _draft) && All(p.Value).Contains(next));
             if (other.Key != null) { Reject(S("duplicate", LabelFor(next), S(other.Key))); return; }
         }
         _proposal = pending;

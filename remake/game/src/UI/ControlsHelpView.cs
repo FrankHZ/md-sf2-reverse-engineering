@@ -86,7 +86,7 @@ internal sealed partial class ControlsHelpView : Control
         _title.Text = GameText.Get("host.help-title", Text(page.Group), _page + 1, Pages.Length);
         string note = page.Note == "controls.acceleration.note"
             ? GameText.Get(page.Note, Input.Settings.AccelerationMultiplier) : Text(page.Note);
-        _body.Text = note + string.Concat(page.Rows.Select(row => $"\n\n{Text(row.Meaning)}\n{Input.Hint(row.Action)}"));
+        _body.Text = note + string.Concat(page.Rows.Select(row => $"\n\n{Text(row.Meaning)}\n{Binding(row)}"));
         _hint.Text = GameText.Get("host.help-hint", Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right),
             Input.CompactHint(GameAction.Confirm), Input.CompactHint(GameAction.Up), Input.CompactHint(GameAction.Down), Input.CompactHint(GameAction.Cancel));
         string[] keys = ["host.help-previous", "host.help-next"];
@@ -94,6 +94,7 @@ internal sealed partial class ControlsHelpView : Control
         _scroll.ScrollVertical = 0;
     }
     private static string Text(string value) => (value.StartsWith("controls.", StringComparison.Ordinal) || value.StartsWith("host.", StringComparison.Ordinal)) ? GameText.Get(value) : value;
+    private string Binding(Row row) => row.Meaning == "host.help-text-14" ? Input.GameplayCancelBindingsHint() : Input.Hint(row.Action);
     internal void Handle(GameAction action)
     {
         if (action == GameAction.Cancel) Back();
@@ -111,5 +112,5 @@ internal sealed partial class ControlsHelpView : Control
     public string ReadControlsHelpObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
     { page = _page, count = Pages.Length, group = Pages[_page].Group, title = _title.Text, body = _body.Text,
         hint = _hint.Text, scroll = _scroll.ScrollVertical,
-        rows = Pages[_page].Rows.Select(row => new { action = row.Action.ToString(), binding = Input.Hint(row.Action) }) });
+        rows = Pages[_page].Rows.Select(row => new { action = row.Action.ToString(), binding = Binding(row) }) });
 }

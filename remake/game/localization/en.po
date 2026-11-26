@@ -1863,7 +1863,7 @@ msgid "host.help-text-11"
 msgstr "Open Party Status"
 
 msgid "host.help-text-12"
-msgstr "Cancel opens the gameplay menu at settled field input: Up/Down select Member, Magic, Item or Search. Party Status remains a shortcut. Menu separately pauses exploration or battle for Settings, Save and Quit."
+msgstr "The gameplay-entry bindings below open Member, Magic, Item or Search at field control. Menu opens the separate system menu at field control or battle Movement. A shared Menu/Cancel binding opens Menu only at that base; in child pages it returns one level. Text keeps its own Cancel behavior. Party Status remains a shortcut."
 
 msgid "host.help-text-13"
 msgstr "Open / close system Menu"
@@ -1914,7 +1914,7 @@ msgid "host.help-text-28"
 msgstr "Open Item list from the command menu"
 
 msgid "host.help-text-29"
-msgstr "Lists use Up/Down and Confirm. Directions or Target cycle only legal targets. Hover a legal target to preview it; a complete click on that target executes the action immediately. Empty, defeated, wrong-side or out-of-range clicks cannot submit the earlier target. Cancel returns without committing. Cancel from Movement opens free inspection after undo. AI and rounds advance automatically."
+msgstr "Lists use Up/Down and Confirm. Directions or Target cycle only legal targets. Hover a legal target to preview it; a complete click executes it. Invalid cells cannot submit an earlier target. Cancel returns without committing. At Movement, use a Cancel binding distinct from Menu for inspection; Menu opens the system menu. AI and rounds advance automatically."
 
 msgid "host.help-text-30"
 msgstr "Next target"

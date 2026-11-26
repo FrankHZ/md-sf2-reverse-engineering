@@ -47,7 +47,7 @@ internal sealed partial class FieldMenuView : Control
             catch (Exception error) when (error is InvalidOperationException or ArgumentException) { AssetError = error.Message; }
         }
         Entry.Visible = entry && !Open && AssetError is null;
-        Entry.Text = input.CompactHint(GameAction.Cancel) + " · " + GameText.Get("field-menu.title");
+        Entry.Text = input.GameplayCancelHint() + " · " + GameText.Get("field-menu.title");
         _pointer.ReleaseIfNeutral(); if (!input.GameplayHeld) _requiresRelease = false;
         for (int i = 0; i < 4; i++) _available[i] = i == 3 ? search : i == 0 ? party : preparation;
         if (!Open) return;

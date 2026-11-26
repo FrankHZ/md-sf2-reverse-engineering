@@ -2,7 +2,7 @@
 
 ## Scope and ownership
 
-**Standard rigor; #1688, parent #1616.** Apply the accepted [F10 design](ui-scene-review.md#7-host-menu-settings-save-and-recovery)
+**Standard rigor; #1688, parent #1616.** Apply the accepted [host layout](ui-scene-review.md#7-host-menu-settings-save-and-recovery)
 to the ordinary game. This is a bounded presenter change within the existing High-rigor
 save/recovery agreements. The outcome is readable host pages with one input owner, explicit
 consequences and faithful return to the paused caller through the pre-voyage demo.
@@ -14,6 +14,15 @@ The existing [system Menu](presentation.md#system-menu-agreement-1518),
 [battle persistence](../application/battle-save-and-continue.md) retain behavior authority.
 The host delegates journey admission and persistence to the existing save contracts. Battle,
 field/Party and shop presenters keep their separate owners.
+
+The **High-rigor #2287 input change** is governed by
+[Menu defaults and input precedence](input-remapping.md#system-menu-defaults-and-input-precedence-2287).
+Current fresh bindings are Escape / Start. Gameplay children consume their own return before a
+fresh base-level press can open the system Menu; the top-right pointer retains cover behavior.
+Explicit custom/legacy rows remain intact. That owner contains the current finite input reproduction;
+older F10-based observations below are retained evidence, not certification of current defaults.
+Their scripts need explicit legacy Menu preferences, and their text/ActionChoice cover checks need
+the pointer entry. No older suite was silently rerun or relabelled for this input cutover.
 
 ## Implemented composition and return
 

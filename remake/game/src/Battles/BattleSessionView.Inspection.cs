@@ -9,6 +9,10 @@ public sealed partial class BattleSessionView
 {
     internal UI.MemberPageView? NativeMembers => _inspection?.NativeMembers;
     internal bool Inspecting => _inspection?.Active == true;
+    internal bool SystemMenuBase => !Inspecting && _session?.Current is { HasBattleControl: true,
+        BattleMovement: null, Selection.Stage: BattleSelectionStage.Movement };
+    internal bool MenuBack => Inspecting || _session?.Current is { HasBattleControl: true,
+        BattleMovement: null, Selection.Stage: not BattleSelectionStage.Movement };
     internal Action? RequestSpeed { get; set; }
     internal Action? RequestQuit { get; set; }
     internal bool CanOpenBattleQuit => _inspection?.Active == true && _inspection.Page == "Options" &&
