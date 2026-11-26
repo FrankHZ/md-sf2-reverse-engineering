@@ -16,6 +16,24 @@ def wait_host(client, ready):
     raise ValueError("expected host state did not arrive before deadline")
 
 
+def wait_witch_menu(client):
+    # Slot discovery is asynchronous. Service only its menu while focus pauses
+    # publication. Space the small frame grants so disk/content work can finish.
+    budget = 120
+    deadline = time.monotonic() + 30
+    while time.monotonic() < deadline:
+        host = client.request("observe host")["data"]
+        stage = (host["entry"] or {}).get("stage")
+        if stage == "menu" and host["runFramesRemaining"] == 0:
+            return
+        paused = not host["focused"] and not host["runInBackground"]
+        if stage == "checking-saves" and paused and host["runFramesRemaining"] == 0 and budget:
+            client.request("clock run 2")
+            budget -= 2
+        time.sleep(0.25)
+    raise ValueError("Witch menu did not settle within the frame and time budgets")
+
+
 def round_trip(client):
     host = wait_host(client, lambda sample: sample["opening"]["active"] or sample["entry"])
     if host["opening"]["active"]:
@@ -25,10 +43,7 @@ def round_trip(client):
         raise ValueError("title music missing")
     client.request("menu confirm")
     client.request("witch skip")
-    host = client.request("observe host")["data"]
-    if host["entry"]["stage"] == "checking-saves" and not (host["focused"] or host["runInBackground"]):
-        client.request("clock run 120")
-    wait_host(client, lambda sample: sample["entry"]["stage"] == "menu" and sample["runFramesRemaining"] == 0)
+    wait_witch_menu(client)
     client.request("menu back")
     back = wait_host(client, lambda sample: sample["entry"]["stage"] == "title")
     if back["opening"]["active"] or back["entry"]["audio"]["musicCue"] != "MUSIC_TITLE":

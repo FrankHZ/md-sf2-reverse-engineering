@@ -85,6 +85,52 @@ partway through a movement or wait. Inspect state before granting further time.
 Connection, observation and disconnect grant zero frames. The frame budget and a
 dispatched token-bound reading intent survive disconnect and physical focus loss.
 
+## Native acceptance and reproduction
+
+**Confirmed:** product commit `3077da05978fa7e415d41534f90393a284016561` served v2
+from the development main scene and a freshly built, relocated Windows x86_64 Release.
+The Release build used the [registered packaging recipe](../windows-local-candidate.md#build-and-run),
+196 inputs (408,278,969 bytes) and a clean source tree. Build time was 50.29 seconds,
+67.30 seconds including ZIP. The relocated process ran from a separate cwd with
+OS-only PATH and developer content/SDK variables cleared. Each handshake matched the
+native PID, module ID and build kind.
+
+Use fresh disposable namespaces for each run. Select Off or On in the ordinary
+format-1 preferences (`runInBackground`). Verify the game once owns the foreground,
+then move focus to a separate window and minimize the game. Require the native
+foreground PID to differ from the handshake PID and `observe host.focused` to be
+false. Repeat these three short cases in each build with each preference.
+
+| Case | Reproduction and actual result |
+| --- | --- |
+| Title and connection lifetime | Run the title round trip, take `menu confirm`, `witch skip`, wait for slot discovery, then select Continue. Acknowledge text 225. The empty disposable history opened `continue-slots` and Back returned to Witch. At menu index 0 send one complete `menu down` line and disconnect before reading its reply. Reconnect and read twice. Index 1 persisted. Restore focus and press ordinary Down once. Index 2 persisted with both gameplay hold and release barrier false. |
+| Field | Launch with `-- --authored-package <absolute path to remake/content/authored/harbor-arrival.json>`. Read state twice about 0.4 s apart. With Off the Release tick held at 53 with equal revision and random seed copy. With On it advanced 96→124. From quay (1,1), `field down` settled at (1,2). With Off grant 40 frames and wait for the budget to expire. A single `field up` submitted before a focus loss settled back at (1,1). Open the system menu, confirm Settings, return twice. Field movement under the menu was refused. Face the ferryman with `field right`, then `field interact`. Two separate `story confirm` requests took the dialogue to a choice and the selected choice to the next dialogue with flags 10,12,13,14,15. Grant bounded playback between waits with Off. |
+| Battle | Use the same authored option with `early-ranged.json`. Allow ordinary playback to the lancer's Movement decision (60 frames with Off). `field interact` was refused. `battle confirm` reached ActionChoice at revision 4. `battle stay` and ordinary playback reached the archer's Movement decision at revision 6. |
+
+**Confirmed:** the minimized Release also completed New Game and cold Continue with
+Off. Select the fresh Witch New Game row, confirm the new slot, confirm the valid
+default name, then choose Start in the ordinary confirmation. After Map3 attached,
+restart against that isolated namespace. Continue selected the saved row. Confirm
+the slot and farewell texts 226 and 224. The second process projected Map3 at
+revision 4 with no field failure while its window remained minimized.
+
+Focus preflights that relied on launch style, visibility or an unverified native
+click failed. At startup Godot could still report focus with a different Windows
+foreground PID. The verified transfer above established the background condition.
+An early cold Continue reached Map3 but failed its final focus assertion. A separate
+attempt exhausted one upfront clock grant before asynchronous slot discovery was
+published. The title client now spaces two-frame grants during slot discovery with a
+120-frame total and a 30-second deadline. An earlier client returned with its run
+still active, so a second grant correctly returned `run-in-progress`. The current
+client waits for the budget to expire. These controls and the successful cold run
+use the same Release assembly.
+
+**Unknown:** passive startup behavior for a never-activated hidden window, natural
+voyage/dock state and unexercised battle or story contexts. The previous endpoint's
+focused keyboard, disabled-listener, bind-conflict and framing results, including
+the original CS0234 build failure, are preserved with the
+[version-1 owner](https://github.com/FrankHZ/md-sf2-reverse-engineering/blob/38f2b7bafb45c92e47733ebb2d3b7db01b3abb2f/remake/docs/verification/debug-port.md#runtime-acceptance).
+
 ## Migration and specialized consumers
 
 Version 1 synthesized mapped keyboard edges and required focus for key-down.
