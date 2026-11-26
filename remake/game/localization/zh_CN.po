@@ -570,7 +570,13 @@ msgid "save.offer"
 msgstr "保存当前进度。继续游戏将返回当前场景的{0}。"
 
 msgid "slot.record"
-msgstr "槽位 {0} · {1}\n{2} · {3} UTC"
+msgstr "槽位 {0} · {1}\n{2} · {3}"
+
+msgid "slot.level"
+msgstr "等级 {0}"
+
+msgid "slot.level-unknown"
+msgstr "等级未知"
 
 msgid "slot.output"
 msgstr "输出文件：{0}"

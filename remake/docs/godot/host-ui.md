@@ -55,7 +55,8 @@ installed multiplier and bindings. The same preference applies to eligible explo
 
 The shared slots use the same square theme for both Witch entry and gameplay callers. Gameplay
 Save/Quit has a 1040px capped panel and bounded reading, with its hint outside the scrolling region.
-Full name, date, destination, backup and failure information remains available. Ordinary numbered
+Rows show slot number, full protagonist name, saved level and local date/time; backup and failure
+information remains independently readable. Ordinary numbered
 history supports paging and a new numbered destination on write entry.
 Left/Right and mouse scroll read long slot labels. Save confirmation starts on Cancel. Returning
 from confirmation restores the chosen slot; Back from slots restores the originating system Save
@@ -207,11 +208,15 @@ early storage failure. Confirm the overwrite and verify the storage diagnostic a
 primary and backup. For the New Game path, choose Create a New Save from the format error,
 check the name entry, cancel, then overwrite slot 1 through the final Start confirmation.
 
-## Dedicated numbered-save and native recovery demo
+<a id="dedicated-numbered-save-and-native-recovery-demo"></a>
+
+## Numbered-save Main state and input checks
 
 **Accepted design #2215 / #2223, implemented in #2224. Standard rigor** covers the interaction
 between numbered storage, host input and the native client. Run [Main.tscn](../../game/Main.tscn)
-in a dedicated process at the real root window. The ordinary title, Witch and field Menu reach
+in an isolated process at the real root window. This is ordinary Main state/input verification,
+not the dedicated DesignPreview visual demo. Do not capture screenshots here.
+The ordinary title, Witch and field Menu reach
 the sample. The [save contract](../application/battle-save-and-continue.md#manual-save-history-and-developer-files)
 and [window contract](presentation.md#window-support-and-recovery-1455) own the behavior.
 
@@ -227,14 +232,16 @@ that namespace. App data, TEMP, logs, seed and baseline stay in ignored worktree
 ```powershell
 $ErrorActionPreference = 'Stop'
 . ./local/private-inputs.ps1
-$package = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2179/pre-voyage-entry-v1'
+$package = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2282/buff-v1'
 $env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $package 'world.json'
 $env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $package 'main-scenes.json'
-$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $package 'entry/entry.json'
+$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2255/witch-entry-v1/entry.json'
+$env:SF2_PRIVATE_OPENING_CONTENT = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2252/pre-voyage-opening-v1/opening/opening.json'
+$env:SF2_ENTRY_DISPLAY_CATALOG = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2255/witch-entry-v1/entry.zh-CN.json'
 foreach ($file in Get-ChildItem -LiteralPath "$package/opening-inputs" -Filter 'SF2_PRIVATE_*.json' -File) {
     [Environment]::SetEnvironmentVariable($file.BaseName, $file.FullName, 'Process')
 }
-$env:SF2_DISPLAY_CATALOG = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/issue1870/catalog02/world.zh-CN.json'
+$env:SF2_DISPLAY_CATALOG = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2266/catalogs-v1/world.zh-CN.json'
 if (![IO.Path]::IsPathFullyQualified($disposableSaveRoot) -or
     !(Test-Path -LiteralPath $disposableSaveRoot -PathType Container)) { throw 'Select an external disposable save root' }
 $env:SF2_SAVE_ROOT = $disposableSaveRoot
@@ -243,11 +250,10 @@ $historyFiles = @(2..7 | ForEach-Object { "slot$_.json" }) + 'slot7.bak'
 
 function Invoke-NumberedSaveReview {
     param(
-        [Parameter(Mandatory)][ValidateSet('seed', 'stage', 'continue', 'save', 'launch')][string]$Case,
+        [Parameter(Mandatory)][ValidateSet('seed', 'stage', 'continue', 'save', 'summary', 'launch')][string]$Case,
         [string]$From,
         [ValidateSet('en', 'zh-CN')][string]$Language = 'en',
-        [string]$Resolution = '1600x900',
-        [switch]$Stills
+        [string]$Resolution = '1600x900'
     )
     $space = "ui-host-review-$([guid]::NewGuid())"
     $run = (New-Item -ItemType Directory -Path "$review/$Case-$space").FullName
@@ -256,7 +262,9 @@ function Invoke-NumberedSaveReview {
     $slots = (New-Item -ItemType Directory -Path "$save/sf2-opening").FullName
     $prefs = (New-Item -ItemType Directory -Path "$save/sf2-preferences").FullName
     if ($Case -ne 'seed') {
-        $files = if ($Case -eq 'stage') { @('slot2.json') } else { $historyFiles }
+        $files = if ($Case -eq 'summary') {
+            @(Get-ChildItem -LiteralPath $From -File | Where-Object Name -Match '^slot[0-9]+\.(json|bak)$' | Select-Object -ExpandProperty Name)
+        } elseif ($Case -eq 'stage') { @('slot2.json') } else { $historyFiles }
         foreach ($name in $files) {
             $copy = Join-Path $slots $name
             Copy-Item -LiteralPath (Join-Path $From $name) -Destination $copy
@@ -271,7 +279,7 @@ function Invoke-NumberedSaveReview {
     $env:TMP = $env:TEMP
     $env:SF2_HOST_UI_CASE = $Case
     $env:SF2_HOST_UI_OUTPUT = Join-Path $run 'native.json'
-    $env:SF2_HOST_UI_STILLS = if ($Stills) { '1' } else { '' }
+    $env:SF2_HOST_UI_STILLS = ''
     if ($Case -eq 'seed') {
         $env:SF2_HOST_UI_START = Join-Path $run 'start.json'
         @{ start = @{ map='map-3'; player='entity-0'; position=@{x=32;y=13}; facing=1; speed=32;
@@ -318,13 +326,13 @@ Each invocation copies the read-only baseline to another fresh namespace.
 $null = Invoke-NumberedSaveReview -Case launch -From $baseline
 ```
 
-Choose `-Language zh-CN` for Simplified Chinese. Keep the dedicated client visible. Choose
+Choose `-Language zh-CN` for Simplified Chinese. Keep the ordinary Main client visible. Choose
 `-Resolution 1920x1080` when a decorated client fits. The root window owns startup fit, resize
 admission and native Fullscreen.
 
 ### Routes and acceptance
 
-| Production route | Readback and visual acceptance |
+| Production route | State and input acceptance |
 | --- | --- |
 | Title → Witch → Continue → Next → slot 7 | Read the second page and Previous action. Verify the actual damaged-primary reason, backup identity and Cancel-first prompt. Cancel returns to the Witch caller with both files unchanged. Reopen the prompt and explicitly recover. Compare the installed primary and retained backup to the original backup bytes, then check the restored field progress and usable control. Use a fresh copy for the write review. |
 | Continue slot 2 → field → F10 → Save → Next → slot 7 | Read the protected-write reason and fresh-slot action. Back restores slot 7 on page 2, then the Save row in Menu, then field control. File bytes stay unchanged. On page 1, slot 6 shows the separate Cancel-first overwrite and its backup consequence. Cancel preserves bytes and selection. Confirm Save and Return on the reopened prompt and check that the previous slot 6 primary becomes its backup and the saved acknowledgement returns to the field. |
@@ -333,15 +341,20 @@ admission and native Fullscreen.
 The [numbered-save observer](../../game/probes/numbered_save_review.gd) reuses the ordinary host
 input and projections. It mounts Main in the native root, reads the actual client/mode and checks
 attached landing, names, gold and flags against the selected record. Review the report, native
-log and exit code. Add `-Stills` for individual local UI-page stills in this dedicated review
-only, under the [preview visual rules](../development-and-verification.md#dedicated-ui-preview-visual-review).
+log and exit code; leave `SF2_HOST_UI_STILLS` empty. For visual review, use the existing
+[DesignPreview](../../game/probes/previews/README.md) and its supported page routes under the
+[preview visual rules](../development-and-verification.md#dedicated-ui-preview-visual-review).
+Only that dedicated preview permits necessary local screenshots. If it lacks the affected state,
+record the visual coverage gap rather than capturing ordinary Main.
 
 ```powershell
-$null = Invoke-NumberedSaveReview -Case continue -From $baseline -Language zh-CN -Resolution 1920x1080 -Stills
-$null = Invoke-NumberedSaveReview -Case save -From $baseline -Stills
+$null = Invoke-NumberedSaveReview -Case continue -From $baseline -Language zh-CN -Resolution 1920x1080
+$null = Invoke-NumberedSaveReview -Case save -From $baseline
 ```
 
-**Confirmed** on a native Windows desktop with a 3586×2160 usable area. Chinese Continue at
+**Historical completed observation:** on a native Windows desktop with a 3586×2160 usable area,
+the following was **Confirmed**. Retained stills are past evidence, not authorization for new
+ordinary-Main screenshots. Chinese Continue at
 1920×1080 kept the damaged status, Previous, backup identity, primary detail and both actions
 readable. English Save at 1600×900 kept the protected-write reason, fresh slot and overwrite
 consequence above the fixed actions. The actual 1280×720 recovery cover hid Save and field,
@@ -358,6 +371,116 @@ that compared JSON numbers as dictionary variants. Fullscreen startup entered th
 3840×2160 mode. The 1920×1080 stills use a decorated client. Successful native
 processes returned 0. Some retained the existing two-instance ObjectDB exit warning. Physical
 fit on smaller work areas, DPI variations and display reading comfort remain **Unknown**.
+
+## Slot summary observation
+
+**Confirmed** by the `numbered_save_review.gd` `summary` case in English and Simplified Chinese,
+using the current package selections above and a disposable Map3 seed. It observes production
+`Label`/`SavedTime`, native button text/width, ordinary keyboard selection, refusal/recovery panels,
+page changes, Witch Continue, gameplay Save and overwrite Cancel. No screenshot or real player save
+is used. The two native runs each passed 89 checks. Ordinary `Bowie` and maximum-length `WWWWWWW`
+names remain complete; labels fit the reading width. All copied files remain byte-identical.
+
+Typed formatter controls deliberately differ from content defaults: field v6 level 41, legacy
+field v1 level 42, battle actor level 43 and retained ally level 44. They test display extraction,
+not gameplay admission or reach. An absent battle progress value gives the localized unknown-level
+label; an omitted legacy level fails the existing codec with `save-malformed`. Only the v6 Map3
+slot is continued through the ordinary reader. The synthetic battle rows are never mounted.
+
+On a host with `TimeZoneInfo.Local.Id == "Central Standard Time"`, the known instant
+`2026-01-01T02:30:00Z` displays `2025-12-31 20:30`. A direct typed `+08:00` representation of that
+instant gives the same result. This does not relax the disk codec's existing UTC-offset requirement.
+Spring inputs `2026-03-08T07:59Z` and `08:00Z` display `01:59` and `03:00`; autumn inputs
+`2026-11-01T06:30Z` and `07:30Z` both display `01:30`. These checks use the operating system's zone
+without changing machine configuration. On another host, supply independently calculated expected
+local values in the case file rather than changing the user's timezone.
+
+The existing read-only C# observation `ReadSaveSummaryObservationJson(path, savedAt)` accepts bounded
+worktree-local records. `savedAt` is an optional typed formatter control, not a write or a new load
+path. `SF2_SLOT_SUMMARY_CASES` selects a local JSON object with `language`, six expected `choices`
+and `records` entries (`id`, absolute local `path`, optional `savedAt`, and `expected` fields among
+`kind`, `label`, `level`, `time`, `zone`, `error`). The fixture recipe below builds these controls from
+one disposable seed using the existing codec shapes; its checksums are required save-envelope data.
+
+Use the environment and `Invoke-NumberedSaveReview` function above, then:
+
+```powershell
+$generated = Invoke-NumberedSaveReview -Case seed
+New-Item -ItemType Directory -Path local/issue2285 -Force | Out-Null
+Copy-Item -LiteralPath (Join-Path $generated 'slot2.json') -Destination local/issue2285/seed.json
+```
+
+Prepare the bounded local controls with Python (run from the repository root):
+
+```python
+from pathlib import Path
+import json,base64,hashlib,copy
+root=Path('local/issue2285'); baseline=root/'baseline'; baseline.mkdir(exist_ok=True); cases=root/'cases';cases.mkdir(exist_ok=True)
+r=json.loads(base64.b64decode(json.loads((root/'seed.json').read_bytes())['payload']))
+r['savedAt']='2026-01-01T02:30:00+00:00'; r['data']['registers']['names']={'ally-0':'WWWWWWW'}
+r['data']['party']['allies'][0]['level']=41
+p=r['data']['party']; reg=r['data']['registers']; ally=p['allies'][0]
+def write(path,obj):
+    raw=json.dumps(obj,ensure_ascii=False,separators=(',',':')).encode();path.write_text(json.dumps({'payload':base64.b64encode(raw).decode(),'sha256':hashlib.sha256(raw).hexdigest().upper()}),encoding='utf-8')
+for n in [2,3,5,6,7]:
+    row=copy.deepcopy(r);row['slot']=n
+    if n==3:row['data']['compatibility']['rules']='incompatible-summary-control'
+    if n==6:row['data']['registers']['names']={'ally-0':'Bowie'}
+    write(baseline/f'slot{n}.json',row)
+(baseline/'slot5.bak').write_bytes((baseline/'slot5.json').read_bytes());(baseline/'slot5.json').write_text('{');(baseline/'slot4.json').write_text('{')
+write(cases/'field.json',r)
+old={k:copy.deepcopy(v) for k,v in r.items() if k!='data'};old['formatVersion']=1
+old['data']={k:copy.deepcopy(v) for k,v in p.items() if k!='depot'}
+old['data'].update({k:copy.deepcopy(reg[k]) for k in ['names','flags','egressMap','stepCounter','textCursor','textSettings','fadePeriod']})
+old['data'].update(compatibility=r['data']['compatibility'],recipe='map3-opening',map='map-3',x=32,y=13,facing=1,music={'cue':'MUSIC_TOWN','previous':[]})
+old['data']['allies'][0]['level']=42;write(cases/'old.json',old)
+missing=copy.deepcopy(old);del missing['data']['allies'][0]['level'];write(cases/'old-missing-level.json',missing)
+absent={'present':False}
+def yes(value):return {'present':True,'value':value}
+progress={k:ally[k] for k in ['level','maxHp','maxMp','baseAttack','defense','agility']};progress.update(level=43,spells=[],sourceLoadout=absent)
+a={k:ally[k] for k in ['hp','mp','status','initialized']};a.update(actorId='ally-0',position=absent,deploymentPosition={'x':1,'y':1},facing=1,attack=6,aiMemory=0,exp=yes(0),kills=yes(0),defeats=yes(0),activationWord=yes(0),primaryOrder=absent,secondaryOrder=absent,lastTarget=absent,progress=yes(progress),loadout=absent)
+battle=dict(encounter=p['encounter'],actors=[a],mainSeed=1,thinkingSeed=2,round=1,queue=[],cursor=0,gold=60,options=dict(difficulty=0,allyAutoBattle=False,opponentControl=False,missingCandidateAllyWord=absent),regions=absent,deathCredit=absent,custody=dict(onceFlags=[],deals=[]),visuals=absent)
+axis=dict(position=0,destination=absent,speed=0)
+story={k:copy.deepcopy(reg[k]) for k in ['flags','names','stepCounter','egressMap','textCursor','textSettings','windowFixPending']}
+story.update(display=dict(period=3,base=reg['palette'],current=reg['palette'],visibility=0),logicalText=dict(open=False,x=0,y=0,row=0,animationLength=0,animationCounter=0,moving=False,indicator=0,indicatorVisible=False,originY=0,destinationY=0),logicalView=dict(area={k:0 for k in ["minX","minY","maxX","maxY","foregroundX","foregroundY","backgroundX","backgroundY","parallaxAX","parallaxAY","parallaxBX","parallaxBY","autoscrollAX","autoscrollAY","autoscrollBX","autoscrollBY","layer"]},targetSlot=absent,ax=axis,ay=axis,bx=axis,by=axis,followCounter=0,hideWindows=False),speaker=absent,entityServices=absent,saveAnchor=absent,music=dict(map='map-3',area=0,cue='MUSIC_TOWN',previous=[]),player=dict(entity='entity-0',speed=32,retainedAllies=[]))
+b={k:v for k,v in r.items() if k!='data'};b.update(formatVersion=2,kind='battle-player-input',data=dict(compatibility=r['data']['compatibility'],battleRecipeRevision=1,route=dict(map='map-3',ordinal=0),battle=battle,story=story));write(cases/'battle.json',b)
+u=copy.deepcopy(b);u['data']['battle']['actors'][0]['progress']=absent;write(cases/'battle-unknown.json',u)
+t=copy.deepcopy(b);t['data']['battle']['actors']=[]
+ret={k:ally[k] for k in ['hp','mp','status','absent']};ret.update(actor='ally-0',exp=yes(0),kills=yes(0),defeats=yes(0),positionOverride=absent,progress=yes(progress|{'level':44}),sourceLoadout=absent,activationWord=yes(0),initialized=yes(True),retainDeadPosition=False)
+t['data']['story']['player']['retainedAllies']=[ret];write(cases/'battle-retained.json',t)
+for lang in ['en','zh-CN']:
+    slot='Slot' if lang=='en' else '槽位'; lv='Lv.' if lang=='en' else '等级'
+    records=[]
+    for file,kind,level in [('field','FieldSnapshotRecord',41),('old','OpeningSaveRecord',42),('battle','BattleSaveRecord',43),('battle-retained','BattleSaveRecord',44),('battle-unknown','BattleSaveRecord',None)]:
+        leveltext=f'{lv} {level}' if level else ('Level unknown' if lang=='en' else '等级未知')
+        records.append(dict(id=file,path=str((cases/f'{file}.json').resolve()),expected=dict(kind=kind,level=leveltext,time='2025-12-31 20:30',label=f'{slot} 2 · WWWWWWW\n{leveltext} · 2025-12-31 20:30')))
+    records.append(dict(id='missing-old-level',path=str((cases/'old-missing-level.json').resolve()),expected={'error':'save-malformed'}))
+    for name,instant,expected in [('offset','2026-01-01T10:30:00+08:00','2025-12-31 20:30'),('spring-before','2026-03-08T07:59:00Z','2026-03-08 01:59'),('spring-after','2026-03-08T08:00:00Z','2026-03-08 03:00'),('fall-before','2026-11-01T06:30:00Z','2026-11-01 01:30'),('fall-after','2026-11-01T07:30:00Z','2026-11-01 01:30')]:
+        records.append(dict(id=name,path=str((cases/'field.json').resolve()),savedAt=instant,expected=dict(time=expected,zone='Central Standard Time')))
+    states=['Empty','Incompatible content or rules','Damaged save','\nRecoverable backup'] if lang=='en' else ['空槽位','存档内容或规则不兼容','存档已损坏','\n有可恢复的备份']
+    choices=[f'{slot} 1 · {states[0]}',f'{slot} 2 · WWWWWWW\n{lv} 41 · 2025-12-31 20:30',f'{slot} 3 · {states[1]}',f'{slot} 4 · {states[2]}',f'{slot} 5 · {states[2]}{states[3]}',f'{slot} 6 · Bowie\n{lv} 41 · 2025-12-31 20:30']
+    (root/f'cases-{lang}.json').write_text(json.dumps(dict(language=lang,records=records,choices=choices),ensure_ascii=False,indent=2),encoding='utf-8')
+print('Prepared bounded copied field and synthetic typed controls.')
+```
+
+After preparing the controls, run one fresh namespace per language with screenshot capture disabled:
+
+```powershell
+foreach ($language in @('en', 'zh-CN')) {
+    $env:SF2_SLOT_SUMMARY_CASES = (Resolve-Path "local/issue2285/cases-$language.json").Path
+    $null = Invoke-NumberedSaveReview -Case summary -Language $language -From (Resolve-Path local/issue2285/baseline).Path
+}
+```
+
+The probe skips the opening with ordinary input, waits for the Witch's save check and acknowledges
+Continue's question/recognition/farewell. Earlier attempts omitted those newer entry phases and
+failed before opening Menu or reaching the Witch menu; they did not establish a production prefetch
+failure. An initial synthetic battle fixture also used the wrong view-area/axis JSON shape and was
+rejected before formatting; the typed shape above corrects that fixture. Completed failures are
+retained in the Issue/PR handoff, not reclassified as interrupted runs. Passing native exits still
+report two `ObjectDB` instances leaked at shutdown; no adapter exception, game error or save mutation
+was observed. This slice does not claim to fix that shutdown warning or certify broader startup,
+performance, story progression or human aesthetic acceptance.
 
 ## Reproduction and finite evidence
 

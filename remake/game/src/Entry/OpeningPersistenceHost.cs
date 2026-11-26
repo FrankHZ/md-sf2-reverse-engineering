@@ -303,13 +303,12 @@ public sealed partial class GameRoot
         string label = read.Primary switch
         {
             OpeningSaveRecord record => GameText.Get("slot.record", slot,
-                DisplayNames.Member(definition, record.Data.Names, 0), SavedDestination(record.Data.Recipe), SavedTime(record)),
+                DisplayNames.Member(definition, record.Data.Names, 0), SavedLevel(record, definition), SavedTime(record)),
             FieldSnapshotRecord snapshot => GameText.Get("slot.record", slot,
-                DisplayNames.Member(definition, snapshot.Data.Names, 0), FieldDestination(snapshot.Data.Landing), SavedTime(snapshot)),
+                DisplayNames.Member(definition, snapshot.Data.Names, 0), SavedLevel(snapshot, definition), SavedTime(snapshot)),
             BattleSaveRecord battle => GameText.Get("slot.record", slot,
                 DisplayNames.Member(definition, battle.Data.Story.Names, 0),
-                BattleDestination(definition, battle.Data.Story.Names, battle.Data.Battle.Encounter, battle.Data.Battle.Round,
-                    battle.Data.Battle.Queue[battle.Data.Battle.Cursor].Actor!), SavedTime(battle)),
+                SavedLevel(battle, definition), SavedTime(battle)),
             _ => GameText.Get("slot.status", slot, SlotStatus(read.Error ?? (read.Backup is not null || read.BackupError is not null
                 ? "save-primary-missing" : null))),
         };
@@ -336,49 +335,6 @@ public sealed partial class GameRoot
         return GameText.Get("save.field-location", map.StartsWith("map-", StringComparison.Ordinal) ? map[4..] : map,
             landing.Position.X, landing.Position.Y);
     }
-
-    // Display names for the existing finite recipes, not a new savepoint selection policy.
-    private static string SavedDestination(string recipe) => recipe switch
-    {
-        "new-game" => GameText.Get("save.destination.new-game"),
-        "map3-opening" => GameText.Get("save.destination.map3-opening"),
-        "map3-joined" => GameText.Get("save.destination.map3-joined"),
-        "granseal-field" => GameText.Get("save.destination.granseal-field"),
-        "galam-field" => GameText.Get("save.destination.galam-field"),
-        "hawel-field" => GameText.Get("save.destination.hawel-field"),
-        "granseal-castle" => GameText.Get("save.destination.granseal-castle"),
-        "tower-field" => GameText.Get("save.destination.tower-field"),
-        "battle01-return" => GameText.Get("save.destination.battle01-return"),
-        "new-granseal-castle" => GameText.Get("save.destination.new-granseal-castle"),
-        "ribble-welcome" => GameText.Get("save.destination.ribble-welcome"),
-        "dark-caves" => GameText.Get("save.destination.dark-caves"),
-        "mount-volcano" => GameText.Get("save.destination.mount-volcano"),
-        "devils-tail" => GameText.Get("save.destination.devils-tail"),
-        "desktop-kingdom" => GameText.Get("save.destination.desktop-kingdom"),
-        "willard-burrow" => GameText.Get("save.destination.willard-burrow"),
-        "creed-mansion" => GameText.Get("save.destination.creed-mansion"),
-        "evil-spirit-shrine" => GameText.Get("save.destination.evil-spirit-shrine"),
-        "floor-world" => GameText.Get("save.destination.floor-world"),
-        "fairy-cave" => GameText.Get("save.destination.fairy-cave"),
-        "harpy-pond" => GameText.Get("save.destination.harpy-pond"),
-        "taros-shrine" => GameText.Get("save.destination.taros-shrine"),
-        "north-parmecia" => GameText.Get("save.destination.north-parmecia"),
-        "southwest-parmecia" => GameText.Get("save.destination.southwest-parmecia"),
-        "polca-raft" => GameText.Get("save.destination.polca-raft"),
-        "polca-victory" => GameText.Get("save.destination.polca-victory"),
-        "ketto" => GameText.Get("save.destination.ketto"),
-        "pacalon-town" => GameText.Get("save.destination.pacalon-town"),
-        "pacalon-castle" => GameText.Get("save.destination.pacalon-castle"),
-        "pacalon-road" => GameText.Get("save.destination.pacalon-road"),
-        "hassan" => GameText.Get("save.destination.hassan"),
-        "polca-return" => GameText.Get("save.destination.polca-return"),
-        "ancient-hall" => GameText.Get("save.destination.ancient-hall"),
-        "east-shrine" => GameText.Get("save.destination.east-shrine"),
-        "parmecia-battle-return" => GameText.Get("save.destination.parmecia-battle-return"),
-        "yeel-field" => GameText.Get("save.destination.yeel-field"),
-        "battle07-return" => GameText.Get("save.destination.battle07-return"),
-        _ => GameText.Get("save.destination.unavailable"),
-    };
 
     private static string BattleDestination(ScenarioDefinition definition, IReadOnlyDictionary<string, string> names,
         string encounter, int round, string actor)
@@ -549,7 +505,24 @@ public sealed partial class GameRoot
         return false;
     }
 
-    private static string SavedTime(SaveRecord record) => record.SavedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+    private static string SavedLevel(SaveRecord record, ScenarioDefinition definition)
+    {
+        var protagonist = definition.Encounters.Values.SelectMany(encounter => encounter.Deployments)
+            .FirstOrDefault(row => row.Faction == Sf2.Remake.Domain.Battles.BattleFaction.Ally &&
+                row.Initialization?.AllyPartyMember == 0)?.Actor.Value;
+        byte? level = protagonist is null ? null : record switch
+        {
+            OpeningSaveRecord old => old.Data.Allies.FirstOrDefault(ally => ally.Actor == protagonist)?.Level,
+            FieldSnapshotRecord field => field.Data.SavedLevel(protagonist),
+            BattleSaveRecord battle => battle.Data.Battle.Actors.FirstOrDefault(actor => actor.Actor == protagonist) is { } actor
+                ? actor.Progress?.Level
+                : battle.Data.Story.Player.RetainedAllies.FirstOrDefault(ally => ally.Actor.Value == protagonist)?.Progress?.Level,
+            _ => null,
+        };
+        return level is { } value ? GameText.Get("slot.level", value) : GameText.Get("slot.level-unknown");
+    }
+
+    private static string SavedTime(SaveRecord record) => record.SavedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture);
 
     public override void _Notification(int what)
     { SettingsNotification(what); }

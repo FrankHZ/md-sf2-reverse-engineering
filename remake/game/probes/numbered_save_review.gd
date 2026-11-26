@@ -9,7 +9,7 @@ func run() -> void:
     storage = save_root.path_join(space).path_join("sf2-opening")
     if output.is_empty() or not save_root.is_absolute_path() or not space.begins_with("ui-host-review-") \
             or space.get_file() != space or not DirAccess.dir_exists_absolute(storage) \
-            or case_name not in ["seed", "stage", "continue", "save"] or not OS.get_cmdline_user_args().is_empty():
+            or case_name not in ["seed", "stage", "continue", "save", "summary"] or not OS.get_cmdline_user_args().is_empty():
         push_error("Use the dedicated numbered-save review recipe and a fresh disposable namespace")
         quit(2)
         return
@@ -25,6 +25,11 @@ func run() -> void:
     if not require(window().allowed, "initial native client is supported"):
         finish()
         return
+    await edge(KEY_E, false)
+    if find("SessionEntryView") == null: await key(KEY_E)
+    if not require(find("SessionEntryView") != null, "ordinary opening Skip reaches title"):
+        finish()
+        return
     if case_name == "seed":
         var start := OS.get_environment("SF2_HOST_UI_START")
         if require(host.call("StartPreVoyageLocalizationObservation", start) == "started", "controlled Map3 start admitted"):
@@ -32,6 +37,8 @@ func run() -> void:
                 await write_slot(2)
     elif case_name == "continue":
         await recovery_flow()
+    elif case_name == "summary":
+        await summary_review()
     elif await open_continue():
         await choose("2")
         if await attached(2, slot_bytes(2)):
@@ -47,6 +54,50 @@ func run() -> void:
 func require(ok: bool, message: String) -> bool:
     check(ok, message)
     return ok
+
+func summary_review() -> void:
+    var manifest: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OS.get_environment("SF2_SLOT_SUMMARY_CASES")))
+    var before := history()
+    if not await open_continue(): return
+    for row in manifest.records:
+        var actual: Dictionary = JSON.parse_string(host.call("ReadSaveSummaryObservationJson", row.path, row.get("savedAt", "")))
+        samples.append({"label": row.id, "summary": actual})
+        for field in row.expected:
+            check(actual.get(field) == row.expected[field], row.id + " " + field)
+    check(slots().selected == 0, "history starts at first row")
+    for i in range(manifest.choices.size()):
+        check(slots().choices[i] == manifest.choices[i], "history row %d" % (i + 1))
+    var reading := find("SlotReading") as Control
+    for button in find("SaveSlotView").find_children("*", "Button", true, false):
+        check(button.size.x <= reading.size.x, "full row fits reading width")
+    slot_sample("summary-page-1")
+    if not await second_page("continue-slots"): return
+    slot_sample("summary-page-2")
+    if not await choose("Previous saves" if "Previous saves" in slots().choices else "上一页存档"): return
+    if not await wait_slots("continue-slots"): return
+    check(slots().selected == 0 and slots().choices[1] == manifest.choices[1], "Previous retains exact summary and resets focus")
+    for number in [1, 3, 4, 5]:
+        if not await choose(("Slot " if manifest.language == "en" else "槽位 ") + str(number)): return
+        if not await wait_slots("recover-backup" if number == 5 else "error"): return
+        check(slots().selected == 0, "exception starts on safe action")
+        check(not (find("SlotDetail") as Label).text.is_empty(), "exception retains independent detail")
+        if number == 5:
+            check("WWWWWWW" in slots().message and "41" in slots().message and "2025-12-31 20:30" in slots().message,
+                "recovery separately identifies backup name, level and local time")
+        slot_sample("summary-exception-%d" % number)
+        await key(KEY_ESCAPE)
+        if not await open_continue(): return
+    check(history() == before, "paging and exceptional cancellation preserve all bytes")
+    if not await choose("2"): return
+    if not await attached(2, slot_bytes(2)): return
+    if not await open_save(): return
+    check(slots().choices[1] == manifest.choices[1], "ordinary Save shares Witch summary")
+    if not await choose("2"): return
+    check(slots().state == "confirm-save" and slots().selected == 0, "ordinary overwrite starts on Cancel")
+    await key(KEY_ENTER)
+    if not await wait_slots("save-slots"): return
+    check(slots().selected == 1 and slots().choices[1] == manifest.choices[1], "overwrite Cancel restores selected row")
+    check(history() == before, "summary review leaves storage unchanged")
 
 func choose(label: String) -> bool:
     var page := slots()
@@ -65,6 +116,9 @@ func open_continue() -> bool:
     if observation(entry, "ReadEntryObservationJson").get("stage") == "title":
         await key(KEY_ENTER)
         await key(KEY_E)
+    for i in range(1600):
+        if observation(entry, "ReadEntryObservationJson").get("stage") == "menu": break
+        await process_frame
     var page := observation(entry, "ReadEntryObservationJson")
     if not require(page.get("stage") == "menu", "Witch menu reachable"): return false
     if page.visibleCharacters >= 0 and page.visibleCharacters < page.totalCharacters: await key(KEY_ENTER)
@@ -74,6 +128,11 @@ func open_continue() -> bool:
         await key(KEY_DOWN)
     if not require(button.theme_type_variation == "EntrySelectedButton", "Witch Continue selected"): return false
     await key(KEY_ENTER)
+    for i in range(1600):
+        if slots().get("state") == "continue-slots": break
+        if observation(entry, "ReadEntryObservationJson").get("stage") == "continue-dialogue":
+            await key(KEY_ENTER)
+        await process_frame
     return await wait_slots("continue-slots")
 
 func settled() -> bool:
@@ -89,6 +148,9 @@ func settled() -> bool:
 func attached(slot: int, expected: PackedByteArray) -> bool:
     for i in range(1200):
         if not restored.is_empty(): break
+        var entry := find("SessionEntryView")
+        if observation(entry, "ReadEntryObservationJson").get("stage") == "continue-dialogue":
+            await key(KEY_ENTER)
         await process_frame
     var envelope = JSON.parse_string(expected.get_string_from_utf8())
     if not require(envelope is Dictionary and not restored.is_empty(), "ordinary Continue attached from a real record"):
@@ -119,7 +181,13 @@ func attached(slot: int, expected: PackedByteArray) -> bool:
     return true
 
 func open_save() -> bool:
+    root.grab_focus()
+    await edge(KEY_F10, false)
+    if not require(root.has_focus(), "native client focused before Menu input"): return false
     await key(KEY_F10)
+    for i in range(300):
+        if find("SystemMenuView") != null: break
+        await process_frame
     await choose_system_action("Save")
     return await wait_slots("save-slots")
 
