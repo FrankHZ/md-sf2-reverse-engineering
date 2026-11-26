@@ -61,10 +61,10 @@ internal static class PrivateAttackSpellBindings
                 source.PropertiesExpression == (source.Code is "AQUA" or "KIWI" ? "TYPE_ATTACK" : "TYPE_ATTACK|AFFECTEDBYSILENCE"),
                 "source-attack-spell", "spells", true);
             byte? animation = null;
-            if (source.Code is "DESOUL" or "DAO" or "APOLLO" or "NEPTUN")
+            if (source.Code is "DESOUL" or "DAO" or "APOLLO" or "NEPTUN" or "ATLAS")
             {
                 string selector = source.Level == 1 ? source.Code : $"{source.Code}|VARIATION2";
-                animation = (byte)((source.Code == "DAO" ? 17 : source.Code == "APOLLO" ? 18 : source.Code == "NEPTUN" ? 19 : 3) | (source.Level - 1) << 5);
+                animation = (byte)((source.Code == "DAO" ? 17 : source.Code == "APOLLO" ? 18 : source.Code == "NEPTUN" ? 19 : source.Code == "ATLAS" ? 20 : 3) | (source.Level - 1) << 5);
                 Require(source.AnimationExpression == selector, "source-attack-animation", "spells.animation", true);
             }
             if (source.Code is "BLAZE" or "FREEZE" or "BOLT")

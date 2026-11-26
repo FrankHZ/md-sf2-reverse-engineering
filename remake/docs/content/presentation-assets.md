@@ -1425,8 +1425,7 @@ selected separately as above. The catalog adds only accepted class18 and spell29
 This older promotion package used modern summon fallback. The
 [DAO successor](#dao-successor-2310) adds both DAO ranks; the [APOLLO successor](#apollo-successor-2312)
 adds both APOLLO ranks. The [NEPTUN successor](#neptun-successor-2313) adds its body/water
-composition; ATLAS remains
-with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
+composition; the [ATLAS successor](#atlas-successor-2314) adds its two-pose invocation.
 
 ```powershell
 . ./local/private-inputs.ps1
@@ -1596,6 +1595,37 @@ launchers; `verification-v1` retains checks and completed failures. Review publi
 is separate from the immutable #2307 content. The reader checks104 SPOIT definitions
 and702 equipment appearances over26 scenes. Native Original/HD, Reduced Flash/held
 speed and body-group fallback retain their [playback boundary](../godot/spell-presentation.md#absorb-reproduction-and-verification).
+
+### ATLAS successor #2314
+
+Complete `derived/issue2314/atlas-v1` contains180 files /379,964,163 bytes, consuming
+accepted `derived/issue2313/neptun-v1`, prepared `derived/issue2001/retail-v1` and graphics
+commit`172662709b31cb296b55f51894754ce810c30f6c`. Only26 scene documents change, adding
+two128×128 Original poses and two4× HD companions. Every inherited value and other file
+compares equal, including world/audio, actor/equipment/terrain and earlier effects.
+Cues77/83/84 already exist in both the package and SessionAudio's slot table. Retain
+independent #2252 opening, #2255 Witch and #2266 catalogs.
+
+The representative pilot takes0.25s and adds21,472 bytes. Generation adds558,272 bytes
+over26 scenes, under the500MiB successor budget. Work is linear in package bytes plus
+frame pixels, with one scene and raster bank in memory:131,072 raw RGBA bytes and
+2,097,152 at4× before PNG encoding. Serial scratch/peak budget is2GiB; generation budget
+is2 minutes, reader and each native witness1 minute. Replan if these limits fail. Observed
+reader/native peaks are below1.4GB; a single fallback changes only Battle26's HD group.
+The producer package was moved to immutable publication before reproduction; no consumer
+uses pilot/scratch files. [Source, results and retained failures](../godot/spell-presentation.md#atlas-family-playback-2314).
+
+```powershell
+. ./local/private-inputs.ps1
+$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2313/neptun-v1'
+uv run --with pillow python -m sf2tool.remake_retail_assets --root $library --base $base `
+  --mount $freshAbsolutePackage --family atlas-family --gfx-root $registeredGraphicsRoot
+```
+
+Generate to fresh checkout-local ignored output. Published `derived/issue2314/review-v1`
+contains the production reader and ordinary-input launch recipes; its Boot stages mutable
+state beneath the selected checkout and requires an explicit disposable save root.
 
 ### NEPTUN successor #2313
 

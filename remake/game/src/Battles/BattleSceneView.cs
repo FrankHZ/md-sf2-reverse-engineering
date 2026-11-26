@@ -884,7 +884,7 @@ internal sealed partial class BattleSceneView : Control
         attackSpell = _state?.AttackSpell is not null && (_state.AttackItem is null || _preparedAttackSpell) ? _attackSpell.Observe() : null,
         monsterBreath = _state?.IsMonsterBreath == true,
         phoenixWave = _phoenixWave.Observe(),
-        desoul = _desoul.Observe(), dao = _dao.Observe(), apollo = _apollo.Observe(), neptun = _neptun.Observe(), daoDistortion = _enemy.Material == _daoDistortion,
+        desoul = _desoul.Observe(), dao = _dao.Observe(), apollo = _apollo.Observe(), neptun = _neptun.Observe(), atlas = _atlas.Observe(), daoDistortion = _enemy.Material == _daoDistortion,
         detox = _detox.Observe(),
         debuff = _debuff.Observe(),
         buff = _buff.Observe(), buffBackdrop = _sceneBlack.Color.ToHtml(),
