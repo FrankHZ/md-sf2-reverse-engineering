@@ -1836,8 +1836,8 @@ audio. The package adds the prepared strike 106, using the session's YM5 replace
 
 All four rasters form one atomic group for both variations. Complete 4× HD retains
 Original logical extents. An incomplete HD group uses all four Original bindings.
-Older mounts without the Original group still use message playback for learned DESOUL
-and the existing gesture/result delivery for Dark Sword. Silenced Magic keeps paid
+Without the complete Original group, learned DESOUL and Dark Sword Use both present
+their battle messages on black. Silenced Magic keeps paid
 suppression feedback. [Asset inventory](../content/asset-inventory.md#desoul-raster-family-2307)
 
 ### DESOUL reproduction and verification
