@@ -1424,7 +1424,8 @@ Use its world, main scene and six opening inputs with
 selected separately as above. The catalog adds only accepted class18 and spell29–32 names.
 This older promotion package used modern summon fallback. The
 [DAO successor](#dao-successor-2310) adds both DAO ranks; the [APOLLO successor](#apollo-successor-2312)
-adds both APOLLO ranks. NEPTUN/ATLAS remain
+adds both APOLLO ranks. The [NEPTUN successor](#neptun-successor-2313) adds its body/water
+composition; ATLAS remains
 with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
 
 ```powershell
@@ -1595,6 +1596,42 @@ launchers; `verification-v1` retains checks and completed failures. Review publi
 is separate from the immutable #2307 content. The reader checks104 SPOIT definitions
 and702 equipment appearances over26 scenes. Native Original/HD, Reduced Flash/held
 speed and body-group fallback retain their [playback boundary](../godot/spell-presentation.md#absorb-reproduction-and-verification).
+
+### NEPTUN successor #2313
+
+Complete `derived/issue2313/neptun-v1` contains180 files /379,405,891 bytes. It consumes
+complete `derived/issue2312/apollo-v1` (178 files,
+378,106,698 bytes), prepared `derived/issue2001/retail-v1` effects and registered graphics
+commit `172662709b31cb296b55f51894754ce810c30f6c`. Independent #2252 opening, #2255 Witch
+and #2266 catalogs remain selected. The26 scenes add ten
+Original and ten HD rasters: two128×128 bodies, three16×24 rising frames, one16×32 and
+one16×16 rain part, and three16×16 sizzles. Two already prepared audio cues108/115 are
+mounted through the existing publisher;
+77/110 remain inherited. The world audio list gains only those two rows.
+
+Serial pilot:0.30s and39,863 added bytes for one scene, with direct equality of all
+inherited values. The raster increase is1,036,438 bytes; reused audio plus binding rows add262,755 bytes.
+Output remains below500MiB, scratch and peak RAM below2GiB, with no more than one successor/fallback copy per purpose.
+Processing is linear in frame pixels plus package bytes, holding one scene and the small
+raster bank; raw rasters occupy141,824 RGBA bytes and4× HD2,269,184 bytes before PNG encoding.
+Budget full generation under2 minutes, reader under1 minute and each native witness under1
+minute; replan if measured limits differ. Producer scratch is unavailable for published
+reproduction. Direct comparison preserves every inherited scene/world value and all old files;
+only26 scene documents, the world audio list and two reused WAV files differ. The final
+production reader and native witnesses stay below1.4GB peak. Recorded setup failures are
+retained with the [source and acceptance](../godot/spell-presentation.md#neptun-family-playback-2313).
+
+```powershell
+. ./local/private-inputs.ps1
+$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2312/apollo-v1'
+uv run --with pillow python -m sf2tool.remake_retail_assets --root $library --base $base `
+  --mount $freshAbsolutePackage --family neptun-family --gfx-root $registeredGraphicsRoot
+```
+
+Use the registered graphics commit above; generate into a fresh checkout-local ignored path.
+The published review's `Verify.ps1` and `Boot.ps1` consume the complete package without the
+producer scratch or generation helpers.
 
 ### APOLLO successor #2312
 

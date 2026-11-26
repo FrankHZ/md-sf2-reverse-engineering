@@ -19,6 +19,10 @@ def mount_attack_spells(
 ) -> None:
     from sf2tool.remake_private_package import installed_png, prepared_spell_tiles, read_json
 
+    if "neptun-family" in families:
+        from sf2tool.remake_neptun_mount import mount_neptun
+
+        mount_neptun(directory, scratch, package, scenes, scale)
     if "apollo-family" in families:
         from sf2tool.remake_apollo_mount import mount_apollo
 
