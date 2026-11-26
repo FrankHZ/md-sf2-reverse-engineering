@@ -144,9 +144,9 @@ internal readonly record struct FieldMapBody(MapId Map, MapSetupId? Setup);
 // The battle loader places a local copy at (0,0) inside the field map's working storage.
 public sealed record BeforeBattleMapCopy(WorkingMapLayout Field, WorkingMapLayout Installed, int Width, int Height)
 {
-    // A plane whose scripted origin is beyond the copy reads the field. A wider
-    // display can still reach back into storage overwritten by the local copy.
-    public bool UsesField(int planeX, int planeY) => planeX >= Width * 384 || planeY >= Height * 384;
+    // The explicit load reads working storage inside the installed copy, even where
+    // the source and destination rectangles overlap. Outside it the field remains in place.
+    internal bool StartsInField(int planeX, int planeY) => planeX >= Width * 384 || planeY >= Height * 384;
 
     public WorkingMapLayout FieldWithSceneEdits(WorkingMapLayout current)
     {

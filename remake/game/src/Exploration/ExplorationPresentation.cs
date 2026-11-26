@@ -17,10 +17,9 @@ internal sealed partial class ExplorationPresentation : IDisposable
     private MapId? _terrainMap;
     private WorkingMapLayout? _editedWorking, _editedField;
 
-    private WorkingMapLayout PlaneLayout(WorkingMapLayout working, BeforeBattleMapCopy? copy, LogicalViewAxis? x, LogicalViewAxis? y)
+    private WorkingMapLayout PlaneLayout(WorkingMapLayout working, BeforeBattleMapCopy? copy, bool usesField)
     {
-        if (copy is null || x is null || y is null ||
-            !copy.UsesField(x.Position, y.Position) || working.BlankBlockZero) return working;
+        if (copy is null || !usesField || working.BlankBlockZero) return working;
         if (working == copy.Installed) return copy.Field;
         // Layouts are immutable. Recompose once per script mutation, across both priority passes.
         if (_editedWorking != working)
@@ -499,8 +498,8 @@ internal sealed partial class ExplorationPresentation : IDisposable
             var backgroundBounds = new Rect2I(areaCells.Position + new Vector2I(view?.Area.BackgroundX ?? 0, view?.Area.BackgroundY ?? 0), areaCells.Size);
             var foregroundBounds = new Rect2I(areaCells.Position + new Vector2I(view?.Area.ForegroundX ?? offset.X, view?.Area.ForegroundY ?? offset.Y), areaCells.Size);
             var copy = story.Continuation == ProgramContinuation.BeforeBattleFinished ? world.Definition.BeforeBattleCopy : null;
-            var backLayout = PlaneLayout(world.Layout, copy, view?.BX, view?.BY);
-            var frontLayout = hasForeground ? PlaneLayout(world.Layout, copy, view?.AX, view?.AY) : backLayout;
+            var backLayout = PlaneLayout(world.Layout, copy, view?.BeforeBattleFieldB == true);
+            var frontLayout = hasForeground ? PlaneLayout(world.Layout, copy, view?.BeforeBattleFieldA == true) : backLayout;
             var backgroundDraw = DrawLayer(backLayout, visual, backgroundBounds, background, new(0, 0), false, view is null ? null : false, 0, prepare: prepare);
             bool pickupsOnA = hasForeground && view is { Area.Layer: not 0 };
             bool PickupCovered(Rect2 star) =>

@@ -113,12 +113,13 @@ public sealed class BattleEntryProgramTests
     }
 
     [Theory]
-    [InlineData(3, 4, false, 30, 30)]
-    [InlineData(18, 4, false, 30, 30)]
-    [InlineData(3, 15, false, 30, 30)]
-    [InlineData(31, 4, false, -1, -1)]
-    [InlineData(18, 4, true, -1, -1)]
-    public void SceneLoadKeepsItsCameraDomainUntilTheBattleLoader(int x, int y, bool victory, int maxX, int maxY)
+    [InlineData(3, 4, false, 30, 30, false)]
+    [InlineData(7, 4, false, 30, 30, false)] // Source and copy overlap; load reads the installed copy.
+    [InlineData(18, 4, false, 30, 30, true)]
+    [InlineData(3, 15, false, 30, 30, true)]
+    [InlineData(31, 4, false, -1, -1, false)]
+    [InlineData(18, 4, true, -1, -1, false)]
+    public void SceneLoadKeepsItsCameraDomainUntilTheBattleLoader(int x, int y, bool victory, int maxX, int maxY, bool fieldBackground)
     {
         var session = ExplorationTextWaitTests.StartFieldText("A{W1}", configure: document =>
         {
@@ -138,10 +139,11 @@ public sealed class BattleEntryProgramTests
         var region = new BattleMapRegion(map.Map, new(5, 2));
         var battle = new BattleDefinition(original.Encounter, original.Map, original.Width, original.Height,
             original.Terrain, original.Deployments, original.Spells.Values, sourceMapRegion: region);
+        var target = new MapPosition(fieldBackground ? 3 : 19, 4);
         var programs = world.Programs.Values.Concat([
             new StoryProgram("scene", [new LoadSceneMap(map.Map, new(x, y)), new WaitProgramTicks(1),
                 new CopyMapLayout(new(0, 0, 1, 0, 1, 1)), new CopyMapLayout(new(0, 0, 63, 0, 1, 1)),
-                new SetCameraTarget(new(19, 6)), new WaitProgramTicks(1),
+                new SetCameraTarget(target), new WaitForView(), new WaitProgramTicks(1),
                 new WriteFlag(910, true), new EndProgram()]),
             new StoryProgram("load-board", [new PresentCue(PresentationCueKind.BattleLoad, null), new EndProgram()]),
         ]);
@@ -176,7 +178,8 @@ public sealed class BattleEntryProgramTests
             return;
         }
         var copy = Assert.IsType<BeforeBattleMapCopy>(scene.Exploration.Definition.BeforeBattleCopy);
-        Assert.Equal(x >= battle.Width || y >= battle.Height, copy.UsesField(view.BX.Position, view.BY.Position));
+        Assert.Equal(fieldBackground, view.BeforeBattleFieldB);
+        Assert.True(view.BeforeBattleFieldA);
         var working = scene.Exploration.Layout;
         Assert.Equal(map.Layout[0, 0], copy.FieldWithSceneEdits(working)[0, 0]);
         var reset = WorkingMapLayout.ResetScene();
@@ -186,14 +189,36 @@ public sealed class BattleEntryProgramTests
         Assert.Null(scrolling.Failure);
         var scrollView = scrolling.Snapshot.Story.LogicalView!;
         Assert.Equal(view.Area, scrollView.Area);
-        Assert.Equal(19 * 384, scrollView.BX.Destination);
+        Assert.Equal(target.X * 384, scrollView.BX.Destination ?? scrollView.BX.Position);
         var changed = scrolling.Snapshot.Exploration!.Layout;
         Assert.Equal((19, 19), ((int)changed[1, 0], (int)changed[63, 0]));
         var projected = copy.FieldWithSceneEdits(changed);
         Assert.Equal((map.Layout[0, 0], 19, 19), (projected[0, 0], (int)projected[1, 0], (int)projected[63, 0]));
 
-        var initialized = ExplorationDispatcher.Submit(definition, scrolling.Snapshot,
-            new AdvanceSimulation(scrolling.Snapshot.Story.Wait!.Token));
+        var moved = scrolling.Snapshot;
+        for (int i = 0; i < 400 && moved.Story.Wait is ViewWait wait; i++)
+        {
+            var tick = ExplorationDispatcher.Submit(definition, moved, new AdvanceSimulation(wait.Token));
+            Assert.Null(tick.Failure);
+            moved = tick.Snapshot;
+        }
+        var atTarget = moved.Story.LogicalView!;
+        Assert.Equal((target.X * 384, target.Y * 384), (atTarget.BX.Position, atTarget.BY.Position));
+        Assert.Equal(fieldBackground, atTarget.BeforeBattleFieldB);
+        Assert.True(atTarget.BeforeBattleFieldA);
+
+        Assert.False(Sf2.Remake.Application.Runtime.Persistence.SettledFieldSnapshot.HasStableControl(moved));
+        var (retainedWorld, retainedStory) = MapTransfer.ReloadScene(moved, new(target));
+        Assert.True(retainedStory.LogicalView!.BeforeBattleFieldA);
+        Assert.Equal(fieldBackground, retainedStory.LogicalView.BeforeBattleFieldB);
+        Assert.Same(changed, retainedWorld.Layout);
+        var (clearedWorld, clearedStory) = MapTransfer.ReloadScene(moved, new(target, ResetLayout: true));
+        Assert.False(clearedStory.LogicalView!.BeforeBattleFieldA);
+        Assert.False(clearedStory.LogicalView.BeforeBattleFieldB);
+        Assert.True(clearedWorld.Layout.BlankBlockZero);
+
+        var initialized = ExplorationDispatcher.Submit(definition, moved,
+            new AdvanceSimulation(moved.Story.Wait!.Token));
         Assert.Null(initialized.Failure);
         Assert.Contains(910, initialized.Snapshot.Story.Flags);
         Assert.Single(initialized.Observations, row => row.Kind == "program-instruction" && row.Detail == "WriteFlag");
@@ -206,6 +231,7 @@ public sealed class BattleEntryProgramTests
             new CompletePresentation(load.Token, PresentationCueKind.BattleLoad));
         Assert.Null(ready.Failure);
         Assert.True(ready.Snapshot.HasBattleControl);
+        Assert.NotEqual(ProgramContinuation.BeforeBattleFinished, ready.Snapshot.Story.Continuation);
     }
 
     [Fact]

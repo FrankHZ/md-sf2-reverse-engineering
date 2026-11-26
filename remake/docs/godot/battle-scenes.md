@@ -687,10 +687,18 @@ unrelated field terrain. At the south gate, Map66 (19,9) in working storage then
 200 from (40,11). Its real field neighbor to the right, (20,9), holds block 31.
 
 For a displaced before-battle copy, the loaded scene retains the immutable field and installed
-layouts. Each plane uses its logical origin to select terrain. An origin within the local copy
-uses the working layout. An origin beyond its right or bottom edge uses the full field layout
-for the extended view. Later changed working words remain visible; a layout reset selects the
-reset layout. Low, high and actor occlusion passes use the same selected plane layout for block
+layouts. A positive scene load binds each plane once from the first working address that
+the script requests. The scene view has already applied the selected area's offsets and
+parallax to that address. A start in the installed copy uses working terrain, including
+where the source and destination rectangles overlap. A start beyond the copy uses the
+field layout with later changed working words. The original working map has no separate
+field/local tag. This display rule keeps the loaded plane's interpretation during a pan
+or follow, including when the camera crosses the copy boundary.
+
+A same-map reload that retains the working layout inherits the two bindings. A reset reload
+clears them and displays its cleared working layout. The bindings serve the active before-program
+only, outside ordinary field-save admission. The battle presenter uses the encounter board.
+Low, high and actor occlusion passes use the same selected plane layout for block
 IDs, tile priority and HD neighborhoods. Camera motion, script reads and the victory and
 playable-board loaders keep their existing coordinate spaces.
 
@@ -711,6 +719,15 @@ The corrected HD launch was maximized before Continue. Original entered at 1920�
 maximized during the dialogue. A per-monitor-DPI-aware client measurement matched the native
 window size at each step. HD selected 96-pixel contextual blocks and Original selected 24-pixel
 blocks. Both runs advanced texts 2342–2356 and reached usable Battle06 Movement.
+
+After binding the coordinate space at load, repeat the five-cell draw query at 2342 and
+2353 in the maximized HD client. The plane origin moved from (271.75, −12.375) to
+(283.75, 35.5) source pixels; both reads gave 51, 10, 31, 10, 31.
+`BattleEntryProgramTests.SceneLoadKeepsItsCameraDomainUntilTheBattleLoader` supplies a
+separate crossing that this dialogue does not exercise. With a 12×9 copy, it waits for
+the actual pan from (18,4) to (3,4) and for the reverse crossing from a local start.
+The packed foreground starts 32 cells below the main plane. The test checks the two
+bindings at the destination, after a retained reload and after a layout reset.
 
 At that turn, maximizing centered the 1920-pixel board at x=833. The field view was gone and
 the clipped Map66 board drew 5,760 low tiles. Four unobstructed client samples at y=1057

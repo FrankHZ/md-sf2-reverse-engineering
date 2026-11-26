@@ -48,6 +48,10 @@ public sealed record LogicalView(ExplorationViewArea Area, int? TargetSlot,
     LogicalViewAxis AX, LogicalViewAxis AY, LogicalViewAxis BX, LogicalViewAxis BY,
     int FollowCounter = 0, bool HideWindows = false)
 {
+    // Bound only for terrain projection during an active before-program, outside save admission.
+    [System.Text.Json.Serialization.JsonIgnore] public bool BeforeBattleFieldA { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore] public bool BeforeBattleFieldB { get; init; }
+
     // IsMapScrollingToViewTarget excludes an automatically scrolled plane.
     public bool Scrolling => Area.AutoscrollAX == 0 && Area.AutoscrollAY == 0 && (AX.Active || AY.Active) ||
         Area.AutoscrollBX == 0 && Area.AutoscrollBY == 0 && (BX.Active || BY.Active);
