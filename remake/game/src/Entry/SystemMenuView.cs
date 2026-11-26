@@ -34,7 +34,7 @@ internal sealed partial class SystemMenuView : Control
             HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
         column.AddChild(_scroll);
         _scroll.GetVScrollBar().VisibilityChanged += RefreshInputHints;
-        var rows = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        var rows = new VBoxContainer { Theme = StoryTheme.CreateEntry(journey: true, groupedRows: true), SizeFlagsHorizontal = SizeFlags.ExpandFill };
         rows.AddThemeConstantOverride("separation", 8); _scroll.AddChild(rows);
         string[] names = ["Save", "Load", "Settings", "NewGame", "Quit"];
         for (int index = 0; index < names.Length; index++)

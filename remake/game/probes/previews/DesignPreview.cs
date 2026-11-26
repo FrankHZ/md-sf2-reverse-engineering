@@ -64,7 +64,7 @@ public partial class DesignPreview : Control
 
     private void BuildToolbar()
     {
-        var toolbar = Place(this, new Panel { Name = "PreviewToolbar", Theme = StoryTheme.CreateEntry(),
+        var toolbar = Place(this, new Panel { Name = "PreviewToolbar", Theme = StoryTheme.CreateEntry(groupedRows: true),
             MouseFilter = MouseFilterEnum.Ignore }, new(0, 0, 1920, ToolbarHeight));
         var tabs = Place(toolbar, new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore }, new(16, 12, 1294, 48));
         tabs.AddThemeConstantOverride("separation", 6);

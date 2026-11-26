@@ -48,7 +48,7 @@ internal sealed partial class SettingsView : Control
         _title = new Label { HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart }; layout.AddChild(_title);
         _scroll = new ScrollContainer { Name = "SettingsReading", FollowFocus = true, SizeFlagsVertical = SizeFlags.ExpandFill,
             HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled }; layout.AddChild(_scroll);
-        _column = new VBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill }; _scroll.AddChild(_column);
+        _column = new VBoxContainer { Theme = StoryTheme.CreateEntry(journey: true, groupedRows: true), SizeFlagsHorizontal = SizeFlags.ExpandFill }; _scroll.AddChild(_column);
         _column.AddThemeConstantOverride("separation", 8);
         // Fix the details area so its text and scroll range cannot move the choices or footer.
         var detailsPane = new VBoxContainer { CustomMinimumSize = new(0, 168) };

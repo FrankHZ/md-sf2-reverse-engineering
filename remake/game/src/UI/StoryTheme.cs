@@ -23,38 +23,42 @@ internal static class StoryTheme
         ActionDisabled = "142235";
     internal static readonly Color Selected = new("ffe19a");
     internal static readonly Color Unavailable = new("8e9bab");
-    // Journey rows reserve marker space. Standalone actions share the square states.
-    internal static Theme CreateEntry(bool journey = false)
+    internal static Theme CreateEntry(bool journey = false, bool groupedRows = false)
     {
         var theme = Create();
         theme.SetFontSize("font_size", "TooltipLabel", HintSize);
         theme.SetColor("font_color", "TooltipLabel", theme.GetColor("font_color", "Label"));
-        theme.SetStylebox("normal", "Button", Box(ActionNormal, "607d9f"));
-        theme.SetStylebox("hover", "Button", Box(ActionHover, "d4c5a0"));
-        theme.SetStylebox("pressed", "Button", Box(ActionPressed, "ffe19a"));
-        theme.SetStylebox("disabled", "Button", Box(ActionDisabled, "435267"));
-        theme.SetStylebox("focus", "Button", Focus());
+        theme.SetTypeVariation("EntrySelectedButton", "Button");
+        const string focusGold = "d9b76f";
+        string edge = groupedRows ? "273e56" : "756345";
+        StyleBoxFlat Surface(string fill, string border, int width = 1)
+        {
+            var box = Box(fill, border, journey ? 40 : 14, borderWidth: width);
+            box.ContentMarginRight = journey ? 20 : 14;
+            return box;
+        }
+        theme.SetStylebox("normal", "Button", Surface(ActionNormal, edge));
+        theme.SetStylebox("hover", "Button", Surface("19395a", edge));
+        var pressed = Surface("0a2039", edge);
+        theme.SetStylebox("pressed", "Button", pressed);
+        theme.SetStylebox("hover_pressed", "Button", pressed);
+        theme.SetStylebox("disabled", "Button", Surface("152333", "46505a"));
+        theme.SetStylebox("focus", "Button", Box("00000000", focusGold, borderWidth: 2));
         theme.SetColor("font_color", "Button", new("f4f5fc"));
         theme.SetColor("font_hover_color", "Button", Colors.White);
         theme.SetColor("font_pressed_color", "Button", Selected);
+        theme.SetColor("font_hover_pressed_color", "Button", Selected);
         theme.SetColor("font_disabled_color", "Button", Unavailable);
-        theme.SetTypeVariation("EntrySelectedButton", "Button");
-        theme.SetStylebox("normal", "EntrySelectedButton", Box("294966", "ffe19a"));
-        theme.SetStylebox("hover", "EntrySelectedButton", Box("365d7c", "ffe19a"));
+        theme.SetStylebox("normal", "EntrySelectedButton", Surface(ActionNormal, focusGold, 2));
+        theme.SetStylebox("hover", "EntrySelectedButton", Surface("19395a", focusGold, 2));
+        var selectedPress = Surface("0a2039", focusGold, 2);
+        theme.SetStylebox("pressed", "EntrySelectedButton", selectedPress);
+        theme.SetStylebox("hover_pressed", "EntrySelectedButton", selectedPress);
         theme.SetColor("font_color", "EntrySelectedButton", Selected);
         theme.SetStylebox("normal", "LineEdit", Box("081b35", "607d9f"));
         theme.SetStylebox("focus", "LineEdit", Focus());
         theme.SetColor("font_color", "LineEdit", Colors.White);
         theme.SetColor("font_placeholder_color", "LineEdit", new("a7b9cf"));
-        if (journey)
-        {
-            theme.SetStylebox("normal", "Button", Box(ActionNormal, "536c87", borderWidth: 1));
-            theme.SetStylebox("normal", "EntrySelectedButton", Box("273d56", "ffe19a", borderWidth: 3));
-            foreach (string type in new[] { "Button", "EntrySelectedButton" })
-                foreach (string state in new[] { "normal", "hover", "pressed", "disabled" })
-                    if (theme.HasStylebox(state, type) && theme.GetStylebox(state, type) is StyleBoxFlat box)
-                    { box.ContentMarginLeft = 40; box.ContentMarginRight = 20; }
-        }
         return theme;
     }
     internal static void Select(Button button, bool selected)
