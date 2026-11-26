@@ -29,36 +29,31 @@ internal static class StoryTheme
         theme.SetFontSize("font_size", "TooltipLabel", HintSize);
         theme.SetColor("font_color", "TooltipLabel", theme.GetColor("font_color", "Label"));
         theme.SetTypeVariation("EntrySelectedButton", "Button");
-        StyleBox Surface(string fill, string edge, string tint)
+        const string focusGold = "d9b76f";
+        string edge = groupedRows ? "273e56" : "756345";
+        StyleBoxFlat Surface(string fill, string border, int width = 1)
         {
-            StyleBox box;
-            if (groupedRows)
-                box = Box(fill, edge, borderWidth: 1);
-            else
-            {
-                var frame = PanelFrame();
-                frame.ModulateColor = new Color(tint);
-                box = frame;
-            }
-            box.ContentMarginLeft = journey ? 40 : 14;
+            var box = Box(fill, border, journey ? 40 : 14, borderWidth: width);
             box.ContentMarginRight = journey ? 20 : 14;
-            box.ContentMarginTop = box.ContentMarginBottom = 10;
             return box;
         }
-        theme.SetStylebox("normal", "Button", Surface(ActionNormal, "536c87", "ded2bb"));
-        theme.SetStylebox("hover", "Button", Surface(ActionHover, "d4c5a0", "ffffff"));
-        var pressed = Surface(ActionPressed, "ffe19a", "b7ac90");
+        theme.SetStylebox("normal", "Button", Surface(ActionNormal, edge));
+        theme.SetStylebox("hover", "Button", Surface("19395a", edge));
+        var pressed = Surface("0a2039", edge);
         theme.SetStylebox("pressed", "Button", pressed);
         theme.SetStylebox("hover_pressed", "Button", pressed);
-        theme.SetStylebox("disabled", "Button", Surface(ActionDisabled, "435267", "777e86"));
-        theme.SetStylebox("focus", "Button", Focus());
+        theme.SetStylebox("disabled", "Button", Surface("152333", "46505a"));
+        theme.SetStylebox("focus", "Button", Box("00000000", focusGold, borderWidth: 2));
         theme.SetColor("font_color", "Button", new("f4f5fc"));
         theme.SetColor("font_hover_color", "Button", Colors.White);
         theme.SetColor("font_pressed_color", "Button", Selected);
         theme.SetColor("font_hover_pressed_color", "Button", Selected);
         theme.SetColor("font_disabled_color", "Button", Unavailable);
-        theme.SetStylebox("normal", "EntrySelectedButton", Surface("273d56", "ffe19a", "ffedc4"));
-        theme.SetStylebox("hover", "EntrySelectedButton", Surface("365d7c", "ffe19a", "ffffff"));
+        theme.SetStylebox("normal", "EntrySelectedButton", Surface(ActionNormal, focusGold, 2));
+        theme.SetStylebox("hover", "EntrySelectedButton", Surface("19395a", focusGold, 2));
+        var selectedPress = Surface("0a2039", focusGold, 2);
+        theme.SetStylebox("pressed", "EntrySelectedButton", selectedPress);
+        theme.SetStylebox("hover_pressed", "EntrySelectedButton", selectedPress);
         theme.SetColor("font_color", "EntrySelectedButton", Selected);
         theme.SetStylebox("normal", "LineEdit", Box("081b35", "607d9f"));
         theme.SetStylebox("focus", "LineEdit", Focus());

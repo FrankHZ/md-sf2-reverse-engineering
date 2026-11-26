@@ -60,8 +60,8 @@ func field() -> bool:
     var adventure := footer.find_child("FieldMenuEntry",true,false)
     measure("field", [footer,adventure], [adventure,footer.find_child("Help",true,false)])
     for key in ["normal","hover","pressed","disabled"]:
-        var style := menu_button.get_theme_stylebox(key) as StyleBoxTexture
-        if not expect(style != null and style.texture != null,"Menu decorative frame in "+key): return false
+        var style := menu_button.get_theme_stylebox(key) as StyleBoxFlat
+        if not expect(style != null and style.border_width_left == 1,"Menu single outline in "+key): return false
     if not expect(menu_button.get_theme_stylebox("focus") is StyleBoxFlat,"Menu has separate focus outline"): return false
     if not await cover(true): return false
     await click(control_rect(adventure))

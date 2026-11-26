@@ -109,8 +109,8 @@ English and Chinese.
 | Surface or state | Design baseline at native 1080p | Use and limit |
 | --- | --- | --- |
 | Reading panel | Shared double-gold frame with stepped corner accents and a near-opaque blue interior (`08275bf5`) | Square corners. The world may remain visible around it; terrain detail must not compete through the text. |
-| Standalone button | Use the dialogue panel's nine-slice blue-and-gold frame, including the stepped corners. | Normal uses subdued gold, hover brightens the frame, and a held press darkens it. Keyboard focus draws a separate outline. Disabled dims the frame and caption. |
-| Rows inside a shared frame | Use the dark blue row palette (`102c50` normal, `204c76` hover, `354c64` pressed). | Keep the enclosing ornament around the group. A marker and gold text identify the current choice, including during keyboard or pad navigation. |
+| Standalone button | Deep blue `102c50`, a single 1px dark-gold edge `756345` and square corners. | Hover lifts the fill to `19395a`; press deepens it to `0a2039`. Selection and keyboard focus share one 2px `d9b76f` outline and the existing marker. Disabled uses `152333` with a 1px `46505a` edge and muted text. |
+| Grouped actions | System Menu, numbered slots, settings choices and preview tabs use a quiet blue edge inside the enclosing panel. | The current native row uses the same focus outline. Custom battle and service lists keep their shared frame and row feedback. |
 | Selected and available | `ffe19a`, plus `›`/`▸`, outline or original selected raster | Exactly one current choice per input owner. Pointer hover is not command submission. |
 | Unavailable | `8e9bab`, explicit unavailable wording and actual reason | Focus may still mark an inspectable disabled option; never recolor it as available. Do not fade the whole panel and its explanation. |
 | Health, danger and error | Keep current HP/MP gauges and numeric values; explicit Low HP, Defeated or failure wording | Do not use gold for damage/error. Color supplements the existing text/icon meaning; no new palette or status authority. |

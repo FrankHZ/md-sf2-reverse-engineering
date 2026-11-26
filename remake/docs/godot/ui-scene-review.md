@@ -299,8 +299,7 @@ No full-screen shade covers the Witch. Entry's smaller-window scaling remains di
 +-----------------------------------------------------------------------+
 ```
 
-The right side is one layout column, not necessarily one enclosing blue rectangle. The greeting and
-individual Witch buttons share stepped gold corners. The current choice adds a marker and gold text. A greeting
+The right side is one layout column, not necessarily one enclosing blue rectangle. The greeting carries stepped gold corners. Individual Witch buttons have a single dark-gold outline. The current choice adds a marker and gold text. A greeting
 that requires reading owns the column before choices become available. No new simultaneous menu
 is implied by the diagram. Keep existing title entrance, static idle/return and reduced-flash behavior.
 
@@ -533,19 +532,19 @@ visual acceptance.
 #### Standalone buttons and grouped rows
 
 The title Start, Witch choices, name actions, opening Skip, gameplay Menu, inspection Back,
-save confirmation actions, and Settings/Help footers use the shared button frame. System Menu,
+save confirmation actions, and Settings/Help footers use a single 1px gold edge. System Menu,
 numbered slot rows and scrolling settings choices share their container's outer ornament.
 Exploration service lists and battle Main/inspection Options keep their existing custom row
 presenters. Battle Main encloses all four actions in one panel.
 
 **Confirmed:** in the dedicated [DesignPreview](../../game/probes/previews/README.md) at
-1600×900, F1 → Start → skip greeting showed separate gold corners on the Witch actions.
-Hovering Settings brightened its frame. Holding the left button darkened it and turned its text
+1600×900, F1 → Start → skip greeting showed thin individual outlines on the Witch actions.
+Hovering Settings brightened its blue fill. Holding the left button darkened it and turned its text
 gold. Release opened Settings. With longer English and Chinese New Game captions supplied
-in memory, both wrapped to two lines inside the corners, clear of the selection marker.
+in memory, both wrapped to two lines inside the outline, clear of the selection marker.
 New Game → empty slot → type eight Latin letters showed a dimmed Use Name beside an enabled Back
 and the seven-character limit above them. F10 on the authored field showed muted Save/Load
-rows and reasons inside one outer frame.
+rows and reasons inside one outer frame. The selected Settings row uses the same 2px focus outline as the footer actions.
 
 At 1920×1080 the English and Chinese Settings root and Controls pages kept the selected
 reset footer's outline and marker clear of the label and hints. Reproduce these pages using

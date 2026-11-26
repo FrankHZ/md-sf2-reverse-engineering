@@ -45,8 +45,8 @@ func wait_slots(expected: String) -> bool:
     return false
 
 func framed_action(button: Button) -> void:
-    var style := button.get_theme_stylebox("normal") as StyleBoxTexture
-    check(style != null and style.texture != null, "decorated production action: "+str(button.name))
+    var style := button.get_theme_stylebox("normal") as StyleBoxFlat
+    check(style != null and style.border_width_left in [1,2], "single-outline production action: "+str(button.name))
 
 func form_geometry(name: String) -> void:
     var panel := host.find_child(name,true,false) as Control
