@@ -296,12 +296,14 @@ internal static class MapTransfer
         {
             // The explicit map load still copies the battle blocks after flag and chest overlays.
             // Script operands address that working layout, including cells beyond the copy.
-            layout = LoadLayout(map.SelectSetup(current.Story.Flags), current.Story.Flags)
-                .ApplyBlockCopy(new(region.Origin.X, region.Origin.Y, 0, 0, battle.Width, battle.Height));
+            var field = LoadLayout(map.SelectSetup(current.Story.Flags), current.Story.Flags);
+            layout = field.ApplyBlockCopy(new(region.Origin.X, region.Origin.Y, 0, 0, battle.Width, battle.Height));
             // Before LoadBattle the scene camera and actors move through the declared map
             // area. Only the victory scene reuses the already loaded battle's view bounds.
             if (current.Story.Continuation == ProgramContinuation.VictoryProgramFinished)
                 map = map.WithBattleSceneArea(load.Camera, battle.Width, battle.Height);
+            else if (region.Origin.X != 0 || region.Origin.Y != 0)
+                map = map.WithBeforeBattleCopy(new(field, layout, battle.Width, battle.Height));
         }
         return new(map, layout, world.Player, world.AllEntities, world.Party, world.SpriteSize,
             world.Aliases, population: world.Population, quake: world.Quake, currentEntities: world.CurrentEntities, populationSource: world.PopulationSource);

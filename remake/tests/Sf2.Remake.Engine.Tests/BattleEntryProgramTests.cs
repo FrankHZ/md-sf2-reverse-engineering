@@ -140,6 +140,7 @@ public sealed class BattleEntryProgramTests
             original.Terrain, original.Deployments, original.Spells.Values, sourceMapRegion: region);
         var programs = world.Programs.Values.Concat([
             new StoryProgram("scene", [new LoadSceneMap(map.Map, new(x, y)), new WaitProgramTicks(1),
+                new CopyMapLayout(new(0, 0, 1, 0, 1, 1)), new CopyMapLayout(new(0, 0, 63, 0, 1, 1)),
                 new SetCameraTarget(new(19, 6)), new WaitProgramTicks(1),
                 new WriteFlag(910, true), new EndProgram()]),
             new StoryProgram("load-board", [new PresentCue(PresentationCueKind.BattleLoad, null), new EndProgram()]),
@@ -168,14 +169,28 @@ public sealed class BattleEntryProgramTests
         Assert.Equal(19, scene.Exploration!.Layout[0, 0]);
         Assert.Same(entry.Exploration!.Party, scene.Exploration.Party);
         Assert.DoesNotContain(910, scene.Story.Flags);
-        if (victory) return;
+        Assert.Null(map.BeforeBattleCopy);
+        if (victory)
+        {
+            Assert.Null(scene.Exploration.Definition.BeforeBattleCopy);
+            return;
+        }
+        var copy = Assert.IsType<BeforeBattleMapCopy>(scene.Exploration.Definition.BeforeBattleCopy);
+        Assert.Equal(x >= battle.Width || y >= battle.Height, copy.UsesField(view.BX.Position, view.BY.Position));
+        var working = scene.Exploration.Layout;
+        Assert.Equal(map.Layout[0, 0], copy.FieldWithSceneEdits(working)[0, 0]);
+        var reset = WorkingMapLayout.ResetScene();
+        Assert.Same(reset, copy.FieldWithSceneEdits(reset));
 
         var scrolling = ExplorationDispatcher.Submit(definition, scene, new AdvanceSimulation(scene.Story.Wait!.Token));
         Assert.Null(scrolling.Failure);
         var scrollView = scrolling.Snapshot.Story.LogicalView!;
         Assert.Equal(view.Area, scrollView.Area);
         Assert.Equal(19 * 384, scrollView.BX.Destination);
-        Assert.NotNull(scrolling.Snapshot.Exploration);
+        var changed = scrolling.Snapshot.Exploration!.Layout;
+        Assert.Equal((19, 19), ((int)changed[1, 0], (int)changed[63, 0]));
+        var projected = copy.FieldWithSceneEdits(changed);
+        Assert.Equal((map.Layout[0, 0], 19, 19), (projected[0, 0], (int)projected[1, 0], (int)projected[63, 0]));
 
         var initialized = ExplorationDispatcher.Submit(definition, scrolling.Snapshot,
             new AdvanceSimulation(scrolling.Snapshot.Story.Wait!.Token));
