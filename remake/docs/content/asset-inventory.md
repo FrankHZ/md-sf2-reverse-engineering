@@ -1405,3 +1405,17 @@ for rank1/rank2/ranks3–4. Complete HD selection preserves logical sizes; a mis
 falls back to Original for the whole required group. No equipment consumer is admitted.
 Source operands, controlled native acceptance and Unknowns belong to the
 [spell owner](../godot/spell-presentation.md#wind-family-playback-2306).
+
+### DESOUL raster family #2307
+
+The [DESOUL successor](presentation-assets.md#desoul-successor-2307) consumes the
+3,328-byte prepared tileset 13 stream with palette `06220c880844`. The 64×48
+`desoul/hover` and `desoul/strike` use four column-major sprites each. Strike
+uses the bank 48 tiles later. The 16×16 `desoul/soul-0` and `desoul/soul-1`
+use zero-based tiles 96 and 100 as their respective starts.
+
+Both variations require one complete four-raster group. The 4× HD textures
+preserve logical extents. A missing HD member selects the entire Original group.
+Prepared retail cue 106 joins inherited cast 77 and hover 110. All 26 admitted
+scene projections carry the group for learned ranks and Dark Sword Use.
+[Source operands and playback](../godot/spell-presentation.md#desoul-source-and-delivery)

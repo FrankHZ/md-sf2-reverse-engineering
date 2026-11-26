@@ -1289,3 +1289,15 @@ wear draw; Taros retains its special sword-use caller, source body45, zero MP an
 The equipment eligibility, empty player mask for Taros Sword and existing damage rules
 are unchanged. Source media/composition and modern finite timing are distinct. Holy Thunder
 is not admitted; its spell-table alias does not authorize a consumable animation.
+
+### Dark Sword presentation #2307
+
+Dark Sword (70) Use selects DESOUL variation 1 and keeps the holder's Item
+animation. The 26 admitted encounters share the same reaper group as learned Magic.
+The scene reads the ordered Item result to choose when to strike. The equipment action
+owns eligibility, zero MP, Use during Silence and selected-copy wear.
+
+The controlled Battle26 Lemon witness used a silenced holder at zero MP, drew wear
+once for the chosen intact sword, showed one instant-death strike and returned to
+a usable action menu. Natural acquisition and use remain **Unknown**.
+[Published input and observation](../godot/spell-presentation.md#desoul-reproduction-and-verification)

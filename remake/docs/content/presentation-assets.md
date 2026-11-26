@@ -1577,3 +1577,28 @@ One-scene pilot is6,613,630 bytes,0.29s and76,963,840-byte peak. Publication is 
 serial and below500MiB; reader/native peaks stay within2GiB. Omitting graphics source adds
 no new HD claims. [Wind reproduction](../godot/spell-presentation.md#wind-reproduction-and-acceptance)
 uses published inputs without producer scratch and records failures and acceptance limits.
+
+### DESOUL successor #2307
+
+The registered `derived/issue2307/desoul-v1` is a complete successor to
+`derived/issue2306/blast-v1` with 178 files and 374,714,972 bytes. The publisher
+adds four Original and four HD rasters to the 26 scene projections and mounts
+strike cue 106 in world audio. The closure comparison preserves the prior payloads
+and links. Select world, main scenes and the six opening inputs together, retaining
+independent #2252 opening, #2255 Witch and #2266 catalog selections.
+
+```powershell
+. ./local/private-inputs.ps1
+$derived = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived'
+uv run --with pillow python -m sf2tool.remake_retail_assets `
+  --root (Join-Path $derived 'issue2001/retail-v1') `
+  --base (Join-Path $derived 'issue2306/blast-v1') `
+  --mount $freshAbsolutePackage --family desoul-family --gfx-root $pinnedGraphicsCheckout
+```
+
+Use the graphics checkout at `172662709b31cb296b55f51894754ce810c30f6c` for the 4×
+group. The single-scene Battle26 pilot added 12,158 bytes in about 0.18 s. The
+serial publication fit the 500 MiB package budget. Published-reader and independent
+native peaks stayed below 2 GiB. The production reader and headless observation
+launchers consume the registered package with producer scratch unavailable.
+[Playback reproduction and limits](../godot/spell-presentation.md#desoul-reproduction-and-verification)
