@@ -464,10 +464,19 @@ owns the independent integration disposition.
   and reaches the same usable title when the existing title assets are valid.
 - Natural finish and Skip converge on one title handoff. The pre-title sequence owns input
   while active. A fresh mapped Start (the entry action currently routed as `Equipment`) or an explicit
-  pointer Skip cancels the remaining sequence even during timed dialogue, motion or fade. Keep
-  Confirm for reading controls where applicable. Clear the outgoing work, release mapped actions
+  pointer Skip cancels the remaining sequence even during timed dialogue, motion or fade. Holding the mapped Accelerate control scales scene work and automatic text reveal with the
+  applied 1.5–3× setting. Release restores 1×. Automatic pages show the mapped Accelerate binding.
+  Pages that require reading input keep their Confirm or More prompt. Clear the outgoing work, release mapped actions
   and finish pointer capture before the title accepts a new Start/Confirm/click. Late events from
   a cancelled or replaced owner have no successor to advance.
+  To reproduce with the [registered opening selection](../content/presentation-assets.md#four-scene-startup-package-2252),
+  launch `& $env:GODOT_BIN --path remake/game`, hold Accelerate across movement and the first
+  timed line, then release. The opening package contains 81 timed messages and no W1/W2 input
+  tokens. **Confirmed:** at a fixed 60 process frames/s, 12 frames of automatic dialogue advanced
+  18 simulation ticks with default Shift and 36 with remapped pad input at 3×. Focus loss restored
+  1×; background off paused simulation and background on advanced at normal speed. A shortened
+  first-scene control exercised the normal scene-end/title handoff with Accelerate held. Both
+  that handoff and Skip required fresh title input before the Witch greeting.
 - The title starts its current finite score when presented. Witch Back returns to the title under
   the existing #1447 behavior. Menus, idle title, in-process return from play, Settings and window
   recovery do not rerun startup. A fresh ordinary process can play it again. Keep diagnostic/start

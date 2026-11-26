@@ -41,7 +41,8 @@ public sealed partial class GameRoot : Node
     {
         bool focused = GetWindow().HasFocus();
         _input?.ObserveHintInput(input, focused);
-        _input?.AllowAcceleration(!_releaseBarrier && (_exploration?.CanAccelerate == true || _battle?.CanAccelerate == true));
+        _input?.AllowAcceleration(!_releaseBarrier &&
+            (_opening?.View?.CanAccelerate == true || _exploration?.CanAccelerate == true || _battle?.CanAccelerate == true));
         _input?.ObserveAccelerationInput(input);
         if (!focused)
         {

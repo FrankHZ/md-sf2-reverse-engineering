@@ -36,7 +36,7 @@ internal sealed partial class ExplorationDialogueView : Control
         AddChild(Panel); AddChild(_context);
         _dialogue.AutoTranslateMode = AutoTranslateModeEnum.Disabled;
     }
-    internal void Present(GameSession session, GameInput input, WorldViewportLayout viewport, bool battleMounted, bool revealed, bool canAccelerate)
+    internal void Present(GameSession session, GameInput input, WorldViewportLayout viewport, bool battleMounted, bool revealed, bool canAccelerate, bool automaticOpening)
     {
         var current = session.Current;
         string previousText = _dialogue.Text;
@@ -151,9 +151,9 @@ internal sealed partial class ExplorationDialogueView : Control
         bool openWindow = current.Story.TextWindow is OpenTextWindow || current.Story.PortraitWindow is OpenPortraitWindow ||
             current.Story.Wait is DialogueWait or ChoiceWait or FieldSearchWait;
         Panel.Present(openWindow && current.Story.LogicalView?.HideWindows != true, portrait, (flags & 0x80) != 0, subject, "", openWindow);
-        RefreshHint(session, input, battleMounted, revealed, canAccelerate);
+        RefreshHint(session, input, battleMounted, revealed, canAccelerate, automaticOpening);
     }
-    internal void RefreshHint(GameSession session, GameInput input, bool battleMounted, bool revealed, bool canAccelerate)
+    internal void RefreshHint(GameSession session, GameInput input, bool battleMounted, bool revealed, bool canAccelerate, bool automaticOpening)
     {
         // Present may have just installed a new span after its caller sampled the old reader.
         revealed = _dialogue.VisibleCharacters < 0 || _dialogue.VisibleCharacters >= _dialogue.GetTotalCharacterCount();
@@ -161,6 +161,7 @@ internal sealed partial class ExplorationDialogueView : Control
         bool atInput = current.Story.Wait is DialogueWait or FieldSearchWait or W1TextWait { AtInput: true, Revealed: true } || current.CanWaitForText;
         string hint = current.Story.Wait switch
         {
+            _ when automaticOpening && Panel.Visible => GameText.Get("field.accelerate", input.CompactHint(GameAction.Accelerate)),
             FieldSearchWait when revealed => GameText.Get("search.continue", input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel)),
             ChoiceWait when revealed && current.CanWaitForChoice => GameText.Get("story.choice-help", input.CompactHint(GameAction.Confirm), input.CompactHint(GameAction.Cancel)),
             DialogueWait or FieldTextWait or W1TextWait when revealed && !Panel.MoreBelow => GameText.Get("story.continue", input.CompactHint(GameAction.Confirm)),

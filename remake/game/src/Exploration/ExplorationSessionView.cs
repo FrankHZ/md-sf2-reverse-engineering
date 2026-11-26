@@ -259,11 +259,12 @@ public sealed partial class ExplorationSessionView : Control
         if (_session.Current.Story.EntrySkip is null && _dialogue.VisibleCharacters >= 0)
         {
             int before = _dialogue.VisibleCharacters;
-            _revealed = Math.Min(_dialogue.GetTotalCharacterCount(), _revealed + delta * _input.Settings.CharactersPerSecond);
+            double revealDelta = AutomaticOpeningPlayback ? gameplayDelta : delta;
+            _revealed = Math.Min(_dialogue.GetTotalCharacterCount(), _revealed + revealDelta * _input.Settings.CharactersPerSecond);
             _dialogue.VisibleCharacters = (int)_revealed;
             SpeakRevealedCharacters(before, _dialogue.VisibleCharacters);
         }
-        _dialogueView.RefreshHint(_session, _input, _battleMounted, TextRevealed, CanAccelerate);
+        _dialogueView.RefreshHint(_session, _input, _battleMounted, TextRevealed, CanAccelerate, AutomaticOpeningPlayback);
         if (_session.Current.Exploration is { Definition.Caravan: not null } authored &&
             _session.Definition.Exploration!.Visuals is null)
             foreach (var entity in authored.AllEntities.Where(actor => actor.WaitingForSprite && actor.SpriteReady != actor.SpriteRequest))
@@ -493,9 +494,9 @@ public sealed partial class ExplorationSessionView : Control
         bool loadedMap = submitted.Observations.Any(row => row.Kind == "map-transferred" || row.Kind == "program-instruction" && row.Detail == "LoadSceneMap");
         if (loadedMap || current.Exploration?.Map != submitted.Snapshot.Exploration?.Map)
             _presentation?.ResetTerrainPhase(submitted.Snapshot.Story.SimulationTick);
-        if (current.SessionId != submitted.Snapshot.SessionId || current.Exploration?.Definition != submitted.Snapshot.Exploration?.Definition ||
-            SessionPresentationOwner.IsBattle(submitted.Snapshot) || submitted.Failure is not null ||
-            loadedMap)
+        bool fieldChanged = loadedMap || current.Exploration?.Definition != submitted.Snapshot.Exploration?.Definition;
+        if (current.SessionId != submitted.Snapshot.SessionId || SessionPresentationOwner.IsBattle(submitted.Snapshot) ||
+            submitted.Failure is not null || fieldChanged && !IsOpeningSequence)
             _input.DisarmAcceleration();
         _ = GameplayDelta(0);
         if (command is LeaveChurch { Save: true } && submitted.Failure is null) _churchSaveRequested = true;
@@ -554,7 +555,7 @@ public sealed partial class ExplorationSessionView : Control
         if (PresentationFailure is not null) _partyStatus.Hide();
         _partyStatus.Present(_session, _input);
         PresentFieldMenu();
-        _dialogueView.Present(_session, _input, WorldViewport, _battleMounted, TextRevealed, CanAccelerate);
+        _dialogueView.Present(_session, _input, WorldViewport, _battleMounted, TextRevealed, CanAccelerate, AutomaticOpeningPlayback);
         _failureLabel.GetParent<Control>().Visible = PresentationFailure is not null;
         _failureLabel.Text = PresentationFailure is { } failure
             ? $"The scene has stopped.\n{failure.Message} ({failure.Code})" : "";

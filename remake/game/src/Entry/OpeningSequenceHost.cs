@@ -77,7 +77,7 @@ public sealed partial class GameRoot
                 owner.Session = started.Session;
                 GameText.Bind(started.Session.Definition, prepared.Catalog);
                 owner.Audio = new SessionAudio(this, started.Session.Definition.Exploration!) { SelectMapMusic = false };
-                owner.View = new ExplorationSessionView { Name = "OpeningScene", WorldViewport = new() };
+                owner.View = new ExplorationSessionView { Name = "OpeningScene", IsOpeningSequence = true };
                 AddChild(owner.View);
                 owner.View.Begin(started.Session, started.Result, _input!, owner.Audio,
                     _ => FinishOpening(owner, "failed", "opening-battle-unavailable"),
