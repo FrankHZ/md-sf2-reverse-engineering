@@ -13,6 +13,7 @@ REMAKE_PRODUCER_PATHS = frozenset(
         "src/sf2tool/remake_retail_assets.py",
         "src/sf2tool/remake_retail_audio.py",
         "src/sf2tool/remake_private_package.py",
+        "src/sf2tool/remake_windows_package.py",
         "src/sf2tool/remake_equipment_assets.py",
         "src/sf2tool/remake_promotion_appearances.py",
         "src/sf2tool/remake_private_inventory.py",

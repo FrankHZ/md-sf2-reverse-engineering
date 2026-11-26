@@ -76,7 +76,7 @@ public sealed partial class GameRoot
             try
             {
                 _preferences = new SettingsStore(Selected("SF2_SAVE_ROOT"), Selected("SF2_SAVE_NAMESPACE"),
-                    System.IO.Path.GetFullPath(System.IO.Path.Combine(ProjectSettings.GlobalizePath("res://"), "..", "..")));
+                    Entry.PackagedStartup.StorageBoundary);
                 settings = _preferences.Load(); _settingsNotice = _preferences.Error;
             }
             catch (ArgumentException)

@@ -1,5 +1,11 @@
 # Development and Verification
 
+## Local Windows export
+
+The [private Windows candidate recipe](windows-local-candidate.md) owns the repeatable Release
+export, explicit content closure, relocated execution and local-only distribution boundary.
+Use its narrow export/adapter checks for packaging work; it does not request a campaign replay.
+
 ## Pre-voyage Chinese consumer observation
 
 The [finite admission agreement](application/pre-voyage-chinese-admission.md) owns the 806 pre-voyage world

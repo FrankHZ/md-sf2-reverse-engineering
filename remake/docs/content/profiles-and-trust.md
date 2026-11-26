@@ -867,8 +867,10 @@ The following remain ignored and local:
 - generated Godot import state, builds, exports, logs, and smoke receipts.
 
 Private compressed source bytes and extraction metadata remain offline. The runtime reads only the
-selected exports, the prepared world and the controlled start; none is committed, printed, embedded in
-a public package, or exported by the current private runtime. Diagnostics are typed and path-free.
+selected exports, the prepared world and the controlled start; none is committed, printed or embedded in
+a public package. The [local Windows candidate](../windows-local-candidate.md) may copy the closed
+prepared runtime inputs into an ignored private install directory. This is not public distribution
+or a ROM importer. Diagnostics are typed and path-free.
 
 Use the repository's [Local Private Input Layout](../../../docs/operations/local-private-inputs.md) for
 machine-private input routing. Worktree-local writable state remains isolated even when immutable shared

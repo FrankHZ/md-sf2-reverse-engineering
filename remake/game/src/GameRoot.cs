@@ -138,6 +138,7 @@ public sealed partial class GameRoot : Node
 
     public override void _Ready()
     {
+        PackagedStartup.Configure();
         _hostUi = UI.PresentationCanvas.Mount(this, "HostUi", UI.PresentationCanvas.Host);
         GetWindow().FocusExited += SettingsFocusLost;
         GetWindow().FocusEntered += PacingFocusReturned;
