@@ -97,6 +97,7 @@ discards the draft. Page reset and Reset all stage Off. Format 1 preferences tha
 `runInBackground` load as Off. Keyboard, pointer and controller actions require window focus.
 A dialogue acknowledgement or player decision waits for fresh input. System menus, recovery,
 loading and error boundaries retain their own pause and admission rules.
+[Native focus, audio and input verification](../verification/host.md#native-background-playback)
 
 ## Access through the finite demo
 
