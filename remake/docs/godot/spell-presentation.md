@@ -1782,9 +1782,11 @@ all five inputs and published rank2, HD4 ReducedFlash/fast and incomplete-HD4 pa
 Maximum measured native working set is1,348,579,328 bytes; producer scratch logical size
 at review publication is400,884,507 bytes. These host measurements fit the2GiB allowance.
 
-The committed default and `--scope engine` plans agree: engine-unit, adapter-build,
+The selected committed `--scope engine` plan contains engine-unit, adapter-build,
 private-admission-build, live-inspection-build and research-public; no unclassified paths.
-The Python changes are remake asset consumers, not research execution semantics.
+The default plan additionally lists the legacy always-run public-core. Both plans are
+retained; the engine-only scope follows the current verification policy because these
+Python changes are remake asset consumers, not research execution semantics.
 Engine passes3383 with50 optional private-input skips. Locked adapter Debug/Release and
 both tool Release builds pass with zero warnings/errors. Ruff, design-contracts and
 research-index direct checks pass. No rules changed and no verification-tool tests were
