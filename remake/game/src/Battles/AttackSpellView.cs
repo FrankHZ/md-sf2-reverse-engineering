@@ -16,6 +16,8 @@ internal sealed partial class AttackSpellView : Node2D
     private Func<int, BattleSceneRaster>? _blaze;
     private BlazeMeteorEffect? _blazeMeteors;
     private BlastOneEffect? _blast;
+    private BoltEffect? _bolt;
+    private int _boltCue = -1;
     private FreezeEffect? _freeze;
     private int _freezeCue = -1;
     private Vector2 _blazePosition;
@@ -29,6 +31,8 @@ internal sealed partial class AttackSpellView : Node2D
         _blaze = null;
         _blazeMeteors = null;
         _blast = null;
+        _bolt = null;
+        _boltCue = -1;
         _freeze = null;
         _freezeCue = -1;
     }
@@ -39,7 +43,9 @@ internal sealed partial class AttackSpellView : Node2D
     internal void PrepareAttackSpell(BattleSceneState scene, Func<int, BattleSceneRaster> frames, bool targetIsAlly, bool reducedFlash)
     {
         _scene = scene;
-        if (scene.AttackAnimationSelector is 2 or 34 or 66 or 98)
+        if (scene.AttackAnimationSelector is 7 or 39 or 71 or 103)
+            _bolt = new(frames, targetIsAlly, reducedFlash, (scene.AttackAnimationSelector.Value >> 5) + 1);
+        else if (scene.AttackAnimationSelector is 2 or 34 or 66 or 98)
             _freeze = new(frames, targetIsAlly, reducedFlash, (scene.AttackAnimationSelector.Value >> 5) + 1);
         else if (scene.AttackSpell!.Spell.Value == "blast")
             _blast = new(frames, targetIsAlly, reducedFlash);
@@ -55,7 +61,7 @@ internal sealed partial class AttackSpellView : Node2D
         Show();
     }
 
-    internal double PreparedDuration => _freeze is not null ? FreezeEffect.Duration : _blast is not null ? BlastOneEffect.Duration : _blazeMeteors is null ? BlazeDuration : _blazeMeteors.Duration;
+    internal double PreparedDuration => _bolt is not null ? BoltEffect.Duration : _freeze is not null ? FreezeEffect.Duration : _blast is not null ? BlastOneEffect.Duration : _blazeMeteors is null ? BlazeDuration : _blazeMeteors.Duration;
 
     internal void AdvancePrepared(double age)
     {
@@ -65,6 +71,16 @@ internal sealed partial class AttackSpellView : Node2D
 
     internal int? PreparedSound()
     {
+        if (_bolt is not null)
+        {
+            if (_elapsed < 4.0 / 60 || _elapsed >= 98.0 / 60) return null;
+            int tick = (int)(_elapsed * 60), cycle = tick / 36;
+            if (tick % 36 < 4) return null;
+            int pulse = cycle * 2 + (tick % 36 >= 16 ? 1 : 0);
+            if (pulse <= _boltCue) return null;
+            _boltCue = pulse;
+            return 119; // Two audible strike starts per modern cycle; shared YM5 replacement.
+        }
         if (_freeze is null || _elapsed < 0.1 || _elapsed >= FreezeEffect.Duration) return null;
         int cue = (int)((_elapsed - 0.1) / 0.3);
         if (cue <= _freezeCue) return null;
@@ -88,6 +104,11 @@ internal sealed partial class AttackSpellView : Node2D
     public override void _Draw()
     {
         if (_scene?.AttackSpell is not { } spell) return;
+        if (_bolt is { } bolt)
+        {
+            if (bolt.Draw(this, _elapsed)) _drawCount++;
+            return;
+        }
         if (_freeze is { } freeze)
         {
             if (freeze.Draw(this, _elapsed)) _drawCount++;
@@ -164,6 +185,7 @@ internal sealed partial class AttackSpellView : Node2D
         variation = Selector.HasValue ? (int?)Variation : null, targets = _scene?.AttackTargets.Select(a => a.Value),
         target = _scene?.Target?.Value, amount = _scene?.Amount, modern = true, preparedBreath = _breath is not null,
         preparedBlast = _blast?.Observe(_elapsed),
+        preparedBolt = _bolt?.Observe(_elapsed),
         preparedFreeze = _freeze?.Observe(_elapsed),
         preparedBlazeTwo = _blazeMeteors?.Variation == 2 ? _blazeMeteors.Observe(_elapsed) : null,
         preparedBlazeFamily = _blazeMeteors?.Observe(_elapsed),

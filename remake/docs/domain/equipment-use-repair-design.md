@@ -384,7 +384,7 @@ then the selected recipient; state and projection are observed without screensho
 - `dispel01`: Rohde's Grand Cannon54→310 despite the spell failing against enemy1; MP0 remains0,
   enemy status stays0 and1 EXP is awarded. Chinese item/ineffective/damage feedback completes.
 - `bolt01`: Kazin's Evil Ring uses BOLT2, enemy1 HP37→17, MP remains0, ring25 remains intact.
-  The retained ordinary Item gesture is not original BOLT choreography.
+  That historical witness used the primitive effect; current original BOLT binding is described below.
 - Repair continues from the actual AURA save through normal Stay turns, Bowie's EGRESS to Map36,
   and the Pacalon merchant. Canceling the1250 quote preserves8747 gold and279. `repair03` confirms
  7497 gold and23, saves in the castle, and English `cold-field01` re-saves identical complete
@@ -1278,3 +1278,14 @@ Freeze Staff98 Use to original FREEZE3 art while retaining Item animation21, zer
 silence immunity, one wear draw and ordered damage/death/reward return. A controlled
 silenced WIZ Kazin witness covers this shared consumer; natural acquisition remains Unknown.
 Blizzard17 remains a consumable NONE presentation, not the table's FREEZE3 selector.
+
+### Lightning equipment presentation #2301
+
+The [lightning owner](../godot/spell-presentation.md#lightning-family-playback-2301) binds
+Halberd83/BOLT1, Evil Ring25/BOLT2 and enemy Taros Sword110/BOLT2 to the shared original
+strike/orb group. The production reader covers all26 scenes. Controlled native Halberd
+and Evil Ring retain their body-specific Item sequences, zero MP and one selected-copy
+wear draw; Taros retains its special sword-use caller, source body45, zero MP and no wear.
+The equipment eligibility, empty player mask for Taros Sword and existing damage rules
+are unchanged. Source media/composition and modern finite timing are distinct. Holy Thunder
+is not admitted; its spell-table alias does not authorize a consumable animation.

@@ -64,7 +64,7 @@ of recipients and actual reaction results follow the committed action.
 
 ## Graphics variants
 
-Prepared BLAZE1–4, FREEZE1–4, BLAST1, breath and wave rasters can select a complete optional HD
+Prepared BLAZE1–4, FREEZE1–4, BOLT1–4, BLAST1, breath and wave rasters can select a complete optional HD
 frame group from the battle scene. The light fairy uses a single group for body, wings and
 dust. Partial groups use the complete Original art. Effect positions, mirroring, opacity
 and Reduced Flash read the existing playback state. Higher density keeps the Original
@@ -107,12 +107,12 @@ update controls subsequent movement, mirroring and dust. [Enemy family evidence]
 | BLAZE 4 | BLAZE v4 | **Original assets bound**: large flame, four large meteors and eight-part flame dragon. Controlled Battle26 WIZ casts hit one opponent. | [Flame family playback](#flame-family-playback-2293); modern clock and floating-point trajectory are distinct from original timing. |
 | FREEZE 1–2 | FREEZE v1–v2 | **Original assets bound** in all26 freeze-successor scenes. Controlled WIZ Tyrin casts cover both ranks; Battle19 Dark Madam covers enemy FREEZE2, with source-side origins and opposite rotation. | [FREEZE family](#freeze-family-playback-2298), including modern clock and natural-reach limits. |
 | FREEZE 3–4 | FREEZE v3–v4 | **Original assets bound** through admitted learned casts; Freeze Staff Item uses v3. Controlled WIZ Tyrin covers area v3 and single-target v4 with its extra glint. Blizzard consumable remains NONE despite its table row. | [FREEZE family](#freeze-family-playback-2298). No new equipment acquisition or encounter admission. |
-| BOLT 1–2 | BOLT v1–v2 | **Placeholder**. Bowie BOLT1 in Battle26 and Taros Sword BOLT2 enemy Use in Battle18 have actual private combat witnesses. The lightning presenter is primitive. Taros's item-origin attack uses zero MP. Its class mask prevents ordinary player Use. | [#2104] later lightning effects. Keep actual cast versus sword origin, recipient order and payment. [Bowie witness](../application/church-promotion-design.md#current-battle-spells) · [Taros witness](../application/taros-caravan.md) |
-| BOLT 3–4 | BOLT v3–v4 | **Placeholder** on learned private Magic. Both reach three cells. Rank 3 hits within radius 2 and rank 4 hits one opponent. RAIJIN2/3 have independent neutral rules and share the original selectors. THUNDR1 uses v3 in the source table. | [#2104] lightning playback. [Battle26 witness](../development-and-verification.md#high-rank-elemental-magic-observation) |
+| BOLT 1–2 | BOLT v1–v2 | **Original assets bound** across all26 lightning-successor scenes, including Halberd1, Evil Ring2 and enemy Taros Sword2. Controlled native input retains Magic versus Item, zero-MP equipment and enemy no-wear. | [Lightning family](#lightning-family-playback-2301); natural acquisition/reach remain encounter-owned. |
+| BOLT 3–4 | BOLT v3–v4 | **Original assets bound** through admitted learned casts. v3 has three concurrent strike streams/two orbs; v4 has four/four. Radius2 versus single-target gameplay is unchanged. | [Lightning family](#lightning-family-playback-2301). THUNDR table membership does not admit Holy Thunder or establish its consumable animation. |
 | BLAST 1 | BLAST v1 | **Original assets bound** in the prepared Battles04–07 mount. Controlled Sarah PRST level 10 casts on one adjacent enemy with current actors and backdrop. | [Prepared BLAST1](#prepared-blast1-presentation) owns the tileset-15 fragments, slashes, cues and observations. |
 | BLAST 2–4 | BLAST v2–v4 | **Placeholder**. All three ranks bind to the private wind rule. Battle19 repeat admits Dark Bishop BLAST3; Battle22 observes Sarah's BLAST4 single-target use. | [#2104] later wind variants after [#2106]. Compare their actual area/single-target behavior and setup variants. [Battle19](../application/battle19-repeat.md) · [Battle22](../application/desktop-battle22.md) |
 | KATON 1–3 | BLAZE v2–v4 | **Original assets bound** through the actual selector, with neutral gameplay rules unchanged. Native NINJ rank1 uses v2; rank3 uses v4. Rank2 has production binding coverage, without a new native cast. | [Flame family playback](#flame-family-playback-2293). Natural learning/acquisition remain **Unknown**. |
-| RAIJIN 1–3 | BOLT v2–v4 | **Placeholder**. All three ranks bind to distinct learned neutral damage. Controlled private NINJ rank-1 input shows selector 39 and primitive lightning; other ranks have engine coverage. | [#2104] reuse compatible art after lightning variants. Preserve the recorded neutral rules. [Ninja evidence](../application/ordinary-promotion-classes.md#ninja-controlled-reproduction-and-ordinary-pilot) |
+| RAIJIN 1–3 | BOLT v2–v4 | **Original assets bound**, preserving distinct neutral gameplay. Controlled NINJ ranks1/3 use the shared selectors; rank2 has production-reader binding coverage. | [Lightning family](#lightning-family-playback-2301); natural learning/acquisition remain **Unknown**. |
 | DAO 1–2 | DAO v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns original effect composition and playback. DAO1 native uses the existing modern fallback. |
 | APOLLO 1–2 | APOLLO v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns original effect composition and playback. DAO1 native uses the existing modern fallback. |
 | NEPTUN 1–2 | NEPTUN v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns original effect composition and playback. DAO1 native uses the existing modern fallback. |
@@ -169,7 +169,7 @@ foreground visual acceptance remain **Unknown** where no named witness covers th
   the first DEBUFF consumer. The [DEBUFF family](#debuff-family-playback-2280) extends it to
   admitted SLOW/MUDDLE/SLEEP and two equipment callers. The [BUFF family](#buff-family-playback-2282) has its own no-tile mechanism and consumer acceptance. [#1456] governs foreground acceptance and [#1616] the wider design review.
 - **P3 for current later content.** [#2104] groups the remaining elemental variants and shared
-  RAIJIN art, then any additional support callers as admitted. The [flame family](#flame-family-playback-2293) covers admitted KATON; the [FREEZE family](#freeze-family-playback-2298) covers admitted ice ranks and Freeze Staff. Private allied AURA2–4
+  wind effects, then any additional support callers as admitted. The [lightning family](#lightning-family-playback-2301) covers admitted BOLT/RAIJIN and equipment. The [flame family](#flame-family-playback-2293) covers admitted KATON; the [FREEZE family](#freeze-family-playback-2298) covers admitted ice ranks and Freeze Staff. Private allied AURA2–4
   has [controlled ordinary coverage](../domain/gameplay-rules.md#private-learned-aura-ranks).
   [#2016], [#1967] and [#1926] own missing gameplay and item admission. Keep item gestures where
   the original selector path calls for them. Schedule equipment effect reuse at its first legal
@@ -1530,3 +1530,146 @@ and human aesthetics. This slice makes no Battle27+, lifecycle or public-media d
 The public engine gate passes3378 tests with50 optional private-input skips; the adapter
 Release build passes with zero warnings/errors. The dedicated published reader and native
 receipts, rather than those skips, establish the private observations above.
+
+## Lightning family playback #2301
+
+**Standard scope.** Bind admitted BOLT1–4, neutral RAIJIN1–3
+and equipment BOLT1/2, including enemy Taros Sword, to original prepared art through the
+existing scene and result continuation. Gameplay, saves, acquisition, Battle27+ and Holy
+Thunder admission are unchanged. Original composition and modern deterministic delivery
+have separate acceptance; natural reach and exact hardware timing remain **Unknown**.
+
+Owned implementation paths: `remake/game/src/Battles/{AttackSpellView.cs,BattleSceneView.cs,
+BattleSceneView.Rasters.cs,BoltEffect.cs}`, `remake/game/src/Audio/SessionAudio.cs`,
+`remake/src/Sf2.Remake.Content/Scenarios/PrivateAttackSpellBindings.cs`,
+`src/sf2tool/{remake_attack_spell_mount.py,remake_private_package.py,
+remake_retail_assets.py,remake_hd_battle_rasters.py}`, and
+`remake/game/probes/engine_bolt_family_observation.gd`. Documentation ownership is this
+section plus narrow battle-scenes, equipment-use-repair-design, presentation-assets and
+asset-inventory entries, plus the released lightning capability entry. Input/host
+documentation remains with its separate owner. No planner, schema or aggregate changes are planned.
+
+Use complete #2298 freeze-v1 (176 files /370,341,646 bytes) and prepared #2001 retail-v1
+read-only. Pilot one scene before one complete immutable successor below500MiB. Preserve
+all previous resources and independent #2252 opening, #2255 Witch and #2266 catalog.
+Serial O(package bytes + fixed sprite operands) processing; <=2GiB scratch/peak RAM.
+No acquisition, capture, API/model calls or new asset platform. Measure the pilot before
+expansion and stop/replan if these limits fail. Production readers must cover all26 mounts,
+then legal controlled restores precede bounded ordinary-input observations of distinct
+variants, alias, Item/enemy, HD/group fallback, Reduced Flash and acceleration. Reproduce
+from publication after producer scratch becomes unavailable. Adapter build and selected
+engine gate supplement these direct observers; no tests of verification tools are added.
+
+### Lightning source and modern delivery
+
+**Confirmed source.** The pinned USA `c834c652b6862bc5679fd7f69a38a7093206efc6`
+spell table selects7/39/71/103 for BOLT1–4 and39/71/103 for RAIJIN1–3.
+`getspellanimation.asm` selects the equipment spell for Halberd83 (BOLT1), Evil Ring25
+and Taros Sword110 (BOLT2). Non-equipment Use keeps NONE; Holy Thunder18/THUNDR's
+v3 table row does not override that caller or admit the item. The source enemy bit128
+is represented separately by the adapter's target-side projection. RAIJIN's neutral
+resistance and damage remain separate from Lightning.
+
+[`animation/bolt.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/bolt.asm)
+(`0x1AA90..0x1AB9E`) loads tileset4, cast77 and flash0xECA.
+`table_1AB4E` selects1/2/3/4 concurrent strikes and0/1/2/4 orbs.
+[`update/bolt.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/bolt.asm)
+(`0x1CE50..0x1CFFC`) selects either eleven-frame A/B operand table, advances the first
+six frames every two ticks, pauses and advances the remaining five. Each frame has five
+sprite records. Strike X is16..111 on the enemy-target side or144..239 on the ally-target
+side; the latter adds8 to Y. Initial delays and subsequent positions/waits are randomized,
+and source playback repeats until scene-script stop. `table_1AB5E` orbs use local
+(72,64),(24,88),(120,72),(176,56); mirrored side rotates this order by two. Their eight
+phases select tiles148/164, horizontal and vertical flips.
+
+[`boltanimdata.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/data/graphics/battles/spells/animations/boltanimdata.asm)
+(`0x1AA8CA..0x1AAC3A`) and `battlesceneengine_2.asm:ConstructComplexGraphic`
+provide the X/Y, tile and size/property operands. The producer consumes the two prepared
+440-byte tables, resolves one-based tile1 to VDP0x520, preserves H/V flips and earlier-sprite
+overlap priority, and composes each frame on a64x96 canvas with local origin(-24,48).
+The30-resource group comprises22 strike composites and eight32-square orb orientations.
+All30 select Original or complete4x HD atomically, with identical logical draw extents.
+
+**Modern presentation.** BoltEffect uses three finite36-tick cycles, four-tick stream
+stagger and deterministic local positions/table choices on a120/60-second clock. It does
+not consume gameplay RNG. Orbs advance every three ticks and fade at the endpoints;
+Reduced Flash freezes their phase and lowers effect opacity. Global source palette flashes
+are omitted. Source77/119 clips use the existing audio replacement policy;119 has six
+modern cue requests rather than every source concurrent/random strike event.
+`SoundSlots(119)` is YM5: `sounddriver.asm:sfx_37` is type2 with only its second pointer
+(`byte_1D43`) active; `Load_SFX_Type_2` maps those pointers to YM4/5/6.
+These are original media/composition with modern cadence, not hardware-exact timing/audio.
+
+The existing scene retains background, actors and equipped weapon, waits for pose plus
+effect completion, then delivers ordered damage/death/reward and next control. Equipment
+retains its body-specific Item sequence (WIZ21, PLDN13); Taros's existing item-origin
+consumer has no ordinary AttackItem record and uses the source body45 sequence. It still
+shows the sword-use message, pays zero MP and never draws allied wear. No new lifecycle,
+rule, save format or input authority is introduced.
+
+### Lightning reproduction and acceptance
+
+Select complete `derived/issue2301/bolt-v1` world/main scene/six opening inputs together,
+retaining independent #2252 opening, #2255 Witch/entry catalog and #2266 world catalog.
+The registered `derived/issue2301/review-v2` retains controlled records, reader, launchers,
+closure comparison and native receipts. WIZ Tyrin's accepted four-family book supplies
+BOLT1–4; NINJ Slade uses source-compatible KATON/RAIJIN books with controlled rank3/level40.
+Halberd uses a controlled PLDN Chester with legal held custody. Evil Ring retains silenced,
+zero-MP WIZ custody. Taros uses initialized production Battle18 enemies and its original
+sword/loadout, activation/order, with two controlled allies at range3/4. These restored
+records establish legal consumers, not natural learning, acquisition or chapter traversal.
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2301/review-v2'
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case bolt4 `
+  -Sample bolt4-review -SaveRoot $freshExternalSaveRoot -Graphics hd
+# Cases: bolt1, bolt2, bolt3, bolt4, raijin1, raijin3, halberd, ring, taros.
+# bolt4 -Graphics hd -Reduced -Fast; bolt4 -Graphics hd -Variant incomplete.
+```
+
+Build the locked Debug adapter first with the protected configured environment. Each run
+uses its own disposable save namespace and worktree-local profile. Require passed:true,
+exit0 and no script/adapter errors together. Read production admission before native input.
+No screenshots, frame dumps, grinding or campaign replay are involved. Producer scratch
+is unavailable for final published-input reproduction.
+
+**Confirmed in the remake.** All26 scene mounts admit30 Original/HD resources,182
+BOLT/RAIJIN spell bindings and78 equipment bindings, and all nine controlled records restore.
+Native witnesses cover all four BOLT variants, RAIJIN1/3, Halberd1, Evil Ring2 and Taros
+Sword2; they show actual mounted textures, source strike/orb counts and scene composition.
+Area casts include lethal and surviving targets; one payment/wear, ordered application,
+death cleanup, reward and usable next action remain intact. Taros damages two allies with
+zero MP and no wear. HD, partial-group fallback, Reduced Flash and held1.5x use mechanism
+representatives. Rank2 RAIJIN and every encounter/member permutation have reader coverage,
+not new native witnesses.
+
+**Retained failures.** Initial pilot omitted the documented `--with pillow` environment
+and failed before output. The first mount had an incorrectly extended audio tuple and
+failed before publication; the corrected tuple selects119. Initial Ruff found long
+lines. Halberd restore rejected its missing active-membership flag before native launch.
+An inherited observer assumed every Item body uses WIZ21; PLDN's source Item13 required
+its own expectation. The first Taros setup allowed a physical action at range2, so it
+proved no cast. The range3 run cast successfully but the observer's ordinary AttackItem
+filter missed the existing special Taros consumer; selection now uses its actual spell
+and enemy origin. Review-v1 receipt publication stopped on a host GBK decoding error; its incomplete
+copy remains retained. Complete review-v2 uses explicit UTF8 and staging.
+These completed failures remain failures. Some completed processes
+retain ObjectDB exit warnings under #1716; that issue is not expanded here.
+
+**Unknown.** Natural original/player reach, unobserved combinations, exact random/fixed
+hardware cadence, palette/priority flicker and human aesthetic acceptance. Holy Thunder,
+Battle27+ and broader lifecycle work remain outside this slice.
+
+The committed verification selection is `uv run sf2 verify plan --scope engine --base
+origin/main --head HEAD`: engine-unit, adapter-build, private-admission-build,
+live-inspection-build and research-public (Ruff, design-contracts and research-index).
+The source edits are remake-only asset/selector/presentation consumers; no research
+execution semantics or planner is changed. The default plan is retained alongside this
+explicit scope decision. Engine passes3383 with50 optional private-input skips; both tool
+builds and adapter Release pass with zero warnings/errors. Production reader/native
+receipts establish this slice's private acceptance independently of those skips.
+Published-input rebased reproduction passes; maximum measured native working set is
+1,330,892,800 bytes and owned scratch logical size is817,677,889 bytes at publication.
+The Draft PR's actual CI checks and frozen head identify remote acceptance separately.

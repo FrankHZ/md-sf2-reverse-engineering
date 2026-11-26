@@ -66,11 +66,11 @@ internal static class PrivateAttackSpellBindings
                 string selector = source.Level == 1 ? "DESOUL" : "DESOUL|VARIATION2";
                 Require(source.AnimationExpression == selector, "source-attack-animation", "spells.animation", true);
             }
-            if (source.Code is "BLAZE" or "FREEZE")
+            if (source.Code is "BLAZE" or "FREEZE" or "BOLT")
             {
                 string selector = source.Level == 1 ? source.Code : $"{source.Code}|VARIATION{source.Level}";
                 Require(source.AnimationExpression == selector, "source-attack-animation", "spells.animation", true);
-                animation = (byte)((source.Code == "BLAZE" ? 1 : 2) | (source.Level - 1) << 5);
+                animation = (byte)((source.Code == "BLAZE" ? 1 : source.Code == "FREEZE" ? 2 : 7) | (source.Level - 1) << 5);
             }
             if (source.Code == "BLAST" && source.Level == 1)
             {

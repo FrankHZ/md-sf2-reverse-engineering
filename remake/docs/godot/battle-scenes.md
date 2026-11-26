@@ -38,6 +38,15 @@ FREEZE2 and Freeze Staff Item3 preserve the existing scene and ordered result co
 Blizzard remains source NONE. Original art and composition are distinct from the finite
 modern clock, smooth fading and audio cadence.
 
+### Prepared lightning presentation
+
+The [lightning family](spell-presentation.md#lightning-family-playback-2301) binds BOLT1–4,
+RAIJIN1–3 and admitted equipment BOLT1/2 across26 scene mounts. Original composite strikes
+and orbs reuse AttackSpellView and complete Original/HD selection. Controlled learned,
+Halberd/Evil Ring and enemy Taros Sword input preserve action-specific payment/wear and
+ordered reactions. Neutral RAIJIN is unchanged; Holy Thunder remains unadmitted. Original
+media/composition and the deterministic finite clock are distinct claims.
+
 ### Prepared DETOX presentation
 
 The [DETOX scene](spell-presentation.md#prepared-detox-presentation) uses the existing caster pose,
