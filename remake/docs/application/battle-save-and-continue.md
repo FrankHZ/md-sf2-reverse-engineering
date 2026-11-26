@@ -232,7 +232,7 @@ records actual audio history through `ObserveSaveMusic`; the probe permits only 
 change before publication and compares the entire synchronized progress after publication.
 It does not weaken battle/party/RNG comparison. Cold Continue compares the whole saved progress.
 The observations claim remake state/input behavior, not original hardware timing or aesthetic
-acceptance. Some successful processes retain2–4 ObjectDB shutdown warnings under #1716.
+acceptance. Some successful processes retain2–6 ObjectDB shutdown warnings under #1716.
 
 Reproduce the baseline on the named accepted base with the published #2291 `Boot.ps1`
 (`-Case aura -Seed old-aura.json`) as described in the presentation owner. For the corrected
@@ -244,7 +244,13 @@ catalog2266 remain separate. Make a local copy of Run for this observation with 
 changes; do not modify the published review:
 
 1. Replace script `engine_equipment_recovery_observation.gd` with
-   `engine_battle_partition_observation.gd`.
+   `engine_battle_partition_observation.gd`. In Run's generated settings object, explicitly add
+   `bindings = @{ menu = @{ keys = @('F10'); buttons = @(); axes = @('RightX+') };
+   cancel = @{ keys = @('Escape','X'); buttons = @('East'); axes = @() } }`.
+   Use `ConvertTo-Json -Depth 8` when writing this nested settings object.
+   These are the installed bindings used by the original observation, now independent of
+   changing defaults under #2287. The probe checks the installed Menu/Cancel keys before Save;
+   this is a review configuration, not a production input change.
 2. Before process launch, copy the selected seed to a fresh disposable
    `$SaveRoot/$Sample/sf2-opening/slot1.json`, refusing an existing namespace. Remove the
    `--load-save` option and its value from the Godot arguments. This exercises title Continue
@@ -270,7 +276,11 @@ slots before the correction. `old-fixed-2295` completed the action but its first
 pre-synchronization audio history against the saved history; `old-fixed-b-2295`, `cold-2295`
 and `current-2295` passed the corrected boundary. The first added historical test compile used
 the nonexistent `ScenarioDefinition.Id`; using its actual `Package` property fixed that error.
-These are distinct from the original compatibility failure. Reproduction outputs remain ignored.
+These are distinct from the original compatibility failure. The explicit-binding follow-up's
+`bound-old-2295` first wrote truncated nested settings with PowerShell's default JSON depth and
+failed startup (the inherited probe also reported a null panel). `-Depth 8` corrects the launcher;
+`bound-old-b-2295` and `bound-cold-2295` pass, with complete restored/action progress identical
+to the prior successful observations. Reproduction outputs remain ignored.
 
 ## Implemented versioned codec and shared storage (B)
 

@@ -45,6 +45,11 @@ func save_current(label: String) -> bool:
 
 func boot() -> bool:
     if not await super.boot(): return false
+    check(InputMap.action_get_events("sf2_menu").any(func(event):
+        return event is InputEventKey and event.keycode == KEY_F10), "explicit review Menu=F10 is installed")
+    check(InputMap.action_get_events("sf2_cancel").any(func(event):
+        return event is InputEventKey and event.keycode == KEY_ESCAPE), "explicit review Cancel=Escape is installed")
+    if not failures.is_empty(): return false
     var expected := OS.get_environment("SF2_PARTITION_EXPECTED")
     if not expected.is_empty():
         check(progress() == JSON.parse_string(FileAccess.get_file_as_string(expected)),
