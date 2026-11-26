@@ -31,10 +31,9 @@ and deferred until the separately requested debug capability is accepted. The #2
 seed explicitly preserves Slade as a follower with F73; Slade following the ship was traced to that
 non-natural test setup, not a production follower defect. It cannot prove natural voyage acceptance.
 
-[#2332](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2332) separately owns opt-in
-C# network observation/control, replacing reliance on GDScript probes. No debug endpoint is included
-here. The uncompiled named-pipe experiment and its CA1416 failure were retained in ignored local
-handoff scratch, outside the compiled/exported source. It is not the requested network implementation.
+For live state and ordinary input in an explicitly enabled candidate, use the
+[C# loopback debug port and client](verification/debug-port.md). The earlier named-pipe
+experiment and CA1416 result were retained separately in ignored packaging handoff scratch.
 [#2331](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2331) separately owns the persistent
 background-continuation setting; default focus behavior is unchanged here. No new voyage test ticket
 or follow-up implementation is part of this packaging handoff.
