@@ -6,6 +6,107 @@ pre-voyage priority. Later private campaigns and controlled authored packages es
 boundaries. This inventory uses the existing rules, scene readers, presenters and private resource
 publisher. Each implementation slice owns its own acceptance.
 
+## NEPTUN family playback #2313
+
+**Standard scope:** bind currently admitted SORC NEPTUN1–2 through the accepted summon
+lifecycle, shared invocation decoder and private scene publisher. The finite presentation
+change preserves payment, fixed actual-recipient division, ordered damage/death/reward and
+returned control. No new admission, AI, recruitment, promotion, Battle27+, save schema,
+#1716 repair or AQUA breath is included.
+
+Owned code: `NeptunEffectView.cs`, `BattleSceneView.Summon.cs`, the existing scene observation
+field, `SessionAudio.cs` (two admitted sound-slot entries), `PrivateAttackSpellBindings.cs`, `remake_neptun_mount.py`, existing attack-mount,
+private-package, retail CLI and engine-path registrations; `engine_neptun_family_observation.gd`.
+Serial documentation owners are this file, battle-scenes, church-promotion-design,
+presentation-assets, asset-inventory and capability-status. Accepted DAO/APOLLO are dependencies.
+Acceptance requires a representative pilot, inherited-value comparison, production-reader
+scene/rank closure, short ordinary-input single/divided casts and an HD/settings/fallback
+boundary. Existing engine division/accounting and shared lifetime evidence are reused.
+
+### NEPTUN source and delivery choices
+
+**Confirmed source structure:** USA ROM SHA256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9` and SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. `spelldefs.asm` selects19/51 for NEPTUN1–2;
+AQUA uses BUBBLE_BREATH instead. Setup/update contain no rank branch. Setup at
+`0x1B21A..0x1B37C` loads invocation2 and tileset14. The shared loader supplies cast77,
+four `$CCE` flashes and8 entrance ticks. NEPTUN then plays108 and blinks frame1 at
+logical `(128,48)` with21 alternating on/off durations `[1,8,1,7,...,1,1,1]` totaling49.
+After a25-tick water hold, it switches to body frame0 and plays110; the water sprite
+rises5 pixels for17 updates, alternating its second/third frames every2 updates.
+The normal spell load then overwrites the body bank and hides those16 sprites. After20
+more updates, rain begins. Original sprite hiding is preserved rather than leaving the
+body superimposed on the rain.
+
+Update at `0x1DFD4..0x1E134` releases the damage hold at40. Every3 updates it regenerates
+19 rain streaks at fixed source x offsets and cosmetic-random y24..135, each with a
+16×32 top and16×16 bottom. Three sizzles start at offsets2/5/8, use three16×16 frames
+with5/5/12-tick durations and final blinking at y128, then wait a random4..11 updates.
+Sizzle placement uses random x0..255 and cue115. The background table is `[1,0,-1,0]`.
+Tileset14's42 tiles provide rising frames0/6/12, rain18/26 and sizzle30/34/38 (zero-based).
+Palette3 slots9/13/14 receive `$EA6/$6AC/$E0E`; invocation palette-word0 and VRAM gap use
+the accepted decoder unchanged.
+
+[Setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/neptun.asm) ·
+[Update](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/neptun.asm).
+
+**Modern delivery:** a187/60-second minimum covers the setup and initial rain hold;
+water continues across ordered recipients until the existing Reward/End reset restores
+caster/weapon/ground. Deterministic rain positions and sizzle phases replace cosmetic RNG;
+no gameplay RNG is drawn. Plane shake, palette flashes, clock and audio scheduling are
+approximations. Reduced Flash suppresses flashes, shake and body/sizzle blinking, keeping
+art, cues and outcomes. Held1.5× uses the shared clock. Existing77/110 audio is retained and already prepared108/115 recordings are mounted.
+Pinned `sounddriver.asm` headers `sfx_2C`/`sfx_33` and USA ROM readback at driver
+base`0x1EC000` give108=YM4/5 (the third pointer is inactive) and115=PSG tone3/noise. Those two entries extend the
+existing whole-clip replacement policy; this is not a new audio lifetime mechanism.
+The ten-frame group selects HD atomically or falls back entirely to Original; partial
+Original fails explicitly. An absent group retains the existing modern fallback.
+**Unknown:** natural higher-rank training/reach, hardware cadence/palette/GPU fidelity and
+human aesthetic acceptance. Controlled admission and node observations do not close them.
+
+### NEPTUN verification
+
+Select complete `derived/issue2313/neptun-v1`, independent #2252 opening, #2255 Witch
+and #2266 catalogs. Use the [locked Debug build](../development-and-verification.md#locked-net-workflow).
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2313/review-v1'
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case neptun2-multi `
+  -Sample neptun-hd-review -Graphics hd -Reduced -Fast -SaveRoot $freshExternalSaveRoot
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case neptun1-single `
+  -Sample neptun-fallback-review -Graphics hd -Variant incomplete -SaveRoot $freshExternalSaveRoot
+# Original: omit -Graphics and -Variant, with another fresh sample.
+```
+
+**Confirmed in the remake:** the production reader accepts52 bindings in26 scenes and
+both controlled Continue records. Rank1 retains the accepted Battle26/DAO-derived Kazin
+SORC20 book `[93,94,31,63]`; rank2 uses controlled SORC26 and its legal destination book
+`[93,94,95,32]`. Both retain Wooden Rod and seed`0x0DA20000`. The higher level/book are
+controlled prerequisites, not natural training. Ordinary Continue → Magic → target → Confirm
+observes selectors19/51, rank1 damage37 and rank2 ordered damage38/30 across two actual
+recipients, one12/19-MP payment, death cleanup, one action reward and usable next ActionChoice.
+NEPTUN's existing critical denominator16 accounts for the first-recipient critical values;
+no damage, division or RNG rule changed. Existing summon unit assertions own accounting.
+
+Node/draw observations see all ten resource identities and dimensions, caster replacement,
+water rising from y64 to-21 (held1.5× samples reach-16),19 paired rain parts separated by32
+pixels, body absence during rain, and started cues77/108/110/115. Published-input production
+reader, HD/Reduced Flash/held-speed and incomplete-HD fallback pass with producer paths
+unavailable. Reader peak is976MB; native witnesses peak1.34GB and take under5 seconds.
+Engine verification passes3,383 with50 optional private-input skips; final Release and Debug
+adapter builds pass. No helper tests, gameplay screenshots or frame collection are added.
+
+Retained completed failures: the first local witness reached playback but stopped with
+`audio-command-unavailable` because prepared108/115 were not mounted; the second stopped
+with `sfx-slots-unavailable` before the two source-backed slot entries were added. Both
+reported `bounded return to control`; their complete receipts remain preserved. The ROM
+readback also corrected an initial draft108 mask: its third channel pointer is inactive.
+Setup-only failures include an incorrect source-directory assumption and missing local
+TEMP directory warnings before creation. Successful native exits retain8 ObjectDB warnings
+under#1716; no cleanup repair or human/GPU/hardware acceptance is claimed.
+
 ## APOLLO family playback #2312
 
 **Standard scope.** Bind admitted SORC APOLLO1–2 to invocation3 and tileset19 through
@@ -65,7 +166,7 @@ are reused, with deterministic flame cues; no new audio capture or BLAZE assets 
 
 The13-frame Original/HD group is atomic. Partial HD selects all Original; partial
 Original reports `apollo-original-group-incomplete`. Packages with no APOLLO group
-retain explicit modern fallback. NEPTUN/ATLAS remain separate work.
+retain explicit modern fallback. [NEPTUN](#neptun-family-playback-2313) uses the same boundary; ATLAS remains separate work.
 
 ### APOLLO reproduction and verification
 
@@ -162,7 +263,7 @@ Original frames. A partial Original group reports `dao-original-group-incomplete
 older packages with no DAO group retain their explicit modern fallback. Another spell
 family is never substituted. Common summon responsibilities are confined to caster
 replacement and scene restoration; [APOLLO](#apollo-family-playback-2312) uses that boundary.
-NEPTUN/ATLAS remain separate work.
+[NEPTUN](#neptun-family-playback-2313) uses the same boundary; ATLAS remains separate work.
 
 ### DAO reproduction and verification
 
@@ -428,7 +529,7 @@ update controls subsequent movement, mirroring and dust. [Enemy family evidence]
 | RAIJIN 1–3 | BOLT v2–v4 | **Original assets bound**, preserving distinct neutral gameplay. Controlled NINJ ranks1/3 use the shared selectors; rank2 has production-reader binding coverage. | [Lightning family](#lightning-family-playback-2301); natural learning/acquisition remain **Unknown**. |
 | DAO 1–2 | DAO v1–v2 | **Original assets bound** for admitted SORC casts: invocation0, rising rocks, scene deformation and sound. Both ranks preserve actual-recipient division. | [DAO playback and limits](#dao-family-playback-2310). Natural training, hardware timing and human visual acceptance remain **Unknown**. |
 | APOLLO 1–2 | APOLLO v1–v2 | **Original assets bound** for admitted SORC casts: invocation3, mouth and two flame sizes, selectors18/50. | [APOLLO playback](#apollo-family-playback-2312) covers controlled single/divided recipients and atomic Original/HD; natural training, hardware timing and human visual acceptance remain **Unknown**. |
-| NEPTUN 1–2 | NEPTUN v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns this family's original effect composition and playback. |
+| NEPTUN 1–2 | NEPTUN v1–v2 | **Original assets bound** for admitted SORC casts: invocation2, rising water, rain and sizzle, selectors19/51. | [NEPTUN playback](#neptun-family-playback-2313) covers controlled single/divided recipients and atomic Original/HD; natural training, hardware timing and human visual acceptance remain **Unknown**. |
 | ATLAS 1–2 | ATLAS v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. Enemy HEAL rank selection can read an ATLAS operand as part of its original rank-probing behavior. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns this family's original effect composition and playback. |
 
 ### Item, innate and special rows

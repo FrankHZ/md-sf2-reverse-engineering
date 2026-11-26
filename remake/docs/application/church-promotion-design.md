@@ -572,7 +572,8 @@ The existing transaction, growth, content and save owners remain authoritative. 
 save version, chapter, parallel damage rule or full spell-animation project is included.
 [DAO1–2 original assets](../godot/spell-presentation.md#dao-family-playback-2310) now
 use the admitted SORC action and unchanged division rule, as does
-[APOLLO1–2](../godot/spell-presentation.md#apollo-family-playback-2312). NEPTUN/ATLAS original
+[APOLLO1–2](../godot/spell-presentation.md#apollo-family-playback-2312) and
+[NEPTUN1–2](../godot/spell-presentation.md#neptun-family-playback-2313). ATLAS original
 animations remain with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
 
 ### Mechanism audit and selected design
@@ -648,7 +649,9 @@ timing. The original SORC witness used modern fallback. The separate
 covers both ranks and single/divided recipients through controlled ordinary input;
 [APOLLO presentation](../godot/spell-presentation.md#apollo-family-playback-2312) covers
 selectors18/50, single/divided recipients and the original body/flame composition.
-NEPTUN/ATLAS effects remain with #2104.
+[NEPTUN presentation](../godot/spell-presentation.md#neptun-family-playback-2313) covers
+selectors19/51 and the body/water composition through the same controlled input boundary.
+ATLAS effects remain with #2104.
 
 ### Reproduce the SORC consumers
 

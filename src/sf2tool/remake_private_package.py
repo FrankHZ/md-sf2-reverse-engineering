@@ -476,6 +476,7 @@ def mount(
         "desoul-family",
         "dao-family",
         "apollo-family",
+        "neptun-family",
         "blast-1",
     }
     if "equipment" in families and upstream is None:
@@ -533,6 +534,7 @@ def mount(
             "desoul-family",
             "dao-family",
             "apollo-family",
+            "neptun-family",
             "blast-1",
         }
         complete_spell_families = {
@@ -543,6 +545,7 @@ def mount(
             "desoul-family",
             "dao-family",
             "apollo-family",
+            "neptun-family",
         }
         spell_only = selected == spell_families and bool(spell_families)
         if spell_families:
@@ -566,6 +569,7 @@ def mount(
             "bolt-family",
             "blast-family",
             "desoul-family",
+            "neptun-family",
         }:
             spell_paths.add(Path("world.json"))
         indra_only = selected == {"indra"}
@@ -605,6 +609,7 @@ def mount(
                 "bolt-family",
                 "blast-family",
                 "desoul-family",
+                "neptun-family",
             }:
                 for family, command in (
                     ("blast-1", 114),
@@ -612,6 +617,8 @@ def mount(
                     ("bolt-family", 119),
                     ("blast-family", 114),
                     ("desoul-family", 106),
+                    ("neptun-family", 108),
+                    ("neptun-family", 115),
                 ):
                     if family in spell_families:
                         mount_prepared_audio(
