@@ -7,16 +7,23 @@ public sealed class ScenePaletteDefinition
 {
     private readonly byte[] _indices;
     public IReadOnlyList<ushort> Base { get; }
-    public ScenePaletteDefinition(IEnumerable<byte> indices, IEnumerable<ushort> colors)
+    public IReadOnlyList<ScenePaletteHdBank> HdBanks { get; }
+    public ScenePaletteDefinition(IEnumerable<byte> indices, IEnumerable<ushort> colors,
+        IEnumerable<ScenePaletteHdBank>? hdBanks = null)
     {
         _indices = indices.ToArray();
         Base = Array.AsReadOnly(colors.ToArray());
+        HdBanks = Array.AsReadOnly((hdBanks ?? []).ToArray());
         if (_indices.Length != 128 * 320 || _indices.Any(index => index > 15) ||
             Base.Count != 16 || Base.Any(color => !PaletteColorTransition.Valid(color)))
             throw new ArgumentException("scene-palette-resource");
     }
     public byte Slot(int x, int y) => _indices[y * 128 + x];
 }
+
+public sealed record ScenePaletteHdBank(IReadOnlyList<ushort> Colors,
+    IReadOnlyList<ExplorationRaster> Blocks,
+    IReadOnlyDictionary<BlockNeighborhood, ExplorationRaster>? Contexts);
 
 public abstract record ScenePaletteOperation : StoryInstruction;
 public sealed record FadeScenePalette(int Banks, IReadOnlyList<int> Offsets, int Period) : ScenePaletteOperation;

@@ -15,22 +15,35 @@ internal sealed class MapBlockTextures : IDisposable
     private ScenePaletteDefinition? _scenePalette;
     private IReadOnlyList<ushort>? _sceneColors;
     private readonly Dictionary<int, object> _paletteSamples = [];
+    private readonly List<object> _hdSamples = [];
+    private ScenePaletteHdBank? _hdPaletteBank;
+    internal ScenePaletteHdBank? HdPaletteBank => _hdPaletteBank;
+    internal bool SupportsHdPalette => HdPaletteOffset is not null || _hdPaletteBank is not null;
     internal object PaletteProjection => new { active = _scenePalette is not null,
-        colors = _sceneColors, hdOffset = HdPaletteOffset, blocks = _blocks.Count, slots = _paletteSamples.Values.ToArray() };
-    // Precolored art can reproduce a uniform channel fade. Arbitrary slot replacement
-    // (storm banks) needs Original indices; only that terrain pass falls back.
+        colors = _sceneColors, hdOffset = HdPaletteOffset, hdBank = _hdPaletteBank is not null,
+        blocks = _blocks.Count, variants = _variants.Count, slots = _paletteSamples.Values.ToArray(),
+        hdSamples = _hdSamples.ToArray() };
+    // Uniform channel fades use the ordinary bank. Authored slot replacement uses
+    // an exact prepared palette bank, with indexed Original fallback if absent.
     internal int? HdPaletteOffset { get; private set; } = 0;
     internal bool PaletteChanged(ScenePaletteDefinition? resource, IReadOnlyList<ushort>? colors) =>
         !ReferenceEquals(_scenePalette, resource) || !ReferenceEquals(_sceneColors, colors);
     internal void SetPalette(ScenePaletteDefinition? resource, IReadOnlyList<ushort>? colors)
     {
+        // Color changes invalidate uploaded pixels, not immutable PNG admission.
+        // A map change still calls Dispose directly and releases this validation.
+        var checkedBank = _checkedBank;
         Dispose();
+        _checkedBank = checkedBank;
         _scenePalette = resource; _sceneColors = colors;
         HdPaletteOffset = resource is null || colors is null ? 0 : null;
         if (resource is not null && colors is not null)
+        {
+            _hdPaletteBank = resource.HdBanks.FirstOrDefault(bank => bank.Colors.SequenceEqual(colors));
             for (int offset = -7; offset <= 7; offset++)
                 if (resource.Base.Select(color => Sf2.Remake.Application.Runtime.Exploration.ScenePaletteState.Offset(color, offset)).SequenceEqual(colors))
                 { HdPaletteOffset = offset; break; }
+        }
     }
 
     private ExplorationMapVisual? _checkedBank;
@@ -64,6 +77,9 @@ internal sealed class MapBlockTextures : IDisposable
         {
             using var image = Exploration.ExplorationRasterImages.Open(raster);
         }
+        foreach (var bank in visual.ScenePalette?.HdBanks ?? [])
+            foreach (var raster in bank.Blocks.Concat(bank.Contexts?.Values ?? []).Distinct())
+            { using var image = Exploration.ExplorationRasterImages.Open(raster); }
         _checkedBank = visual;
     }
 
@@ -78,7 +94,7 @@ internal sealed class MapBlockTextures : IDisposable
     }
 
     internal static ExplorationRaster? Variant(ExplorationMapVisual visual, bool hd, WorkingMapLayout layout,
-        int x, int y, Rect2I bounds, int phase, out bool contextual)
+        int x, int y, Rect2I bounds, int phase, out bool contextual, ScenePaletteHdBank? paletteBank = null)
     {
         contextual = false;
         var transfer = phase < 0 ? null : visual.TileAnimation!.Phases[phase];
@@ -86,6 +102,12 @@ internal sealed class MapBlockTextures : IDisposable
         var center = transfer?.Blocks.GetValueOrDefault(block);
         if (!hd || visual.HdBlocks is null) return center?.Original;
         var key = Neighborhood(layout, x, y, bounds);
+        if (paletteBank is { } bank)
+        {
+            if (bank.Contexts?.TryGetValue(key, out var tinted) == true)
+            { contextual = true; return tinted; }
+            return bank.Blocks[block];
+        }
         if (transfer?.Contexts.TryGetValue(key, out var edge) == true)
         {
             contextual = true;
@@ -110,7 +132,15 @@ internal sealed class MapBlockTextures : IDisposable
         {
             if (_variants.TryGetValue(variant, out var prepared)) return prepared;
             using var pixels = Exploration.ExplorationRasterImages.Open(variant);
-            Exploration.ExplorationPresentation.OffsetSprite(pixels, HdPaletteOffset ?? 0);
+            Exploration.ExplorationPresentation.OffsetSprite(pixels, _hdPaletteBank is null ? HdPaletteOffset ?? 0 : 0);
+            if (_hdPaletteBank is not null && _hdSamples.Count < 8)
+            {
+                using var normalized = pixels.GetRegion(new(0, 0, pixels.GetWidth(), pixels.GetHeight()));
+                normalized.Convert(Image.Format.Rgba8);
+                _hdSamples.Add(new { block, width = pixels.GetWidth(), height = pixels.GetHeight(),
+                    sourceFormat = pixels.GetFormat().ToString(),
+                    rgbaSha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(normalized.GetData())) });
+            }
             _variants.Add(variant, prepared = ImageTexture.CreateFromImage(pixels));
             return prepared;
         }
@@ -184,8 +214,10 @@ internal sealed class MapBlockTextures : IDisposable
     public void Dispose()
     {
         HdPaletteOffset = 0;
+        _hdPaletteBank = null;
         _checkedBank = null; _checkedAnimation = null; _scenePalette = null; _sceneColors = null;
         _paletteSamples.Clear();
+        _hdSamples.Clear();
         foreach (var texture in _blocks.Values) texture.Dispose();
         foreach (var atlas in _atlases.Values) atlas.Dispose();
         foreach (var texture in _variants.Values) texture.Dispose();
