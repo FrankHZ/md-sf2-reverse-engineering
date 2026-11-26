@@ -570,7 +570,9 @@ second-consent cancellation, atomic actual-holder consumption, DAO-only replacem
 destination learning, usable summon Magic and independent field/battle Continue.
 The existing transaction, growth, content and save owners remain authoritative. No new
 save version, chapter, parallel damage rule or full spell-animation project is included.
-Original summon animations remain with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
+[DAO1–2 original assets](../godot/spell-presentation.md#dao-family-playback-2310) now
+use the admitted SORC action and unchanged division rule. APOLLO/NEPTUN/ATLAS original
+animations remain with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
 
 ### Mechanism audit and selected design
 
@@ -639,9 +641,11 @@ scratch was moved aside. The accepted #2252 opening was selected and skipped thr
 ordinary input; #2255 Witch Continue remained selected throughout.
 
 **Unknown:** Tyrin's native rite/cast, natural Book custody for this controlled history,
-all higher-rank native casts, original natural summon dispatch and original audiovisual
-timing. Native battle uses the existing modern fallback; dedicated original DAO/APOLLO/
-NEPTUN/ATLAS effects remain with #2104. Source-prepared containers are not a delivered effect.
+natural higher-rank training, original natural summon dispatch and original audiovisual
+timing. The original SORC witness used modern fallback. The separate
+[DAO presentation witness](../godot/spell-presentation.md#dao-reproduction-and-verification)
+covers both ranks and single/divided recipients through controlled ordinary input;
+APOLLO/NEPTUN/ATLAS effects remain with #2104.
 
 ### Reproduce the SORC consumers
 

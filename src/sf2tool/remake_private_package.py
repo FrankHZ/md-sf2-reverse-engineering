@@ -474,6 +474,7 @@ def mount(
         "bolt-family",
         "blast-family",
         "desoul-family",
+        "dao-family",
         "blast-1",
     }
     if "equipment" in families and upstream is None:
@@ -529,6 +530,7 @@ def mount(
             "bolt-family",
             "blast-family",
             "desoul-family",
+            "dao-family",
             "blast-1",
         }
         complete_spell_families = {
@@ -537,6 +539,7 @@ def mount(
             "bolt-family",
             "blast-family",
             "desoul-family",
+            "dao-family",
         }
         spell_only = selected == spell_families and bool(spell_families)
         if spell_families:

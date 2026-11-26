@@ -16,6 +16,13 @@ F4/F8/F9 rollout; the focused playback contract follows.
 
 ## Spell presentation
 
+[DAO1–2 playback](spell-presentation.md#dao-family-playback-2310) replaces the caster
+with the prepared invocation body, presents rising rocks, backdrop shake and target
+deformation across ordered recipients, then restores the ordinary scene at Reward/End.
+One MP payment, target-count division and all results remain application-owned. Its
+complete Original/HD group, Reduced Flash and held speed use existing consumers;
+the other three summons retain their modern presentation pending their own slices.
+
 [ABSORB equipment playback](spell-presentation.md#absorb-family-playback-2309) uses the
 source warp89 and four red backdrop pulses with the existing Item pose. It loads no
 spell tiles. Misty Knuckles, Indra Staff, Supply Staff and Demon Rod retain their ordered
