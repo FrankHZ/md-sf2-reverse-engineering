@@ -86,6 +86,46 @@ Debug input follows the current key bindings, barriers, UI, pause and save rules
 Use a single input operator while holding keys; the OS keyboard and synthetic keys
 feed the same Godot input map. The background-continuation preference belongs to #2331.
 
+## Runtime acceptance
+
+**Confirmed:** the normal development main scene and a relocated Windows x86_64 Release
+executable at product commit `be56c5aa331d45d4e75e74d104f8bde0e39b5947` both served
+version 1. Each reported its own PID and build kind. On a focused 1600×900 native
+window, two opening state samples showed advancing simulation ticks. The sampled
+opening projection was about 270–285 KiB when re-encoded by the client. The title
+client skipped the opening, read title music, entered the Witch menu with Start held,
+released Start and returned to the playable title. A fresh Confirm then worked. The
+export used a different cwd, OS-only PATH and no development content, editor or
+SDK environment variables. The clean Release build took 44 seconds (61 including ZIP).
+
+For the disconnect control at title, run the following with the game focused. The
+first client observes a held Right before disconnecting. The second must observe an
+empty held list, released mapped input, and the same title. Duplicate down, unowned
+up, unknown key and unknown command each return an error. Check a fresh host sample
+before the next input.
+
+```powershell
+python remake/tools/debug_client.py 42332 'down Right' 'observe host'
+python remake/tools/debug_client.py 42332 'observe host'
+python remake/tools/debug_client.py 42332 'up Right'
+python -c "import socket; s=socket.create_connection(('127.0.0.1',42332)); s.sendall(b'x'*65); print(s.makefile('rb').readline()); print(s.recv(1))"
+```
+
+**Confirmed:** a 65-byte unterminated frame produced `invalid-frame` and EOF. A
+new client then used the game. Ordinary window close with a held key produced
+EOF, released the listener and exited 0. For the disabled control, unset the
+variable and check `Get-NetTCPConnection -State Listen -OwningProcess <game-pid>`
+while the game runs. For the conflict control, hold that loopback port with a
+separate listener and launch the game with the port selected. The exported game
+owned zero listening sockets in each control. Conflict logged the bind warning.
+Each disposable save root contained zero files after exit.
+
+The first adapter compilation failed with CS0234 from an incorrect namespace for
+`SessionPresentationOwner`. The corrected Debug and Release builds passed with zero
+warnings. The retained packaging-only named-pipe experiment is separate.
+**Unknown:** untouched second-machine behavior and natural voyage/dock state.
+The latter has its own follow-up after independent integration.
+
 ## Migration boundary
 
 For general observation, use `observe state` in place of finding a view and calling
