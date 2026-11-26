@@ -25,18 +25,11 @@ field Save/Quit/cold Continue. A controlled later-battle seed admitted an actual
 attack advanced to the next actor. These observations used the exported Release executable, not an
 editor substitute. Loaded native modules resolved only inside the candidate or Windows.
 
-**Unknown:** natural pre-voyage departure/Map14 arrival and correct dock speaker portraits. The
-reported portraits are tracked by [#2330](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2330)
-and deferred until the separately requested debug capability is accepted. The #2053 controlled dock
-seed explicitly preserves Slade as a follower with F73; Slade following the ship was traced to that
-non-natural test setup, not a production follower defect. It cannot prove natural voyage acceptance.
-
-For live state and ordinary input in an explicitly enabled candidate, use the
-[C# loopback debug port and client](verification/debug-port.md). The earlier named-pipe
-experiment and CA1416 result were retained separately in ignored packaging handoff scratch.
-[#2331](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2331) separately owns the persistent
-background-continuation setting; default focus behavior is unchanged here. No new voyage test ticket
-or follow-up implementation is part of this packaging handoff.
+The [exported dock portrait check](application/pre-voyage-campaign.md#exported-dock-portrait-report-2330)
+reproduced #2330 from the preserved #2053-derived dock save. Its three royal speaker references
+point to Bowie. The same executable displays distinct portraits after the next population loads.
+The controlled route reached usable Map14 control. Natural dock portraits in this export remain
+**Unknown**. See the [v2 debug port](verification/debug-port.md) for background operation.
 
 ## Build and run
 

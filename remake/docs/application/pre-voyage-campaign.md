@@ -305,6 +305,47 @@ closure and human/aesthetic acceptance remain separate. The #1541 presentation a
 additional battle-art prerequisite for this chapter; its modern battle-effect and human-review
 limits remain with the existing presentation owners.
 
+### Exported dock portrait report (#2330)
+
+**Confirmed:** ordinary Continue from the preserved #2329 controlled dock record reproduced the
+reported Bowie portraits. The v6 slot 1, sequence 1 record restores Map44(1,25) with F507/F640/F73
+set and F74 clear. Its visit aliases for Astral (31), the King (30) and the Minister (159) all
+point to physical slot 0, whose actor is Bowie, sprite 0. Slade is already following at load.
+The package's F74 population instead assigns those references sprites 209, 203 and 205, with
+portraits 31, 32 and none respectively. The natural post-tower castle record has F74 and binds
+those same references to physical slots 1, 2 and 3. That comparison is a read of the saved visit.
+
+| Exported dialogue at a reading wait | Logical speaker or portrait request | Actual panel |
+| --- | --- | --- |
+| Map44 1008, 1014 | Captain 138 (raw text on 1008) | Closed portrait window, hidden portrait and null texture. |
+| Map44 1009, 1013, 1016–1017, 1020 | Astral, reference 31 (explicit portrait service before raw 1009) | Open portrait 0, drawn ID 0, visible mounted texture. |
+| Map44 1015, 1018, 1019 | Minister 159, then King 30 | The saved aliases also select Bowie. All three readings show intent 0, draw 0 and a visible texture. |
+| Map73 2213–2215, 2217 | Astral 128, Bowie 0, Sarah 1, Minister 129 in the new population | Visible portraits 31, 0 and 1 with distinct mounted texture identities, then a hidden portrait with null texture. |
+
+The controlled run passed through Maps66 and 73 to first Map14(40,8) Left control. F700 was
+set, F640 cleared, F73 persisted and there was no active script or wait. One ordinary Down
+reached (40,9) with null field, presentation and audio errors. This closes the reported
+portrait symptom as a test-save precondition under the user's #2335 acceptance decision.
+
+**Reproduce.** Use the clean [Windows Release recipe](../windows-local-candidate.md#build-and-run),
+tested with product `3077da05`, module `fc513454-ac4d-4644-b5eb-cd72b98783f3`. Copy the
+registered `issue2329/departure-report-v1/dock-seed.json` unchanged into a fresh disposable
+namespace as `sf2-opening/slot1.json`. The accompanying human report is a later Map73 snapshot.
+Launch with the [v2 endpoint](../verification/debug-port.md#launch-and-operate). From the checkout,
+use `python remake/tools/debug_client.py <port> hello 'observe host' 'observe state'` and the
+same client for the following inputs. Continue through slot 1 and the Witch farewell. Walk from
+(1,25) to (11,14) with single field directions, face Left and use `field interact`. Use
+`story confirm` at reading waits and confirm Yes. Inspect `textId`, `speaker`, `portraitId`,
+`portraitProjection.id` and `dialoguePanel.portraitVisible/portraitTexture` at the named waits.
+With background playback Off, grant up to 120 frames at a time and let the grant expire. The
+tested export used an inactive Windows desktop with Godot reporting unfocused during the dock
+story. An initial launch on that desktop exited before the listener opened. Keeping the desktop
+handle alive through listener startup allowed the repeat to run.
+
+**Unknown:** natural Map44 portrait transitions in this particular export. The earlier natural
+remake handoff above and the [F74 source mapping](../../../docs/research/chapters/grans-opening/earthquake-town-through-docks-departure.md)
+retain their respective evidence boundaries.
+
 ### Castle and tower fissure expectation (#2288)
 
 **Confirmed** user report: town fissures appear after leaving the castle; the question is
