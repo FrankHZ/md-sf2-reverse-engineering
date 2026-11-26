@@ -61,6 +61,16 @@ public sealed class BattleInitializationDefinition
     internal MapPosition? ReadMoveOrderPoint(int index) => index < AiPoints.Count ? AiPoints[index] :
         index == AiPoints.Count ? PointAfterTable : null;
     public IReadOnlyDictionary<int, ActorRef> SourceCombatants { get; }
+
+    internal BattleInitializationDefinition ForCombatants(IReadOnlySet<ActorRef> actors)
+    {
+        // A restored historical partition excludes retained party members. Keep genuine
+        // slot identities; class/enemy-definition replacements keep the same mapping.
+        if (SourceCombatants.Values.All(actors.Contains)) return this;
+        return new(Regions, RegionProgram, AllyFormation, AiPoints,
+            SourceCombatants.Where(row => actors.Contains(row.Value)).ToDictionary(row => row.Key, row => row.Value),
+            EnemyCount, RegionPrograms, PointAfterTable);
+    }
 }
 
 public sealed class BattleRegionState
