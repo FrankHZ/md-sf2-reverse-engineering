@@ -1385,3 +1385,13 @@ Prepared120 is23,586 stereo samples at44,100Hz,94,388 bytes; the existing PSG to
 policy plays it with the modern cadence. All26 scene mounts retain previous groups, actors,
 weapons, maps and audio. Resource admission, native texture/input witnesses and natural reach
 are distinct claims; exact original timing and human aesthetics remain Unknown.
+
+### Lightning family #2301
+
+The [complete lightning successor](presentation-assets.md#lightning-successor-2301) reuses
+prepared tileset4 (5,728 bytes), palette0ec8/0ca0/0e40 and the two440-byte BoltAnimData
+operand tables. `bolt/frame-0..21` are64x96 source composites; `bolt/frame-22..29` are
+32x32 orb orientations. All30 form one atomic Original/4x HD group at unchanged logical
+extents. Existing scenery, actors, weapons, earlier spells, audio and independent entry
+inputs remain intact. [Source and delivery](../godot/spell-presentation.md#lightning-source-and-modern-delivery)
+separate original composition from modern cadence and Unknown natural reach/hardware timing.

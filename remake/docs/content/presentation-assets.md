@@ -1528,3 +1528,29 @@ final receipts are retained in review-v1. These are host measurements, not porta
 The reader admits26 scenes and all seven restored records; ordinary playback is bounded
 separately by the [spell owner](../godot/spell-presentation.md#freeze-reproduction-and-limits).
 No original media, private saves or machine paths enter Git.
+
+### Lightning successor #2301
+
+`derived/issue2301/bolt-v1` is the complete #2298 freeze-v1 successor:177 files,
+373,560,638 bytes. All26 scenes add30 Original and30 4x HD rasters; world adds prepared
+sound119 and its PCM file. Every predecessor scene field/raster/audio row and every other
+file compares unchanged. Independent #2252 opening, #2255 Witch and #2266 catalog remain
+selected. The [mechanism owner](../godot/spell-presentation.md#lightning-family-playback-2301)
+records source operands, native acceptance, failures and reproduction.
+
+```powershell
+. ./local/private-inputs.ps1
+$derived = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived'
+uv run --with pillow python -m sf2tool.remake_retail_assets `
+  --root (Join-Path $derived 'issue2001/retail-v1') `
+  --base (Join-Path $derived 'issue2298/freeze-v1') `
+  --mount $freshAbsolutePackage --family bolt-family --gfx-root $pinnedGraphicsCheckout
+```
+
+Use the existing package closure publisher for world/main scene/entry/opening inputs.
+The graphics checkout remains fixed at172662709b31cb296b55f51894754ce810c30f6c. Omitting
+`--gfx-root` creates no new HD group; incomplete HD falls back atomically to Original.
+The serial pilot took0.37s, peaked at76,832,768 bytes and produced a6,580,921-byte scene,
+retaining all older fields/resources. Complete publication remains below500MiB; final
+published reader peak is about0.96GB and representative native peak about1.33GB, within
+the2GiB allowance. No new capture, ROM acquisition or asset platform is used.

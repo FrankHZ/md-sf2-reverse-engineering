@@ -1,6 +1,7 @@
 """Prepared private attack-spell rasters for the existing package publisher."""
 
 import json
+import struct
 from pathlib import Path
 
 from sf2tool.remake_asset_build import ACCEPTED_ROM_SHA256, ACCEPTED_UPSTREAM_COMMIT
@@ -18,6 +19,8 @@ def mount_attack_spells(
 ) -> None:
     from sf2tool.remake_private_package import installed_png, prepared_spell_tiles, read_json
 
+    if "bolt-family" in families:
+        mount_bolt(directory, scratch, package, scenes, scale)
     if "freeze-family" in families:
         mount_freeze(directory, scratch, package, scenes, scale)
     if "blast-1" in families:
@@ -225,4 +228,96 @@ def mount_blast(directory, scratch, package, scenes):
         for key, raster in rasters.items():
             if scene["rasters"].setdefault(key, raster) != raster:
                 raise ValueError(f"conflicting prepared BLAST frame {key}")
+        path.write_text(json.dumps(scene, separators=(",", ":")), encoding="utf-8")
+
+
+def mount_bolt(directory, scratch, package, scenes, scale):
+    from PIL import Image
+
+    from sf2tool.remake_hd_actors import encode
+    from sf2tool.remake_hd_battle_rasters import _check_masks, derive_frame
+    from sf2tool.remake_private_package import prepared_spell_tiles, read_json
+
+    index = read_json(directory / "index.json")
+    expected = dict(family="spell", id=4, tiles="spell-4.4bpp", palette="0ec80ca00e40")
+    if (
+        index["rom"] != ACCEPTED_ROM_SHA256
+        or index["upstream"] != ACCEPTED_UPSTREAM_COMMIT
+        or [r for r in index["records"] if r.get("family") == "spell" and r["id"] == 4]
+        != [expected]
+    ):
+        raise ValueError("registered BOLT effects identity differs")
+    tiles, palette = prepared_spell_tiles(directory, 4)
+    if len(tiles) != 5728:
+        raise ValueError("registered BOLT tile stream length differs")
+    rasters, variants = {}, {}
+
+    def install(key, original):
+        rasters[key] = encode(original)
+        if scale is not None:
+            hd, _ = derive_frame(original, 1, scale)
+            with hd:
+                _check_masks(original, hd, key)
+                variants[key] = encode(hd)
+
+    def sprite(first, columns, rows):
+        layout = [first + x * rows + y for y in range(rows) for x in range(columns)]
+        return Image.frombytes(
+            "RGBA",
+            (columns * 8, rows * 8),
+            bytes(compose(tiles, palette, columns * 8, rows * 8, layout)),
+        )
+
+    # BoltAnimData_A/B: eleven five-sprite frames each. ConstructComplexGraphic
+    # applies the low property bits as H/V flips; graphic tile1 is VDP $520.
+    # The fixed canvas origin (-24,48) preserves source coordinates and extents.
+    for bank, name in enumerate(("A", "B")):
+        data = (directory / f"BoltAnimData_{name}.bin").read_bytes()
+        if len(data) != 440:
+            raise ValueError("registered BOLT operand table length differs")
+        for frame in range(11):
+            with Image.new("RGBA", (64, 96)) as canvas:
+                # Earlier VDP sprites have priority at overlap.
+                for slot in reversed(range(5)):
+                    x, y, tile, prop = struct.unpack_from(">hhHH", data, frame * 40 + slot * 8)
+                    if tile == 0:
+                        continue
+                    columns, rows = ((prop >> 10) & 3) + 1, ((prop >> 8) & 3) + 1
+                    first = (tile & 2047) - 0x520
+                    if first < 0 or (first + columns * rows) * 32 > len(tiles):
+                        raise ValueError("BOLT sprite tile outside prepared stream")
+                    with sprite(first, columns, rows) as raw:
+                        part = raw
+                        if prop & 1:
+                            part = part.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+                        if prop & 2:
+                            part = part.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+                        if not (0 <= x + 24 <= 64 - part.width and 0 <= y - 48 <= 96 - part.height):
+                            raise ValueError("BOLT sprite outside source composition canvas")
+                        canvas.alpha_composite(part, (x + 24, y - 48))
+                        if part is not raw:
+                            part.close()
+                install(f"bolt/frame-{bank * 11 + frame}", canvas)
+    # table_1AB5E: 4x4 orb tiles148/164 (one-based). All eight orientations
+    # are prepared so runtime uses the same raster/HD mechanism as other effects.
+    for phase in range(8):
+        with sprite(147 + (16 if phase & 2 else 0), 4, 4) as raw:
+            part = raw
+            if phase & 1:
+                part = part.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            if phase & 4:
+                part = part.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+            install(f"bolt/frame-{22 + phase}", part)
+            if part is not raw:
+                part.close()
+    for battle, relative in scenes.items():
+        path = package / relative
+        scene = read_json(path)
+        if scene["encounter"] != f"battle-{battle}":
+            raise ValueError("BOLT encounter differs")
+        for key, raster in rasters.items():
+            if scene["rasters"].setdefault(key, raster) != raster:
+                raise ValueError(f"conflicting prepared BOLT frame {key}")
+        for key, raster in variants.items():
+            scene.setdefault("hdRasters", {}).setdefault(key, raster)
         path.write_text(json.dumps(scene, separators=(",", ":")), encoding="utf-8")

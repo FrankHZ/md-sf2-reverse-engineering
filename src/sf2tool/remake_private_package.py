@@ -471,6 +471,7 @@ def mount(
         "blaze-2",
         "flame-family",
         "freeze-family",
+        "bolt-family",
         "blast-1",
     }
     if "equipment" in families and upstream is None:
@@ -518,24 +519,34 @@ def mount(
             Path(row["battleScenes"]) for row in world.get("encounters", []) if row["battleScenes"]
         }
         spell_scenes = {}
-        spell_families = selected & {"blaze", "blaze-2", "flame-family", "freeze-family", "blast-1"}
+        spell_families = selected & {
+            "blaze",
+            "blaze-2",
+            "flame-family",
+            "freeze-family",
+            "bolt-family",
+            "blast-1",
+        }
         spell_only = selected == spell_families and bool(spell_families)
         if spell_families:
             for row in world["encounters"]:
                 battle = read_json(files[Path(row["placement"])])["battle"]["id"]
-                if spell_families & {"flame-family", "freeze-family"} or 4 <= battle <= 7:
+                if (
+                    spell_families & {"flame-family", "freeze-family", "bolt-family"}
+                    or 4 <= battle <= 7
+                ):
                     if battle in spell_scenes:
                         raise ValueError(f"duplicate attack-spell scene for Battle{battle:02d}")
                     spell_scenes[battle] = Path(row["battleScenes"])
-            if not spell_families & {"flame-family", "freeze-family"} and (
+            if not spell_families & {"flame-family", "freeze-family", "bolt-family"} and (
                 set(spell_scenes) != {4, 5, 6, 7} or len(set(spell_scenes.values())) != 4
             ):
                 raise ValueError("attack-spell mount requires the four pre-voyage scenes")
-        if spell_families & {"flame-family", "freeze-family"}:
+        if spell_families & {"flame-family", "freeze-family", "bolt-family"}:
             main = read_json(base / "main-scenes.json")
             spell_scenes[int(main["encounter"].split("-")[-1])] = Path("main-scenes.json")
         spell_paths = set(spell_scenes.values())
-        if spell_families & {"blast-1", "freeze-family"}:
+        if spell_families & {"blast-1", "freeze-family", "bolt-family"}:
             spell_paths.add(Path("world.json"))
         indra_only = selected == {"indra"}
         battle26_scene = Path("inputs/battle26/battle-scenes.json")
@@ -568,8 +579,12 @@ def mount(
                 spell_families,
                 load_filter(gfx_root)[1] if gfx_root is not None else None,
             )
-            if spell_families & {"blast-1", "freeze-family"}:
-                for family, command in (("blast-1", 114), ("freeze-family", 120)):
+            if spell_families & {"blast-1", "freeze-family", "bolt-family"}:
+                for family, command in (
+                    ("blast-1", 114),
+                    ("freeze-family", 120),
+                    ("bolt-family", 119),
+                ):
                     if family in spell_families:
                         mount_prepared_audio(
                             root / f"sfx/{command}", command, dest, world["world"]["presentation"]
@@ -652,6 +667,8 @@ def mount(
             bind_promotion_progression(world, upstream, promotions)
         if "blast-1" in spell_families:
             mount_prepared_audio(root / "sfx/114", 114, dest, presentation)
+        if "bolt-family" in spell_families:
+            mount_prepared_audio(root / "sfx/119", 119, dest, presentation)
         if "freeze-family" in spell_families:
             mount_prepared_audio(root / "sfx/120", 120, dest, presentation)
         mounted_commands = list(commands or (25, 87, 99))

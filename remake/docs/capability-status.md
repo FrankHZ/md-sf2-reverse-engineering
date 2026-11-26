@@ -398,8 +398,11 @@ from recruiting Kazin, importing another battle or connecting the entire Battle0
 The [spell coverage inventory](godot/spell-presentation.md#coverage-by-family-and-rank) tracks
 admitted, authored-only and unavailable ranks, with separate asset and observation boundaries.
 Battle26 exercises learned player BOLT 1 and HEAL 4. Controlled WIZ Tyrin casts BLAZE 4,
-FREEZE 3–4 and BOLT 3–4 through ordinary Magic. BOLT3–4 retain the shared elemental
-placeholders; current BLAZE/FREEZE resource bindings are described below.
+FREEZE 3–4 and BOLT 3–4 through ordinary Magic. Current BLAZE/FREEZE resource bindings
+are described below; [lightning playback](godot/spell-presentation.md#lightning-family-playback-2301)
+now binds BOLT1–4/RAIJIN1–3 and equipment BOLT1/2 in all26 scenes. Controlled native
+variants, aliases, Halberd/Evil Ring and enemy Taros Sword preserve payment/wear and return.
+Original media and modern deterministic timing remain distinct; natural reach is Unknown.
 AURA 2–4 have [controlled ordinary casting and cold Continue](domain/gameplay-rules.md#private-learned-aura-ranks).
 DETOX 4 admits [area treatment in Battle and one recipient in Field](domain/detox-ranks-design.md#detox-4-area-and-field-admission).
 [Current battle spells](application/church-promotion-design.md#current-battle-spells) ·
