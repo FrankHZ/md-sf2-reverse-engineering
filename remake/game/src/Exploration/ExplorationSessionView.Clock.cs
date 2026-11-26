@@ -8,6 +8,11 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 
 public sealed partial class ExplorationSessionView
 {
+    internal bool IsOpeningSequence { get; init; }
+    // A final span releases on reveal delivery. Input spans and overflowing pages need the reader.
+    private bool AutomaticOpeningPlayback => IsOpeningSequence && _session is { } session &&
+        session.Current.Story.Wait is not (DialogueWait or W1TextWait or ChoiceWait or FieldSearchWait or
+            FieldTextWait { Phase: FieldTextPhase.Input }) && !_dialogueView.Panel.MoreBelow;
     internal string? OpeningFailure => PresentationFailure?.Code;
     private long _rateGeneration;
     internal bool CanAccelerate => _session is { } session && IsVisibleInTree() && CanProcess() && GetWindow().HasFocus() &&
@@ -15,8 +20,9 @@ public sealed partial class ExplorationSessionView
         session.Current.StopReason is not (SessionStopReason.Unsupported or SessionStopReason.Faulted) &&
         session.Current.Story.EntrySkip is null && !SessionPresentationOwner.IsBattle(session.Current) &&
         !session.Current.CanWaitForText && !session.Current.CanWaitForChoice &&
-        session.Current.Story.Wait is not (DialogueWait or W1TextWait or FieldTextWait { LogicalDone: true } or
-            FieldSearchWait or ChurchWait or ShopWait or CaravanWait or ChoiceWait { Work: null } or ChoiceWait { Work.Automatic: false });
+        session.Current.Story.Wait is not (DialogueWait or W1TextWait or
+            FieldSearchWait or ChurchWait or ShopWait or CaravanWait or ChoiceWait { Work: null } or ChoiceWait { Work.Automatic: false }) &&
+        (session.Current.Story.Wait is not FieldTextWait { LogicalDone: true } || AutomaticOpeningPlayback);
 
     internal void SuspendPacing()
     {
