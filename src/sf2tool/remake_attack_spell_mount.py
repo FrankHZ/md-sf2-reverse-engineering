@@ -19,6 +19,10 @@ def mount_attack_spells(
 ) -> None:
     from sf2tool.remake_private_package import installed_png, prepared_spell_tiles, read_json
 
+    if "dao-family" in families:
+        from sf2tool.remake_dao_mount import mount_dao
+
+        mount_dao(directory, scratch, package, scenes, scale)
     if "desoul-family" in families:
         from sf2tool.remake_desoul_mount import mount_desoul
 

@@ -6,6 +6,112 @@ pre-voyage priority. Later private campaigns and controlled authored packages es
 boundaries. This inventory uses the existing rules, scene readers, presenters and private resource
 publisher. Each implementation slice owns its own acceptance.
 
+## DAO family playback #2310
+
+**Standard scope.** Admitted SORC DAO1–2 uses invocation0 and tileset3 on the existing
+scene, raster reader and action authority. No gameplay admission, save format, Battle27+,
+other summon family or #1716 repair is included. Application still pays once, fixes the
+actual recipient list before dividing power, and delivers ordered damage, deaths and rewards.
+
+Ownership is `src/sf2tool/remake_dao_mount.py`, its existing attack-mount/private-package/
+retail CLI hooks and engine-path registration; `PrivateAttackSpellBindings.cs`;
+`DaoEffectView.cs`, `BattleSceneView.cs`, `BattleSceneView.Summon.cs`; and
+`engine_dao_family_observation.gd`. This file, battle-scenes, church-promotion-design,
+presentation-assets, asset-inventory and capability-status own documentation. These are
+serial shared-file edits. No unmerged dependency or parallel renderer is introduced.
+
+### DAO source and deliberate delivery choices
+
+**Confirmed source structure**, pinned SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`: `spelldefs.asm` selects DAO17 and
+DAO|VARIATION2 (49). The existing unsilenced learned caller reads that selector.
+`animation/dao.asm` (`0x1B012..0x1B0D0`) calls `LoadInvocationSpell` with0, then
+loads frames1–7, holding frame5 for20 updates with lightning118. Its common loader
+plays cast77, flashes `$CCE` four times, saves/replaces the ally, loads frame0 and waits8.
+The invocation header is `(256,176,1)`: a128×128 arrangement at logical `(128,48)`
+after the VDP bias. `LoadInvocationSpriteFrameToVram` skips palette word0 and loads
+colors1–15. `layout_Invocation` places the second128-tile stream after a16-tile VRAM gap.
+
+`animation/update/dao.asm` (`0x1DCE8..0x1DE24`) has no rank branch. It emits up to16
+small8×8, medium16×24 and large24×32 rocks from tiles0,1 and7. Source cosmetic RNG
+chooses velocity `-1792..-1025` in8.8 units, x0..255, y128..191 and flips; acceleration
+is6/256 per update and each spawn plays rumble93. The setup admits damage after90
+updates, while scene script termination controls the remaining effect. Background
+modification4 has amplitude1; target modification3 alternates accumulation over20
+updates. `$248` palette pulses use random1–2 on/30–59 off delays. Common
+`ReinitializeSceneAfterSpell` clears graphics, palette/effect state and summon sprites;
+`bsc05_makeAllyIdle` ends the effect, fades the invocation out and restores the saved ally.
+
+These paths are relative to `disasm/code/gameflow/battle/battlescenes/`; the loader and
+layout are in `battlesceneengine_1/3/4.asm`, and reinitialization is in
+`updatespellanimation.asm`. The table is `disasm/data/stats/spells/spelldefs.asm`.
+[Setup](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/dao.asm) ·
+[Update](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battlescenes/animation/update/dao.asm)
+
+**Modern delivery.** The existing cast trigger starts a152/60-second presentation
+minimum:28 flash ticks,8 entrance ticks,26 manifestation ticks and90 rock ticks.
+The summoned body replaces caster/weapon/ground. Rocks, backdrop displacement and
+target texture deformation continue across ordered recipients, then reset at Reward
+or End. This handoff restores the caster immediately instead of reproducing the source
+invocation palette fade. Deterministic rock positions/velocities/flips, an8-tick spawn cue schedule,
+2/45-tick brown pulses and a target-texture shear approximate the source cosmetic
+motion without consuming gameplay RNG or emulating VDP planes. Flash colors affect
+the backdrop rather than selected hardware palette indices. Reduced Flash suppresses
+flashes, shaking and deformation, preserving sprites, timing, audio and outcomes.
+Held1.5× uses the shared clock. Existing explicit audio defaults select rumble93 at
+Timer189 and lightning118 at Timer194 when the scene requests Timer198.
+
+The11-resource group selects HD atomically. An incomplete optional HD group uses all
+Original frames. A partial Original group reports `dao-original-group-incomplete`;
+older packages with no DAO group retain their explicit modern fallback. Another spell
+family is never substituted. Common summon responsibilities are confined to caster
+replacement and scene restoration; APOLLO/NEPTUN/ATLAS remain separate work.
+
+### DAO reproduction and verification
+
+Select complete `derived/issue2310/dao-v2`, independent #2252 opening, #2255 Witch and
+#2266 catalogs. Build the Debug adapter using the
+[locked workflow](../development-and-verification.md#locked-net-workflow). From a checkout:
+
+```powershell
+. ./local/private-inputs.ps1
+$review = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2310/review-v1'
+& (Join-Path $review 'Verify.ps1') -Repo (Get-Location).Path
+& (Join-Path $review 'Boot.ps1') -Repo (Get-Location).Path -Case dao1-single `
+  -Sample dao-review -SaveRoot $freshExternalSaveRoot
+# Cases: dao1-single, dao1-multi, dao2-single, dao2-multi.
+# Settings: dao2-multi -Graphics hd -Reduced -Fast.
+# Atomic fallback: dao1-single -Graphics hd -Variant incomplete.
+```
+
+**Confirmed in the remake.** The production reader checks52 rank bindings across26
+scenes and restores four controlled records. They derive from the published #2307
+Battle26 input, set Kazin to legal SORC12 with destination book `[93,30,31,63]`, retain
+the equipped Wooden Rod, use seed`0x0DA20000`, and select one or two nearby recipients.
+These are controlled prerequisites, not natural training or acquisition evidence.
+Ordinary Continue → Magic → target → Confirm observes DAO1 damage22 versus11/9 and
+DAO2 damage50 versus25/19, one8/15-MP payment, first-target death in the two-recipient
+cases, ordered HP/death/reward events and usable next ActionChoice. Both ranks retain
+the same art. HD/Reduced Flash/held speed and incomplete-HD atomic fallback pass.
+The observer reads actual texture dimensions, resource identity, draw calls, phase,
+caster visibility, target material and sound receipts; it takes no screenshots.
+
+With producer scratch moved out of its working path, the published reader and fresh
+HD/Reduced Flash/held-speed and incomplete-HD ordinary-input runs passed again.
+`uv run sf2 verify engine` passed 3,383 with 50 optional private-input skips; Release
+and Debug adapter builds passed. No gameplay rule changed and no helper tests were added.
+
+Retained failures include missing Pillow on the first pilot, an unnecessary request
+for already inherited audio during the first publication, the previously unset DAO
+selector, an over-max controlled target HP, and a one-frame caster visibility reset
+at phase changes. These are corrected at their owners. Rejected `dao-v1` had the wrong
+invocation palette offset; only `dao-v2` is the review candidate. Native processes can
+retain8 ObjectDB exit warnings under#1716; that issue is not repaired here.
+
+**Unknown:** natural reach/training, original hardware cadence and palette fidelity,
+actual GPU deformation appearance, and human visual acceptance. The Draft PR owns
+the selected plan, actual CI and exact frozen Git objects.
+
 ### ABSORB implementation boundary #2309
 
 **Standard**, because this is a bounded presentation binding with accepted equipment
@@ -223,10 +329,10 @@ update controls subsequent movement, mirroring and dust. [Enemy family evidence]
 | BLAST 2–4 | BLAST v2–v4 | **Original assets bound** in all admitted wind-successor scenes. Even ranks grow larger fragments; v3/v4 add cyclone/dust. Controlled Sarah covers all ranks and existing Battle26 Dark Bishop covers hostile BLAST3. | [Wind family](#wind-family-playback-2306). No new equipment consumer, gameplay or encounter admission. |
 | KATON 1–3 | BLAZE v2–v4 | **Original assets bound** through the actual selector, with neutral gameplay rules unchanged. Native NINJ rank1 uses v2; rank3 uses v4. Rank2 has production binding coverage, without a new native cast. | [Flame family playback](#flame-family-playback-2293). Natural learning/acquisition remain **Unknown**. |
 | RAIJIN 1–3 | BOLT v2–v4 | **Original assets bound**, preserving distinct neutral gameplay. Controlled NINJ ranks1/3 use the shared selectors; rank2 has production-reader binding coverage. | [Lightning family](#lightning-family-playback-2301); natural learning/acquisition remain **Unknown**. |
-| DAO 1–2 | DAO v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns original effect composition and playback. DAO1 native uses the existing modern fallback. |
-| APOLLO 1–2 | APOLLO v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns original effect composition and playback. DAO1 native uses the existing modern fallback. |
-| NEPTUN 1–2 | NEPTUN v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns original effect composition and playback. DAO1 native uses the existing modern fallback. |
-| ATLAS 1–2 | ATLAS v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. Enemy HEAL rank selection can read an ATLAS operand as part of its original rank-probing behavior. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns original effect composition and playback. DAO1 native uses the existing modern fallback. |
+| DAO 1–2 | DAO v1–v2 | **Original assets bound** for admitted SORC casts: invocation0, rising rocks, scene deformation and sound. Both ranks preserve actual-recipient division. | [DAO playback and limits](#dao-family-playback-2310). Natural training, hardware timing and human visual acceptance remain **Unknown**. |
+| APOLLO 1–2 | APOLLO v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns this family's original effect composition and playback. |
+| NEPTUN 1–2 | NEPTUN v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns this family's original effect composition and playback. |
+| ATLAS 1–2 | ATLAS v1–v2 | **Rule-admitted** at learned ranks through SORC; dedicated original summon effect is **Unavailable**. Enemy HEAL rank selection can read an ATLAS operand as part of its original rank-probing behavior. | [SORC rule/native boundary](../application/church-promotion-design.md#sorcerer-promotion); [#2104] owns this family's original effect composition and playback. |
 
 ### Item, innate and special rows
 

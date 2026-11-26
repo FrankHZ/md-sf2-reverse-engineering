@@ -1422,8 +1422,9 @@ issue checks all six member/class appearance sets across 26 loaded scenes.
 Use its world, main scene and six opening inputs with
 `derived/issue2266/catalogs-v1/world.zh-CN.json`. Keep #2252 opening and #2255 Witch entry
 selected separately as above. The catalog adds only accepted class18 and spell29–32 names.
-Dedicated summon effects are not mounted: native DAO uses the existing modern fallback.
-[#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104) owns that visual gap.
+This older promotion package used modern summon fallback. The
+[DAO successor](#dao-successor-2310) adds both DAO ranks; APOLLO/NEPTUN/ATLAS remain
+with [#2104](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2104).
 
 ```powershell
 . ./local/private-inputs.ps1
@@ -1593,6 +1594,38 @@ launchers; `verification-v1` retains checks and completed failures. Review publi
 is separate from the immutable #2307 content. The reader checks104 SPOIT definitions
 and702 equipment appearances over26 scenes. Native Original/HD, Reduced Flash/held
 speed and body-group fallback retain their [playback boundary](../godot/spell-presentation.md#absorb-reproduction-and-verification).
+
+### DAO successor #2310
+
+The complete `derived/issue2310/dao-v2` extends accepted `derived/issue2307/desoul-v1`
+without changing world, audio, actors, terrain, equipment or prior effect rasters.
+Retain independent #2252 opening, #2255 Witch and #2266 catalogs. The existing producer
+mounts eight128×128 invocation0 frames and three DAO rock rasters, with atomic optional
+HD companions, into all26 scenes. No new schema or media capture is needed: the prepared
+retail library supplies the tiles, and the predecessor already has selectable93/118 audio.
+
+The serial pilot budget was11 Original plus11 HD rasters, approximately2.2MB added
+across26 scenes, a complete successor below500MiB and scratch/peak below2GiB. One-scene
+derivation took0.62 seconds and added83,959 bytes before the palette-offset correction.
+Work is linear in frame pixels plus the existing scene/package bytes; one scene and the
+small frame bank are held at a time. The corrected successor has178 files /376,842,474
+bytes, with only26 scene files changed. Native peak was1,351,806,976 bytes and
+producer/review scratch405,863,110 bytes. Replan if those limits are exceeded.
+
+From the checkout, use registered roots and a fresh absolute output:
+
+```powershell
+. ./local/private-inputs.ps1
+$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2307/desoul-v1'
+uv run --with pillow python -m sf2tool.remake_retail_assets --root $library --base $base `
+  --mount $freshAbsolutePackage --family dao-family --gfx-root $registeredGraphicsRoot
+```
+
+The graphics checkout is pinned to `172662709b31cb296b55f51894754ce810c30f6c`.
+`dao-v1` is retained rejected output with an invocation palette offset error; only v2
+is the candidate. [Source, delivery and ordinary-input reproduction](../godot/spell-presentation.md#dao-family-playback-2310)
+separates original operands, deterministic cosmetic motion and remaining Unknowns.
 
 ### DESOUL successor #2307
 
