@@ -325,7 +325,10 @@ production code, private package and the completed full-play observation are unc
 eight-minute replay was performed. The original failed receipt remains available beside these
 short controls under `local/issue2252/`.
 
-Reproduce after the ordinary selection above, with a fresh output path and disposable namespace:
+For the ordinary opening skip, title music, held/released Witch menu and Back sequence, use the
+[network title round-trip client](../verification/debug-port.md#launch-and-operate) with a disposable
+namespace. It works with the exported game as well as the development entry. To reproduce the
+specialized retired-owner callback and native focus controls after the ordinary selection above:
 set `SF2_OPENING_CONTROL=back` (or`focus`) and launch
 `& $env:GODOT_BIN --path remake/game --script res://probes/engine_opening_startup_observation.gd`.
 The owning checkout's prepared equivalent is

@@ -1,5 +1,11 @@
 # Development and Verification
 
+## General live observation and keyboard input
+
+Use the [C# loopback debug port](verification/debug-port.md) for an explicitly enabled development
+or exported game. The protocol owner includes the runnable client, title round-trip and inventory
+of scenario-specific probes.
+
 ## Local Windows export
 
 The [private Windows candidate recipe](windows-local-candidate.md) owns the repeatable Release

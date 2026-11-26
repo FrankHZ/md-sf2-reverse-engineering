@@ -28,6 +28,8 @@ public sealed partial class GameRoot : Node
     private bool _releaseBarrier;
     public override void _ExitTree()
     {
+        _debugPort?.Dispose();
+        ReleaseDebugKeys();
         _entryPreparation.Dispose();
         ReleaseOpening();
         ReleaseWindowSupport(); GetWindow().FocusExited -= SettingsFocusLost;
@@ -127,6 +129,7 @@ public sealed partial class GameRoot : Node
 
     public override void _Process(double delta)
     {
+        PumpDebugPort();
         ProcessOpening();
         RefreshPartyName();
         if (_menuButton is not null)
@@ -180,6 +183,7 @@ public sealed partial class GameRoot : Node
         { Fail("invalid-input-settings", "Cannot read the versioned input settings."); return; }
 
         InitializeWindowSupport();
+        StartDebugPort();
         if (options.TryGetValue("--private-battle-start", out string? controlledStart)) BeginSource(PrivateBattle(controlledStart));
         else if (options.TryGetValue("--private-exploration-start", out string? explorationStart))
             BeginSource(new PrivateExplorationReader(Selected("SF2_PRIVATE_EXPLORATION_CONTENT"), explorationStart,
