@@ -87,13 +87,18 @@ dispatched token-bound reading intent survive disconnect and physical focus loss
 
 ## Preparing a progression start
 
-Use the [three campaign stops and dock example](../application/pre-voyage-campaign.md#proposed-non-battle-debug-starts)
+Use the [four campaign stops and dock example](../application/pre-voyage-campaign.md#proposed-non-battle-debug-starts)
 to select the predecessor and expected landing. Prefer a short ordinary transition from a
 registered, provenance-checked predecessor in a fresh disposable namespace. For the docks, the
 [observed post-tower castle visit](../application/pre-voyage-campaign.md#castle-to-quake-handoff-from-a-player-save-2167)
 already has royal followers. Check its setup, flags, party and live bindings before walking to
 Map4 and taking its east exit. Copy only the registered selection into disposable storage for
 ordinary Continue. A loadable slot by itself establishes neither its story lineage nor its cast.
+
+The [showcase starts](../application/pre-voyage-campaign.md#showcase-starts-and-continuity)
+name the two independently executable records. Run the [semantic pilot](../evidence/opening-loop-acceptance.md#pilot-and-recording-boundary)
+on one fresh instance per record. The Galam check consumes a restored v6 visit through ordinary
+Continue and uses the south exits on Map16 and Map18.
 
 For repeatable development checks without a suitable slot, the existing pre-session
 [controlled exploration start](../../game/probes/PreVoyageLocalizationObservation.cs) admits the
