@@ -848,6 +848,35 @@ private image remains **Unknown**; the reproduced inversion is a concrete cause 
 the body, not proof that every reported pixel had this cause. Original natural reach, VDP output,
 all later weapons, hardware timing and human/aesthetic approval remain **Unknown**.
 
+### Native-size campaign weapons in the pre-voyage showcase
+
+**Confirmed:** the campaign can select member-specific equipment art with a native 64×64
+Original weapon instead of the older doubled 128×128 Original. Both represent the same
+64×64 logical sprite described above. With Movie Maker off, ordinary Battle06 BLAZE
+selected Kazin's correct `equipment/weapon85/frame0` at relative (53,20). The old view
+drew its 64×64 texture at 32×32 beside a 96×96 body. The smaller image displaced the
+grip within the frame. The Original alpha masks of the four Wooden Stick and Wooden Rod
+frames in the native equipment bank match their doubled counterparts at native resolution.
+
+`BattleSceneView.Weapon` chooses the scale from the Original dimensions before binding
+either texture density. The existing raster observation checks the actual sprite rectangle
+and scale for native and doubled Originals, HD publication, and a mirrored front-layer strike.
+Run the Debug adapter with `--headless --path remake/game --script res://probes/engine_hd_battle_raster_observation.gd`.
+Its malformed-image rejection cases intentionally emit decoder diagnostics.
+
+For a campaign check, use the [showcase input selection and records](../evidence/opening-loop-acceptance.md#pre-voyage-showcase-e2e-2357).
+Launch `python remake/tools/debug_dev.py --save <record-copy> --settings <settings> --run-dir <fresh-directory> --port <port>`
+with Movie Maker off. Use `blaze-ready.json` in Original mode and the ordinary BLAZE route.
+Use `continuous-slot3.json` in HD, Stay until Chester's turn, and attack the adjacent enemy.
+Read `observe scene` during the action or following result message.
+
+**Confirmed:** Kazin's staff occupied 64×64 logical pixels from a 64×64 Original texture
+and BLAZE resolved (MP 17→15, enemy HP 16→10). Chester's Wooden Stick occupied 64×64
+from a 256×256 HD texture with idle offset (12,−1); on this later Battle01 turn enemy HP
+fell from 3 to 1. Both returned to player control. The native hosts reported the existing
+two-instance ObjectDB warning on exit. **Unknown:** which package and graphics mode the
+earlier manual playthrough selected, and visual acceptance of every weapon pose.
+
 ### Equipment recovery scenes
 
 [The equipment recovery owner](spell-presentation.md#equipment-recovery-playback-2291)
