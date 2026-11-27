@@ -845,7 +845,9 @@ internal sealed partial class BattleSceneView : Control
         if (!_weapon.Visible) return;
         var frames = _allyVisual!.WeaponFrames;
         _weaponResource = frames[frame!.Frame & 7];
-        Bind(_weapon, _weaponResource, BattleSceneRaster.HasHdGroup(Content!, frames));
+        var content = Content!;
+        float scale = content.Rasters[_weaponResource] is { Width: 64, Height: 64 } ? 1 : 0.5f;
+        Bind(_weapon, _weaponResource, BattleSceneRaster.HasHdGroup(content, frames), scale);
         _weapon.FlipH = (frame.Frame & 16) != 0; _weapon.FlipV = (frame.Frame & 32) != 0;
         _weapon.Position = new Vector2(136 + frame.X,64 + frame.Y) + offset;
         // Source layer 1 follows the ally in the VDP sprite chain (behind);

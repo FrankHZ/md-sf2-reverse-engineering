@@ -43,21 +43,22 @@ public partial class BattleRasterObservation : Node
         Add("body/strike", 192, 192, 2);
         Add("foe/idle", 192, 192, 2);
         Add("foe/strike", 192, 192);
-        Add("weapon", 128, 128, 2);
+        Add("weapon/idle", 64, 64, 4);
+        Add("weapon/strike", 128, 128, 2);
         Add("backdrop", 512, 128, 2);
         Add("ground", 240, 48, 2);
         string[] exits = ["exit/down", "exit/side", "exit/up"];
         foreach (string exit in exits) Add(exit, 48, 24, 4);
 
         var idle = new BattleSceneWeaponFrame(0, 1, 4, 8);
-        var strike = new BattleSceneWeaponFrame(48, 2, 7, 12);
+        var strike = new BattleSceneWeaponFrame(49, 2, 7, 12);
         var sequences = new Dictionary<string, BattleSceneAnimation>
         {
             ["idle"] = new(0, 0, 0, false, idle, [new(0, 6, 0, 0, idle)]),
             ["attack"] = new(1, 0, 0, false, null, [new(0, 6, 0, 0, idle), new(1, 12, 3, 0, strike)]),
             ["dodge"] = new(2, 0, 0, false, null, [new(0, 6, 0, 0, null)]),
         };
-        var lance = new BattleSceneActorVisual(0, 0, 72, ["body/idle", "body/strike"], ["weapon"], sequences);
+        var lance = new BattleSceneActorVisual(0, 0, 72, ["body/idle", "body/strike"], ["weapon/idle", "weapon/strike"], sequences);
         var sentry = new BattleSceneActorVisual(1, 1, null, ["foe/idle", "foe/strike"], [],
             sequences.ToDictionary(row => row.Key, row => row.Value with
             { IdleWeapon = null, Frames = row.Value.Frames.Select(frame => frame with { Weapon = null }).ToArray() }));
@@ -105,7 +106,7 @@ public partial class BattleRasterObservation : Node
             bool hd = mode == "hd";
             Expect(ally, 96, 96, hd ? 4 : 1, "native-size ally footprint");
             Expect(foe, 96, 96, 2, "incomplete enemy group falls back as a whole");
-            Expect(weapon, 64, 64, hd ? 4 : 2, "weapon footprint");
+            Expect(weapon, 64, 64, hd ? 4 : 1, "native-size weapon footprint");
             Expect(background, 256, 64, hd ? 4 : 2, "scenery footprint");
             Expect(ground, 120, 24, hd ? 4 : 2, "ground footprint");
             Check(background.Texture == wrap.Texture && wrap.Position.X - background.Position.X == 256, "scenery wrap");
@@ -138,7 +139,11 @@ public partial class BattleRasterObservation : Node
                 view.PublishGraphics();
                 _ = view.Consume(0.06);
                 Expect(ally, 96, 96, 4, "double-density ally strike footprint");
+                Expect(weapon, 64, 64, 4, "double-density weapon strike footprint");
                 Check(weapon.FlipH && weapon.FlipV && weapon.ZIndex > ally.ZIndex, "front weapon and both flip bits");
+                settings.GraphicsMode = "original";
+                view.PublishGraphics();
+                Expect(weapon, 64, 64, 2, "original double-density weapon footprint");
             }
             Submit(session, state.RequiresAcknowledgement ? new Acknowledge(state.Token) :
                 new CompletePresentation(state.Token, state.CompletionKind));
