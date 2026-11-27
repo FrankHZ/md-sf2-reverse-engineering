@@ -10,7 +10,7 @@ internal sealed partial class ExplorationPresentation
 {
     private static readonly (int Outline, int Fill)[] PickupStarRows =
     [
-        (1, 0), (3, 1), (3, 1), (7, 3), (9, 7), (7, 3), (3, 1), (3, 1), (1, 0),
+        (1, 0), (3, 1), (5, 3), (3, 1), (1, 0),
     ];
 
     internal object? PickupGlintProjection { get; private set; }
@@ -21,7 +21,7 @@ internal sealed partial class ExplorationPresentation
         const int cellSize = WorldViewportLayout.SourceCell;
         const int pixelSize = WorldViewportLayout.PixelScale;
         int size = PickupStarRows.Length;
-        var inset = new Vector2(cellSize / 2 - size / 2, cellSize * 5 / 8 - size / 2);
+        var inset = new Vector2(cellSize / 2 - size / 2, cellSize / 4 - size / 2);
         float opacity = _reducedFlash ? 1f :
             0.84f + 0.16f * Mathf.Sin((float)(Time.GetTicksMsec() % 2400) * Mathf.Tau / 2400);
         var outline = new Color(0.15f, 0.09f, 0.14f);

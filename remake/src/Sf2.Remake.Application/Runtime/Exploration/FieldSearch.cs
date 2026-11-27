@@ -28,11 +28,6 @@ internal static class FieldSearch
         var area = world.Definition.Traversal.SelectActiveArea(player.Position)?.Area;
         if (area is null) return [];
 
-        var origin = player.Position;
-        var offset = FieldLayout.Offset(world, player.Motion);
-        bool Clear(int x, int y) => x >= area.MinimumX && x <= area.MaximumX &&
-            y >= area.MinimumY && y <= area.MaximumY &&
-            !OriginalMapTraversal.IsBlocked(world.Layout, new(x, y), offset.X, offset.Y);
         return search.Chests.Concat(search.OtherItems).Where(placement =>
         {
             var position = placement.Position;
@@ -40,32 +35,8 @@ internal static class FieldSearch
                 placement.ItemWord is not { } word || (word & 127) == 127 || !preparation.Items.ContainsKey((byte)(word & 127)))
                 return false;
             int marker = Marker(world, position);
-            if (ItemText(marker) is null || Placement(search, position, marker) != placement) return false;
-            // The pickup cell itself can be solid (e.g. a chest or bookshelf).
-            return VisibleApproach(origin, position.X - 1, position.Y, Clear) ||
-                VisibleApproach(origin, position.X + 1, position.Y, Clear) ||
-                VisibleApproach(origin, position.X, position.Y - 1, Clear) ||
-                VisibleApproach(origin, position.X, position.Y + 1, Clear);
+            return ItemText(marker) is not null && Placement(search, position, marker) == placement;
         }).Select(placement => placement.Position).ToArray();
-    }
-
-    private static bool VisibleApproach(MapPosition origin, int x, int y, Func<int, int, bool> clear)
-    {
-        if (!clear(x, y)) return false;
-        int fromX = origin.X, fromY = origin.Y;
-        int dx = Math.Abs(x - fromX), dy = Math.Abs(y - fromY);
-        int stepX = Math.Sign(x - fromX), stepY = Math.Sign(y - fromY);
-        int crossingsX = 0, crossingsY = 0;
-        while (fromX != x || fromY != y)
-        {
-            // Visit every crossed cell, including both sides of an exact corner.
-            int crossing = (2 * crossingsX + 1) * dy - (2 * crossingsY + 1) * dx;
-            if (crossing == 0 && (!clear(fromX + stepX, fromY) || !clear(fromX, fromY + stepY))) return false;
-            if (crossing <= 0) { fromX += stepX; crossingsX++; }
-            if (crossing >= 0) { fromY += stepY; crossingsY++; }
-            if (!clear(fromX, fromY)) return false;
-        }
-        return true;
     }
 
     private static int Marker(ExplorationState world, MapPosition position) => world.Layout[position.X, position.Y] & 0x3C00;
