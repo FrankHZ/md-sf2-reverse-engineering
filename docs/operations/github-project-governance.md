@@ -387,8 +387,10 @@ Use [fresh setup](./local-private-inputs.md#fresh-worktree-setup) for the next s
 runs, caches and old handoffs together. Recollect historical observations if needed. This requires
 neither a file inventory nor an archive. The cleanup applies only to checkout scratch.
 
-When an authorized cleanup script is available, main-gate checks its targets and consumers,
-runs it directly if execution is permitted, and verifies its exit result and the target directories.
+Main-gate creates the cleanup script for the authorized scope, or reuses a suitable existing one.
+It checks resolved targets and consumers, runs the script directly if execution is permitted,
+and verifies its exit result and the target directories. Script preparation and execution are
+main-gate responsibilities, not a default handoff to the user.
 Do not hand the script back to the user merely because an earlier command was rejected; report a
 blocker only if the current execution is actually blocked. This does not authorize bypassing a
 rejection by rewriting the command or switching tools.

@@ -61,6 +61,9 @@ Record any retained idle Godot/debug instance and transfer its control with the 
 boundary alone does not require restarting it. Task creation or archival does not itself authorize
 environment creation or cleanup. Keep results and failures available through review. After acceptance
 and merge, clear checkout scratch under the [post-merge rules](./docs/operations/github-project-governance.md#worktree-selection-and-retirement).
+Main-gate owns creating (or reusing), checking and running the authorized cleanup script, then
+verifying its result. Do not default to asking the user to create or execute it; report an actual
+permission/tool blocker without bypassing it. The linked rules own cleanup scope and exclusions.
 Use separate ignored outputs for new runs and dependency-based gate invalidation. Create another worktree when concurrent
 work or preserving a required reproduction environment needs separate isolation. Reuse never permits
 ordinary writes on `main` or multiple active writers in one worktree.
