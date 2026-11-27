@@ -219,7 +219,17 @@ internal sealed partial class SettingsView : Control
         return true;
     }
 
-    internal void Handle(GameAction action, InputEvent input)
+    internal bool HandleFromDebug(GameAction action)
+    {
+        if (action == GameAction.Cancel) return BackFromDebug();
+        if (_help is not null || _page is not (Page.Root or Page.Display)) return false;
+        if (action is not (GameAction.Up or GameAction.Down) &&
+            FocusId is not ("display" or "apply" or "language" or "graphics")) return false;
+        Handle(action, null);
+        return true;
+    }
+
+    internal void Handle(GameAction action, InputEvent? input)
     {
         _pointer.Suspend();
         if (_help is not null) { _help.Handle(action); return; }
@@ -269,7 +279,7 @@ internal sealed partial class SettingsView : Control
         return false;
     }
 
-    private void Activate(string id, int direction, InputEvent input)
+    private void Activate(string id, int direction, InputEvent? input)
     {
         if (Focused is not { Disabled: false } focused || focused.Id != id) return;
         _status = "";
@@ -299,7 +309,7 @@ internal sealed partial class SettingsView : Control
             case "victory": _draft.DebugAutoVictory = !_draft.DebugAutoVictory; break;
             case "battle-speed": _draft.ChangeBattleSpeed(direction); break;
             case "messages": _draft.SuppressBattleHitCoinMessages = !_draft.SuppressBattleHitCoinMessages; break;
-            default: EditorActivate(id, input); return;
+            default: if (input is not null) EditorActivate(id, input); return;
         }
         RefreshCaptions(); Paint();
     }
