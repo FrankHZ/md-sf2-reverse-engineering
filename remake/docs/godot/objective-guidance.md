@@ -145,19 +145,25 @@ default-On preference controls both aids. Assist gives the selected row a short 
 English and Chinese. Pickup and ordinary Search remain independent of the preference.
 
 The [#2062](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2062) four-point star uses
-a stepped, opaque dark outline, warm fill and a pale center. Its 9×9
-source-pixel footprint follows the pickup's map plane. At 1920×1080, each source pixel draws as
-4×4 screen pixels, for a 36×36 mark inside a 96×96 world cell. Only the fill and center pulse
-over 2.4 seconds. Reduced flash holds both at full opacity with the same footprint.
+a stepped, opaque dark outline, warm fill and a pale center. Its 5×5 source-pixel footprint
+starts at source pixel (10,4) of the 24px cell, with its center over the school's pot opening.
+The anchor follows the main map plane in Original and HD. At the native drawing scale each
+source pixel is 4×4 screen pixels, giving a 20×20 mark inside a 96×96 cell. Only the fill and
+center pulse over 2.4 seconds. Reduced flash holds both at full opacity.
 
 Read the selected map's Search placements, working item markers and existing receipt flags.
 An item that the party cannot carry yet still qualifies. Empty placements, gold-only rewards and
-description callbacks have no item glint. Use the current traversal area, a clear local sightline
-to a walkable side from which Search could face the object, and the field draw clip. The sightline
-checks collision cells because distinct rooms or locked passages can share an area rectangle.
-It does not route around blockers or follow warps. Draw the full star only when none of its
-strokes would be covered by later map pixels. [World draw order](display-composition-contract.md#field-world-priority-is-not-one-number)
-owns that decision. Show the aid only in ordinary field control with the menus closed.
+description callbacks have no item glint. Use the current traversal area and field draw clip.
+Walking access, facing and distance to a Search side play no part in visibility. Draw the full
+star only when none of its strokes are covered by later map pixels.
+[World draw order](display-composition-contract.md#field-world-priority-is-not-one-number) owns
+that decision. Show the aid during ordinary field control with the menus closed.
+
+Distinct traversal areas separate packed rooms. Same-area roofs and other foreground hide the
+glint through their drawn pixels. Galam's roof covers the chests behind the wall from the tested
+exterior position. The source collision bits mark blocked movement for furniture as well as walls.
+General separation of uncovered rooms within a single traversal rectangle remains **Unknown**.
+Such a case would need authored room or occluder data for the affected layout.
 
 Acceptance uses the same acquisition and receipt through success, Full and repeat, plus a bounded
 check of closed space, foreground, settings and Save/Continue. The admitted world and saved
@@ -165,13 +171,12 @@ progress provide all inputs. There is no additional discovery or pickup record.
 
 ### Pickup observation
 
-Use the owned Godot .NET Debug project, default English keyboard controls, and
-`res://probes/engine_field_pickup_glints_observation.gd`. For the tower and docks checks, use the
-[complete pre-voyage package and input selection](../application/pre-voyage-campaign.md#castle-to-quake-handoff-from-a-player-save-2167)
-and an empty disposable `issue2166` save namespace. The earlier cases also accept a new external
-`issue2024-*` namespace and the matching [fixed battle-backdrop candidate](battle-scenes.md#fixed-backdrops-for-the-private-campaign).
-The `continue` case reuses the `shrine`
-namespace. Use the [worktree configuration](../../../docs/operations/local-private-inputs.md)
+Use the owned Godot .NET Debug project, default English keyboard controls and
+`res://probes/engine_field_pickup_glints_observation.gd`. Select the complete Kiwi world, matching
+scenes, HD opening, Witch and catalogs from the [private candidate recipe](../windows-local-candidate.md#build-and-run).
+The observer skips the opening through its ordinary Equipment binding when selected. Use a fresh
+external `issue2365-*` save namespace per run, with `continue` reusing the `shrine` namespace.
+Use the [worktree configuration](../../../docs/operations/local-private-inputs.md)
 and worktree-local TEMP, APPDATA and LOCALAPPDATA. Set one `SF2_HOST_UI_CASE` and a fresh ignored
 `SF2_HOST_UI_OUTPUT` per process. Controlled start coordinates and facing are under `start`.
 Facing uses 0 for Right, 1 for Up, 2 for Left and 3 for Down.
@@ -183,35 +188,28 @@ Facing uses 0 for Right, 1 for Up, 2 for Left and 3 for Down.
 
 The observer reads the running draw commands and session. It frees its mounted host before exit.
 Require a passing report with a nonzero check count, exit zero and a clean engine error log.
-In each visible witness, `marks` reports `pixelSize` as 4 and `width` and `height` as 36.
-`left` and `top` plus the footprint fit the reported legal screen clip, and the mark center
-is 18px from each edge. The `tower` and `hold-foreground` witnesses check the overlapping later
-draw and the absence of a glint command. These checks cover projection and input. Player visual
-acceptance stays in [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456).
+The visible school, shrine and tower witnesses compare the mark to the live plane origin.
+`marks` reports `pixelSize` 4, width and height 20 and a center 10px from each edge inside the
+legal screen clip. Run `school` in Original and HD. For HD, append
+`-- --input-settings <absolute-settings-path>` with `formatVersion` 1 and `graphicsMode` set to
+`hd`. Run `shrine` and `continue` with editable settings. These checks cover projection and input.
+Player visual acceptance stays in [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456).
 
 | `SF2_HOST_UI_CASE` | Controlled prerequisite and ordinary observation |
 | --- | --- |
+| `school` | Set `start` to `map-3`, `entity-0`, position (59,12), facing 2, speed 32 and flags 0, 32, 601, 602, 603. Left descends the stair and Down reaches the upper side of the solid shelf at (58,14). The mark on the herb pot (59,17) remains visible around the shelf. Ordinary Search grants item0/F128 and clears the mark. |
 | `shrine` | Prepare slot 1 from the accepted #2053 Map42 v6 shrine slot at (19,23), facing Down. Use the registered `handoffs/issue2053/snapshot-mechanisms` shrine writer to regenerate the source if needed. On a detached copy, remove F133 and layout delta index1555 to restore the base closed chest. Replace the granted item9 and the empty slots of the five joined members with item0. Keep the UTC save header and recalculate the normal save envelope. Title Continue admits the result. Observe the post-Apply Off and Reduced flash policies and hidden marks under field commands and Search feedback. Search with Full leaves the same packs and closed chest. Drop one herb, Search for item9/F133, repeat empty, then save into slot 2. |
 | `continue` | New process in the same namespace, with no controlled start. Title Continue slot 2 preserves exactly one Power Water and F133, with no glint. Repeat Search and climb the CURRENT stair to (2,8). With F901 clear, (4,3) in the hall lacks its item marker. Exit to Map41 and check the new projection. |
 | `foreground` | Copy the #2035 `before-writer.json` controlled input under worktree `local/` and select it via `SF2_HOST_UI_START`. Set Map17 (59,5), Up. The hidden F205 mark appears in the prison area. Up, Left, Left and Search grant item126 and clear the mark. |
-| `wall` | Likewise use #2035 `return-writer.json` at Map16 (32,23), Right. An in-frame working wall at (33,23) blocks the view of the marked chests at (34–35,23). |
+| `wall` | Likewise use #2035 `return-writer.json` at Map16 (32,23), Right. An in-frame working wall at (33,23) separates the marked chests at (34–35,23). The later A-plane roof at source cells (34–35,55) draws over their glints. |
 | `docks` | Use the #2053 `dock-write.json` start at Map44 (27,7), Up. The A-plane mark appears on the deck barrel, the separate hold mark is absent, and Search grants item11/F139. |
-| `hold-foreground` | Use the same dock start at (59,9), Left. The B-plane star's upper arm intersects the later high-priority A-plane draw for block201 at source cell (58,22), whose block pixel (12,12) is opaque. The entire hold glint is absent with F140 clear. |
-| `tower` | Create `start` with map `map-40`, player `entity-0`, position (15,7), facing 1 and speed 32. Decode the registered post-Battle07 slot 4 envelope's base64 `payload` and use `data.registers.flags` with F132 removed. Write only the controlled start under worktree `local/` and point `SF2_HOST_UI_START` there. At usable field control, the glint is absent. Ordinary Search grants Mithril123 and sets F132. |
+| `hold-foreground` | Use the same dock start at (59,9), Left. A later high-priority B-plane tile of block122 at (58,9) overlaps the upper strokes while the lower tip falls outside that draw. The entire glint is absent with F140 clear. |
+| `tower` | Create `start` with map `map-40`, player `entity-0`, position (15,7), facing 1 and speed 32. Decode the registered #2245 Map58 slot 1 envelope's base64 `payload` and use `data.flags` with F132 removed. Write only the controlled start under worktree `local/` and point `SF2_HOST_UI_START` there. The raised star fits above the later high-priority A-plane strip at (15,6) on working word `0xDC42`. Ordinary Search grants Mithril123 and sets F132. |
 
-**Confirmed in the remake ([#2166](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2166)).**
-At the controlled tower start, Map40's area uses A for the Mithril placement (15,6). Before the
-fix the 36px star fit the legal clip, but its lower four source rows crossed the later A-plane
-high-priority strip of working layout word `0xDC42` (block66, tile word `0x8140`). That tile's
-atlas pixels are opaque. The fixed projection omits the whole star and ordinary Search still
-grants the item. The source placement and receipt belong to
+The source placement and receipt at the tower belong to
 [Tower Exterior Search](../application/opening-session-lifecycle.md#tower-exterior-search-admission).
-The player's exact state during the reported sighting remains **Unknown**.
-
-**Confirmed in the remake** at these controlled boundaries. The sightline uses current collision
-cells and does not claim that walking to every marked point will succeed through moving actors
-or scripted movement. Ordinary item acquisition, eligible save locations and later map admission
-keep their existing owners. These draws provide no evidence about original-game rendering or timing.
+The player's exact state during the earlier tower sighting remains **Unknown**. These draws
+provide evidence about remake presentation.
 
 ## Verification and direct replay
 

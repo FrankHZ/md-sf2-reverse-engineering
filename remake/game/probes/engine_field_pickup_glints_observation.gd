@@ -19,6 +19,46 @@ func mark_at(s: Dictionary, x: int, y: int) -> Dictionary:
         if int(mark.x) == x and int(mark.y) == y: return mark
     return {}
 
+func pickup_bounds(origin: Dictionary, x: int, y: int) -> Rect2:
+    return Rect2((Vector2(x * 24 + 10, y * 24 + 4) - Vector2(origin.x, origin.y)) * 4, Vector2(20, 20))
+
+func check_pickup_projection(s: Dictionary, x: int, y: int, plane: String) -> void:
+    var mark := mark_at(s, x, y)
+    if mark.is_empty():
+        check(false, "expected an unclaimed pickup projection at (%s,%s)" % [x, y])
+        return
+    var bounds := pickup_bounds(s.cameraProjection[plane], x, y)
+    var clip: Dictionary = s.cameraProjection.legalScreen
+    check(Rect2(clip.x, clip.y, clip.width, clip.height).encloses(bounds) and mark.pixelSize == 4 and
+        Rect2(mark.left, mark.top, mark.width, mark.height) == bounds and
+        Vector2(mark.screenX, mark.screenY) == bounds.get_center(),
+        "five-source-pixel glint stays on its cell anchor and fits the active clip")
+
+func school() -> void:
+    if not await controlled_start(): return
+    var arrival := witness("school-stairs-" + applied().GraphicsMode)
+    check(arrival.map == "map-3" and int(player(arrival).x) == 59 * 384 and int(player(arrival).y) == 12 * 384
+        and 128 not in arrival.flags, "school stair start with the working herb pot unclaimed")
+    check_pickup_projection(arrival, 59, 17, "background")
+    await key(KEY_LEFT); await settle("walk downstairs")
+    await key(KEY_DOWN); await settle("approach the shelf")
+    var above := witness("school-above-shelf")
+    var field := find("ExplorationSessionView")
+    var shelf: Dictionary = field.call("ReadLayoutRegion", 58, 15, 1, 1)
+    check(int(player(above).x) == 58 * 384 and int(player(above).y) == 14 * 384 and
+        (int(shelf.words[0]) & 0xC000) == 0xC000, "ordinary stair input reaches the far side of the solid shelf")
+    check_pickup_projection(above, 59, 17, "background")
+    for direction in [KEY_LEFT, KEY_LEFT, KEY_LEFT, KEY_DOWN, KEY_DOWN, KEY_RIGHT, KEY_RIGHT, KEY_RIGHT, KEY_RIGHT]:
+        await key(direction); await settle("go around the shelf")
+        check(not mark_at(state(), 59, 17).is_empty(), "furniture and facing leave the visible pot marked")
+    var near := witness("school-below-shelf")
+    check_pickup_projection(near, 59, 17, "background")
+    await key(KEY_DOWN); await settle("face the pot")
+    var result := await check_search(2, 128, true)
+    check(int(result.get("search", {}).get("ItemWord", -1)) == 0, "ordinary Search grants the herb")
+    await dismiss_search()
+    check(mark_at(witness("school-herb-collected"), 59, 17).is_empty(), "received herb clears the glint")
+
 func power_water_count(s: Dictionary) -> int:
     var count := 0
     for member in s.get("party", []):
@@ -65,17 +105,29 @@ func enable_draw_observation() -> bool:
     await frames(4)
     return true
 
+func entry_state() -> Dictionary:
+    return observation(find("SessionEntryView"), "ReadEntryObservationJson")
+
 func continue_slot(index: int) -> bool:
-    await key(KEY_ENTER); await key(KEY_E); await key(KEY_DOWN); await key(KEY_ENTER)
+    await key(KEY_ENTER); await key(KEY_E)
+    for i in range(480):
+        if entry_state().get("stage") == "menu": break
+        await frames(3)
+    if entry_state().get("selectedAction") != "Continue": await key(KEY_DOWN)
+    await key(KEY_ENTER)
+    if entry_state().get("continueText") == 225: await key(KEY_ENTER)
     if not await wait_slots("continue-slots"): return false
     for i in range(index): await key(KEY_DOWN)
     await key(KEY_ENTER)
     var start := Time.get_ticks_msec()
-    while find("ExplorationSessionView") == null and Time.get_ticks_msec() - start < 9000:
+    while find("ExplorationSessionView") == null and Time.get_ticks_msec() - start < 22000:
         if slots().get("state") == "error": break
-        await process_frame
+        var text: Variant = entry_state().get("continueText")
+        if text == 226 or text == 224: await key(KEY_ENTER)
+        else: await process_frame
     if find("ExplorationSessionView") == null:
         var detail := find("SlotDetail") as Label
+        samples.append({"label":"continue-blocked", "entry":entry_state(), "slots":slots(), "window":window()})
         check(false, "Continue mount: " + (detail.text if detail != null else str(slots())))
         return false
     await settle("ordinary title Continue")
@@ -88,8 +140,24 @@ func wait_slots(expected: String) -> bool:
         if state_name == "error": break
         await frames(3)
     var detail := find("SlotDetail") as Label
-    check(false, "Expected slot state " + expected + ": " + (detail.text if detail != null else str(slots())))
+    check(false, "Expected slot state " + expected + ": " + (detail.text if detail != null else str(entry_state().get("stage"))))
     return false
+
+func choose_system_action(action: String) -> void:
+    await key(KEY_ESCAPE)
+    for i in range(120):
+        if selected_menu() != "": break
+        await process_frame
+    for i in range(5):
+        if selected_menu() == action:
+            await key(KEY_ENTER)
+            return
+        await key(KEY_DOWN)
+    check(false, "ordinary system menu offers " + action)
+
+func field_settings() -> void:
+    await choose_system_action("Settings")
+    check(find("SettingsView") != null, "ordinary field Settings")
 
 func shrine() -> void:
     if not await continue_slot(0): return
@@ -97,13 +165,14 @@ func shrine() -> void:
     var mark := mark_at(before, 19, 24)
     check(before.map == "map-42" and 133 not in before.flags and not mark.is_empty(),
         "full pack still shows the unclaimed Power Water chest")
+    check_pickup_projection(before, 19, 24, "background")
     await frames(12)
     var next := mark_at(state(), 19, 24)
     check(not mark.is_empty() and not next.is_empty() and mark.opacity != next.opacity, "ordinary soft pulse")
-    await key(KEY_ESCAPE)
+    await key(KEY_X)
     var menu := witness("field-menu")
     check(menu.fieldMenu.visible and marks(menu).is_empty(), "field commands cover the glint")
-    await key(KEY_ESCAPE)
+    await key(KEY_X)
     await field_settings()
     await select_setting("guidance")
     check("glints on unclaimed items" in settings().message and marks(state()).is_empty(),
@@ -132,7 +201,7 @@ func shrine() -> void:
     var repeat := await check_search(0, 133, true)
     check(repeat.party == granted.party, "repeat Search grants nothing")
     await dismiss_search()
-    await key(KEY_F10); await key(KEY_DOWN); await key(KEY_ENTER)
+    await choose_system_action("Save")
     if not await wait_slots("save-slots"): return
     await key(KEY_DOWN); await key(KEY_ENTER)
     if not await wait_slots("confirm-save"): return
@@ -189,20 +258,20 @@ func foreground() -> void:
 func hold_foreground() -> void:
     if not await controlled_start(): return
     var field := find("ExplorationSessionView")
-    var request: int = field.call("ObserveLayoutRegion", 58, 22, 1, 1)
+    var request: int = field.call("ObserveLayoutRegion", 58, 9, 1, 1)
     await frames(4)
     var s := witness("docks-hold")
-    var origin: Dictionary = s.cameraProjection.background
-    var layout: Dictionary = field.call("ReadLayoutRegion", 58, 22, 1, 1)
+    var star := pickup_bounds(s.cameraProjection.background, 58, 9)
+    var layout: Dictionary = field.call("ReadLayoutRegion", 58, 9, 1, 1)
     var draws: Array = layout.draw.uses
-    # The upper stroke crosses opaque atlas ink at source pixel (12,12).
-    var tip := (Vector2(58 * 24 + 12.5, 9 * 24 + 15.5) - Vector2(origin.x, origin.y)) * 4 + Vector2(1, -8.5)
     check(int(layout.draw.request) == request and draws.any(func(d):
-        return (d.layer == "foreground" and d.highPriority == true and int(d.block) == 201 and
-            Rect2(d.x, d.y, d.width, d.height).has_point(tip))),
-        "live high-priority A-plane draw crosses the B-plane glint's upper stroke")
-    check(140 not in s.flags and mark_at(s, 58, 9).is_empty(), "foreground suppresses the entire unclaimed hold glint")
-    samples.append({"label":"hold-foreground", "word":layout.words[0], "draws":draws})
+        var bounds := Rect2(d.x, d.y, d.width, d.height)
+        return (d.layer == "background" and d.highPriority == true and int(d.block) == 122 and
+            int(d.tile) == 1 and bounds.has_point(star.position + Vector2(10, 2)) and
+            not bounds.has_point(star.end - Vector2(10, 2)))),
+        "later high-priority B-plane tile overlaps the upper strokes while leaving the lower tip outside")
+    check(140 not in s.flags and mark_at(s, 58, 9).is_empty(), "partial overlap suppresses the entire hold glint")
+    samples.append({"label":"hold-foreground", "starBounds":star, "word":layout.words[0], "draws":draws})
     field.call("StopLayoutObservation")
 
 func tower() -> void:
@@ -213,16 +282,14 @@ func tower() -> void:
     var s := witness("unclaimed-tower-mithril")
     var layout: Dictionary = field.call("ReadLayoutRegion", 15, 6, 1, 1)
     var draws: Array = layout.draw.uses.filter(func(d): return d.layer == "foreground")
-    var origin: Dictionary = s.cameraProjection.foreground
-    var star := Rect2((Vector2(15 * 24 + 8, 6 * 24 + 11) - Vector2(origin.x, origin.y)) * 4, Vector2(36, 36))
-    var clip: Dictionary = s.cameraProjection.legalScreen
-    check(s.map == "map-40" and 132 not in s.flags and int(layout.words[0]) == 0xDC42 and
-        Rect2(clip.x, clip.y, clip.width, clip.height).encloses(star), "unclaimed Mithril and full star footprint in the active clip")
+    var star := pickup_bounds(s.cameraProjection.foreground, 15, 6)
+    check(s.map == "map-40" and 132 not in s.flags and int(layout.words[0]) == 0xDC42,
+        "the working Mithril marker remains unclaimed at the tower")
     check(int(layout.draw.request) == request and draws.any(func(d):
         return (d.highPriority == true and int(d.tile) == 7 and int(d.words[0]) == 0x8140 and
-            Rect2(d.x, d.y, d.width, d.height).has_point(star.position + Vector2(18, 22)))),
-        "the later A-plane high-priority tile crosses a lower star stroke")
-    check(mark_at(s, 15, 6).is_empty(), "terrain suppresses the entire Mithril glint")
+            Rect2(d.x, d.y, d.width, d.height).position.y >= star.end.y)),
+        "raised glint clears the later A-plane high-priority strip")
+    check_pickup_projection(s, 15, 6, "foreground")
     samples.append({"label":"tower-foreground", "starBounds":star, "word":layout.words[0], "draws":draws})
     field.call("StopLayoutObservation")
     var result := await check_search(2, 132, true)
@@ -232,12 +299,22 @@ func tower() -> void:
 
 func wall() -> void:
     if not await controlled_start(): return
-    var s := witness("wall-between-player-and-chest")
     var field := find("ExplorationSessionView")
+    var request: int = field.call("ObserveLayoutRegion", 34, 55, 2, 1)
+    await frames(4)
+    var s := witness("wall-between-player-and-chest")
     var layout: Dictionary = field.call("ReadLayoutRegion", 33, 23, 3, 1)
     check((int(layout.words[0]) & 0xC000) == 0xC000 and (int(layout.words[1]) & 0x3C00) == 0x1800,
-        "live wall separates a still-marked chest in this map area")
-    check(mark_at(s, 34, 23).is_empty() and mark_at(s, 35, 23).is_empty(), "same-area collision conceals the treasure beyond the wall")
+        "live wall separates still-marked chests in the active map area")
+    check(int(layout.draw.request) == request, "captured draws from the roof above the chests")
+    for x in [34, 35]:
+        var star := pickup_bounds(s.cameraProjection.background, x, 23)
+        check(layout.draw.uses.any(func(d):
+            return (d.layer == "foreground" and d.highPriority == true and int(d.sourceX) == x and
+                Rect2(d.x, d.y, d.width, d.height).has_point(star.get_center()))),
+            "later roof tiles cover the chest at x=%s" % x)
+        check(mark_at(s, x, 23).is_empty(), "concealed chest has no glint")
+    field.call("StopLayoutObservation")
 
 func docks() -> void:
     if not await controlled_start(): return
@@ -249,13 +326,16 @@ func docks() -> void:
 
 func run() -> void:
     var save_namespace := OS.get_environment("SF2_SAVE_NAMESPACE")
-    if output.is_empty() or (save_namespace != "issue2166" and not save_namespace.begins_with("issue2024-")):
-        push_error("Use an explicit report and a disposable issue2024-* or issue2166 namespace"); quit(2); return
+    if output.is_empty() or (save_namespace != "issue2166" and not save_namespace.begins_with("issue2024-")
+            and not save_namespace.begins_with("issue2365-")):
+        push_error("Use an explicit report and a disposable pickup namespace"); quit(2); return
     slot_path = OS.get_environment("SF2_SAVE_ROOT").path_join(OS.get_environment("SF2_SAVE_NAMESPACE")).path_join("sf2-opening/slot1.json")
     node_added.connect(observe_node)
     root.size = Vector2i(1920, 1080)
     host = load("res://Main.tscn").instantiate(); root.add_child(host); await frames(10)
+    if find("OpeningControls") != null: await key(KEY_E)
     match case_name:
+        "school": await school()
         "shrine": await shrine()
         "continue": await cleared_shrine()
         "foreground": await foreground()
