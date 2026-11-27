@@ -49,7 +49,9 @@ Audio defaults to Godot's `Dummy` driver: playback logic and audio observations 
 but the instance is inaudible. Add `--audio` only for an explicit listening/audio-device check;
 this does not override saved volume preferences. Add `--settings` for an existing read-only
 settings override when a scenario needs a particular input setup.
-The endpoint still uses the same focus/clock rules below; silent does not mean paused.
+The endpoint still uses the same focus and clock rules below. For an effects-only recording,
+apply Music 0% in ordinary Settings or seed equivalent editable journey preferences before
+adding `--audio`. [Volume and recording steps](../godot/audio.md#effects-only-recording).
 
 Opening/title/Witch validation is a deliberate exception: select `--entry` explicitly, and
 add `--audio` only if listening is part of acceptance. For example:

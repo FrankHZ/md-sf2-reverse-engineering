@@ -223,6 +223,106 @@ Earlier failed field attempts retain two-instance ObjectDB warnings. The old inl
 experiment remains recorded. The instruction-based pause was reassessed before local-input
 preparation, and capture completed without a tool refusal.
 
+## Volume preferences
+
+**Standard rigor.** This is a player preference and a recording control for the ordinary
+Godot adapter. It covers three independent gains, settings transactions and native output.
+Playback selection, fade progression, waits, save-game state and original mixing fidelity
+keep their existing owners.
+
+**Confirmed, original source.** The pinned USA source `c834c652b6862bc5679fd7f69a38a7093206efc6`
+separates the driver command families in `sounddriver.asm` and `sf2enums.asm`. The
+[command and header inventory](../../../docs/research/presentation/sound-data-inventory.md#music-command-and-bank-selection)
+records the banks and hardware slots. `battlefunctions_0.asm` requests `SFX_VALIDATION`
+inside battle menus, and `battlesceneengine_0.asm` submits hit, heal and `SFX_LEVEL_UP`
+effects. `mapscriptengine_2.asm` requests `MUSIC_JOIN` and `MUSIC_SAD_JOIN`, and
+`churchactions_1.asm` requests `MUSIC_PROMOTION`. The USA Witch `j_SoundTest` stub just
+returns. These are static command and caller observations.
+
+The remake applies these categories to the existing playback paths.
+
+| Settings row | Godot bus | Routed output |
+| --- | --- | --- |
+| Music | `Music` | Title, opening, Witch, field and battle music, plus finite musical cues such as JOIN, SAD_JOIN and PROMOTION |
+| System & exploration effects | `SystemEffects` | Existing menu confirmation and return sounds in either mode, dialogue syllables, scripted field sounds, interactions, doors and warps |
+| Battle effects | `BattleEffects` | Battle movement, attacks and hit reactions, spells, level-up notification, death and the authored retreat tone |
+
+A shared SFX command follows its caller. For example, an exploration effect and a battle
+reaction may both use a source death sound, with independent settings. Source interruption
+groups and Timer-B selection operate across the voices as before. The three native child
+buses send to Master. At 100% the gain is unity. Intermediate percentages scale linear
+amplitude, and 0% uses native bus mute. Each player retains its own fade or cue gain.
+Changing the preference does not start, stop, seek or complete a player. A muted finite
+cue still reports its native completion and participates in story continuation.
+
+### Effects-only recording
+
+Open **Settings → Audio**, set **Music** to **0%**, and leave both effects rows at the
+desired level. Return to Settings and select **Apply**. Click or Confirm at 100% cycles
+straight to 0%. The Audio page reset stages 100% for all three rows. Format-1 preference
+files that omit any of `musicVolume`, `systemEffectsVolume` and `battleEffectsVolume` use
+100% for that row.
+
+For a disposable showcase journey, supply `--settings` with
+`{"formatVersion":1,"musicVolume":0,"systemEffectsVolume":100,"battleEffectsVolume":100}`
+as the initial template to `debug_dev.py --entry --journey --audio`. Use the usual explicit
+port and run directory. That launch copies the template into the journey's ordinary
+editable preferences. Add `--audio` at each `--entry --continue-journey` launch to hear
+or record effects. [Debug launch and Movie Maker](../verification/debug-port.md#development-default).
+
+### Volume boundary observations
+
+**Confirmed, native mixer output.** The [volume observer](../../game/probes/audio_volume_observation.gd)
+uses Godot 4.7.2 .NET with the WASAPI driver on the hidden Windows desktop. It measures
+normalized stereo peaks on Master after the child buses mix. It also reads live players,
+preferences and completion receipts. Each sample is 0.35–0.9 s at entry or in the field,
+or a 12 s battle window, with peak and frame counts retained as JSON. The save copies
+keep their exact bytes.
+
+| Ordinary path | Master peak and behavior |
+| --- | --- |
+| Opening, title and Witch Settings | At unity, opening 0.0092 and title 0.4035. After Apply, the playing Witch cue contributes 0. Cold launch reads the preference before opening and title. Both measure 0, and the finite title cue delivers one Finished. |
+| Map3 Church record | Town measures 0 at Music 0%. Apply 10% raises output to 0.0279 while the same cue's position advances. Apply 0% returns to the effects-only mix. Incremental priest dialogue measures 0.2157 with system effects enabled and 0 after muting them in field Settings. |
+| Battle06 Kazin's stored turn | With Music 0%, the regular command list and learned BLAZE 1 sequence measure 0.3154 for battle effects alone, 0.2396 for system effects alone, and 0 for all three muted. The action still reports cast 77, hit 83, menu 65, at least two fade commands and return to the battlefield cue. The ordinary cast resolves enemy HP 16→10 and caster MP 17→15. |
+
+English and Simplified Chinese Settings exercised mapped keyboard and pad, mouse, Apply,
+Cancel with exact preference bytes, page reset and cold restart. In the separate authored
+[scene music context observation](#scene-music-context-observation), muting the Music bus
+before the fixture runs still yields each finite native completion and restores areaB
+after the logical wait. The ordinary muted JOIN recruitment route and human listening
+remain **Unknown**. The numeric measurements establish output at the Godot mixer.
+
+For reproduction, load the registered [Kiwi, HD opening, Witch and catalog selections](../evidence/opening-loop-acceptance.md#launch-and-checkpoints)
+and build the Debug adapter. Use the same hidden native desktop helper as
+[debug development](../verification/debug-port.md#development-default), with `--audio-driver WASAPI`
+and `--script res://probes/audio_volume_observation.gd` on the Godot command, no Movie Maker.
+Set `SF2_HOST_UI_OUTPUT` to a fresh ignored JSON path. Use separate disposable save namespaces
+beginning with `issue2361-`. Put a format-1 preference file with `runInBackground: true`
+in the namespace; use the ordinary storage path so inputs can Apply.
+
+- Set `SF2_HOST_UI_CASE=entry` with no volume keys and no save argument. Run `restart`
+  with that same namespace and a fresh report.
+- Set `field` or `field-muted` with Music 0% and adjustable text at 30 characters/s.
+  Pass the #2357 `continuous-slot2.json` Church copy via `-- --load-save <copy>` and
+  set `SF2_AUDIO_VOLUME_SEED` to that same copy.
+- Set `battle`, `battle-menu` or `battle-muted` with Music 0% and the copied
+  `blaze-ready.json`. Seed system/battle effects at 0/100, 100/100 or 0/0 respectively.
+  `battle-menu` mutes battle effects through Settings. Select an unused debug port.
+  After the observer creates `<output>.ready`, use the existing showcase driver's
+  `demonstrate_battle(client, state, {"blaze"}, 0)` to act from the restored turn and let
+  the observer exit.
+
+For the authored completion case, extend `engine_scene_music_context_observation.gd`
+in an ignored script and override `run()` to call
+`AudioServer.set_bus_mute(AudioServer.get_bus_index("Music"), true)` before `super.run()`.
+Use the scene music reproduction's Dummy driver and report setting. The debug launcher
+also ran its ordinary authored field start with the default silent driver and quit through the menu.
+
+The first entry report failed because its row expectation omitted the Reset footer.
+The first battle reports captured the expected mix and HP/MP outcome but failed the
+receipt assertion while comparing JSON numeric values to integer array members. Both
+report failures are retained and the corrected observations passed.
+
 ## Audio Boundary
 
 Music and sound effects follow the same explicit local-pack rule as graphics. Their source and accepted

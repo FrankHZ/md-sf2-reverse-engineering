@@ -230,6 +230,7 @@ still staged. Draft bindings never take over navigation before Apply.
 | Gameplay aids | Reduced flash, modern guidance and hold-speed multiplier |
 | Controls | All binding overrides and confirm/cancel convention |
 | Debug & diagnostics | Both debug flags |
+| Audio | Music, system and exploration effects, and battle effects |
 | Battle Speed | Text mode/rate and hit/coin message suppression; these are the same shared text preferences |
 
 Binding editor pages, capture/review and Help do not offer or route Reset. Capture may read
@@ -237,6 +238,10 @@ its physical key as a candidate binding and reject an existing assignment. Read-
 shows disabled reset actions. Category Back preserves the draft; root Cancel abandons it.
 Only ordinary Apply writes through SettingsHost/SettingsStore. In Battle Speed, Confirm on a
 value or Attack applies; Confirm on its Reset footer stages reset. The hint follows that focus.
+
+On Audio, mapped Left/Right adjusts the focused row by 10 percentage points. Mapped Confirm
+or a completed click advances by 10 and cycles from 100% to 0%. Return to the root and select
+Apply to hear and save the new mix. [Audio routing and recording](audio.md#volume-preferences).
 
 ### Bounded reproduction
 

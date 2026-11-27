@@ -248,7 +248,7 @@ func layout_error() -> void:
     if not await open_general(): return
     await go_setting("language"); await to_root()
     check(await Nav.row(find("SettingsView"), "apply"), "Apply is focused before storage conflict")
-    var ids := ["display", "assist", "input", "debug", "apply"]
+    var ids := ["display", "assist", "input", "debug", "audio", "apply"]
     var shown := settings_layout(ids)
     var paused := battle_state()
     DirAccess.make_dir_recursive_absolute(prefs.get_base_dir())

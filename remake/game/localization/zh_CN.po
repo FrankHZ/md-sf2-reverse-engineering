@@ -2452,6 +2452,24 @@ msgstr "凯托"
 msgid "save.destination.hassan"
 msgstr "哈桑"
 
+msgid "settings.audio"
+msgstr "音频"
+
+msgid "settings.music-volume"
+msgstr "音乐  {0}%"
+
+msgid "settings.system-effects-volume"
+msgstr "系统与探索音效  {0}%"
+
+msgid "settings.battle-effects-volume"
+msgstr "战斗音效  {0}%"
+
+msgid "settings.audio-muted"
+msgstr "0% 将该类声音静音。"
+
+msgid "settings.audio-detail"
+msgstr "{0} / {1} 每次调节 10%。按 {2} 或点击可循环切换。0% 将该类声音静音。"
+
 msgid "settings.display"
 msgstr "显示与文本"
 

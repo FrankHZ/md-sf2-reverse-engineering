@@ -40,8 +40,9 @@ by directional selection. The bounded command/reason region scrolls; title and m
 remain outside it. Pointer hit testing intersects the reading viewport, including after scrolling.
 Left/Right and the mouse wheel read long reasons without activating unavailable commands.
 
-Settings opens a 960px capped panel with four categories: Display & text, Gameplay aids,
-Controls, and Debug & diagnostics. Apply is the root footer button. Mapped Cancel or a completed right-click backs out or closes the page.
+Settings opens a 960px capped panel with five categories. Display & text, Gameplay aids,
+Controls, Debug & diagnostics, and Audio open their own pages. Apply is the root footer button.
+Mapped Cancel or a completed right-click backs out or closes the page.
 Enter a category to edit values; Back restores its launching row and scroll. Left/Right changes
 a value or scrolls the choices. A fixed-height area below the choices holds descriptions, errors
 and technical statistics. Use the displayed Read details binding or wheel over that area when

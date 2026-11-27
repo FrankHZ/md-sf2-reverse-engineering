@@ -140,7 +140,7 @@ func run() -> void:
     if case_name != "restart":
         await open_witch_settings()
         if settings().is_empty(): finish(); return
-        check(settings().rows == ["display","assist","input","debug","apply"] and settings().message.is_empty(),"root shows only categories and actions")
+        check(settings().rows == ["display","assist","input","debug","audio","apply","reset-page"] and settings().message.is_empty(),"root shows only categories and actions")
         await remap_q(); await back()
         check(bytes(prefs) == before, "cancel at Witch retains exact preferences")
     if not await continue_slot(): finish(); return

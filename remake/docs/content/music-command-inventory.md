@@ -87,6 +87,11 @@ the retail and package manifests for actual variants and the
 [finite selection policy](../godot/audio.md#explicit-finite-defaults) for admission and fallback.
 Music commands in each admitted collection have one selected resource.
 
+Every delivered command in the music table uses the Music volume, including the finite
+recruitment, victory/encounter music when selected, and promotion cues. Originating in a script,
+a battle, or a short scene does not change that routing. Command 102 is a battle level-up
+effect. [Volume policy](../godot/audio.md#volume-preferences).
+
 ## Direct review
 
 Use the source [fixture](../../../tests/fixtures/h2/sound-data-static-v1.json) for the two alias groups

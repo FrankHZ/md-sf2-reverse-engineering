@@ -5,7 +5,7 @@ namespace Sf2.Remake.GodotAdapter.UI;
 internal sealed partial class SettingsView
 {
     // Child binding editors and Help own their inputs; only category pages offer Reset.
-    private bool HasReset => _page is Page.Root or Page.Display or Page.Assist or Page.Controls or Page.Debug or Page.Battle;
+    private bool HasReset => _page is Page.Root or Page.Display or Page.Assist or Page.Controls or Page.Debug or Page.Audio or Page.Battle;
     private string ResetDescription => S(_page switch
     {
         Page.Root => "reset-all-detail", Page.Controls => "reset-controls-detail",
@@ -46,6 +46,11 @@ internal sealed partial class SettingsView
             case Page.Controls:
                 _draft.ConfirmCancel = defaults.ConfirmCancel;
                 _draft.Bindings.Clear();
+                break;
+            case Page.Audio:
+                _draft.MusicVolume = defaults.MusicVolume;
+                _draft.SystemEffectsVolume = defaults.SystemEffectsVolume;
+                _draft.BattleEffectsVolume = defaults.BattleEffectsVolume;
                 break;
             case Page.Debug:
                 _draft.ShowDebugDiagnostics = defaults.ShowDebugDiagnostics;

@@ -12,7 +12,7 @@ internal sealed partial class BattleSceneView
         bool ally = _session.Current.Battle.GetActor(state.Actor).IsAlly;
         var recipient = ally ? _ally : _enemy;
         var origin = ally ? new Vector2(136, 64) : new Vector2(16, 48);
-        if (healing.CastRequested && !_castSoundPlayed) { _audio?.PlayEffect(77); _castSoundPlayed = true; }
+        if (healing.CastRequested && !_castSoundPlayed) { _audio?.PlayBattleEffect(77); _castSoundPlayed = true; }
         if (state.Phase == BattleScenePhase.ActionAnimation && healing.CastFrame is > 0 and var frame && frame <= _frames.Length)
         {
             _frameIndex = frame - 1;
