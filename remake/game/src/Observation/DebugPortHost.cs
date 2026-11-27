@@ -11,7 +11,7 @@ namespace Sf2.Remake.GodotAdapter;
 public sealed partial class GameRoot
 {
     private DebugPort? _debugPort;
-    private bool _debugDispatch;
+    private bool _debugDispatch, _debugBackgroundClock;
     private int _debugFrames;
 
     private void StartDebugPort()
@@ -20,7 +20,11 @@ public sealed partial class GameRoot
         if (value.Length == 0) return;
         if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out int port) || port is < 1 or > 65535)
         { GD.PushWarning("SF2_DEBUG_PORT requires a TCP port from 1 to 65535. Debug disabled."); return; }
-        try { _debugPort = new DebugPort(port); }
+        try
+        {
+            _debugPort = new DebugPort(port);
+            _debugBackgroundClock = Selected("SF2_DEBUG_BACKGROUND_CLOCK") == "1";
+        }
         catch (SocketException error)
         { GD.PushWarning($"Debug listener unavailable on 127.0.0.1:{port} ({error.SocketErrorCode})."); }
     }
@@ -54,7 +58,8 @@ public sealed partial class GameRoot
                 break;
             case ["observe", "host"]:
                 data = JsonSerializer.Serialize(new { focused = GetWindow().HasFocus(),
-                    runFramesRemaining = _debugFrames, runInBackground = _input?.Settings.RunInBackground,
+                    runFramesRemaining = _debugFrames, runInBackground = RunsInBackground,
+                    backgroundClockForced = _debugBackgroundClock,
                     menuSelection = _systemMenu?.SelectedIndex, gameplayHeld = _input?.GameplayHeld,
                     releaseBarrier = _releaseBarrier, systemMenu = _systemMenu?.IsVisibleInTree() == true,
                     opening = JsonSerializer.Deserialize<JsonElement>(ReadOpeningObservationJson()),

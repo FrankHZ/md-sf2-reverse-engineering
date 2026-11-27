@@ -116,6 +116,7 @@ def main():
     environment = dict(
         os.environ,
         SF2_DEBUG_PORT=str(args.port),
+        SF2_DEBUG_BACKGROUND_CLOCK="1" if args.continue_journey and not args.foreground else "0",
         SF2_SAVE_ROOT=str(save_root),
         SF2_SAVE_NAMESPACE="debug-dev",
     )

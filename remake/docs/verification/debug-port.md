@@ -18,10 +18,10 @@ directory outside Git checkouts. All paths supplied to the launcher resolve from
 the Godot project resolves from the launcher's checkout. Each run owns its stdout/stderr. The default also owns a fresh save namespace and settings. The launcher stays attached until the game exits.
 
 On Windows, launch defaults to a separate, unshown native desktop: it does not activate a
-window on the user's desktop and still runs the real renderer and semantic port. A per-run
-read-only settings copy enables `runInBackground`; supplied settings and player preferences
-are unchanged. Use `--foreground` to launch visibly for visual/input review or focus-pause
-testing; that option also preserves the supplied/default background preference. This is a
+window on the user's desktop and still runs the real renderer and semantic port. Ordinary
+background scenario launches enable `runInBackground` in a per-run settings copy.
+Use `--foreground` to launch visibly for visual/input review or focus-pause testing with
+the selected preference. This is a
 launch choice, not a second scene or a headless substitute for native presentation checks.
 Other operating systems currently require `--foreground`.
 Drive the hidden instance through the semantic client. Use its ordinary system-menu Quit
@@ -66,9 +66,23 @@ For the [showcase journey](../evidence/opening-loop-acceptance.md#pre-voyage-sho
 `--entry --journey` seeds editable preferences inside the fresh disposable run namespace.
 The settings input is copied and becomes ordinary local preferences for that journey. After
 the first game exits, select the same run with `--entry --continue-journey` and a fresh sibling
-`--run-dir`. This reuses the saves and applied preferences while keeping each process's logs.
+`--run-dir`. This reuses the saves and editable preferences while keeping each process's logs.
+Default background Continue keeps the playback clock running for this launch, even if
+the journey's saved Run in Background preference is Off. An explicit `--foreground`
+Continue follows the saved preference. The override belongs to the debug launch and
+never participates in Settings Apply or save publication.
 `--movie --audio` records to the fresh run's `movie.ogv` at 60 fps, with a 54,000-frame
 limit. The unshown Windows desktop can record the native renderer and real audio driver.
+
+**Confirmed (#2357 review).** Start an isolated `--entry --journey --foreground`
+with format-1 `runInBackground: false`, choose New Game and publish slot 1. Quit, then
+use that same journey with fresh run directories for a default Continue and a
+`--foreground` Continue. Move actual native focus to a second window on the test
+desktop. In the default launch, Continue restored Map3 and Left completed
+(56,3) → (55,3) with no frame grant. In the foreground launch, the restored field
+paused on focus loss and a submitted Left completed during an explicit
+`clock run 120` grant. In both launches Settings displayed Off and was editable.
+The original preference and slot files matched byte for byte after both continuations.
 
 ### Direct endpoint and export setup
 
@@ -114,7 +128,7 @@ An error has `ok:false` and an `error` code.
 | Request | Preconditions and result |
 | --- | --- |
 | `hello` | Version, PID, adapter module ID and exported-build flag. |
-| `observe host` | Focus, background preference, remaining authorized frames, physical gameplay hold and release barrier, opening, entry and system-menu selection. |
+| `observe host` | Focus, effective `runInBackground`, `backgroundClockForced` for the current debug launch, remaining authorized frames, physical gameplay hold and release barrier, opening, entry and system-menu selection. |
 | `observe state`, `observe scene`, `observe audio` | Live opening/field/battle projection, battle scene or gameplay audio. An absent view returns null. Large projections are limited to the reply budget. |
 | `observe slots`, `observe name`, `observe settings` | Read the matching modal projection. |
 | `observe layout Y` | At field input, read one existing layout region of 64×4 cells. The row is a multiple of four from 0 to 60. |
