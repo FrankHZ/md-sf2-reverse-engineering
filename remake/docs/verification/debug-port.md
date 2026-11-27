@@ -178,7 +178,16 @@ Map4 and taking its east exit. Copy only the registered selection into disposabl
 ordinary Continue. A loadable slot by itself establishes neither its story lineage nor its cast.
 
 The [showcase starts](../application/pre-voyage-campaign.md#showcase-starts-and-continuity)
-name the two independently executable records. Run the [semantic pilot](../evidence/opening-loop-acceptance.md#pilot-and-recording-boundary)
+name two campaign scene definitions and the independent records. For a scene definition, use
+`debug_dev.py --campaign-field <path>` with the same private package selections as New Game.
+The start uses the existing `formatVersion`, `controlledBoundary` and `start` shape with an
+explicit `textSettings` object to admit the campaign's field text services. Leave program,
+display and entity phase overrides absent so the selected map loads normally. Joined and active
+membership flags select the initial roster from the ordinary source-initialized party. The
+controlled battle origin preserves diagnostic persistence eligibility and routes battles through
+their normal field entry. [Scene commands](../evidence/opening-loop-acceptance.md#slade-join-and-castle-quake-2364).
+
+For the read-only records, run the [semantic pilot](../evidence/opening-loop-acceptance.md#pilot-and-recording-boundary)
 on one fresh instance per record. The Galam check consumes a restored v6 visit through ordinary
 Continue and uses the south exits on Map16 and Map18.
 

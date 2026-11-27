@@ -9,8 +9,18 @@ from pathlib import Path
 
 from debug_client import connect
 from pre_voyage_showcase import map16, movement, observe, require, wait
+from pre_voyage_showcase_field import (
+    castle_quake,
+    confirm_battle_reading,
+    distance,
+    field_tile,
+    mark,
+    royal_followers,
+    settle_field,
+    slade_join,
+    walk,
+)
 
-FIELD_DIRECTIONS = ((0, 1, "down"), (1, 0, "right"), (0, -1, "up"), (-1, 0, "left"))
 BATTLE_DIRECTIONS = ((0, -1, "up"), (1, 0, "right"), (0, 1, "down"), (-1, 0, "left"))
 
 
@@ -21,13 +31,6 @@ def select(client, owner, key, value, direction="down"):
             return sample
         client.request("menu " + direction)
     raise ValueError(f"could not select {owner} {value}")
-
-
-def mark(client, label, hold=0, **details):
-    frame = client.request("observe host")["frame"]
-    print(json.dumps({"shot": label, "frame": frame, **details}, ensure_ascii=True), flush=True)
-    if hold:
-        time.sleep(hold)
 
 
 def show_entry(client, hold):
@@ -91,120 +94,6 @@ def new_game(client, hold):
     state = settle_field(client, "New Game")
     require(state["map"] == "map-3" and field_tile(state) == (56, 3), "New Game landing")
     return state
-
-
-def player(state):
-    return next(entity for entity in state["entities"] if entity["id"] == "entity-0")
-
-
-def field_tile(state):
-    unit = player(state)
-    return unit["x"] // 384, unit["y"] // 384
-
-
-def settle_field(client, label, *, choice="yes", hold=0, timeout=90):
-    deadline = time.monotonic() + timeout
-    marked_texts = set()
-    while time.monotonic() < deadline:
-        state = observe(client, "state")
-        if movement(state) or (state.get("canWaitAtInput") and not player(state)["moving"]):
-            return state
-        if state.get("canWaitForChoice"):
-            if choice == "stop":
-                return state
-            client.request("story " + ("left" if choice == "yes" else "right"))
-            client.request("story confirm")
-        elif state.get("canWaitForText") or state.get("wait") in {
-            "W1TextWait",
-            "FieldTextWait",
-            "FieldSearchWait",
-        }:
-            text = state.get("textId")
-            if (
-                text in (510, 1009, 1013, 1015, 1018, 1019, 2213, 2239, 2292)
-                and text not in marked_texts
-            ):
-                marked_texts.add(text)
-                mark(
-                    client,
-                    f"Story text {text}",
-                    hold,
-                    speaker=state.get("speaker"),
-                    portrait=(state.get("portraitProjection") or {}).get("id"),
-                )
-            client.request("story confirm")
-        elif (state.get("pacing") or {}).get("reading"):
-            confirm_battle_reading(client)
-        time.sleep(0.05)
-    raise ValueError(
-        f"{label}: {state.get('map')} {state.get('wait')} {(state.get('scene') or {}).get('phase')}"
-    )
-
-
-def next_field_step(layout, state, goal, rejected):
-    start = field_tile(state)
-    blocked = {
-        (round(entity["x"] / 384), round(entity["y"] / 384))
-        for entity in state["entities"]
-        if entity["id"] != "entity-0" and entity["Visible"] and entity["flagsA"] & 128
-    }
-    pending = deque([start])
-    first = {start: None}
-    while pending:
-        x, y = pending.popleft()
-        for dx, dy, direction in FIELD_DIRECTIONS:
-            nx, ny = x + dx, y + dy
-            if not (0 <= nx < 64 and 0 <= ny < 64) or ((x, y), direction) in rejected:
-                continue
-            stair = layout[y * 64 + x] & 0xC000
-            if dx and stair in (0x4000, 0x8000):
-                slope_y = y + (dx if stair == 0x4000 else -dx)
-                if 0 <= slope_y < 64 and layout[slope_y * 64 + nx] & 0xC000 == stair:
-                    ny = slope_y
-            cell = (nx, ny)
-            if cell in first or cell in blocked:
-                continue
-            word = layout[ny * 64 + nx]
-            warp = word & 0x3C00 == 0x1000
-            target = all(
-                want < 0 or want == have for want, have in zip(goal, cell, strict=True)
-            ) and (min(goal) >= 0 or warp)
-            if not target and (warp or word & 0xC000 == 0xC000 and word & 0x3C00 != 0x400):
-                continue
-            first[cell] = first[(x, y)] or direction
-            if target:
-                return first[cell]
-            pending.append(cell)
-    raise ValueError(f"no route from {state['map']} {start} to {goal}")
-
-
-def walk(client, goal, destination=None):
-    state = settle_field(client, str(goal))
-    origin = state["map"]
-    layout = [
-        word
-        for row in range(0, 64, 4)
-        for word in client.request(f"observe layout {row}")["data"]["words"]
-    ]
-    rejected = set()
-    for _ in range(256):
-        start = field_tile(state)
-        if start == goal:
-            return state
-        direction = next_field_step(layout, state, goal, rejected)
-        client.request("field " + direction)
-        state = settle_field(client, direction)
-        if state["map"] != origin:
-            require(
-                state["map"] == destination, f"unexpected arrival {state['map']} towards {goal}"
-            )
-            return state
-        new = field_tile(state)
-        if new == start:
-            rejected.add((start, direction))
-        elif destination == origin and distance(start, new) > 2:
-            return state
-    raise ValueError(f"step budget crossed on {origin} towards {goal}")
 
 
 def preparation(client, stage):
@@ -426,14 +315,6 @@ def battle01_route(client):
     return walk(client, (-1, 12), "map57")
 
 
-def confirm_battle_reading(client):
-    try:
-        client.request("battle confirm")
-    except ValueError as error:
-        if str(error) != "action-unavailable":
-            raise
-
-
 def next_player(client):
     deadline = time.monotonic() + 90
     phases = set()
@@ -456,10 +337,6 @@ def next_player(client):
 
 def point(actor):
     return actor["x"], actor["y"]
-
-
-def distance(a, b):
-    return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 
 def by_id(state, actor):
@@ -808,22 +685,6 @@ def cold_continue(client, hold, witness):
     quit_game(client)
 
 
-def royal_followers(state):
-    wanted = {"entity-31": 209, "entity-30": 203, "entity-159": 205}
-    actual = {
-        unit["id"]: [unit["slot"], unit["sprite"]]
-        for unit in state["entities"]
-        if unit["id"] in wanted and unit["Visible"] and unit["follower"]
-    }
-    require(
-        {ref: sprite for ref, (_, sprite) in actual.items()} == wanted
-        and len({slot for slot, _ in actual.values()}) == 3
-        and all(slot != 0 for slot, _ in actual.values()),
-        "royal follower bindings",
-    )
-    return actual
-
-
 def stage_voyage(client, hold):
     state = settle_field(client, "tower after Battle07")
     flags = set(state["flags"])
@@ -939,6 +800,8 @@ def main():
             "heal",
             "voyage-stage",
             "voyage",
+            "slade-join",
+            "castle-quake",
             "equipment",
         ),
     )
@@ -981,6 +844,12 @@ def main():
                 stage_voyage(game, args.reading_hold)
             elif args.start == "voyage":
                 voyage_branch(game, args.reading_hold)
+            elif args.start == "slade-join":
+                slade_join(game, args.reading_hold)
+                quit_game(game, field=True)
+            elif args.start == "castle-quake":
+                castle_quake(game, args.reading_hold)
+                quit_game(game, field=True)
             else:
                 state = settle_field(game, "Church field record")
                 require(

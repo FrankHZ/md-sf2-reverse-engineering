@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "controlledBoundary": "After the Galam rally and before the first guard trigger. Use the campaign's initialized party with five joined and active members, temporary Slade, and no Battle05 result.",
+  "start": {
+    "map": "map-16",
+    "player": "entity-0",
+    "position": { "x": 4, "y": 18 },
+    "facing": 2,
+    "speed": 32,
+    "textSettings": { "messageSpeed": 2, "mouthControl": 0, "viewSpeed": 0 },
+    "flags": [0, 1, 2, 3, 4, 32, 33, 34, 35, 36, 73, 80, 501, 502, 503, 504, 660, 661, 662, 663]
+  }
+}

@@ -99,6 +99,44 @@ public sealed class OpeningNewGameTests
 
     [PrivateInputFact("SF2_PRIVATE_EXPLORATION_CONTENT", "SF2_PRIVATE_STATIC_DATA", "SF2_PRIVATE_ENEMY_DATA", "SF2_PRIVATE_ENEMY_GOLD",
         "SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE", "SF2_PRIVATE_BATTLE01_TERRAIN")]
+    public void CampaignFieldStartDeploysOnlyActiveJoinedMembers()
+    {
+        string file = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllText(file, """
+                {"formatVersion":1,"controlledBoundary":"Test joined and active membership on a fresh map.",
+                 "start":{"map":"map-3","player":"entity-0","position":{"x":56,"y":3},"facing":3,"speed":32,
+                          "flags":[0,1,2,32,34,80],"textSettings":{"messageSpeed":2,"mouthControl":0,"viewSpeed":0}}}
+                """);
+            string Input(string name) => PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_" + name);
+            var source = PrivateExplorationReader.CampaignStart(Input("EXPLORATION_CONTENT"), file, Input("BATTLE01_DATA"),
+                Input("BATTLE01_SCENE"), Input("BATTLE01_TERRAIN"), Input("STATIC_DATA"), Input("ENEMY_DATA"), Input("ENEMY_GOLD"), null);
+            var controlled = Assert.IsType<SessionStarted>(GameSession.Start(source));
+            Assert.Null(controlled.Result.Failure);
+            var current = controlled.Session.Current;
+            var lists = Assert.IsType<MapPartyLists>(current.Story.PartyLists);
+            Assert.Equal(new[] { 0, 1, 2 }, lists.Joined);
+            Assert.Equal(new[] { 0, 2 }, lists.Active);
+            Assert.Equal(1, Assert.Single(lists.Reserve));
+            var party = current.Exploration!.Party;
+            Assert.Equal(new ActorRef[] { new("ally-0"), new("ally-2") }, party.ActiveAllies);
+            Assert.Contains(party.Actors, actor => actor.Actor == new ActorRef("ally-1") && actor.Initialized == true);
+            Assert.Equal(BattleStartOrigin.Controlled, party.NewBattle!.Origin);
+            Assert.False(party.NewBattle.BeforeBattleRouted);
+
+            var newGame = Assert.IsType<SessionStarted>(GameSession.Start(Selected(0, uint.MaxValue)));
+            Assert.Null(newGame.Result.Failure);
+            var fresh = newGame.Session.Current;
+            Assert.Equal(new[] { 0, 32, 80 }, fresh.Story.Flags);
+            Assert.Equal(new ActorRef("ally-0"), Assert.Single(fresh.Exploration!.Party.ActiveAllies!));
+            Assert.Equal(BattleStartOrigin.NewGame, fresh.Exploration.Party.NewBattle!.Origin);
+        }
+        finally { File.Delete(file); }
+    }
+
+    [PrivateInputFact("SF2_PRIVATE_EXPLORATION_CONTENT", "SF2_PRIVATE_STATIC_DATA", "SF2_PRIVATE_ENEMY_DATA", "SF2_PRIVATE_ENEMY_GOLD",
+        "SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE", "SF2_PRIVATE_BATTLE01_TERRAIN")]
     public void PrivateNewGamePublishesFreshRosterAndIndependentSessionsWithoutCheckpointInput()
     {
         var first = Assert.IsType<SessionStarted>(GameSession.Start(Selected(0, uint.MaxValue))).Session;

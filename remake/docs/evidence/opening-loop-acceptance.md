@@ -400,6 +400,54 @@ put the cumulative scratch media above the original 3 GiB estimate; the delivere
 separate takes met the 3 GiB media limit.
 
 
+## Slade join and castle quake (#2364)
+
+Run each [controlled definition](../application/pre-voyage-campaign.md#showcase-starts-and-continuity)
+against the [same campaign content](#launch-and-checkpoints) with a Debug build and a fresh
+disposable run directory. For example, launch from the owning checkout and run the client in a
+second shell. Repeat with the other scene, a fresh directory and the matching settings.
+
+```powershell
+$scene = 'slade-join' # or 'castle-quake'
+python -B remake/tools/debug_dev.py --port 42332 --run-dir "$runs/$scene" --campaign-field "remake/tools/showcase_starts/$scene.json" --settings $settings
+python -B remake/tools/pre_voyage_showcase_journey.py 42332 $scene
+```
+
+Use format-1 settings with `language` set to `zh-CN`, `textMode` to `instant` and
+`graphicsMode` to `hd`. Set `debugAutoVictory` for `slade-join` so the first legal Battle05
+Movement routes to the ordinary defeated and victory programs. Controlled starts load directly
+from their scene definitions with source-initialized resources. Historic combat and rewards
+remain outside the observation.
+
+For a take, add `--movie --audio` to the launcher and `--reading-hold 1.1` to the client. Use
+`musicVolume: 0`, `systemEffectsVolume: 100` and `battleEffectsVolume: 100`. Reading holds
+follow the film's frame clock. Save stdout as the cue list. Use the marked clip range. Start
+Slade at the defeated program, then keep the after-program, announcement and usable return.
+Start the quake inside the castle and cut after both guards leave the drawn field. The client
+acknowledges text 720 to finish the scene and close the run cleanly.
+
+The client checks the stage prerequisites, reading order, draw projection and engine,
+presentation and audio errors. Battle05 must stage Slade's sprite and portrait5, show one join
+announcement with a finite music wait, and return at (16,18) with F5/F37/F384/F406/F505 set and
+F73/F405 clear. Map4 must draw both guards shrinking with changing facing and then cull both at
+(0,0) before F624. The quit handoff on Map4 checks F624 after its normal writer runs. These short
+takes are independent of the continuous New Game and its cold Continue.
+
+**Confirmed** on the #2364 Debug adapter with the registered Kiwi package and Godot 4.7.2.
+The two launches used their independent scene definitions. Battle05 showed defeated 2323–2331,
+after 2332–2339, the single 446 announcement and then 2340–2341. The join cue started and
+finished once before area music resumed. Initialized items, equipment and gold compared equal.
+The first post-join input reached (16,19). In Map4, the guard exchange drew both soldiers and
+the royal cast. Each soldier cycled through all four facings while shrinking, and both were
+offscreen with F624 clear. Both falling sounds started. The last line and the latch completed
+at ordinary Map4 control (29,4), with F700 clear.
+
+The initial controlled files omitted `textSettings` and followed legacy direct-service binding.
+Full campaign admission then rejected the unbound Church caller with `opening-church-required`.
+The explicit text settings select the full field services on the same shared package.
+**Unknown** for these starts is the naturally carried party's exact stats and item history.
+The controlled initialization supplies those resources independently.
+
 ## Retained dependencies
 
 | Boundary reused without another full run | Accepted owner and supporting evidence |
