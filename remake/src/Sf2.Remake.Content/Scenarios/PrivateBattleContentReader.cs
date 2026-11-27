@@ -2,6 +2,7 @@ using System.Text.Json;
 using Sf2.Remake.Application.Content.Scenarios;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Gameplay.Sf2;
+using Sf2.Remake.Domain.Maps;
 using static Sf2.Remake.Content.Scenarios.ScenarioJson;
 
 namespace Sf2.Remake.Content.Scenarios;
@@ -98,7 +99,7 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
             battleScenes: BattleSceneContentReader.Read(scenes, definitions)), accepted.Start);
     }
 
-    internal ExplorationReadAccepted Initialize(ExplorationReadAccepted admitted)
+    internal ExplorationReadAccepted Initialize(ExplorationReadAccepted admitted, string? controlledBoundary = null)
     {
         Require(admitted.Definition.Exploration!.Maps.Values.All(map => map.BasePalette is { Valid: true }),
             "initial-map-palette-required", "world.maps.basePalette");
@@ -113,12 +114,30 @@ internal sealed class PrivateBattleContentReader(string placementPath, string sc
             return OpeningPartyInitialization.Initialize(deployment, ally.StartingLevel, ref seed);
         }).ToArray();
         var old = admitted.Start;
-        var party = new BattleStartInput(old.Party.Encounter, actors, seed, thinkingSeed, 0, old.Party.NewBattle,
-            [new("ally-0")], new([], new Dictionary<byte, byte>()));
+        ActorRef[] active = [new("ally-0")];
+        var policy = old.Party.NewBattle!;
+        if (controlledBoundary is not null)
+        {
+            var layout = admitted.Definition.Exploration.PartyFlags;
+            Require(layout is not null, "party-layout", "world.partyFlags");
+            Require(old.EntryProgram is null && old.EntityPhases.Count == 0 && old.Display is null,
+                "campaign-start-map-load", "start");
+            var lists = MapPartyMembership.Rebuild(old.Flags, layout!);
+            active = lists.Active.Select(member => new ActorRef($"ally-{member}")).ToArray();
+            Require(lists.Active.Contains(0) && active.Length <= layout!.Capacity &&
+                lists.Joined.All(member => actors.Any(actor => actor.Actor == new ActorRef($"ally-{member}"))) &&
+                old.Flags.Count(flag => flag >= layout.ActiveStart && flag < layout.ActiveStart + layout.MemberCount) == active.Length,
+                "campaign-start-membership", "start.flags");
+            policy = policy with { Origin = BattleStartOrigin.Controlled, Declaration = "campaign-field",
+                EvidenceOwner = "controlled campaign field start", BridgeBoundary = controlledBoundary };
+        }
+        var party = new BattleStartInput(old.Party.Encounter, actors, seed, thinkingSeed, 0, policy,
+            active, new([], new Dictionary<byte, byte>()));
         var palette = admitted.Definition.Exploration.Maps[old.Map].BasePalette!;
         // Source systeminit/gameintro restore period3; current colors start at the admitted map base.
         var display = new ExplorationDisplay(3, palette, palette, FullFadeVisibility.BaseRestored);
-        var product = Persistence.OpeningLoadoutBindings.Bind(admitted.Definition, admitted.Start.Map);
+        var product = Persistence.OpeningLoadoutBindings.Bind(admitted.Definition,
+            controlledBoundary is null ? old.Map : new("map-3"));
         // witchMenuAction_New sets CURRENT_MAP and EGRESS_MAP to GAMESTART_MAP after
         // InitializeGameSettings and before its initial SaveGame/MainLoop entry.
         return new(product, new(old.Map, old.Player, old.Position, old.Facing, old.Speed, old.Flags,

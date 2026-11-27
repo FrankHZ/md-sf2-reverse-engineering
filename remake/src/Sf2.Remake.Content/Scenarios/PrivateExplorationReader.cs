@@ -17,8 +17,14 @@ public sealed class PrivateExplorationReader : IScenarioSource
     private readonly bool initializeParty;
     public PrivateExplorationReader(string path, string startPath, IScenarioSource partySource)
     { this.path = path; this.startPath = startPath; this.partySource = partySource; }
-    internal PrivateExplorationReader(string path, PrivateBattleContentReader newGame, bool initializeParty = true)
-    { this.path = path; this.newGame = newGame; this.initializeParty = initializeParty; }
+    internal PrivateExplorationReader(string path, PrivateBattleContentReader newGame, bool initializeParty = true,
+        string? startPath = null)
+    { this.path = path; this.newGame = newGame; this.initializeParty = initializeParty; this.startPath = startPath; }
+
+    public static PrivateExplorationReader CampaignStart(string worldPath, string startPath, string placementPath,
+        string scenePath, string terrainPath, string staticPath, string enemyPath, string goldPath, string? battleSceneContentPath)
+        => new(worldPath, new PrivateBattleContentReader(placementPath, scenePath, terrainPath, staticPath, enemyPath, goldPath,
+            0x90430000, 0x8c340000, battleSceneContentPath), startPath: startPath);
 
     public ScenarioReadResult Read()
     {
@@ -72,8 +78,8 @@ public sealed class PrivateExplorationReader : IScenarioSource
                 sources.Add(new(expected.Repository, expected.Commit, relative, Text(source, "sha256")));
             }
             Require(paths.Count > 0, "source-required", "provenance.sources");
-            using var startDocument = newGame is null
-                ? JsonDocument.Parse(File.ReadAllBytes(startPath!), new JsonDocumentOptions { MaxDepth = 16 }) : null;
+            using var startDocument = startPath is not null
+                ? JsonDocument.Parse(File.ReadAllBytes(startPath), new JsonDocumentOptions { MaxDepth = 16 }) : null;
             JsonElement start;
             string startBoundary = "Product New Game; no controlled checkpoint supplied.";
             if (startDocument is not null)
@@ -83,6 +89,8 @@ public sealed class PrivateExplorationReader : IScenarioSource
                 _ = Number(controlled, "formatVersion", 1, 1);
                 Require(!string.IsNullOrWhiteSpace(Text(controlled, "controlledBoundary")), "controlled-provenance", "start");
                 start = controlled.GetProperty("start");
+                Require(newGame is null || start.TryGetProperty("textSettings", out _),
+                    "campaign-start-text-settings", "start.textSettings");
                 startBoundary = Text(controlled, "controlledBoundary");
             }
             else start = PrivateBattleContentReader.Start();
@@ -98,7 +106,9 @@ public sealed class PrivateExplorationReader : IScenarioSource
                             field.EnemySprites.Values.All(sprite => sprite == 254 || visuals.Sprites.ContainsKey(sprite)) &&
                             (field.Neutrals is null || field.Neutrals.All(neutral => visuals.Sprites.ContainsKey(neutral.Sprite))),
                             "field-actor-resource-unavailable", "world.presentation.sprites");
-            return newGame is null ? result : initializeParty ? newGame.Initialize(result) : newGame.Definitions(result);
+            return newGame is null ? result : initializeParty
+                ? newGame.Initialize(result, startDocument is null ? null : startBoundary)
+                : newGame.Definitions(result);
         }
         catch (AdmissionIssue error) { return new ScenarioReadRejected(error.Failure); }
         catch (BattleRuleException error)

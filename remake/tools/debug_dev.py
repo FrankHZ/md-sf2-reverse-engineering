@@ -16,6 +16,7 @@ def main():
     target.add_argument("--scenario", type=Path, help="authored scenario package")
     target.add_argument("--field", type=Path, help="controlled exploration start")
     target.add_argument("--battle", type=Path, help="controlled battle start")
+    target.add_argument("--campaign-field", type=Path, help="controlled full campaign start")
     target.add_argument(
         "--entry", action="store_true", help="explicit opening/title/Witch E2E check"
     )
@@ -68,6 +69,7 @@ def main():
         (args.save, "--load-save"),
         (args.scenario, "--authored-package"),
         (args.field, "--private-exploration-start"),
+        (args.campaign_field, "--private-campaign-start"),
         (args.battle, "--private-battle-start"),
     ):
         if value is not None:

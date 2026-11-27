@@ -168,7 +168,7 @@ public sealed partial class GameRoot : Node
         for (int index = 0; index < arguments.Length; index++)
         {
             string option = arguments[index];
-            if (option is not ("--authored-package" or "--private-battle-start" or "--private-exploration-start" or "--input-settings" or "--load-save" or "--save-output"))
+            if (option is not ("--authored-package" or "--private-battle-start" or "--private-exploration-start" or "--private-campaign-start" or "--input-settings" or "--load-save" or "--save-output"))
             { Fail("unknown-startup-option", "Unknown game option."); return; }
             if (options.ContainsKey(option))
             { Fail("duplicate-startup-option", "Each game option may appear only once."); return; }
@@ -176,7 +176,8 @@ public sealed partial class GameRoot : Node
             { Fail("missing-startup-path", "The selected game option requires a path."); return; }
             options.Add(option, arguments[index]);
         }
-        bool diagnostic = options.Keys.Any(key => key is "--authored-package" or "--private-battle-start" or "--private-exploration-start");
+        bool diagnostic = options.Keys.Any(key => key is "--authored-package" or "--private-battle-start" or
+            "--private-exploration-start" or "--private-campaign-start");
         if (diagnostic && options.Keys.Count(key => key != "--input-settings") != 1)
         { Fail("conflicting-startup-options", "Select one session entry."); return; }
         try { ConfigureSaveFiles(options); }
@@ -197,6 +198,11 @@ public sealed partial class GameRoot : Node
         else if (options.TryGetValue("--private-exploration-start", out string? explorationStart))
             BeginSource(new PrivateExplorationReader(Selected("SF2_PRIVATE_EXPLORATION_CONTENT"), explorationStart,
                 PrivateBattle(Selected("SF2_PRIVATE_CONTROLLED_START"))));
+        else if (options.TryGetValue("--private-campaign-start", out string? campaignStart))
+            BeginSource(PrivateExplorationReader.CampaignStart(Selected("SF2_PRIVATE_EXPLORATION_CONTENT"), campaignStart,
+                Selected("SF2_PRIVATE_BATTLE01_DATA"), Selected("SF2_PRIVATE_BATTLE01_SCENE"), Selected("SF2_PRIVATE_BATTLE01_TERRAIN"),
+                Selected("SF2_PRIVATE_STATIC_DATA"), Selected("SF2_PRIVATE_ENEMY_DATA"), Selected("SF2_PRIVATE_ENEMY_GOLD"),
+                System.Environment.GetEnvironmentVariable("SF2_PRIVATE_BATTLE_SCENE_CONTENT")));
         else if (options.TryGetValue("--authored-package", out string? authored)) BeginSource(new AuthoredScenarioPackageReader(authored));
         else
         {

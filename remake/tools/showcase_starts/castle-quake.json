@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "controlledBoundary": "After the first tower return and castle warnings, inside the south exit with the royal followers. Use the campaign's initialized seven-member party. The first quake and departure are pending.",
+  "start": {
+    "map": "map-19",
+    "player": "entity-0",
+    "position": { "x": 26, "y": 27 },
+    "facing": 3,
+    "speed": 32,
+    "textSettings": { "messageSpeed": 2, "mouthControl": 0, "viewSpeed": 0 },
+    "flags": [0, 1, 2, 3, 4, 5, 6, 32, 33, 34, 35, 36, 37, 38, 74, 80, 384, 385, 406, 501, 502, 503, 504, 505, 506, 507, 622, 623, 640, 660, 661, 662, 663, 664]
+  }
+}
