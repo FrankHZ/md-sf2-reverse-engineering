@@ -46,7 +46,7 @@ internal sealed partial class SessionAudio : IDisposable
     {
         _assets = assets;
         _maps = new Dictionary<MapId, ExplorationMapVisual>();
-        _music = new AudioStreamPlayer { Name = "SessionMusic" };
+        _music = new AudioStreamPlayer { Name = "SessionMusic", Bus = SessionAudioBuses.Music };
         _owner = owner;
         _capture = ObservationCapture.Find(owner);
         owner.AddChild(_music);
@@ -94,13 +94,14 @@ internal sealed partial class SessionAudio : IDisposable
         error = Error, sequence = _sequence, revision = _revision, waitToken = _waitToken,
         musicCue = MusicCue, musicPlaying = _music.Playing, musicPaused = _music.StreamPaused, musicFinished = MusicFinished, musicGeneration = MusicGeneration,
         musicDeliverySkipped = _entryMusicConsumed, musicPosition = MusicPosition, timerB = TimerB,
-        musicVolumeDb = _music.VolumeDb, fading = _fading, fadeProgress = _fadeProgress,
+        musicBus = _music.Bus.ToString(), musicVolumeDb = _music.VolumeDb, fading = _fading, fadeProgress = _fadeProgress,
         soundCue = _soundCue, soundPlaying = _sounds.Any(voice => voice.Player.Playing),
         soundPosition = _sounds.LastOrDefault()?.Player.GetPlaybackPosition() ?? 0,
         sounds = _sounds.Select(voice => new
         {
             cue = voice.Cue, command = _assets[voice.Cue].Command, slots = voice.Slots.ToString(), startSequence = voice.StartSequence,
-            playing = voice.Player.Playing, position = voice.Player.GetPlaybackPosition(), volumeDb = voice.Player.VolumeDb,
+            bus = voice.Player.Bus.ToString(), playing = voice.Player.Playing,
+            position = voice.Player.GetPlaybackPosition(), volumeDb = voice.Player.VolumeDb,
         }).ToArray(),
         receipts = _receipts.ToArray(),
     };
@@ -290,10 +291,14 @@ internal sealed partial class SessionAudio : IDisposable
         _returnAfterPromotion = previous;
     }
 
-    internal void PlayEffect(int command)
+    internal void PlayEffect(int command) => PlayEffect(command, SessionAudioBuses.SystemEffects);
+
+    internal void PlayBattleEffect(int command) => PlayEffect(command, SessionAudioBuses.BattleEffects);
+
+    private void PlayEffect(int command, string bus)
     {
         if (Error is not null || _assets.Count == 0 || command == 0) return;
-        try { Play(command); }
+        try { Play(Select(command), soundBus: bus); }
         catch (InvalidOperationException error) { Error = error.Message; }
     }
 
@@ -311,7 +316,7 @@ internal sealed partial class SessionAudio : IDisposable
         };
     }
 
-    internal void Play(string resource, bool remember = true)
+    internal void Play(string resource, bool remember = true, string soundBus = SessionAudioBuses.SystemEffects)
     {
         if (_disposed) throw new InvalidOperationException("audio-owner-disposed");
         int command = _assets.TryGetValue(resource, out var exact) ? exact.Command : ResolveSourceEffect(resource);
@@ -334,7 +339,7 @@ internal sealed partial class SessionAudio : IDisposable
                 Stop(active.Player, active.Cue);
                 Release(active);
             }
-            var effect = new AudioStreamPlayer { Name = "SessionSound" };
+            var effect = new AudioStreamPlayer { Name = "SessionSound", Bus = soundBus };
             _owner.AddChild(effect);
             voice = new SoundVoice(effect, resource, slots, TimerB);
             var startedVoice = voice;

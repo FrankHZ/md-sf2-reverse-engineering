@@ -419,7 +419,7 @@ public sealed partial class BattleSessionView : Control
             if (_session.Definition.PrivateDefinitions is not null && _session.ActiveBattleScenes?.FieldDeath is null)
             { FailStartup(new(SessionFailureKind.AdapterError, "field-movement-content-required", "battleScenes.fieldDeath", "Movement sprite content is unavailable.")); return; }
             if (_movementSoundToken != movement.Token)
-            { _movementSoundToken = movement.Token; Audio?.PlayEffect(movement.SoundOverride ?? 79); }
+            { _movementSoundToken = movement.Token; Audio?.PlayBattleEffect(movement.SoundOverride ?? 79); }
         }
         var result = _result!;
         var current = _session.Current;

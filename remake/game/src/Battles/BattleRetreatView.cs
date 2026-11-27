@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.Application.Runtime;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Application.Runtime.Battles;
@@ -29,7 +30,7 @@ internal sealed partial class BattleRetreatView : Control
         _veil = new ColorRect { Name = "RetreatEffect", MouseFilter = MouseFilterEnum.Ignore };
         AddChild(_veil); _veil.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         AddChild(_panel); _panel.Choices.Hide(); _text = _panel.Body;
-        _cue = new AudioStreamPlayer { Name = "AuthoredRetreatCue", VolumeDb = -18 };
+        _cue = new AudioStreamPlayer { Name = "AuthoredRetreatCue", VolumeDb = -18, Bus = SessionAudioBuses.BattleEffects };
         AddChild(_cue);
         const int rate = 22050, samples = 7718;
         var bytes = new byte[samples * 2];

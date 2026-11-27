@@ -15,6 +15,9 @@ internal sealed class InputSettings
     public bool RunInBackground { get; set; }
     public bool ReducedFlash { get; set; }
     public string Language { get; set; } = "en";
+    public int MusicVolume { get; set; } = 100;
+    public int SystemEffectsVolume { get; set; } = 100;
+    public int BattleEffectsVolume { get; set; } = 100;
     public string GraphicsMode { get; set; } = "original";
     public bool ModernGuidance { get; set; } = true;
     public double AccelerationMultiplier { get; set; } = AccelerationMultipliers[0];
@@ -57,6 +60,10 @@ internal sealed class InputSettings
             throw new ArgumentException("charactersPerSecond must be between 1 and 240.");
         if (!AccelerationMultipliers.Contains(settings.AccelerationMultiplier))
             throw new ArgumentException("accelerationMultiplier must be 1.5, 2, 2.5, or 3.");
+        if (settings.MusicVolume is < 0 or > 100 ||
+            settings.SystemEffectsVolume is < 0 or > 100 ||
+            settings.BattleEffectsVolume is < 0 or > 100)
+            throw new ArgumentException("Audio volumes must be between 0 and 100.");
         if (settings.Bindings is null) throw new ArgumentException("bindings must be an object.");
     }
 
@@ -68,6 +75,7 @@ internal sealed class InputSettings
             Language = Language, GraphicsMode = GraphicsMode, TextMode = TextMode, CharactersPerSecond = CharactersPerSecond,
             ModernGuidance = ModernGuidance, AccelerationMultiplier = AccelerationMultiplier,
             RunInBackground = RunInBackground,
+            MusicVolume = MusicVolume, SystemEffectsVolume = SystemEffectsVolume, BattleEffectsVolume = BattleEffectsVolume,
             ShowDebugDiagnostics = ShowDebugDiagnostics, DebugAutoVictory = DebugAutoVictory,
             SuppressBattleHitCoinMessages = SuppressBattleHitCoinMessages,
         };
@@ -81,6 +89,9 @@ internal sealed class InputSettings
         ConfirmCancel = candidate.ConfirmCancel; ReducedFlash = candidate.ReducedFlash;
         Language = candidate.Language; TextMode = candidate.TextMode; CharactersPerSecond = candidate.CharactersPerSecond;
         RunInBackground = candidate.RunInBackground;
+        MusicVolume = candidate.MusicVolume;
+        SystemEffectsVolume = candidate.SystemEffectsVolume;
+        BattleEffectsVolume = candidate.BattleEffectsVolume;
         GraphicsMode = candidate.GraphicsMode;
         ModernGuidance = candidate.ModernGuidance;
         AccelerationMultiplier = candidate.AccelerationMultiplier;

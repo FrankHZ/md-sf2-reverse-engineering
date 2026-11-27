@@ -16,7 +16,7 @@ internal sealed partial class SettingsView : Control
     private InputSettings _draft = null!;
     private bool _reset;
     private ControlsHelpView? _help;
-    private enum Page { Root, Display, Assist, Controls, Debug, Actions, Device, Alternatives, Operation, Capture, Review, Battle }
+    private enum Page { Root, Display, Assist, Controls, Debug, Audio, Actions, Device, Alternatives, Operation, Capture, Review, Battle }
     private Page _page;
     private readonly Stack<(Page Page, string Focus, int Scroll)> _parents = [];
     private record Choice(string Id, string Text, bool Disabled = false, bool Footer = false);
@@ -99,11 +99,16 @@ internal sealed partial class SettingsView : Control
     private List<Choice> PageChoices() => _page switch
     {
         Page.Root => [new("display", S("display")), new("assist", S("assist")), new("input", S("input")), new("debug", S("debug")),
+            new("audio", S("audio")),
             new("apply", T("ui.settings.apply"), ReadOnly || IncompleteAction(_draft) != null, true)],
         Page.Display => [new("language", T("ui.settings.language", _draft.Language == "en" ? "English" : "简体中文"), ReadOnly),
             new("graphics", T("ui.settings.graphics", T("ui.settings.graphics-" + _draft.GraphicsMode)), ReadOnly),
             new("text", T("ui.settings.text", T(_draft.TextMode == "instant" ? "ui.settings.instant" : "ui.settings.gradual")), ReadOnly),
             new("speed", T("ui.settings.speed", _draft.CharactersPerSecond), ReadOnly)],
+        Page.Audio => [
+            new("music-volume", S("music-volume", _draft.MusicVolume), ReadOnly),
+            new("system-effects-volume", S("system-effects-volume", _draft.SystemEffectsVolume), ReadOnly),
+            new("battle-effects-volume", S("battle-effects-volume", _draft.BattleEffectsVolume), ReadOnly)],
         Page.Assist => [new("flash", T("ui.settings.flash", Toggle(_draft.ReducedFlash)), ReadOnly),
             new("guidance", T("ui.settings.guidance", Toggle(_draft.ModernGuidance)), ReadOnly),
             new("acceleration", T("ui.settings.acceleration", _draft.AccelerationMultiplier), ReadOnly),
@@ -139,7 +144,7 @@ internal sealed partial class SettingsView : Control
         foreach (var row in rows)
         {
             var button = new SettingsChoice { Id = row.Id, Gesture = _pointer, Clip = row.Footer ? null : _scroll,
-                Activate = input => Activate(row.Id, 1, input), Name = "Setting_" + row.Id,
+                Activate = input => Activate(row.Id, 1, input, cycle: true), Name = "Setting_" + row.Id,
                 Text = row.Text, Disabled = row.Disabled, CustomMinimumSize = new(0, 64),
                 SizeFlagsHorizontal = SizeFlags.ExpandFill, AutowrapMode = TextServer.AutowrapMode.WordSmart,
                 FocusMode = row.Disabled && !readingOnly ? FocusModeEnum.None : FocusModeEnum.All };
@@ -173,7 +178,7 @@ internal sealed partial class SettingsView : Control
         var id = Focused?.Id;
         _title.Text = _page switch { Page.Root => T("ui.settings.title"), Page.Display => S("display"),
             Page.Assist => S("assist"), Page.Controls => S("input"), Page.Debug => S("debug"), Page.Battle => T("battle.speed.title"),
-            Page.Actions => S("edit"), _ => S(_action) };
+            Page.Audio => S("audio"), Page.Actions => S("edit"), _ => S(_action) };
         string message = _status != "" ? _status : id == "reset-page" ? ResetDescription : _page switch {
             Page.Root => Notice ?? (IncompleteAction(_draft) is { } name ? S("required", S(name)) : ""),
             Page.Display when id == "graphics" =>
@@ -183,6 +188,8 @@ internal sealed partial class SettingsView : Control
             Page.Assist when id == "guidance" => T("host.setting-description-10"),
             Page.Assist when id == "background" => T("ui.settings.background-detail"),
             Page.Assist when id == "acceleration" => T("ui.settings.acceleration-detail", Input.CompactHint(GameAction.Accelerate)),
+            Page.Audio => ReadOnly ? S("audio-muted") : S("audio-detail",
+                Input.CompactHint(GameAction.Left), Input.CompactHint(GameAction.Right), Input.CompactHint(GameAction.Confirm)),
             Page.Debug when BattleContext && id == "victory" => T("ui.settings.battle-auto-victory"),
             Page.Battle => Notice ?? T("battle.speed.mapping"), _ => EditorMessage() };
         bool diagnostics = _page == Page.Debug && Input.Settings.ShowDebugDiagnostics;
@@ -248,7 +255,7 @@ internal sealed partial class SettingsView : Control
             return;
         }
         if (BattleOnly && (action == GameAction.Attack || action == GameAction.Confirm && focused.Id != "reset-page")) { Save(); return; }
-        if (action == GameAction.Confirm) Activate(focused.Id, 1, input);
+        if (action == GameAction.Confirm) Activate(focused.Id, 1, input, cycle: true);
         else if (action is GameAction.Left or GameAction.Right)
         {
             if (IsValue(focused.Id)) Activate(focused.Id, action == GameAction.Left ? -1 : 1, input);
@@ -257,7 +264,8 @@ internal sealed partial class SettingsView : Control
     }
 
     private static bool IsValue(string id) => id is "language" or "graphics" or "text" or "speed" or "convention" or
-        "flash" or "guidance" or "background" or "acceleration" or "diagnostics" or "victory" or "battle-speed" or "messages";
+        "flash" or "guidance" or "background" or "acceleration" or "diagnostics" or "victory" or "battle-speed" or "messages" or
+        "music-volume" or "system-effects-volume" or "battle-effects-volume";
 
     internal bool RoutePointer(InputEvent input)
     {
@@ -279,7 +287,10 @@ internal sealed partial class SettingsView : Control
         return false;
     }
 
-    private void Activate(string id, int direction, InputEvent? input)
+    private static int ChangeVolume(int value, int direction, bool cycle) =>
+        cycle && value == 100 ? 0 : Math.Clamp(value + direction * 10, 0, 100);
+
+    private void Activate(string id, int direction, InputEvent? input, bool cycle = false)
     {
         if (Focused is not { Disabled: false } focused || focused.Id != id) return;
         _status = "";
@@ -290,6 +301,7 @@ internal sealed partial class SettingsView : Control
             case "input": Enter(Page.Controls); return;
             case "assist": Enter(Page.Assist); return;
             case "debug": Enter(Page.Debug); return;
+            case "audio": Enter(Page.Audio); return;
             case "edit": Enter(Page.Actions); return;
             case "help":
                 _pointer.Suspend(); _panel.Hide(); _help = new ControlsHelpView { Name = "ControlsHelpView", Input = Input, Gesture = _pointer, Back = CloseHelp };
@@ -307,6 +319,9 @@ internal sealed partial class SettingsView : Control
             case "acceleration": _draft.ChangeAccelerationMultiplier(direction); break;
             case "diagnostics": _draft.ShowDebugDiagnostics = !_draft.ShowDebugDiagnostics; break;
             case "victory": _draft.DebugAutoVictory = !_draft.DebugAutoVictory; break;
+            case "music-volume": _draft.MusicVolume = ChangeVolume(_draft.MusicVolume, direction, cycle); break;
+            case "system-effects-volume": _draft.SystemEffectsVolume = ChangeVolume(_draft.SystemEffectsVolume, direction, cycle); break;
+            case "battle-effects-volume": _draft.BattleEffectsVolume = ChangeVolume(_draft.BattleEffectsVolume, direction, cycle); break;
             case "battle-speed": _draft.ChangeBattleSpeed(direction); break;
             case "messages": _draft.SuppressBattleHitCoinMessages = !_draft.SuppressBattleHitCoinMessages; break;
             default: if (input is not null) EditorActivate(id, input); return;

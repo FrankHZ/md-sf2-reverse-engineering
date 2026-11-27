@@ -2452,6 +2452,24 @@ msgstr "Ketto"
 msgid "save.destination.hassan"
 msgstr "Hassan"
 
+msgid "settings.audio"
+msgstr "Audio"
+
+msgid "settings.music-volume"
+msgstr "Music  {0}%"
+
+msgid "settings.system-effects-volume"
+msgstr "System & exploration effects  {0}%"
+
+msgid "settings.battle-effects-volume"
+msgstr "Battle effects  {0}%"
+
+msgid "settings.audio-muted"
+msgstr "0% mutes the category."
+
+msgid "settings.audio-detail"
+msgstr "{0} / {1} adjust by 10%. Use {2} or click to cycle. 0% mutes the category."
+
 msgid "settings.display"
 msgstr "Display & text"
 

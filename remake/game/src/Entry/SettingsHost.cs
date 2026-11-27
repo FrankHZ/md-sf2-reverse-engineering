@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.GodotAdapter.Audio;
 using Sf2.Remake.GodotAdapter.Localization;
 using Sf2.Remake.GodotAdapter.Input;
 using Sf2.Remake.GodotAdapter.UI;
@@ -100,6 +101,7 @@ public sealed partial class GameRoot
     {
         GameText.Initialize(settings.Language);
         _input = new GameInput(settings);
+        SessionAudioBuses.Apply(settings);
         _input.HintFocus(GetWindow().HasFocus(), GetViewport().GetMousePosition());
         _input.HintsChanged += RefreshInputHints;
     }
@@ -162,7 +164,9 @@ public sealed partial class GameRoot
         string? error = _preferences?.Write(candidate, reset);
         if (error is not null) return error + "\n" + GameText.Get("ui.settings.storage");
         _settingsRelease = _settingsActivation;
-        _input!.Apply(candidate, prepared); GameText.Publish(display); RefreshInputHints(); _settingsNotice = null;
+        _input!.Apply(candidate, prepared);
+        SessionAudioBuses.Apply(candidate);
+        GameText.Publish(display); RefreshInputHints(); _settingsNotice = null;
         _exploration?.PublishGraphics();
         if (BattleSettingsAvailable) _battle!.RefreshSettingsProjection();
         _entry?.ConfigureHints(_input);

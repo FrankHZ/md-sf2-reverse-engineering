@@ -63,10 +63,10 @@ internal sealed partial class BattleSceneView
     }
     private void AdvanceSummons(double delta)
     {
-        if (_atlas.Active) _atlas.Advance(delta, cue => _audio?.PlayEffect(cue));
-        if (_dao.Active) _dao.Advance(delta, cue => _audio?.PlayEffect(cue));
-        if (_apollo.Active) _apollo.Advance(delta, cue => _audio?.PlayEffect(cue));
-        if (_neptun.Active) _neptun.Advance(delta, cue => _audio?.PlayEffect(cue));
+        if (_atlas.Active) _atlas.Advance(delta, cue => _audio?.PlayBattleEffect(cue));
+        if (_dao.Active) _dao.Advance(delta, cue => _audio?.PlayBattleEffect(cue));
+        if (_apollo.Active) _apollo.Advance(delta, cue => _audio?.PlayBattleEffect(cue));
+        if (_neptun.Active) _neptun.Advance(delta, cue => _audio?.PlayBattleEffect(cue));
         ProjectSummons();
     }
     private double SummonDuration(double duration) => _dao.Active ? Math.Max(duration, _dao.CastDuration)

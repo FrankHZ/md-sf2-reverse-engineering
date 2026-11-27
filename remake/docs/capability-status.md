@@ -77,6 +77,7 @@ Start with the player's action. For battle turns, inspection, actions and outcom
 
 | Player action | What selects the behavior and handles the return | Confirmed coverage and remaining limits |
 | --- | --- | --- |
+| Record with the music muted | Settings → Audio publishes separate native bus gains for Music, System & exploration effects, and Battle effects. | Opening, title, dialogue and a learned spell have bounded WASAPI mixer measurements. [Volume and recording](godot/audio.md#volume-preferences) |
 | Watch or skip the ordinary pre-title story | An optional closed opening selection owns a disposable scene session. The mapped Accelerate hold speeds up playback and appears on automatic dialogue. Four content-authored scripts share scene music; natural completion, mapped Skip and pointer Skip dispose it before the same title. Existing New Game and Continue retain journey/save ownership. | [Four-scene selection and observations](content/presentation-assets.md#four-scene-startup-package-2252) retain loading/late-result barriers and focus recovery. The [HD successor](content/hd-rollout.md#opening-terrain-and-palette-banks-2324) adds Map65,183/187 and storm color banks; missing optional coverage has explicit Original fallback. Opening follow/target cameras share logical-plane projection. Independent acceptance and human visual/listening approval remain separate. |
 | Explore Galam's optional rooms, passage and drawbridge | Entry follows the active setup, working layout, source door copies and actor obstruction. Search uses the faced marker and separate receipt. | Ordinary input reaches and returns from the royal rooms, east tower and both bridge layouts. The treasury vestibule is accessible and its fixed guard blocks the chests. Galam Mithril commits once to Bowie and travels into the cellar. The bridge trader's dialogue preserves inventory and gold. [Galam audit](application/pre-voyage-optional-locations.md#galam-optional-exploration) |
 | Visit optional Granseal rooms and the docks before departure | Setup selects the residents and Talk branches. Source doors, stairs, working markers and actor obstruction govern transfers and Search. | F609 castle input opens the armory and returns from both lower rooms. The F506 dock worker answers Talk and the west exit returns to town. The F507 queue answers Talk and blocks the hold stairs; the west exit returns to quake Granseal. F136, F213 and F217 bind valid facing cells and use the common grant/receipt. [Granseal audit](application/pre-voyage-optional-locations.md#granseal-and-outlying-interactions) |
@@ -1411,6 +1412,14 @@ The opt-in development and Release endpoint serves observations, contextual menu
 and battle actions, and bounded playback while unfocused. The active controller owns the
 outcome. The maintained title client uses semantic commands throughout.
 [Protocol, limits and native acceptance](verification/debug-port.md).
+
+## Audio volume
+
+**Implemented [#2361](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2361):**
+Settings → Audio independently controls music, system and exploration effects, and battle effects.
+The same preference applies at startup and through scene changes. Music at 0% supports
+recording with the effects present, including during a finite recruitment wait.
+[Routing, recording and observations](godot/audio.md#volume-preferences).
 
 ## Battle Speed and selective messages
 

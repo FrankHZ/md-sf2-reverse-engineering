@@ -204,7 +204,7 @@ internal sealed partial class BattleSceneView : Control
                 _sceneBlack.Show(); _aura.Present(state, _session.Current.Battle);
                 PresentMessage(state);
                 _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
-                if (state.Phase == BattleScenePhase.Reaction) _audio?.PlayEffect(113);
+                if (state.Phase == BattleScenePhase.Reaction) _audio?.PlayBattleEffect(113);
                 return;
             }
             if (state.Laser is not null && !state.IsFieldDeath)
@@ -222,7 +222,7 @@ internal sealed partial class BattleSceneView : Control
                 Hide();
                 if (_session.Definition.PrivateDefinitions is not null && Content?.FieldDeath is null)
                     throw new InvalidOperationException("field-death-content-required");
-                if (state.Phase == BattleScenePhase.FieldExit && state.FieldStep == 0) _audio?.PlayEffect(116);
+                if (state.Phase == BattleScenePhase.FieldExit && state.FieldStep == 0) _audio?.PlayBattleEffect(116);
                 return;
             }
             if (_session.Definition.PrivateDefinitions is not null && Content is null)
@@ -317,10 +317,10 @@ internal sealed partial class BattleSceneView : Control
             PresentMessage(state);
             _message.VisibleCharacters = _settings.TextMode == "instant" || !state.RequiresAcknowledgement ? -1 : 0;
             if (state.Phase == BattleScenePhase.Initialize) { _castSoundPlayed = false; _blastSoundPlayed = false; _audio?.BeginBattleScene(actor.IsAlly ? 2 : 5); }
-            if (state.Phase == BattleScenePhase.Reaction && (state.ReactionKind == "Damage" || state.IsCurseRecoil)) _audio?.PlayEffect(target.IsAlly ? 81 : 83);
+            if (state.Phase == BattleScenePhase.Reaction && (state.ReactionKind == "Damage" || state.IsCurseRecoil)) _audio?.PlayBattleEffect(target.IsAlly ? 81 : 83);
             if (state.Phase == BattleScenePhase.Reaction &&
-                (state.ReactionKind == "Recovery" || _detox.Active && state.ReactionKind == "Status")) _audio?.PlayEffect(113);
-            if (state.GrowthNotice is { Kind: BattleGrowthNoticeKind.Level }) _audio?.PlayEffect(102);
+                (state.ReactionKind == "Recovery" || _detox.Active && state.ReactionKind == "Status")) _audio?.PlayBattleEffect(113);
+            if (state.GrowthNotice is { Kind: BattleGrowthNoticeKind.Level }) _audio?.PlayBattleEffect(102);
             if (state.Phase == BattleScenePhase.End) _audio?.BeginSceneEnd();
             ProjectHealing(state);
         }
@@ -356,7 +356,7 @@ internal sealed partial class BattleSceneView : Control
         RefreshMessageHint(state);
         if (_detox.Active) _detox.Advance(delta);
         if (_debuff.Active) _debuff.Advance(delta);
-        if (_desoul.Active) _desoul.Advance(delta, cue => _audio?.PlayEffect(cue));
+        if (_desoul.Active) _desoul.Advance(delta, cue => _audio?.PlayBattleEffect(cue));
         AdvanceSummons(delta);
         _revealed += delta * _settings.CharactersPerSecond;
         if (_message.VisibleCharacters >= 0) _message.VisibleCharacters = (int)_revealed;
@@ -382,7 +382,7 @@ internal sealed partial class BattleSceneView : Control
         }
         RefreshMessageHint(state);
         _elapsed += delta;
-        if (_desoul.Active && !state.RequiresAcknowledgement) _desoul.Advance(delta, cue => _audio?.PlayEffect(cue));
+        if (_desoul.Active && !state.RequiresAcknowledgement) _desoul.Advance(delta, cue => _audio?.PlayBattleEffect(cue));
         bool desoulCast = _desoul.Active && state.Phase == BattleScenePhase.ActionAnimation;
         if (desoulCast)
         {
@@ -393,23 +393,23 @@ internal sealed partial class BattleSceneView : Control
         bool absorbCast = _absorb.Active && state.Phase == BattleScenePhase.ActionAnimation;
         if (absorbCast)
         {
-            _absorb.Advance(delta, cue => _audio?.PlayEffect(cue));
+            _absorb.Advance(delta, cue => _audio?.PlayBattleEffect(cue));
             _sceneBlack.Color = !_settings.ReducedFlash && _absorb.Flash ? Colors.Red : Colors.Black;
         }
         if (buffCast)
         {
-            _buff.Advance(delta, cue => _audio?.PlayEffect(cue));
+            _buff.Advance(delta, cue => _audio?.PlayBattleEffect(cue));
             _sceneBlack.Color = !_settings.ReducedFlash && _buff.Flash ? new Color(2f/14, 12f/14, 2f/14) : Colors.Black;
         }
         bool debuffCast = _debuff.Active && state.Phase == BattleScenePhase.ActionAnimation;
-        if (_debuff.Active && !state.RequiresAcknowledgement && _debuff.Advance(delta)) _audio?.PlayEffect(77);
+        if (_debuff.Active && !state.RequiresAcknowledgement && _debuff.Advance(delta)) _audio?.PlayBattleEffect(77);
         if (debuffCast)
         {
             var caster = _session.Current.Battle.GetActor(state.Actor).IsAlly ? _ally : _enemy;
             caster.Modulate = !_settings.ReducedFlash && _debuff.Flash ? new Color(0.14f, 0.14f, 1) : Colors.White;
         }
         bool detoxCast = _detox.Active && state.Phase == BattleScenePhase.ActionAnimation;
-        if (_detox.Active && !state.RequiresAcknowledgement && _detox.Advance(delta)) _audio?.PlayEffect(77);
+        if (_detox.Active && !state.RequiresAcknowledgement && _detox.Advance(delta)) _audio?.PlayBattleEffect(77);
         if (detoxCast)
         {
             var caster = state.DisplayedAlly is not null ? _ally : _enemy;
@@ -536,17 +536,17 @@ internal sealed partial class BattleSceneView : Control
         if (_preparedAttackSpell && state.Phase == BattleScenePhase.ActionAnimation)
         {
             _attackSpell.AdvancePrepared(_elapsed - _attackSpellStart);
-            if (_attackSpell.PreparedSound() is { } effectSound) _audio?.PlayEffect(effectSound);
+            if (_attackSpell.PreparedSound() is { } effectSound) _audio?.PlayBattleEffect(effectSound);
             duration = Math.Max(duration, _attackSpellStart + _attackSpell.PreparedDuration);
             if (!_blastSoundPlayed && state.AttackSpell?.Spell.Value == "blast" && _elapsed >= _attackSpellStart + 0.1)
             {
                 _blastSoundPlayed = true;
-                _audio?.PlayEffect(114);
+                _audio?.PlayBattleEffect(114);
             }
             if (!_castSoundPlayed && state.AttackAnimationSelector is not (22 or 54 or 76) && _elapsed >= _attackSpellStart)
             {
                 _castSoundPlayed = true;
-                _audio?.PlayEffect(77);
+                _audio?.PlayBattleEffect(77);
             }
         }
         if (state.IsMonsterBreath && !_preparedAttackSpell && state.Phase == BattleScenePhase.ActionAnimation)
