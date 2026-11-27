@@ -15,14 +15,13 @@ Use a dedicated instance, disposable save root and fresh namespace.
 Use `remake/tools/debug_dev.py` after loading the checkout-local private-input configuration
 and building the Debug adapter. It requires one explicit target and a fresh disposable run
 directory outside Git checkouts. All paths supplied to the launcher resolve from the caller's working directory;
-the Godot project resolves from the launcher's checkout. Each run owns its save namespace,
-settings and stdout/stderr. The launcher stays attached until the game exits.
+the Godot project resolves from the launcher's checkout. Each run owns its stdout/stderr. The default also owns a fresh save namespace and settings. The launcher stays attached until the game exits.
 
 On Windows, launch defaults to a separate, unshown native desktop: it does not activate a
-window on the user's desktop and still runs the real renderer and semantic port. A per-run
-read-only settings copy enables `runInBackground`; supplied settings and player preferences
-are unchanged. Use `--foreground` to launch visibly for visual/input review or focus-pause
-testing; that option also preserves the supplied/default background preference. This is a
+window on the user's desktop and still runs the real renderer and semantic port. Ordinary
+background scenario launches enable `runInBackground` in a per-run settings copy.
+Use `--foreground` to launch visibly for visual/input review or focus-pause testing with
+the selected preference. This is a
 launch choice, not a second scene or a headless substitute for native presentation checks.
 Other operating systems currently require `--foreground`.
 Drive the hidden instance through the semantic client. Use its ordinary system-menu Quit
@@ -43,7 +42,8 @@ Cancelling a direct seed load or leaving its error panel quits that instance; th
 underlying Witch or gameplay session to return to. Successful restore mounts normally.
 Use the [progression table](#preparing-a-progression-start) to choose a meaningful predecessor.
 Missing/conflicting targets are rejected before Godot starts. No target is inferred from a
-player namespace or latest slot. Ordinary player launches remain unchanged.
+player namespace or latest slot. With explicit `--save-output`, Save publishes to a new
+`staged-save.json` beside this run's logs. The seed remains read-only.
 
 Audio defaults to Godot's `Dummy` driver: playback logic and audio observations still run,
 but the instance is inaudible. Add `--audio` only for an explicit listening/audio-device check;
@@ -61,6 +61,28 @@ python remake/tools/debug_dev.py --port 42332 --run-dir G:/md-sf2/disposable-sav
 The existing showcase client includes the full entry journey as part of its recording check;
 select `--entry` for that journey. A direct save start is for checks beginning at the restored
 state, not for claiming that the skipped entry journey was verified.
+
+For the [showcase journey](../evidence/opening-loop-acceptance.md#pre-voyage-showcase-e2e-2357),
+`--entry --journey` seeds editable preferences inside the fresh disposable run namespace.
+The settings input is copied and becomes ordinary local preferences for that journey. After
+the first game exits, select the same run with `--entry --continue-journey` and a fresh sibling
+`--run-dir`. This reuses the saves and editable preferences while keeping each process's logs.
+Default background Continue keeps the playback clock running for this launch, even if
+the journey's saved Run in Background preference is Off. An explicit `--foreground`
+Continue follows the saved preference. The override belongs to the debug launch and
+never participates in Settings Apply or save publication.
+`--movie --audio` records to the fresh run's `movie.ogv` at 60 fps, with a 54,000-frame
+limit. The unshown Windows desktop can record the native renderer and real audio driver.
+
+**Confirmed (#2357 review).** Start an isolated `--entry --journey --foreground`
+with format-1 `runInBackground: false`, choose New Game and publish slot 1. Quit, then
+use that same journey with fresh run directories for a default Continue and a
+`--foreground` Continue. Move actual native focus to a second window on the test
+desktop. In the default launch, Continue restored Map3 and Left completed
+(56,3) → (55,3) with no frame grant. In the foreground launch, the restored field
+paused on focus loss and a submitted Left completed during an explicit
+`clock run 120` grant. In both launches Settings displayed Off and was editable.
+The original preference and slot files matched byte for byte after both continuations.
 
 ### Direct endpoint and export setup
 
@@ -106,13 +128,15 @@ An error has `ok:false` and an `error` code.
 | Request | Preconditions and result |
 | --- | --- |
 | `hello` | Version, PID, adapter module ID and exported-build flag. |
-| `observe host` | Focus, background preference, remaining authorized frames, physical gameplay hold and release barrier, opening, entry and system-menu selection. |
+| `observe host` | Focus, effective `runInBackground`, `backgroundClockForced` for the current debug launch, remaining authorized frames, physical gameplay hold and release barrier, opening, entry and system-menu selection. |
 | `observe state`, `observe scene`, `observe audio` | Live opening/field/battle projection, battle scene or gameplay audio. An absent view returns null. Large projections are limited to the reply budget. |
 | `observe slots`, `observe name`, `observe settings` | Read the matching modal projection. |
+| `observe layout Y` | At field input, read one existing layout region of 64×4 cells. The row is a multiple of four from 0 to 60. |
+| `name draft NAME` | At the New Game name prompt, update one word of up to seven valid ASCII characters. Read the draft, then use the ordinary Confirm and Start confirmation. |
 | `opening skip`, `witch skip` | Finish the active opening or the Witch's initial greeting using its existing skip. |
-| `menu confirm`, `menu back`, `menu up/down/left/right` | Route one choice to the topmost entry or slot page or system menu. Use the individual direction, e.g. `menu down`. Title Confirm starts the Witch. Continue uses the selected Witch row, reading, slot checks and farewell. A name page accepts Confirm with its validated current draft or Back when offered. Settings supports Back outside binding capture/review. |
+| `menu confirm`, `menu back`, `menu up/down/left/right` | Route one choice to the topmost entry or slot page or system menu. Use the individual direction, e.g. `menu down`. Title Confirm starts the Witch. Continue uses the selected Witch row, reading, slot checks and farewell. A name page accepts Confirm with its validated current draft or Back when offered. Settings supports Back outside binding capture/review, directional focus in Root/Display, and ordinary activation of Display, Language, Graphics and Apply. A covered field routes these actions to Member/Prepare, the field menu or Church when one owns input. |
 | `menu open` | Open the ordinary system menu from settled field input or the base battle movement decision. Save and Load use the ordinary menu, slot store and validation. |
-| `field up/right/down/left`, `field interact` | At ordinary exploration input, request one move in the named direction or the current interaction/search. Movement arms no direction hold. Sample `entities`, `wait` and `canWaitAtInput` to observe travel or obstruction. |
+| `field up/right/down/left`, `field interact`, `field back` | At ordinary exploration input, request one move, the current interaction/search or the ordinary field menu. Movement arms no direction hold. Sample `entities`, `wait` and `canWaitAtInput` to observe travel or obstruction. |
 | `story confirm/back/up/right/down/left` | Route a single reading or choice action to the active field wait. Its owner handles reveal, page, delay, token and acknowledgement rules. Check `token`, `wait`, text and choice projections for completion. |
 | `battle confirm/back/up/right/down/left`, `battle attack`, `battle stay` | At the current player decision, use a single selection/navigation or an offered main action. During a reading boundary use Confirm. Back can return from inspection. Read actor, stage, preview, decision and receipts. |
 | `clock run N` | While the background preference is Off and focus pauses playback, schedule 1–120 ordinary process frames. `data.status` is `scheduled`. `observe host` reports `runFramesRemaining`; zero ends the grant. Recovery and quit overlays refuse the request. Existing menu, loading and story waits keep their own rules. |

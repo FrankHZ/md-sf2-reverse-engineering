@@ -187,8 +187,8 @@ read-only state and projection calls.
 | Party, equipment and Church | Still on that journey, open Member → Prepare. Show all four item positions and one item's description. Select Unarmed then legally re-equip Bowie's Wooden Sword. At the actual Granseal priest, inspect a service, return from it, and use Record to Save and Return at the explicitly selected field destination. | Check the equipped marker/attack change and return to the party and walking controls. Read the ordinary service result/refusal and require successful publication at the named field destination. Retry equipment or service after Back, or continue from the successful field record in a fresh take. [Field and Church](../godot/ui-scene-review.md#4-party-inventory-and-preparation) · [Field save](../verification/host.md#opening-save-and-continue) |
 | Battle01, one resolved physical attack | Follow the actual castle/palace/Astral/tower route from the same field. At player Movement, Cancel for inspection, Back, move to a legal stop, confirm, then Attack and choose a living in-range enemy. Advance ordinary turns if no target is currently in range. | See Movement → Main → Target → action/result → usable player control. Check the actual target and outcome including HP and any awarded EXP/gold, once. If the hit misses, retain its result. Retry a failed take from the legal field save or a battle save produced on this same journey. [Battle decision](../godot/ui-scene-review.md#8-battle-one-complete-decision-then-its-consequences) · [Tower route](../verification/host.md#opening-save-and-continue) |
 | Battle Save and Quit, cold Continue | At the next settled player Movement use the production Menu's Save, select a different slot from the field record, confirm Save and Quit, and wait for the native process to exit. Launch the same command and Continue that battle slot. | Observe the slot label/confirmation, actual process exit and distinct new PID. Require the same encounter, turn/actor, board/resources and usable Movement, with no replay of the completed attack. Take a legal preview step after restore. Retry Continue from the successful battle publication. If Save refuses, keep the refusal and resume at eligible Movement. [Battle persistence](../verification/battle-save.md#confirmed-observations-and-limits) |
-| Independent learned BLAZE and HEAL | Use the independent `map16` record. Continue slot 2, then take the Map16 `(26,31)` and Map18 `(9,29)` gates to Battle06. On Kazin's turn choose a learned BLAZE rank with a legal enemy or area. On Sarah's turn use learned HEAL 1 on a living wounded ally after ordinary damage. | Verify the displayed rank, explicit target, one MP debit, damage/healing, art and return to Movement. Retry from a fresh copy or a newly written settled turn on that branch. The retained Battle04 Kazin and Battle01 HEAL observations establish the mechanics. [Battle04 cast](../application/pre-voyage-campaign.md#battle04-and-the-galam-prison-handoff) · [Galam gate](../application/pre-voyage-campaign.md#reproduce-the-south-gate-entry) · [HEAL](../verification/battle-save.md#confirmed-observations-and-limits) |
-| Independent boarding tail | Continue slot 1 from the [boarding predecessor](../application/pre-voyage-campaign.md#showcase-starts-and-continuity). From the post-Battle07 tower return, descend to the castle, walk across the damaged town and take the east docks exit. Talk to the captain, decline once, then affirm on a fresh Talk. | No retains docks control. Yes resolves the crossing. Show regained Map14 control at `(40,8)` and one legal step. End before the plank or Battle08. Retry from a fresh tower copy. Lead the edit with the docks decision if the approach runs long. [Tower and ship handoff](../application/pre-voyage-campaign.md#tower-return-through-first-damaged-ship-control) |
+| Independent learned BLAZE and HEAL | Use the independent `map16` record with the seed reader or ordinary Continue slot 2, then take the Map16 `(26,31)` and Map18 `(9,29)` gates to Battle06. On Kazin's turn choose a learned BLAZE rank with a legal enemy or area. On Sarah's turn use learned HEAL 1 on a living wounded ally after ordinary damage. | Verify the displayed rank, explicit target, one MP debit, damage/healing, art and return to Movement. Retry from a fresh copy or a newly written settled turn on that branch. The retained Battle04 Kazin and Battle01 HEAL observations establish the mechanics. [Battle04 cast](../application/pre-voyage-campaign.md#battle04-and-the-galam-prison-handoff) · [Galam gate](../application/pre-voyage-campaign.md#reproduce-the-south-gate-entry) · [HEAL](../verification/battle-save.md#confirmed-observations-and-limits) |
+| Independent boarding tail | Start from the [boarding predecessor](../application/pre-voyage-campaign.md#showcase-starts-and-continuity) with the seed reader or ordinary Continue slot 1. From the post-Battle07 tower return, descend to the castle, walk across the damaged town and take the east docks exit. Talk to the captain, decline once, then affirm on a fresh Talk. | No retains docks control. Yes resolves the crossing. Show regained Map14 control at `(40,8)` and one legal step. End before the plank or Battle08. Retry from a fresh tower copy. Lead the edit with the docks decision if the approach runs long. [Tower and ship handoff](../application/pre-voyage-campaign.md#tower-return-through-first-damaged-ship-control) |
 
 ### Pilot and recording boundary
 
@@ -222,8 +222,7 @@ Both clients exited 0 and both disposable primaries matched their registered sou
 The first Release attempt using headless defaults opened 64×64 window recovery before the
 opening. A supported 1920×1080 client on an inactive desktop supplied the production window
 boundary. Existing package reused in place, one game at a time, about 4 MB total local scratch
-including attempts. No new capture. Full continuous Save/Quit/cold Continue, casting and boarding
-on the current package remain **Unknown** for this showcase.
+including attempts. The #2343 pilot stops at those input boundaries. The [full showcase follow-up](#pre-voyage-showcase-e2e-2357) records the later checks.
 
 ### Compact pilot evidence (#2257)
 
@@ -298,8 +297,108 @@ exited 0. `SF2_SAVE_CASE=shape` reached Battle01 round 1 Chester Movement, then 
 indexed save sequence opened `confirm-quit` and timed out waiting for `save-slots` (exit 1).
 The latter did not exercise publication or the intended Stay, and reported two ObjectDB instances
 at exit. Both processes exited. These receipts check checkpoint admission. The combined current
-opening smoke and current battle Save/Continue after an action remain **Unknown** for this showcase.
+opening smoke and battle Save/Continue after an action remained **Unknown** at #2245.
 The named prior acceptance observations retain their scope.
+
+## Pre-voyage showcase E2E (#2357)
+
+The [semantic journey client](../../tools/pre_voyage_showcase_journey.py) drives the
+existing entry, field, Church and battle controllers. Select the complete Kiwi gameplay,
+HD opening, Witch and Chinese catalog inputs [above](#launch-and-checkpoints). Build
+the checkout's Debug adapter. On Windows use the unshown desktop for native playback,
+with separate stdout and stderr for each process. Set checkout-local TEMP, APPDATA and
+LOCALAPPDATA. Use a fresh run directory beneath a designated external disposable root.
+
+In the game shell, start the continuous journey with editable preferences. Point
+`$settings` at a format-1 JSON file containing `language: en`, `textMode: instant`
+and `graphicsMode: original`. The launch copies those values into its private preferences
+and enables background playback. In a second shell run the client with a fresh receipt path.
+
+```powershell
+python -B remake/tools/debug_dev.py --port 42332 --run-dir "$runs/continuous" --entry --journey --settings $settings
+python -B remake/tools/pre_voyage_showcase_journey.py 42332 continuous --battle-witness "$runs/continuous/battle.json"
+```
+
+Wait for ordinary Save and Quit to exit successfully and for slot 3 to exist.
+The second launch reuses the same published journey and writes its own logs.
+
+```powershell
+python -B remake/tools/debug_dev.py --port 42332 --run-dir "$runs/cold" --entry --continue-journey "$runs/continuous"
+python -B remake/tools/pre_voyage_showcase_journey.py 42332 cold --battle-witness "$runs/continuous/battle.json"
+```
+
+Use a new `--run-dir` for each take. Resolve `$map16` and `$tower` using the
+[named records](../application/pre-voyage-campaign.md#showcase-starts-and-continuity).
+The seed reader mounts a read-only record directly. In a staging run, explicitly enable
+the existing Save output. It writes the new `staged-save.json` in that run after normal
+Save and Quit. Use the published records for the short spell and boarding takes.
+
+| Client mode | Launcher selection |
+| --- | --- |
+| `blaze-stage`, `heal-stage` | In separate runs use `--save $map16 --save-output --settings $settings`. Walk the south gate and play until the caster has a legal target. The driver returns any preview to its origin before Save and Quit. |
+| `blaze`, `heal` | Select the corresponding prep run's `staged-save.json` with `--save`, plus `--settings $settings`. |
+| `voyage-stage` | `--save $tower --save-output --settings $settings`. Walk from Map58 through the first quake, then save the naturally reached dock visit. |
+| `voyage` | `--save "$runs/voyage-stage/staged-save.json" --settings $settings`. Take captain No, then a new Talk and Yes, then the ship step. |
+| `equipment` | `--save "$runs/continuous/saves/debug-dev/sf2-opening/slot2.json" --settings $settings`. This short detail take uses the continuous journey's Church record. |
+
+Run the launch and client for each row as a separate pair. For example, run
+`python -B remake/tools/pre_voyage_showcase_journey.py 42332 voyage` from the client shell.
+For each complete take require zero client and launcher exit codes. Save the checkpoint stdout separately. Add `--movie --audio` to the launch and
+`--reading-hold 1.2` to the client for a recording. Functional waits observe the live
+ready state. Reading holds apply to the marked shots. Frame numbers are taken from the
+debug replies; divide by 60 for the approximate time within each 60 fps take. The continuous
+record and its cold Continue are separate files using the same save. Magic and boarding
+are independent takes.
+
+The 2,060-frame pacing sample recorded 34.33 seconds in 40 seconds, with 14,101,421
+bytes. Title through equipment marks were frames 1,535–1,987 after a startup pause. FFmpeg 7.1 decoded 1920×1080 Theora at 60 fps and 48 kHz stereo Vorbis
+through the end, with a -6.8 dB audio peak. The 1.2-second holds are wall-clock
+choices. The opening sample showed that encoder throughput varies with the scene.
+Budget the full set below 3 GiB of raw media and 20 MiB of reports. Decode each
+final file with the same tool and require non-silent mixed audio.
+
+```powershell
+& $ffmpeg -nostdin -xerror -i $movie -map 0:v:0 -map 0:a:0 -af volumedetect -f null NUL
+```
+
+### Recorded results
+
+**Confirmed in the remake's Debug build.** The native v2 instance used module
+`ed23571b-276b-4564-8815-6e3b9044fcfa` on the accepted `730da17f` base with the
+showcase debug routing. Continuous New Game and cold Continue used native PIDs 14760
+and 37476. The independent scenes each used an isolated run and the recorded inputs
+described below.
+
+| Separate original | Duration | Reviewed checkpoints |
+| --- | --- | --- |
+| `01-new-game-battle01-save.ogv` | 3:54.37 | Changed the Witch to Simplified Chinese and confirmed BOWIE. The house, Sarah/Chester, school and messenger ran on the same session. Search granted one Medical Herb and F128. Repeat yielded an empty result and conserved the party. Applying HD preserved position, party and F128. Four equipment slots, Unarmed and restored Wooden Sword preceded church services, the no-applicable-member result and Record to slot 2 at Map3 (32,13). Chester attacked enemy-4 in Battle01, taking it from 5 to 3 HP and gaining 11 EXP. At the next usable movement decision, selected Battle01 Save and Quit to slot 3 and exited 0. |
+| `02-battle01-cold-continue.ogv` | 0:09.02 | Continued slot 3 from the same namespace in the new process and session. Map, round 3, Sarah at queue 1, deployed board, available resources, statuses, inventories, custody, flags and both seeds matched the pre-save witness. A legal preview reached (12,11). |
+| `03-battle06-blaze.ogv` | 0:12.67 | The separate Map16 journey reached Battle06 through Map18 with six active allies and 1,072 gold. Ordinary standalone Save captured Kazin's round 4 unspent turn. The take used learned BLAZE 1 on enemy-3. HP 16→10, MP 17→15, action animation, result and next player input were observed. |
+| `04-battle06-heal.ogv` | 0:15.85 | A fresh journey from the same Map16 record produced a legal Sarah turn in round 1. The driver cancelled its trial preview before ordinary Save. The take repeated the legal preview, targeted the living wounded Slade and used HEAL 1. HP 5→12, MP 13→10, action animation, result and next player input were observed. |
+| `05-boarding.ogv` | 1:37.32 | The registered Map58 seven-member return walked through the castle and first quake to ordinary Map44 control. The new v6 dock record used `ms-map44-flag507` and aliases Astral/King/Minister → slots 1/2/3 with sprites 209/203/205. F74/F507/F622/F623/F624/F640 were set and F73/F700 clear. The take starts from this dock record. It shows No returning to unchanged dock flags, then a new Talk and Yes. Readings 1009/1013 projected portrait 31, 1015/1018 projected no portrait and 1019 projected 32. Map14 (40,8) regained control with F700 set, F74/F640 clear, and Down reached (40,9). |
+| `06-equipment-detail.ogv` | 0:05.78 | Restored the continuous recording's own Church slot 2. Confirmed four inventory positions, a visible nonempty Wooden Sword description, and the changed party equipment on Unarmed followed by exact restoration after re-equipping. This is a separate detail take. |
+
+The six originals, frame/time index, small saves and per-process logs are at
+`handoffs/issue2357/v1` beneath `SF2_SHARED_INPUT_ROOT`. The six launcher and
+client pairs exited 0. Raw handoff media totalled 2,436,680,256 bytes and the reports
+26,067 bytes. FFmpeg fully decoded both streams of each OGV and found non-silent
+stereo audio. Native stderr recorded a two-instance ObjectDB leak warning at teardown
+for each accepted take. Human editing review and hardware-exact audiovisual fidelity
+remain **Unknown**.
+
+**Retained attempts.** The first direct-seed staging run reached the post-tower castle
+and Save reported the read-only launch policy. The recorded long spell attempt reached a
+resolved BLAZE cast and later timed out waiting for another turn. A first HEAL staging
+attempt ended before capturing Sarah's turn. Keeping Bowie in the rear and moving Sarah
+toward a wounded front member produced the accepted turn. An initial short HEAL client
+expected an immediately legal target at the saved origin. The successful take accepts
+the staged actor and exercises the legal preview. The long boarding attempt captured
+the quake and captain decisions and timed out at a Map73 TickWait. The shorter dock
+start used the original Save path and allowed enough wall time for the normal voyage
+during encoding. Failed long files were retained in the isolated run tree. Their bytes
+put the cumulative scratch media above the original 3 GiB estimate; the delivered
+separate takes met the 3 GiB media limit.
+
 
 ## Retained dependencies
 

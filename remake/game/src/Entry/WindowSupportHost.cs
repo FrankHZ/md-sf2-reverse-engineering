@@ -149,8 +149,9 @@ public sealed partial class GameRoot
     private void WindowPlacementRefused(string reason)
     { _windowRecovery?.Present(GetWindow().Size, WindowCanFit, FullscreenCanFit, reason); DisarmInput(); }
 
+    private bool RunsInBackground => _debugBackgroundClock || _input?.Settings.RunInBackground == true;
     private bool WindowPausesPlayback => _windowRecovery is not null || _windowQuit is not null ||
-        !GetWindow().HasFocus() && _input?.Settings.RunInBackground != true && !_debugDispatch && _debugFrames == 0;
+        !GetWindow().HasFocus() && !RunsInBackground && !_debugDispatch && _debugFrames == 0;
 
     // These existing finite host modals share one resume decision, not a separate pause service.
     private void ApplyHostPause()

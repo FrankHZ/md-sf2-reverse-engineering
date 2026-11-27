@@ -11,7 +11,7 @@ namespace Sf2.Remake.GodotAdapter;
 public sealed partial class GameRoot
 {
     private DebugPort? _debugPort;
-    private bool _debugDispatch;
+    private bool _debugDispatch, _debugBackgroundClock;
     private int _debugFrames;
 
     private void StartDebugPort()
@@ -20,7 +20,11 @@ public sealed partial class GameRoot
         if (value.Length == 0) return;
         if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out int port) || port is < 1 or > 65535)
         { GD.PushWarning("SF2_DEBUG_PORT requires a TCP port from 1 to 65535. Debug disabled."); return; }
-        try { _debugPort = new DebugPort(port); }
+        try
+        {
+            _debugPort = new DebugPort(port);
+            _debugBackgroundClock = Selected("SF2_DEBUG_BACKGROUND_CLOCK") == "1";
+        }
         catch (SocketException error)
         { GD.PushWarning($"Debug listener unavailable on 127.0.0.1:{port} ({error.SocketErrorCode})."); }
     }
@@ -54,7 +58,8 @@ public sealed partial class GameRoot
                 break;
             case ["observe", "host"]:
                 data = JsonSerializer.Serialize(new { focused = GetWindow().HasFocus(),
-                    runFramesRemaining = _debugFrames, runInBackground = _input?.Settings.RunInBackground,
+                    runFramesRemaining = _debugFrames, runInBackground = RunsInBackground,
+                    backgroundClockForced = _debugBackgroundClock,
                     menuSelection = _systemMenu?.SelectedIndex, gameplayHeld = _input?.GameplayHeld,
                     releaseBarrier = _releaseBarrier, systemMenu = _systemMenu?.IsVisibleInTree() == true,
                     opening = JsonSerializer.Deserialize<JsonElement>(ReadOpeningObservationJson()),
@@ -71,6 +76,18 @@ public sealed partial class GameRoot
             case ["observe", "settings"]: data = _settings?.ReadSettingsObservationJson(); break;
             case ["observe", "slots"]: data = _slots?.ReadSaveObservationJson(); break;
             case ["observe", "name"]: data = _nameEntry?.ReadNameObservationJson(); break;
+            case ["observe", "layout", var row]:
+                if (_exploration is null || _session?.Current is not { CanWaitAtInput: true })
+                    return DebugError("action-unavailable");
+                if (!int.TryParse(row, NumberStyles.None, CultureInfo.InvariantCulture, out int y) ||
+                    y is < 0 or > 60 || y % 4 != 0) return DebugError("layout-row");
+                data = Json.Stringify(_exploration.ReadLayoutRegion(0, y, 64, 4));
+                break;
+            case ["name", "draft", var value]:
+                if (_windowRecovery is not null || _windowQuit is not null) return DebugError("window-modal");
+                if (_nameEntry?.SetNewGameDraft(value) != true) return DebugError("action-unavailable");
+                data = JsonSerializer.Serialize(new { status = "dispatched", context = "name", verb = "draft" });
+                break;
             case ["clock", "run", var count]:
                 if (!int.TryParse(count, NumberStyles.None, CultureInfo.InvariantCulture, out int frames) || frames is < 1 or > 120)
                     return DebugError("frame-budget");
@@ -123,7 +140,7 @@ public sealed partial class GameRoot
             _ => null,
         };
         if (_settings is { } settings)
-            return context == "menu" && verb == "back" && settings.BackFromDebug();
+            return context == "menu" && mapped is { } settingsAction && settings.HandleFromDebug(settingsAction);
         if (_nameEntry is { } name)
             return context == "menu" && (verb == "confirm" ? name.ConfirmDraft() : verb == "back" && name.BackFromDraft());
         if (_slots is { } slots)
@@ -154,10 +171,15 @@ public sealed partial class GameRoot
             return context == "battle" && action is { } selected && _battle is { } view &&
                 WithDebugPlayback(() => view.DispatchDirect(selected));
         }
-        if (_exploration is not { } field || field.MenuBack) return false;
+        if (_exploration is not { } field) return false;
+        if (field.MenuBack)
+            return context == "menu" && mapped is { } fieldAction &&
+                (field.PartyMenuOpen || current.Story.Wait is ChurchWait) &&
+                WithDebugPlayback(() => field.HandleAction(fieldAction, direct: true));
         if (context == "field" && current.CanWaitAtInput)
         {
             if (verb == "interact") return WithDebugPlayback(() => field.HandleAction(GameAction.Confirm, direct: true));
+            if (verb == "back") return WithDebugPlayback(() => field.HandleAction(GameAction.Cancel, direct: true));
             if (mapped is GameAction.Up or GameAction.Right or GameAction.Down or GameAction.Left)
                 return WithDebugPlayback(() => field.HandleAction(mapped.Value, direct: true));
         }
