@@ -379,9 +379,9 @@ described below.
 | `06-equipment-detail.ogv` | 0:05.78 | Restored the continuous recording's own Church slot 2. Confirmed four inventory positions, a visible nonempty Wooden Sword description, and the changed party equipment on Unarmed followed by exact restoration after re-equipping. This is a separate detail take. |
 
 The six originals, frame/time index, small saves and per-process logs are at
-`handoffs/issue2357/v1` beneath `SF2_SHARED_INPUT_ROOT`. The six launcher and
-client pairs exited 0. Raw handoff media totalled 2,436,680,256 bytes and the reports
-26,067 bytes. FFmpeg fully decoded both streams of each OGV and found non-silent
+`originals/v1` in the dedicated private editing workspace `video-editing/issue2343`.
+The six launcher and client pairs exited 0. Raw handoff media totalled 2,436,680,256 bytes
+and the reports 26,067 bytes. FFmpeg fully decoded both streams of each OGV and found non-silent
 stereo audio. Native stderr recorded a two-instance ObjectDB leak warning at teardown
 for each accepted take. Human editing review and hardware-exact audiovisual fidelity
 remain **Unknown**.
