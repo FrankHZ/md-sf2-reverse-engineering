@@ -354,7 +354,10 @@ asset buckets; this is not proof that the ordinary host implements the old bucke
 
 ### Source authority
 
-Private source art/audio and accepted asset Git objects own material identity. A generated cache,
+Private source art/audio and accepted asset Git objects own material identity. The
+[asset pipeline workflow](asset-pipeline-workflow.md#tracked-metadata-and-private-records)
+assigns current build selection and queryable semantic bindings to main Git. Private manifests
+retain input and payload identity. The migration pilot will connect these records. A generated cache,
 preview, screenshot or mutable checkout name does not replace that authority. Source color changes,
 smoothing and derivative policy require explicit reviewed provenance.
 
@@ -384,7 +387,7 @@ Its bootstrap identity is recorded as an origin point, not as a floating current
 | remote policy | no remote; tracked pre-push hook rejects pushes |
 | binary storage | ordinary local Git history, not Git LFS |
 
-The tracked layout is:
+The current tracked layout in that independent repository is:
 
 | Path | Authority |
 | --- | --- |
@@ -392,6 +395,10 @@ The tracked layout is:
 | `masters/` | editable HUD SVG and other authored masters |
 | `runtime/` | reviewed runtime-ready 2x/4x textures, UI, fonts, music, and sound assets |
 | `manifests/` | local identity, semantic mapping, derivation, import policy, and code-compatibility records |
+
+The [planned directory responsibilities](asset-pipeline-workflow.md#directory-responsibilities)
+cover relocation of the real independent Git root, the canonical media entity and the shared
+reader entry. Existing private manifest mappings describe the revisions that produced them.
 
 The repository ignores `cache/`, `scratch/`, `previews/`, temporary output, and Godot import state.
 Reviewed binary art and audio are intentionally trackable. A local build or verification receipt

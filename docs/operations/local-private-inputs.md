@@ -282,7 +282,9 @@ and restoration. No generic environment-variable redirect or new binary was used
 [#2370](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2370) defines the target for
 the Windows operator host. Consolidation uses the configured project volume. The configured
 selections and their owners still describe current operation until each cutover is verified.
-Keep machine paths in ignored configuration and receipts.
+Keep machine paths in ignored configuration and receipts. The
+[asset pipeline workflow](../../remake/docs/content/asset-pipeline-workflow.md#directory-responsibilities)
+owns media subdirectories, publication write ownership and the pilot-to-cutover sequence.
 
 | Location relative to the operator's project root | Owner and contents |
 | --- | --- |

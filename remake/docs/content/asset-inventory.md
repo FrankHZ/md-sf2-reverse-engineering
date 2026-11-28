@@ -2,7 +2,9 @@
 
 This is the entry point for tracking a resource from its USA source identity through preparation,
 selection, delivery and verification. The [presentation assets guide](presentation-assets.md)
-owns preparation, package assembly and local provenance. The
+owns the current preparation, package assembly and local provenance. The
+[asset pipeline workflow](asset-pipeline-workflow.md) specifies incremental publication, the
+tracked selection and generated per-resource lookup proposed for the next pilot. The
 [music command inventory](music-command-inventory.md) tracks each BGM command.
 
 **Standard scope.** [#2163](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2163)
@@ -64,9 +66,11 @@ organize promoted packages by consumer role and immutable version. The selection
 to identify the registered operating inputs until a verified cutover. Use issue and PR references
 as provenance in the package record. Reserve a separate namespace for short-lived acceptance runs.
 
-The main repository's asset inventory and linked resource owners record the semantic identity,
+This inventory and its linked resource owners record family and selected example metadata, including
 purpose, source and rights boundary, variants, shared-relative location, current consumers and
-required build inputs. Keep that metadata with the code that uses it. Private preparation records
+required build inputs. Per-resource coverage still depends on private inputs. The
+[metadata design](asset-pipeline-workflow.md#tracked-metadata-and-private-records) assigns the
+full current lookup to main Git and specifies how it will be regenerated at publication. Private preparation records
 retain payload identities and detailed source custody. Extracted tables, media bytes and local
 absolute paths stay private. Use the existing closure and identity checks.
 
@@ -140,7 +144,7 @@ Use the [normal Debug launcher](../verification/debug-port.md#development-defaul
 
 ### Current image and audio metadata
 
-The following records identify the resources selected by the current preparation and launch routes.
+The following examples identify bindings in the current preparation and launch routes.
 Root selectors come from the table above. Within each selection, use the resource paths declared
 by the world, scene, entry or opening document.
 

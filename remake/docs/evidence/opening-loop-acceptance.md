@@ -113,14 +113,18 @@ fresh namespace and keeps its newly published records across the cold launch. A 
 only identifies a record within that namespace. On Continue, read the displayed summary and
 choose the occupied record. Slot 2 can follow an empty Slot 1.
 
-For development Main, select and load the
-[current Kiwi gameplay, HD opening, Witch and Chinese catalog](../content/asset-inventory.md#pre-voyage-package-locations)
-in the launch process. For the archived #2336 observation, packaged startup selected those
-inputs beside the executable. A current Release starts from its own adjacent content. Use the
-same disposable copy and settings preparation for either host.
+For development Main, run the PowerShell reader-input block in
+[Pre-voyage package locations](../content/asset-inventory.md#pre-voyage-package-locations)
+in the same launch shell before running the commands below. Until cutover, substitute the four
+registered roots from the table for its staged roots, preserving all reader filenames. Loading `local/private-inputs.ps1`
+sets the shared root and tools. The inventory block selects the Kiwi world, HD opening, Witch,
+catalog and battle inputs for development Main.
+
+A packaged Release uses its own adjacent content, as in the archived #2336 observation. For that
+route, load `local/private-inputs.ps1` first to select the shared inputs used by the seed recipe
+below. Use the same disposable copy and settings preparation for either host.
 
 ```powershell
-. ./local/private-inputs.ps1
 $repoRoot = (Get-Location).Path # Run at the owning checkout's root.
 $shared = $env:SF2_SHARED_INPUT_ROOT
 $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
