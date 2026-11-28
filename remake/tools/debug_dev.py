@@ -20,6 +20,9 @@ def main():
     target.add_argument(
         "--entry", action="store_true", help="explicit opening/title/Witch E2E check"
     )
+    target.add_argument(
+        "--opening-act", type=int, choices=range(1, 5), help="play one opening act, then show title"
+    )
     parser.add_argument(
         "--run-dir",
         type=Path,
@@ -76,6 +79,11 @@ def main():
             if not value.is_file():
                 parser.error(f"missing input: {value}")
             options.extend((option, str(value.resolve())))
+    if args.opening_act is not None:
+        opening = Path(os.environ.get("SF2_PRIVATE_OPENING_CONTENT", ""))
+        if not opening.is_absolute() or not opening.is_file():
+            parser.error("--opening-act requires the registered SF2_PRIVATE_OPENING_CONTENT")
+        options.extend(("--opening-act", str(args.opening_act)))
     root = Path(__file__).resolve().parents[1]
     run = args.run_dir.resolve()
     if any((parent / ".git").exists() for parent in (run, *run.parents)):

@@ -60,6 +60,22 @@ add `--audio` only if listening is part of acceptance. For example:
 python remake/tools/debug_dev.py --port 42332 --run-dir G:/md-sf2/disposable-saves/debug-entry-01 --entry --foreground --audio
 ```
 
+To inspect a single opening act, select the complete registered opening package with
+`SF2_PRIVATE_OPENING_CONTENT` and the ordinary entry selections. Use the same checkout-local
+configuration and Debug build as above.
+
+```powershell
+python remake/tools/debug_dev.py --opening-act 2 --port 42332 --run-dir G:/md-sf2/disposable-saves/issue2346-rework/storm-act2
+python remake/tools/debug_client.py 42332 "observe host" "observe state"
+```
+
+Acts 1 through 4 are indexed in their ordinary sequence order. Each launches with the
+ordinary opening music and black initial state, plays the selected act and releases to
+the title on completion or Skip. `observe host` reports the selected act and outcome.
+The default uses the unshown Windows desktop and silent audio driver. For hands-on Shift
+and Skip checks, add `--foreground`. For the ordinary Intro1-to-Intro2 comparison, use
+`--entry` in a fresh run directory. [Projection evidence](../application/opening-session-lifecycle.md#storm-actor-fade-and-reload-2346).
+
 The existing showcase client includes the full entry journey as part of its recording check;
 select `--entry` for that journey. A direct save start is for checks beginning at the restored
 state, not for claiming that the skipped entry journey was verified.
