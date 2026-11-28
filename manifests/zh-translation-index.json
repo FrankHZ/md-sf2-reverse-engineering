@@ -181,8 +181,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/design-map.md",
-      "sourceSha256": "1a47abf9510162eadf4b328eb2bb94b22b5e54e4f194671b5a80797c0680a9e1",
-      "mirrorSha256": "864f5f9894cbfca9a7e6addba52a5f4ca06975ec85ae0146e1582d02f87a69de",
+      "sourceSha256": "d8b4c6c90e7987c7887bd44f31ee633180801f2563fdd155626c1098a3c0015d",
+      "mirrorSha256": "6edcbc1da8184e8da2fb406ef8b014bdf573ab81d7d8960e494a4c2982589864",
       "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
       "translatedDate": "2026-11-28"
     },
@@ -315,6 +315,16 @@
       "mirrorSha256": "d281afee33dcbfa5e0bf29fec02a2b8c2319448ad4f2478adfd97394ab5cba08",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
+    },
+    {
+      "source": "docs/design/synthesis/chapters/eastern-parmecia/chapter-overview.md",
+      "status": "translated",
+      "scope": "design-excerpt",
+      "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/chapter-overview.md",
+      "sourceSha256": "21019b918cf5cec7d989410979aec0262349c35f48189c68bf9c0af804bedcaa",
+      "mirrorSha256": "4520d7e24c8a7e760635fa01b1e2e8b5a5d2c15e8abc2967d6e352bc3ee3d377",
+      "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
+      "translatedDate": "2026-11-28"
     },
     {
       "source": "docs/design/synthesis/chapters/eastern-parmecia/damaged-ship-plank-through-battle08.md",
@@ -1151,8 +1161,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/story-progression.md",
-      "sourceSha256": "923d3f71248527dc88d2d1ed3fae964ffabac329cbb64db8207b39d202063a58",
-      "mirrorSha256": "6e11ea5cbfde0bc4c20b01c1c2c246fcd071bb26652d2d20c0b904a6f8516dc8",
+      "sourceSha256": "ce600cbff0343ce4f58b162d7c05631bcf5bc779a450ca6dd0b1c6f3bac4367b",
+      "mirrorSha256": "344327e539e5360a973e7f90b7053b208feddc042dd53bad881e5cef81e7db67",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },

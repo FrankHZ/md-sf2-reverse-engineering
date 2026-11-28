@@ -1,6 +1,6 @@
 # L2 · 剧情推进
 
-沿着地图、在场者、玩家选择及其后果阅读。阅读渡海前完整剧情时序与人物/物品速查，请先进入[Grans 开篇与离岛章节总览](../chapters/grans-opening/chapter-overview.md)（`#2366` A 片；其余大章的时序总表与全角色/载具索引留待 `#2366` B–C 片整理）。原版**已确认**静态条件支持下列连接，幕间意义是**推断**；原版受限实测（`Map3`–`Battle01`）、重制普通流程与受控 Debug 起点保持分立——旧段级页里的原版**未知**不代表重制未实装，受控速胜也不等于自然完整通关。参阅[玩法总览](../gameplay-overview.md)、[英文剧情推进](../../../synthesis/themes/story-progression.md)及[原版观察范围（英文源）](../../../../research/story-content-coverage.md)。
+沿着地图、在场者、玩家选择及其后果阅读。阅读已整理的章节剧情时序与人物/物品速查，请先进入[Grans 开篇与离岛章节总览](../chapters/grans-opening/chapter-overview.md)（`#2366` A 片）与[新格兰希尔与东部 Parmecia 章节总览](../chapters/eastern-parmecia/chapter-overview.md)（`#2366` B1 片；其余大章的时序总表与全角色/载具索引留待 `#2366` B2–C 片整理）。原版**已确认**静态条件支持下列连接，幕间意义是**推断**；原版受限实测（`Map3`–`Battle01`）、重制普通流程与受控 Debug 起点保持分立——旧段级页里的原版**未知**不代表重制未实装，受控速胜也不等于自然完整通关。参阅[玩法总览](../gameplay-overview.md)、[英文剧情推进](../../../synthesis/themes/story-progression.md)及[原版观察范围（英文源）](../../../../research/story-content-coverage.md)。
 
 ## 分段阅读故事内容
 
@@ -22,29 +22,29 @@
 
 ### New Granseal 与东部 Parmecia
 
-木板选择转为救援；获胜后经过建城、一年后集会及 Peter 的请求。可选择 Ribble 的会面或 East Shrine 支线，再经洞窟、Polca、Bedoe，最后向市长取得木筏。与市长或 Oddler 的拒绝产生不同后果。
+**推荐入口：**[新格兰希尔与东部 Parmecia 章节总览](../chapters/eastern-parmecia/chapter-overview.md)按情节依赖与时序串起渡海登陆、建城、Peter、Ribble、Dark Caves、Polca、Bedoe/Volcanon 直至登乘木筏并走出水上第一步（`E1`–`E20`），并附本章人物控制权、木筏流转链及技术对照。以下 21 篇段级详解按剧情时序排列，供深入查阅各段条件与交接（前接[航行登陆至损坏船只控制](../chapters/grans-opening/voyage-through-damaged-ship-control.md)，后接[Polca 木筏登乘与 South Parmecia 入场](../chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)）：
 
-- [Battle08 结果至 New Granseal 城堡交接](../chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md)
-- [Battle09 结果至 Ribble 欢迎场景](../chapters/eastern-parmecia/battle09-outcomes-through-ribble-welcome.md)
-- [Battle10 结果至可选 East Shrine 访问](../chapters/eastern-parmecia/battle10-outcomes-through-east-shrine-visit.md)
-- [Battle11 结果至 Polca 首次 Oddler 抵达](../chapters/eastern-parmecia/battle11-outcomes-through-polca-arrival.md)
-- [Battle12 结果至 Bedoe 初始卫兵遭遇](../chapters/eastern-parmecia/battle12-outcomes-through-bedoe-entry.md)
-- [Battle13 结果至 Polca 木筏授予](../chapters/eastern-parmecia/battle13-outcomes-through-polca-raft-grant.md)
-- [Bedoe 雏鸟飞行与救援](../chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md)
-- [Bedoe 国王讲话与首次觐见](../chapters/eastern-parmecia/bedoe-king-address-through-first-audience.md)
-- [Bedoe 返回至 Battle13 准入](../chapters/eastern-parmecia/bedoe-return-through-battle13-admission.md)
-- [Bedoe 至 Volcanon 觐见](../chapters/eastern-parmecia/bedoe-to-volcanon-audience.md)
 - [损坏船只木板选择至 Battle08 准入](../chapters/eastern-parmecia/damaged-ship-plank-through-battle08.md)
-- [East Shrine 返回至 Battle11 洞窟准入](../chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md)
+- [Battle08 结果至 New Granseal 城堡交接](../chapters/eastern-parmecia/battle08-outcomes-through-new-granseal-handoff.md)
 - [New Granseal 城堡：一年后讲话与首次控制交接](../chapters/eastern-parmecia/new-granseal-castle-year-later-control.md)
-- [New Granseal 出发至 Battle09 准入](../chapters/eastern-parmecia/new-granseal-departure-through-battle09.md)
 - [New Granseal 城镇：Peter 首次登场](../chapters/eastern-parmecia/new-granseal-town-through-peter-introduction.md)
 - [Peter 城堡觐见与返回城镇](../chapters/eastern-parmecia/peter-castle-audience-through-town-return.md)
-- [Polca 出发与 Luke 招募](../chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md)
-- [Polca 仙女互动至 Battle12 准入](../chapters/eastern-parmecia/polca-fairy-through-battle12-admission.md)
-- [Polca 的 Oddler 选择与跟随](../chapters/eastern-parmecia/polca-oddler-choice-and-following.md)
+- [New Granseal 出发至 Battle09 准入](../chapters/eastern-parmecia/new-granseal-departure-through-battle09.md)
+- [Battle09 结果至 Ribble 欢迎场景](../chapters/eastern-parmecia/battle09-outcomes-through-ribble-welcome.md)
 - [Ribble 可选 May 招募至 Battle10 准入](../chapters/eastern-parmecia/ribble-may-through-battle10-admission.md)
+- [Battle10 结果至可选 East Shrine 访问](../chapters/eastern-parmecia/battle10-outcomes-through-east-shrine-visit.md)
+- [East Shrine 返回至 Battle11 洞窟准入](../chapters/eastern-parmecia/east-shrine-return-through-battle11-admission.md)
+- [Battle11 结果至 Polca 首次 Oddler 抵达](../chapters/eastern-parmecia/battle11-outcomes-through-polca-arrival.md)
+- [Polca 仙女互动至 Battle12 准入](../chapters/eastern-parmecia/polca-fairy-through-battle12-admission.md)
+- [Battle12 结果至 Bedoe 初始卫兵遭遇](../chapters/eastern-parmecia/battle12-outcomes-through-bedoe-entry.md)
+- [Bedoe 国王讲话与首次觐见](../chapters/eastern-parmecia/bedoe-king-address-through-first-audience.md)
+- [Bedoe 至 Volcanon 觐见](../chapters/eastern-parmecia/bedoe-to-volcanon-audience.md)
 - [Volcanon 返回至 Bedoe 国王选择](../chapters/eastern-parmecia/volcanon-return-through-bedoe-king-choice.md)
+- [Bedoe 雏鸟飞行与救援](../chapters/eastern-parmecia/bedoe-hatchling-flight-and-rescue.md)
+- [Bedoe 返回至 Battle13 准入](../chapters/eastern-parmecia/bedoe-return-through-battle13-admission.md)
+- [Battle13 结果至 Polca 木筏授予](../chapters/eastern-parmecia/battle13-outcomes-through-polca-raft-grant.md)
+- [Polca 的 Oddler 选择与跟随](../chapters/eastern-parmecia/polca-oddler-choice-and-following.md)
+- [Polca 出发与 Luke 招募](../chapters/eastern-parmecia/polca-departure-through-luke-recruitment.md)
 
 ### 南方旅行、Caravan 与 Creed
 
