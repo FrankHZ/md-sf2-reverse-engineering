@@ -91,6 +91,8 @@ registered locations during the transition.
 | Aqua v1 (#2315), Kiwi preparation and exact-version reproduction | `derived/issue2315/aqua-v1` | [Build into checkout scratch on demand](presentation-assets.md#aqua-successor-2315) |
 | Kiwi v1 (#2316), Windows export and ordinary development launch | `derived/issue2316/kiwi-v1` | `media/gameplay/kiwi-v1` |
 | HD opening v1 (#2324), ordinary startup and single-act debug | `derived/issue2324/opening-hd-v1` | `media/opening/hd-v1` |
+| Indexed opening (#2252), input to the HD opening producer | `derived/issue2252/pre-voyage-opening-v1/opening` | `media/opening/indexed-v1` |
+| Atlas v1 (#2314), stable input to the Aqua producer | `derived/issue2314/atlas-v1` | `media/gameplay/atlas-v1` |
 | Witch entry v1 (#2255), ordinary entry and its Chinese overlay | `derived/issue2255/witch-entry-v1` | `media/entry/witch-v1` |
 | Chinese campaign display catalog (#2266), world display names | `derived/issue2266/catalogs-v1` | `media/display-catalog/campaign-zh-cn-v1` |
 | Retail preparation (#2001), prepared library, base world, inventory and generation inputs | `derived/issue2001` | `media/retail-preparation/v1` |

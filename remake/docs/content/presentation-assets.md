@@ -1633,6 +1633,7 @@ uv run --locked --with pillow==13.0.0 python -m sf2tool.remake_retail_assets `
 Use a fresh worktree-local ignored destination and the registered graphics selection.
 The Aqua recipe below prepares the same complete input as the earlier publication.
 `derived/issue2316/review-v1` owns reader/Boot recipes and retained receipts.
+After cutover select `$library` from `media/retail-preparation/v1/retail-v1`.
 [Source correction, results and limits](../godot/spell-presentation.md#kiwi-converted-attack-playback-2316).
 
 ### AQUA successor #2315
@@ -1665,8 +1666,8 @@ if ($LASTEXITCODE) { throw 'Aqua preparation failed' }
 
 A fresh checkout-local build reproduced all 181 published files byte for byte with the
 pinned graphics checkout. Select `$aquaPackage` when preparing Kiwi or reproducing the Aqua
-selection. Use the [retail preparation location](asset-inventory.md#pre-voyage-package-locations)
-selected by the operator. Published `derived/issue2315/review-v1` holds reader and ordinary-input
+selection. After cutover select `$library` from `media/retail-preparation/v1/retail-v1` and
+`$base` from `media/gameplay/atlas-v1` in the [asset inventory](asset-inventory.md#pre-voyage-package-locations). Published `derived/issue2315/review-v1` holds reader and ordinary-input
 recipes and retained receipts. Boot stages writable files beneath
 the selected worktree and requires an explicit disposable save root.
 [Source, caller distinction, checks and failures](../godot/spell-presentation.md#aqua-family-playback-2315).
