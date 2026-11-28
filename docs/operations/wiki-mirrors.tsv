@@ -1,5 +1,7 @@
 source	title	中文入口
 docs/design/zh-CN/game-vision.md	Remake-Vision	L0 · 重制愿景
 docs/design/zh-CN/synthesis/gameplay-overview.md	Gameplay-Overview	L1 · 玩法总览
+docs/design/zh-CN/synthesis/themes/tactical-battle-loop.md	Tactical-Battle-Loop	L2 · 战术战斗循环
+docs/design/zh-CN/synthesis/themes/progression-and-economy.md	Progression-and-Economy	L2 · 成长与经济
 docs/design/zh-CN/synthesis/themes/map-design-principles.md	Map-Design-Principles	L2 · 地图设计原则
 docs/design/zh-CN/contracts/world/map-exploration.md	Map-Exploration-Contract	L3 · 地图探索

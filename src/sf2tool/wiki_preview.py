@@ -25,8 +25,13 @@ from sf2tool.zh_translation import _heading_anchors
 REPOSITORY = "https://github.com/FrankHZ/md-sf2-reverse-engineering"
 MAPPING = "docs/operations/wiki-mirrors.tsv"
 INDEX = "docs/README.zh-CN.md"
+ENGLISH_INDEX = "docs/README.md"
 DESIGN_ROOT = "docs/design/zh-CN/"
 DESIGN_MAP = DESIGN_ROOT + "design-map.md"
+ENGLISH_DESIGN_MAP = "docs/design/design-map.md"
+REMAKE_README = "remake/README.md"
+CAPABILITY_STATUS = "remake/docs/capability-status.md"
+ARCHITECTURE = "remake/docs/architecture.md"
 
 
 class Source:
@@ -111,8 +116,8 @@ class Source:
         return re.sub(r"(!?\[[^\]\n]*\]\()([^()\s]+)\)", replace, self.read(path))
 
 
-def repo_link(source: Source, path: str, label: str) -> str:
-    return f"[{label}]({source.url(path)})"
+def repo_link(source: Source, path: str, label: str, fragment: str = "") -> str:
+    return f"[{label}]({source.url(path, fragment)})"
 
 
 def wiki_link(title: str, label: str) -> str:
@@ -120,43 +125,83 @@ def wiki_link(title: str, label: str) -> str:
 
 
 def render(source: Source) -> dict[str, str]:
-    def credit(path: str) -> str:
-        return (
-            f"> {repo_link(source, path, '主仓中文源页')} · "
-            f"[{source.commit[:8]}]({REPOSITORY}/commit/{source.commit}) · "
-            f"[反馈或纠错]({REPOSITORY}/issues/new)\n"
-        )
+    commit_link = f"[{source.commit}]({REPOSITORY}/commit/{source.commit})"
+    short_commit_link = f"[{source.commit[:8]}]({REPOSITORY}/commit/{source.commit})"
+    issue_link = f"[反馈或纠错]({REPOSITORY}/issues/new)"
+
+    def footer(path: str, english_path: str | None = None) -> str:
+        parts = [repo_link(source, path, "主仓中文源页")]
+        if english_path is not None:
+            parts.append(repo_link(source, english_path, "英文规范源 · English source"))
+        parts.append(f"源码提交 {commit_link}")
+        parts.append(issue_link)
+        return "\n\n---\n\n> " + " · ".join(parts) + "\n"
 
     def design_page(path: str) -> str:
         english = path.replace(DESIGN_ROOT, "docs/design/", 1)
-        return (
-            credit(path)
-            + "\n"
-            + repo_link(source, english, "英文规范源 · English source")
-            + "\n\n"
-            + source.render_body(path)
-        )
+        body = source.render_body(path).rstrip("\n")
+        return body + footer(path, english)
+
+    def page_link(path: str, fallback_label: str) -> str:
+        if path in source.mirrors:
+            title, label = source.mirrors[path]
+            return wiki_link(title, label)
+        return repo_link(source, path, fallback_label)
 
     entries = "".join(f"- {wiki_link(title, label)}\n" for title, label in source.mirrors.values())
     design_map = wiki_link(DESIGN_MAP_TITLE, "L0–L3 设计地图")
+    vision = page_link(DESIGN_ROOT + "game-vision.md", "L0 · 重制愿景")
+    overview = page_link(DESIGN_ROOT + "synthesis/gameplay-overview.md", "L1 · 玩法总览")
     index = repo_link(source, INDEX, "主仓中文设计索引")
+    english_map = repo_link(source, ENGLISH_DESIGN_MAP, "English design map")
+    english_index = repo_link(source, ENGLISH_INDEX, "英文文档总索引")
+    capability = repo_link(
+        source, CAPABILITY_STATUS, "当前重制可玩范围与能力状态（英文源）", "campaign-feature-trace"
+    )
+    sidebar_capability = repo_link(
+        source, CAPABILITY_STATUS, "当前可玩能力（英文源）", "campaign-feature-trace"
+    )
+    remake_start = repo_link(source, REMAKE_README, "本地运行与游玩指南（英文源）")
+    architecture = repo_link(source, ARCHITECTURE, "重制引擎架构（英文源）")
+
+    home_body = (
+        "# Shining Force II 重制设计 Wiki\n\n"
+        "本 Wiki 收录美版 Mega Drive / Genesis《光明力量 II》（Shining Force II）逆向研究与"
+        "独立重制的 **L0–L3 中文设计文档**，按玩家处境、可选决策、代价与后果组织阅读。\n\n"
+        "## 按你的目标开始阅读\n\n"
+        f"1. **了解这款重制与核心玩法（玩家 / 新读者）**：先读 {vision} 与 {overview}；"
+        f"查看最新可玩进度与本地运行方式，请前往主仓唯一入口：{capability}、{remake_start}。\n"
+        f"2. **查阅系统设计与机制规则（游戏策划）**：从 {design_map} 按系统进入下方已同步的 "
+        "L2 系统专题与 L3 规则页；未入 Wiki 的专题会明确标出缺口和主仓位置。\n"
+        "3. **查原版反汇编证据、数据表或工程实现（研发 / 考据）**：完整技术资料、原版证据"
+        f"与配置表均保留在主仓，请查阅 {index}、{english_index} 与 {architecture}。\n\n"
+        "## 已同步的 Wiki 页面\n\n"
+        f"- {design_map}（全系统总览与规则链路）\n"
+        f"{entries}\n"
+        "## 尚未同步到 Wiki 的设计专题\n\n"
+        "剧情事件与章节总表（`#2366`）、现代引擎与 Debug 设计入口（`#2358`）、"
+        "UI/现代化总览（`#2386`）仍在主仓整理中。"
+        f"你可以先通过 {design_map} 或 {index} 跳转主仓阅读，待审阅完成后再纳入本 Wiki，"
+        "不把纯工程文档直接冒充为中文策划正文。"
+    )
+
+    sidebar_body = (
+        "## SF2 设计 Wiki\n\n"
+        f"- {wiki_link('Home', '首页')}\n"
+        f"- {design_map}\n\n"
+        "### L0–L3 已同步正文\n\n"
+        f"{entries}\n"
+        "### 主仓入口\n\n"
+        f"- {index}\n"
+        f"- {english_map}\n"
+        f"- {sidebar_capability}\n\n"
+        "---\n\n"
+        f"> 源码 {short_commit_link} · {issue_link}\n"
+    )
+
     pages = {
-        "Home": (
-            "# Shining Force II 设计 Wiki\n\n"
-            + credit(INDEX)
-            + f"\n{design_map}连接愿景、玩法、各系统和具体规则。\n\n"
-            + entries
-            + f"\n{index} · "
-            + repo_link(source, "docs/design/design-map.md", "English design map")
-            + "\n"
-        ),
-        "_Sidebar": (
-            "## SF2 设计\n\n"
-            + f"- {wiki_link('Home', '首页')}\n- {design_map}\n"
-            + entries
-            + f"\n{index}\n\n"
-            + credit(INDEX)
-        ),
+        "Home": home_body + footer(INDEX, ENGLISH_DESIGN_MAP),
+        "_Sidebar": sidebar_body,
         DESIGN_MAP_TITLE: design_page(DESIGN_MAP),
     }
     pages.update((title, design_page(path)) for path, (title, _) in source.mirrors.items())
