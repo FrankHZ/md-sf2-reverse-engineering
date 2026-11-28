@@ -35,16 +35,20 @@ The controlled route reached usable Map14 control. Natural dock portraits in thi
 
 Load the checkout's ignored private-input configuration in the same process. Input paths and output
 are explicit; no ROM extraction or asset generation occurs. Use the registered gameplay, independent
-opening, Witch and catalog selections together. From this checkout:
+opening, Witch and catalog selections together. The following command uses the staged layout after
+cutover. Before cutover, select the four corresponding roots from the registered column in
+[Pre-voyage package locations](content/asset-inventory.md#pre-voyage-package-locations) and keep
+the same filenames within each root.
 
 ```powershell
 . ./local/private-inputs.ps1
 uv sync --locked
+$media = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media'
 uv run python -m sf2tool.remake_windows_package `
-  --campaign "$env:SF2_SHARED_INPUT_ROOT/derived/issue2316/kiwi-v1" `
-  --entry "$env:SF2_SHARED_INPUT_ROOT/derived/issue2255/witch-entry-v1/entry.json" `
-  --opening "$env:SF2_SHARED_INPUT_ROOT/derived/issue2324/opening-hd-v1/opening/opening.json" `
-  --catalog "$env:SF2_SHARED_INPUT_ROOT/derived/issue2266/catalogs-v1/world.zh-CN.json" `
+  --campaign "$media/gameplay/kiwi-v1" `
+  --entry "$media/entry/witch-v1/entry.json" `
+  --opening "$media/opening/hd-v1/opening/opening.json" `
+  --catalog "$media/display-catalog/campaign-zh-cn-v1/world.zh-CN.json" `
   --templates "$env:SF2_SHARED_INPUT_ROOT/toolchains/godot-4.7.2/Godot_v4.7.2-stable_mono_export_templates.tpz" `
   --output "$PWD/local/windows-candidate-v1"
 ```

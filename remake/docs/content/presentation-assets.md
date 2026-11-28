@@ -1624,13 +1624,14 @@ runs with the producer package path absent; one fallback only rewrites Battle26'
 ```powershell
 . ./local/private-inputs.ps1
 $library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
-$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2315/aqua-v1'
+# Select the fresh Aqua output from the preparation command below as $aquaPackage.
 uv run --locked --with pillow==13.0.0 python -m sf2tool.remake_retail_assets `
-  --root $library --base $base --mount $freshAbsolutePackage `
+  --root $library --base $aquaPackage --mount $freshAbsolutePackage `
   --family kiwi-family --gfx-root $registeredGraphicsRoot
 ```
 
 Use a fresh worktree-local ignored destination and the registered graphics selection.
+The Aqua recipe below prepares the same complete input as the earlier publication.
 `derived/issue2316/review-v1` owns reader/Boot recipes and retained receipts.
 [Source correction, results and limits](../godot/spell-presentation.md#kiwi-converted-attack-playback-2316).
 
@@ -1655,13 +1656,18 @@ links unchanged immutable inputs. The producer package path is absent during acc
 . ./local/private-inputs.ps1
 $library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
 $base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2314/atlas-v1'
+$aquaPackage = Join-Path (Get-Location).Path ('local/aqua-' + [guid]::NewGuid().ToString('N'))
 uv run --locked --with pillow==11.3.0 python -m sf2tool.remake_retail_assets `
-  --root $library --base $base --mount $freshAbsolutePackage `
+  --root $library --base $base --mount $aquaPackage `
   --family aqua-family --gfx-root $registeredGraphicsRoot
+if ($LASTEXITCODE) { throw 'Aqua preparation failed' }
 ```
 
-Use fresh checkout-local ignored output. Published `derived/issue2315/review-v1` holds
-reader/ordinary-input recipes and retained receipts. Boot stages writable files beneath
+A fresh checkout-local build reproduced all 181 published files byte for byte with the
+pinned graphics checkout. Select `$aquaPackage` when preparing Kiwi or reproducing the Aqua
+selection. Use the [retail preparation location](asset-inventory.md#pre-voyage-package-locations)
+selected by the operator. Published `derived/issue2315/review-v1` holds reader and ordinary-input
+recipes and retained receipts. Boot stages writable files beneath
 the selected worktree and requires an explicit disposable save root.
 [Source, caller distinction, checks and failures](../godot/spell-presentation.md#aqua-family-playback-2315).
 
@@ -1789,8 +1795,9 @@ uv run --with pillow python -m sf2tool.remake_retail_assets --root $library --ba
 ```
 
 The graphics checkout is pinned to `172662709b31cb296b55f51894754ce810c30f6c`.
-`dao-v1` is retained rejected output with an invocation palette offset error; only v2
-is the candidate. [Source, delivery and ordinary-input reproduction](../godot/spell-presentation.md#dao-family-playback-2310)
+The earlier `dao-v1` output failed with an invocation palette offset error. Use `dao-v2` for
+reproduction and keep the rejection receipt with the owning review.
+[Source, delivery and ordinary-input reproduction](../godot/spell-presentation.md#dao-family-playback-2310)
 separates original operands, deterministic cosmetic motion and remaining Unknowns.
 
 ### DESOUL successor #2307
