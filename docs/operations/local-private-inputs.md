@@ -282,13 +282,17 @@ and restoration. No generic environment-variable redirect or new binary was used
 [#2370](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2370) defines the target for
 the Windows operator host. Consolidation uses the configured project volume. The configured
 selections and their owners still describe current operation until each cutover is verified.
-Keep machine paths in ignored configuration and receipts.
+Keep machine paths in ignored configuration and receipts. The
+[asset pipeline workflow](../../remake/docs/content/asset-pipeline-workflow.md#directory-responsibilities)
+owns media subdirectories, publication write ownership and the pilot-to-cutover sequence.
 
 | Location relative to the operator's project root | Owner and contents |
 | --- | --- |
 | `local/shared/roms/` | Registered immutable ROM selection, with its existing identity check |
 | `local/shared/sources/<role>/` | Durable private corpora and independent asset, graphics or audio repositories. Each retains its own history, writable ownership and private boundary. |
-| `local/shared/packages/<role>/<version>/` | Read-only closed selections such as gameplay, opening, Witch entry, catalogs, prepared retail assets, reproduction witnesses and Windows candidates. Use the [asset registration](../../remake/docs/content/asset-inventory.md#shared-package-retention). |
+| `<main-checkout>/private-media/` | Canonical private image/audio payload and the closed world, scene, entry and catalog files that select it. The main repository tracks the [asset metadata](../../remake/docs/content/asset-inventory.md#shared-package-retention). |
+| `local/shared/media` | The single Windows NTFS junction pointing to the canonical checkout's `private-media/`. All worktrees read the same payload through this entry. |
+| `local/shared/packages/<role>/<version>/` | Closed Windows delivery and other operator publications outside the canonical media root. |
 | `local/shared/toolchains/` and `local/shared/dotnet-cli-home/` | Selected installations, required distributions and SDK-owned CLI state. Keep the existing root contracts and update their configured selections together. |
 | `local/player-data/` | Operator-owned writable save roots and their backups. Keep real namespaces, settings and backups separate from installed builds and disposable saves. |
 | `local/runs/<owner>/<run>/` | Explicit external namespaces for probes and disposable saves that must sit outside Git. The checkout or operator holding the run owns their cleanup. Other checkout scratch stays in that checkout. |
@@ -299,11 +303,26 @@ state before redirecting a producer. Existing selectors may remain temporarily a
 during staged cutover. Preserve separately designated media projects, source recordings and masters
 at their operator-owned paths.
 
+Use the ignored checkout-local `local/private-inputs.ps1` to select the shared root via
+`SF2_SHARED_INPUT_ROOT`. Pass the explicit `media/` paths from the
+[asset inventory](../../remake/docs/content/asset-inventory.md#pre-voyage-package-locations)
+to the normal readers and build tools. The canonical checkout's `private-media/` is Git-ignored
+durable data. Keep each package's image and audio paths relative to its content documents. The
+`media` junction is the only linked entry in this layout. Use real directories for checkout
+scratch, `local/shared` itself and independent Git repositories. Keep authored and licensed
+resources used by the public project tracked with their provenance.
+
+Before switching this entry, verify the linked target is the intended real `private-media/`
+under the canonical checkout. Keep the junction's location and resolved entity out of normal
+scratch cleanup. A cleanup of the shared parent must skip reparse points. To retire the junction,
+verify that exact link and unlink the entry only. Retirement of the entity requires a separate
+decision for the canonical media directory.
+
 ### Cut over a local selection
 
 Plan space for the largest concurrent copy, validation scratch and rollback copies. Enumerate the
-actual consumers, including launchers, templates, private manifests, build inputs, save namespaces
-and package-relative resources. Record which version or location each change replaces.
+actual consumers, including launchers, templates, the tracked asset inventory, build inputs, save
+namespaces and package-relative resources. Record which version or location each change replaces.
 
 With the owning writer quiesced, copy into a fresh destination and verify the complete selection.
 Use the existing selection or package checker and byte comparison where required. For player
@@ -324,5 +343,6 @@ use the shared CLI home. Do not replace the whole `local/` directory with a shar
 Configure every retained worktree's ignored environment when selecting shared installations. Reuse
 verified existing installations. Where an authorized promotion is needed, copy a complete verified
 installation into an empty destination, verify the copy, and promote without overwrite. Preserve
-old installations, configuration backups, gate receipts and completed failures. Deletion and cleanup
-require separate authorization. A mismatch is a failure, never permission to overwrite an input.
+the current rollback selection and decisive acceptance or failure evidence. Retire superseded
+installations and generated copies after current consumers pass from the new selection. Deletion
+and cleanup require separate authorization. A mismatch is a failure, never permission to overwrite an input.

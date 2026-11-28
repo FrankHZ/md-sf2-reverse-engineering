@@ -354,7 +354,10 @@ asset buckets; this is not proof that the ordinary host implements the old bucke
 
 ### Source authority
 
-Private source art/audio and accepted asset Git objects own material identity. A generated cache,
+Private source art/audio and accepted asset Git objects own material identity. The
+[asset pipeline workflow](asset-pipeline-workflow.md#tracked-metadata-and-private-records)
+assigns current build selection and queryable semantic bindings to main Git. Private manifests
+retain input and payload identity. The migration pilot will connect these records. A generated cache,
 preview, screenshot or mutable checkout name does not replace that authority. Source color changes,
 smoothing and derivative policy require explicit reviewed provenance.
 
@@ -384,7 +387,7 @@ Its bootstrap identity is recorded as an origin point, not as a floating current
 | remote policy | no remote; tracked pre-push hook rejects pushes |
 | binary storage | ordinary local Git history, not Git LFS |
 
-The tracked layout is:
+The current tracked layout in that independent repository is:
 
 | Path | Authority |
 | --- | --- |
@@ -392,6 +395,10 @@ The tracked layout is:
 | `masters/` | editable HUD SVG and other authored masters |
 | `runtime/` | reviewed runtime-ready 2x/4x textures, UI, fonts, music, and sound assets |
 | `manifests/` | local identity, semantic mapping, derivation, import policy, and code-compatibility records |
+
+The [planned directory responsibilities](asset-pipeline-workflow.md#directory-responsibilities)
+cover relocation of the real independent Git root, the canonical media entity and the shared
+reader entry. Existing private manifest mappings describe the revisions that produced them.
 
 The repository ignores `cache/`, `scratch/`, `previews/`, temporary output, and Godot import state.
 Reviewed binary art and audio are intentionally trackable. A local build or verification receipt
@@ -1624,14 +1631,16 @@ runs with the producer package path absent; one fallback only rewrites Battle26'
 ```powershell
 . ./local/private-inputs.ps1
 $library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
-$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2315/aqua-v1'
+# Select the fresh Aqua output from the preparation command below as $aquaPackage.
 uv run --locked --with pillow==13.0.0 python -m sf2tool.remake_retail_assets `
-  --root $library --base $base --mount $freshAbsolutePackage `
+  --root $library --base $aquaPackage --mount $freshAbsolutePackage `
   --family kiwi-family --gfx-root $registeredGraphicsRoot
 ```
 
 Use a fresh worktree-local ignored destination and the registered graphics selection.
+The Aqua recipe below prepares the same complete input as the earlier publication.
 `derived/issue2316/review-v1` owns reader/Boot recipes and retained receipts.
+After cutover select `$library` from `media/retail-preparation/v1/retail-v1`.
 [Source correction, results and limits](../godot/spell-presentation.md#kiwi-converted-attack-playback-2316).
 
 ### AQUA successor #2315
@@ -1655,13 +1664,18 @@ links unchanged immutable inputs. The producer package path is absent during acc
 . ./local/private-inputs.ps1
 $library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
 $base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2314/atlas-v1'
+$aquaPackage = Join-Path (Get-Location).Path ('local/aqua-' + [guid]::NewGuid().ToString('N'))
 uv run --locked --with pillow==11.3.0 python -m sf2tool.remake_retail_assets `
-  --root $library --base $base --mount $freshAbsolutePackage `
+  --root $library --base $base --mount $aquaPackage `
   --family aqua-family --gfx-root $registeredGraphicsRoot
+if ($LASTEXITCODE) { throw 'Aqua preparation failed' }
 ```
 
-Use fresh checkout-local ignored output. Published `derived/issue2315/review-v1` holds
-reader/ordinary-input recipes and retained receipts. Boot stages writable files beneath
+A fresh checkout-local build reproduced all 181 published files byte for byte with the
+pinned graphics checkout. Select `$aquaPackage` when preparing Kiwi or reproducing the Aqua
+selection. After cutover select `$library` from `media/retail-preparation/v1/retail-v1` and
+`$base` from `media/gameplay/atlas-v1` in the [asset inventory](asset-inventory.md#pre-voyage-package-locations). Published `derived/issue2315/review-v1` holds reader and ordinary-input
+recipes and retained receipts. Boot stages writable files beneath
 the selected worktree and requires an explicit disposable save root.
 [Source, caller distinction, checks and failures](../godot/spell-presentation.md#aqua-family-playback-2315).
 
@@ -1789,8 +1803,9 @@ uv run --with pillow python -m sf2tool.remake_retail_assets --root $library --ba
 ```
 
 The graphics checkout is pinned to `172662709b31cb296b55f51894754ce810c30f6c`.
-`dao-v1` is retained rejected output with an invocation palette offset error; only v2
-is the candidate. [Source, delivery and ordinary-input reproduction](../godot/spell-presentation.md#dao-family-playback-2310)
+The earlier `dao-v1` output failed with an invocation palette offset error. Use `dao-v2` for
+reproduction and keep the rejection receipt with the owning review.
+[Source, delivery and ordinary-input reproduction](../godot/spell-presentation.md#dao-family-playback-2310)
 separates original operands, deterministic cosmetic motion and remaining Unknowns.
 
 ### DESOUL successor #2307

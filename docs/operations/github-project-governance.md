@@ -407,8 +407,17 @@ verify that the accepted PR includes the checkout's tip. Check current consumers
 publications and external disposable namespaces, including configuration outside the code repo.
 A clean Git status only describes tracked and visible untracked state. Keep protected saves,
 independent repositories, source media and still-selected package dependencies outside every
-retirement target. Use the [local cutover checks](local-private-inputs.md#cut-over-a-local-selection)
-before retiring any moved selection.
+retirement target. Exclude the canonical checkout's ignored `private-media/` from checkout
+cleanup. Shared-root cleanup skips reparse points and must verify resolved targets. Retiring the
+`shared/media` junction removes only the entry. A decision to delete its entity is separate.
+[Media layout](local-private-inputs.md#single-volume-local-layout)
+
+Base retirement on the dependencies of supported Debug and Release builds,
+ordinary launch and required material preparation. Keep historical outcomes in their owning
+documents or accepted Git and PR records. A path recorded by a past run alone does not keep its
+scratch, intermediate package or runner active. Update maintained recipes before removing their
+inputs. Use the [local cutover checks](local-private-inputs.md#cut-over-a-local-selection) before
+retiring any moved selection.
 
 For an accepted idle checkout selected for retirement, resolve uncommitted work and nested Git
 ownership, then use Git's worktree removal command. The operator authorizes this removal after

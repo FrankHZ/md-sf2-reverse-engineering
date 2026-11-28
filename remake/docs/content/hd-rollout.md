@@ -381,13 +381,13 @@ Missing optional exact banks retain the indexed Original fallback. Malformed dec
 fail Content admission. Runtime matches all sixteen words, and never applies the uniform
 fade offset a second time to a selected precolored bank.
 
-From the explicit checkout after loading its private configuration, select the existing clean
-graphics checkout as `$gfx`. Use a fresh ignored `$output`, or a fresh versioned destination
-under registered `derived/`; immutable published versions are never overwritten:
+Select the clean graphics checkout as `$gfx` and a fresh checkout-local ignored `$output`.
+After media cutover, use the indexed opening root below. Before cutover choose its registered
+path from the [asset inventory](asset-inventory.md#pre-voyage-package-locations).
 
 ```powershell
 . ./local/private-inputs.ps1
-$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2252/pre-voyage-opening-v1/opening'
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media/opening/indexed-v1'
 uv run --locked --with pillow==11.3.0 python -m sf2tool.remake_opening_hd `
     --base $base --graphics $gfx --output $output
 # Add --pilot for three representative blocks and both complete effect direction sets.

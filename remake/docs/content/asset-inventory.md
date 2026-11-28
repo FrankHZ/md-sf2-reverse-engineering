@@ -2,7 +2,9 @@
 
 This is the entry point for tracking a resource from its USA source identity through preparation,
 selection, delivery and verification. The [presentation assets guide](presentation-assets.md)
-owns preparation, package assembly and local provenance. The
+owns the current preparation, package assembly and local provenance. The
+[asset pipeline workflow](asset-pipeline-workflow.md) specifies incremental publication, the
+tracked selection and generated per-resource lookup proposed for the next pilot. The
 [music command inventory](music-command-inventory.md) tracks each BGM command.
 
 **Standard scope.** [#2163](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2163)
@@ -27,9 +29,10 @@ The [local Windows candidate recipe](../windows-local-candidate.md) packages the
 Kiwi gameplay successor with independently selected #2324 opening, #2255 Witch and #2266 catalogs.
 Its closure and executable remain private; packaging does not alter asset provenance or rights.
 
-All identifiers here are relative to the configured shared data root. Keep each package's
-`world.json`, `main-scenes.json`, `entry/entry.json` and six `opening-inputs` selections
-together. The active package is the set selected in the launch process.
+All identifiers here are relative to the configured shared data root. Select current launch
+inputs from the [pre-voyage package locations](#pre-voyage-package-locations). The earlier
+packages below identify the scope of their recorded observations. Keep the selected world,
+scenes, external resources and six `opening-inputs` together.
 
 The independent opening selection is `derived/issue2324/opening-hd-v1/opening/opening.json`.
 Its Map42 HD bank and actor/portrait resources come from the accepted #2252 opening; the
@@ -63,26 +66,106 @@ organize promoted packages by consumer role and immutable version. The selection
 to identify the registered operating inputs until a verified cutover. Use issue and PR references
 as provenance in the package record. Reserve a separate namespace for short-lived acceptance runs.
 
-Reuse the package's existing private manifest or preparation record. For a retained shared
-selection record its identity, purpose, version, source and producer command or manual source
-custody, dependency selections and compatible code/asset revisions, current launch or reproduction
-consumers, private handling, rebuild route and retention or supersession relationship. One record
-can cover the whole selection. Use existing payload identity and closure checks.
+This inventory and its linked resource owners record family and selected example metadata, including
+purpose, source and rights boundary, variants, shared-relative location, current consumers and
+required build inputs. Per-resource coverage still depends on private inputs. The
+[metadata design](asset-pipeline-workflow.md#tracked-metadata-and-private-records) assigns the
+full current lookup to main Git and specifies how it will be regenerated at publication. Private preparation records
+retain payload identities and detailed source custody. Extracted tables, media bytes and local
+absolute paths stay private. Use the existing closure and identity checks.
 
-Trace the configured launch and preparation paths separately. A closed consumer package may run
-without its producer's base. A recipe can still require that base, an independent catalog or a seed
-in another pack. Check both before pruning. Preserve selected originals and irreproducible inputs.
-For retained reproductions keep the minimum sufficient inputs and a working route from accepted
-Git and registered source material. Before removing an inherited full pack, reproduce its maintained
-consumer or successor from the retained inputs without the old selection. Keep completed failures
-and decisive receipts with their owner at the required scope. Retire redundant builds, logs and
-disposable saves after review. Package size, age and search results alone cannot establish closure.
+Trace supported Debug, Release and preparation inputs starting from their real entry points. A
+closed runtime package can read independently of its producer's base. Keep the smallest usable
+set of required producer inputs, selected originals and irreplaceable sources. Validate the
+current entry points from retained selections before retiring the old ones. A historic build or
+receipt can record its original inputs without keeping its original output tree, intermediate
+captures or one-off runner. Preserve decisive failure evidence in its owning result. Remove
+superseded packages and generated review data once their remaining consumers have been resolved.
+
+### Pre-voyage package locations
+
+The paths in this table are relative to the configured shared input root. The `media/` junction
+points to the canonical checkout's ignored `private-media/`. Media packages keep their content
+documents with the relative image and audio payloads. Use the staged paths after the operator
+verifies the copy and switches the launch configuration. Existing recipes can still select their
+registered locations during the transition.
+
+| Selection and consumers | Registered location | Staged location |
+| --- | --- | --- |
+| Aqua v1 (#2315), Kiwi preparation and exact-version reproduction | `derived/issue2315/aqua-v1` | [Build into checkout scratch on demand](presentation-assets.md#aqua-successor-2315) |
+| Kiwi v1 (#2316), Windows export and ordinary development launch | `derived/issue2316/kiwi-v1` | `media/gameplay/kiwi-v1` |
+| HD opening v1 (#2324), ordinary startup and single-act debug | `derived/issue2324/opening-hd-v1` | `media/opening/hd-v1` |
+| Indexed opening (#2252), input to the HD opening producer | `derived/issue2252/pre-voyage-opening-v1/opening` | `media/opening/indexed-v1` |
+| Atlas v1 (#2314), stable input to the Aqua producer | `derived/issue2314/atlas-v1` | `media/gameplay/atlas-v1` |
+| Witch entry v1 (#2255), ordinary entry and its Chinese overlay | `derived/issue2255/witch-entry-v1` | `media/entry/witch-v1` |
+| Chinese campaign display catalog (#2266), world display names | `derived/issue2266/catalogs-v1` | `media/display-catalog/campaign-zh-cn-v1` |
+| Retail preparation (#2001), prepared library, base world, inventory and generation inputs | `derived/issue2001` | `media/retail-preparation/v1` |
+| Independent product assets, graphics and audio repositories | Operator-selected Git roots | `sources/product-assets`, `sources/graphics`, `sources/audio` |
+
+The [private preparation records](presentation-assets.md#reuse-a-closed-private-package) keep the
+retail base, library and source identities. Preserve the preparation family's relative filenames,
+including `retail-v1`, `prepared-library-v1`, `issue1966-original` and
+`retail-source-and-coverage.csv`. Stage the selected inputs before switching the producer defaults
+and private manifest references. Keep the separately selected pinned upstream and H1 listing
+available for Prepare. A receipt about a previous run can retain its original path.
+
+Kiwi contains the accepted Aqua resources. The Aqua producer regenerated the original published
+package byte for byte from the retained Atlas selection, prepared retail library and pinned
+graphics code. Retire the shared Aqua copy once its rollback and reproduction launchers select
+an available package explicitly.
+
+Keep each runtime selection's relative content paths intact. The existing Windows packager resolves
+the gameplay world/scenes, Battle01 data, opening resources, Witch assets and both catalogs before
+export. When switching a source launcher, also check a native ordinary entry using the staged
+selections. Old complete packages needed for current build inputs or an approved rollback remain
+available until those consumers are switched.
+
+For an ordinary Debug launch after cutover, load the checkout configuration and set the existing
+reader inputs in the launch process. Use an isolated save namespace for verification.
+
+```powershell
+. ./local/private-inputs.ps1
+$media = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media'
+$campaign = Join-Path $media 'gameplay/kiwi-v1'
+$witch = Join-Path $media 'entry/witch-v1'
+$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $campaign 'world.json'
+$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $campaign 'main-scenes.json'
+$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $witch 'entry.json'
+$env:SF2_ENTRY_DISPLAY_CATALOG = Join-Path $witch 'entry.zh-CN.json'
+$env:SF2_PRIVATE_OPENING_CONTENT = Join-Path $media 'opening/hd-v1/opening/opening.json'
+$env:SF2_DISPLAY_CATALOG = Join-Path $media 'display-catalog/campaign-zh-cn-v1/world.zh-CN.json'
+foreach ($file in Get-ChildItem -LiteralPath (Join-Path $campaign 'opening-inputs') -Filter 'SF2_PRIVATE_*.json' -File) {
+    [Environment]::SetEnvironmentVariable($file.BaseName, $file.FullName, 'Process')
+}
+```
+
+Use the [normal Debug launcher](../verification/debug-port.md#development-default) or the
+[Windows export command](../windows-local-candidate.md#build-and-run) with the same selections.
+
+### Current image and audio metadata
+
+The following examples identify bindings in the current preparation and launch routes.
+Root selectors come from the table above. Within each selection, use the resource paths declared
+by the world, scene, entry or opening document.
+
+| Semantic identity and purpose | Source and variant | Shared selection and consumer |
+| --- | --- | --- |
+| Map42 shrine, Map65 storm, effects 183 and 187. Opening terrain, actor and effect projection. | Pinned USA scene, tileset and palette identities. Original banks and prepared HD banks travel together. Both are private source-derived material. | `media/opening/hd-v1/opening/opening.json` selects scene-specific inputs for the opening reader and the Windows exporter. [Opening terrain and effect bindings](hd-rollout.md#opening-terrain-and-palette-banks-2324) |
+| `identity-icon.item.0.normal`, `identity-icon.item.0.selected`. Medical Herb field inventory states. | Original private 16×24 icons and palette-preserving HD 64×96 derivatives. | The selected gameplay world declares both variants. The field identity reader and Settings select admitted resources. [Preparation and icon bindings](hd-art-pilot.md#local-publication-and-replay-1703) |
+| AQUA ranks 1–2 and Kiwi growth. Close-up battle effects. | Pinned retail effect selectors and Original palettes. HD rasters are private derivatives from the pinned graphics checkout. | Kiwi's world and encounter scene inputs carry both sets for current run and export. Prepare using the retail effects library and the accepted Atlas base via Aqua. [AQUA and Kiwi](presentation-assets.md#kiwi-successor-2316) |
+| Music commands 10 and 28. Witch and title playback. | Prepared original-driver audio under the private source boundary. Selection is independent of the Original/HD graphics setting. | Entry audio resources resolve relative to `media/entry/witch-v1/entry.json`. The ordinary entry and Windows content closure keep them with the entry document. [Entry and command identities](music-command-inventory.md#non-silent-commands) |
+| Music command 12 and SFX command 109. Scene music and encounter notification. | Command 12 uses private original PCM in pre-voyage. Command 109 uses the authored finite encounter cue. The original waveform has its own evidence boundary. | Kiwi's world selects the resources consumed by session audio. The export follows that world's relative WAV paths. [Music](music-command-inventory.md#non-silent-commands) · [Encounter cue](music-command-inventory.md#silent-slots-and-the-modern-encounter-cue) |
+
+For preparation, the retail library provides the indexed art and audio, the selected base world
+provides inherited scene bindings and the pinned graphics tools produce HD variants. Only the
+preparation commands that consume original source need the pinned upstream, listing or ROM.
+[Retail preparation](#retail-original-preparation) · [Distribution boundary](presentation-assets.md#product-design-and-distribution-limit)
 
 ## Resource families and owners
 
-The private asset Git entries below use `manifests/retail-v1-coverage.csv` for preparation
-status and selector, and `manifests/pre-voyage-asset-inventory.csv` for the inventoried demo
-snapshot. The current package and consumer owner establish what a particular game can show.
+The resource rows below record the code repository's semantic bindings. The private asset Git
+coverage CSV and prepared indexes supply the detailed payload lookup used by preparation and
+comparison. The current package and consumer determine the resources used at runtime.
 
 | Resource and identity | Source and prepared details | Package, consumer and acceptance owner |
 | --- | --- | --- |
@@ -1111,8 +1194,8 @@ Guardian Staff (91) remains outside the admitted equipment rules because of its 
 The five accepted translated names live in `derived/issue2266/catalogs-v1/world.zh-CN.json`.
 
 Preparation used one serial bounded pass; 1 GiB RAM and 1 GiB scratch/publication allowances
-were sufficient for the initial pass. The corrective run retains v1 and rejected v2 alongside
-v3; allow 2 GiB for these complete packages and local staging, with prepared immutable
+were sufficient for the initial pass. The corrective run recorded v2's rejection and published v3.
+Its complete packages and local staging had a 2 GiB allowance, with prepared immutable
 dependencies reused and only changed JSON copied. Compact pilot receipts are 3,537,931 bytes before the final reader receipt.
 No new ROM-derived animation capture was needed. The complete output was copied and
 checked through dependency closure, with no producer-scratch dependency. After moving

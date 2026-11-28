@@ -1,4 +1,7 @@
-# Private research inputs and all generated work
+# Canonical checkout's private media. The operator exposes this directory through shared/media.
+/private-media/
+
+# Checkout-local private inputs and generated work.
 /local/
 /artifacts/
 /reports/generated/

@@ -113,29 +113,23 @@ fresh namespace and keeps its newly published records across the cold launch. A 
 only identifies a record within that namespace. On Continue, read the displayed summary and
 choose the occupied record. Slot 2 can follow an empty Slot 1.
 
-For development Main use the current complete Kiwi gameplay, HD opening, Witch and Chinese
-catalog publications from the [candidate recipe](../windows-local-candidate.md#build-and-run).
-For the existing #2336 Release, packaged startup selects those inputs beside the executable.
-Use the same disposable copy and settings preparation for either host.
+For development Main, run the PowerShell reader-input block in
+[Pre-voyage package locations](../content/asset-inventory.md#pre-voyage-package-locations)
+in the same launch shell before running the commands below. Until cutover, substitute the four
+registered roots from the table for its staged roots, preserving all reader filenames. Loading `local/private-inputs.ps1`
+sets the shared root and tools. The inventory block selects the Kiwi world, HD opening, Witch,
+catalog and battle inputs for development Main.
+
+A packaged Release uses its own adjacent content, as in the archived #2336 observation. For that
+route, load `local/private-inputs.ps1` first to select the shared inputs used by the seed recipe
+below. Use the same disposable copy and settings preparation for either host.
 
 ```powershell
-. ./local/private-inputs.ps1
 $repoRoot = (Get-Location).Path # Run at the owning checkout's root.
 $shared = $env:SF2_SHARED_INPUT_ROOT
 $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
 $env:DOTNET_ROOT = Split-Path -Parent $env:DOTNET_BIN
 $env:DOTNET_ROOT_X64 = $env:DOTNET_ROOT
-$package = Join-Path $shared 'derived/issue2316/kiwi-v1'
-$entry = Join-Path $shared 'derived/issue2255/witch-entry-v1'
-$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $package 'world.json'
-$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $package 'main-scenes.json'
-$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $entry 'entry.json'
-$env:SF2_DISPLAY_CATALOG = Join-Path $shared 'derived/issue2266/catalogs-v1/world.zh-CN.json'
-$env:SF2_ENTRY_DISPLAY_CATALOG = Join-Path $entry 'entry.zh-CN.json'
-$env:SF2_PRIVATE_OPENING_CONTENT = Join-Path $shared 'derived/issue2324/opening-hd-v1/opening/opening.json'
-foreach ($file in Get-ChildItem -LiteralPath (Join-Path $package 'opening-inputs') -Filter 'SF2_PRIVATE_*.json' -File) {
-    [Environment]::SetEnvironmentVariable($file.BaseName, $file.FullName, 'Process')
-}
 Remove-Item Env:SF2_PRIVATE_CONTROLLED_START -ErrorAction SilentlyContinue
 # Supply the absolute disposable $saveRoot, $namespace and a fresh $runName for each process.
 $env:SF2_SAVE_ROOT = $saveRoot
