@@ -1,8 +1,10 @@
 # Private media production and publication
 
-**Accepted design; implementation pending.** The first milestone is an incremental image and sound pilot. Ordinary
-launch and release still use the [registered selections](asset-inventory.md#pre-voyage-package-locations).
-A proposed path or example below becomes operational only after its migration step passes.
+**The image and audio pilot is implemented.** Debug input setup, Windows input discovery and the
+metadata projection use the [tracked selection](metadata/selection.json). It still identifies the
+four [registered roots](asset-inventory.md#pre-voyage-package-locations). The publisher operates
+only in a disposable checkout-local directory. Canonical media migration and old-root retirement
+remain pending.
 [#2370](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2370) has High rigor because
 a producer, two kinds of launch, multiple checkouts and irreversible source retirement share these inputs.
 
@@ -29,25 +31,25 @@ runtime overlay, a general asset service and filesystem-wide fingerprints are un
 
 ## What exists today
 
-| Owner | Reuse | Change required before incremental publication |
+| Owner | Reuse | Remaining production work |
 | --- | --- | --- |
 | [Prepare-PrivateAssets](../../../tools/Prepare-PrivateAssets.ps1) and [retail preparation](presentation-assets.md#prepare-and-mount-retail-resources) | Prepare selects families, and SFX/music accept command IDs. The audio producer verifies existing command, cue, timer and WAV identities and can resume by command. Coverage joins an inventory to prepared results. | Pass the same explicit selection to discovery, Prepare, Coverage and Mount. The wrapper currently builds the inventory path under its fixed issue root. File existence or a valid *previous* result alone cannot prove an unchanged recipe. |
 | [Private asset preflight](../../../src/sf2tool/remake_assets.py) and [local product assets](presentation-assets.md#local-asset-repository) | Exact private Git identities, versioned manifests, checked source/master/runtime relationships. Keep the existing checks on real Git roots. | Import the permitted identity and derivation fields into main Git once. Retain detailed operand, byte identity and custody records with their private source. |
 | [Private package mount](../../../src/sf2tool/remake_private_package.py) and [Kiwi producer](../../../src/sf2tool/remake_kiwi_mount.py) | Existing family-specific transforms, fresh destinations, relative dependency closure and selected-file comparison. Kiwi derives six frame pairs, then writes each selected encounter's raster banks. Some mount modes already link unaffected files and copy the rest. | Separate calculation of changed outputs from role assembly. The current mount prepares a complete destination and can silently fall back to copying on link failure. Do not run a writer on a candidate tree sharing writable files with an accepted revision. |
-| [Windows input resolver](../../../src/sf2tool/remake_windows_package.py), [ordinary entry](../evidence/opening-loop-acceptance.md) | Resolve the actual world, encounter inputs, opening documents, named Witch PNG siblings and catalogs. Packaged startup reads adjacent content. Content readers check semantic admission. | Drive resolver and Debug environment from the same selection. Derive metadata from resolved inputs **and** the reader bindings. A directory listing includes files the build never selects. |
+| [Windows input resolver](../../../src/sf2tool/remake_windows_package.py), [ordinary entry](../evidence/opening-loop-acceptance.md) | Resolve the actual world, encounter inputs, opening documents, named Witch PNG siblings and catalogs. Packaged startup reads adjacent content. Content readers check semantic admission. | The pilot uses one selection for the resolver, Debug environment and projected reader bindings. Verify the real shared entrance and ordinary Debug/Release at cutover. |
 | Historical full successors and one-off wrappers | Existing evidence identifies a source or past observation. Atlas and the indexed opening subtree are still producer inputs. | Replace active fixed paths, including the Aqua reproduction/rollback defaults. Once supported consumers and unique sources are accounted for, retire surplus successors and scripts through the cleanup owner. Git preserves tracked recipes. |
 
 ## Tracked metadata and private records
 
 Main Git is the lookup for a resource at an accepted code revision, even on a machine without
-private media. Implement the following small files in the pilot. Keep existing definitions in
+private media. The selection and lookup are tracked. Keep existing definitions in
 their owning tables or reader code and reference their keys.
 
 | Information | Who writes it | How it is used |
 | --- | --- | --- |
 | Family identity, intended IDs/groups, Original/HD policy, source/rights class, recipe with relevant tools/parameters and intended consumers | Family owner in the existing [inventory](asset-inventory.md), [music command table](music-command-inventory.md) or maintained binding/producer. Add missing machine-readable expectations only for the family under implementation. | Supplies intent, including expected but missing assets. A private manifest can supply a pinned source key. Changes to source meaning or permission need review. |
-| Accepted gameplay, opening, entry and catalog shared-relative roots | Release owner in one proposed tracked `remake/docs/content/metadata/selection.json`. Change only affected role/version values. | Debug setup, resolver, projection and Windows build read the same four values once per launch/build. Machine configuration supplies the shared root and tool locations. A checkout on an older code commit can select its own retained revision. |
-| Current semantic bindings, variants, consumer and selected relative resource | Generate a sorted `remake/docs/content/metadata/current-media.tsv` from that selection, supported Content structures and declared expectations. Commit the generated diff with the selection. | Lookup key is family + semantic ID + binding context where coverage differs. Record Original and HD availability separately, mode-independent audio, missing and inapplicable states distinctly. Join the family key to its source/rights and production rule. |
+| Accepted gameplay, opening, entry and catalog shared-relative roots | Release owner in [selection.json](metadata/selection.json). Change only affected role/version values. | Debug setup, resolver, projection and Windows build read the same four values once per launch/build. Machine configuration supplies the shared root and tool locations. A checkout on an older code commit can select its own retained revision. |
+| Current semantic bindings, variants, consumer and selected relative resource | Generate the sorted [current-media.tsv](metadata/current-media.tsv) from that selection, supported Content structures and declared expectations. Commit the generated diff with the selection. | Lookup key is family + semantic ID + binding context where coverage differs. Record Original and HD availability separately, mode-independent audio, missing and inapplicable states distinctly. Join the family key to its source/rights and production rule. |
 | Private payload records | Existing private manifests, prepared indexes and candidate receipts | Exact input identity, tool revision/parameters, palette/frame operands, captures, full local paths and byte checks stay private. Use a reviewed private revision or existing input identity to reference them. |
 
 For example, the public key `aqua-2/frame-0` identifies a spell raster. Its row selects a scene
@@ -65,9 +67,19 @@ fresh projection directly with the staged TSV. Unknown IDs, duplicate/conflictin
 outside the selected roots or a changed row with no selected input/intent change must be resolved
 before publication. A change to payload bytes with the same ID and coverage still advances the
 affected role revision. CI without private media can check shape, keys and portable paths. The private
-projection and Content admission establish correspondence to actual material. The earlier bounded
-projection exercised present bindings. It still needs expected/missing rows, recipe joins and the
-shared selection input before it can own this file.
+projection and Content admission establish correspondence to actual material. The projector joins the six required entry names, their optional HD siblings, the two required
+entry music contexts and the music owner's prepared command/timer records to the actual bindings.
+Kiwi and Aqua frame groups report missing members and whole-group HD fallback. Other banks report
+the selected resources at the reader's bank or semantic key granularity. Extend expectations in
+their family owner when changing those families. An Original-only image selects the base bank;
+`mode-independent` marks audio, `missing` an expected absent binding and `prepared-only` a reviewed
+cue without a selected consumer. The detailed pixels, palette data and PCM stay private.
+
+From the owning checkout, use `uv run --locked python -m sf2tool.remake_media_metadata --public-check`
+for offline shape/key/path checks. With the private configuration loaded, omit `--public-check`
+to compare the tracked bytes with a fresh projection. Pass `--write` to replace the table after
+reviewing changed inputs. An explicit `--selection`, `--shared-root` and `--table` select a private
+candidate without touching the tracked table.
 
 ## Incremental run
 
@@ -140,27 +152,99 @@ path resolved through the shared alias as a cleanup target.
 
 ## Migration and acceptance
 
-**1. Image and audio pilot.** Use disposable roots and existing reviewed private inputs. Exercise
-one Witch image pair (or one existing six-frame spell group when measuring scene fan-out) and one
-prepared SFX command with its timer. Measure elapsed time, peak process memory, input, transient,
-output and *physical* additional bytes for a clean targeted run. Compare bytes and admitted
-bindings with a fresh run of those same units. Check that unchanged files linked within two disposable
-role revisions share a file identity and that replacing a changed file and retiring the trial
-revision leave the original bytes readable. Repeat unchanged and expect zero generated media.
-Change one image parameter and then one audio input/context. Verify only the expected groups and
-containers rebuild. Interrupt between units and again before selection switch, then check the old
-selection and resume. Verify metadata additions, removal/missing, deterministic order and selector
-parity. Stop with the initial implementation and measurements for review.
+### 1. Run the incremental pilot
 
-Budget peak disk as changed containers + candidate scratch + physically copied unchanged files +
-retained rollback + comparison workspace. Measure free space first. As a scale reference, the
-verified runtime closure is 196 files / 408,278,969 bytes, independent of the much smaller public
-binding table. Start the pilot serially with a one-family cap, at most 1 GiB additional disk and
-2 GiB process working set; if the estimate or observations exceed either, narrow the unit or
-revise the batch before continuing. Include failed scratch in the next estimate. Derive later
-batch sizes from available headroom, observed per-unit cost and shared tool slots. Optional
-emulator recapture has its own time and serial installation budget. Reuse prepared PCM for a
-mount/edit experiment; measure capture separately before scheduling capture at scale.
+Run PowerShell in the owning Windows checkout. Set `$gfx` to the real pinned graphics checkout used
+by the [HD entry producer](presentation-assets.md#switchable-entry-layers). The seed copy costs
+about 390 MiB once per fresh trial and keeps all reader-relative paths. Allow 1 GiB free for the
+pilot and a 2 GiB process working set. Count previous trials, interrupted candidates and tool caches
+when budgeting another batch.
+
+```powershell
+. ./local/private-inputs.ps1
+[void][IO.Directory]::CreateDirectory($env:TEMP)
+$root = Join-Path $PWD 'local/media-pilot'
+$pilot = @('run','--locked','--with','pillow==11.3.0','python','-B','-m',
+           'sf2tool.remake_media_pilot','--root',$root)
+& uv @pilot init
+if ($LASTEXITCODE) { throw 'Seed selection failed' }
+& uv @pilot publish --base base --revision v1 --gfx-root $gfx
+if ($LASTEXITCODE) { throw 'Initial pilot failed' }
+& uv @pilot publish --base v1 --revision png9 --png-compression 9 --gfx-root $gfx
+if ($LASTEXITCODE) { throw 'Image pilot failed' }
+& uv @pilot publish --base png9 --revision loop --png-compression 9 --loop-begin 279420 --gfx-root $gfx
+if ($LASTEXITCODE) { throw 'Audio pilot failed' }
+```
+
+The Original input is the 1,055-byte `numeral.png`. The HD producer uses its existing 4× filter.
+The audio input is the 6,245,032-byte prepared Witch WAV, command 10 / timer C1. Its PCM must
+match the admitted entry cue. The one-sample loop-point edit is an isolated invalidation witness.
+The entry reader requires a loop; this trial keeps every PCM sample. No capture is needed.
+
+The publisher holds one OS writer lock. Cache keys include each unit's reviewed source, actual
+generator and helper revisions, relevant parameters and tools. The entry reader and Python version
+are shared dependencies. Entry assembly has its own identity for the binding and serialization
+code. A revision without this identity receives one assembly refresh. When the assembler changes,
+replay both verified unit outputs against the original entry role and write an independent
+descriptor. Unchanged units can be read directly from their checked caches.
+The result lists the affected stages. The `generated` field identifies
+work actually performed after checking completed units. A PNG-only change preserves the old
+`entry.json` by file identity. An audio-binding or HD-bank membership change rewrites that document
+once. The role carries immutable regular-file hard links only inside the trial. The prior selection
+and table remain readable until one atomic replacement of `ACTIVE`.
+
+Read `ACTIVE` once and use `versions/<name>/selection.json` with the sibling `current-media.tsv`.
+A metadata-only revision can still select an older entry role. Retain that referenced role when
+retiring a revision. Roll back both records with `activate --base <active> --revision <retained>`.
+For a no-op, publish with the active base, the same parameters and a fresh proposed revision name.
+It returns the same active name. Use `--omit-hd` to withdraw this layer and omit the switch to
+restore it. Entry names are fixed by the production reader. A new arbitrary entry name requires
+a consumer change.
+
+**Confirmed.** The following measurements are for serial units on the pilot host. File allocation
+was measured by NTFS file identity to count hard links once. Working set is the publisher process
+peak; candidate disk is the change in allocated bytes for that operation.
+
+| Operation | Time | Peak working set | Candidate disk change |
+| --- | ---: | ---: | ---: |
+| Copy and verify 196 inputs, then project the base | 2.28 s | 260 MiB | 409,229,664 B |
+| Stop after the image unit | 0.34 s | 73 MiB | 8,848 B |
+| Resume audio and stop before the selection switch | 1.11 s | 272 MiB | 15,156,672 B |
+| Resume the completed pair, then separately repeat unchanged | 0.94 / 0.92 s | 272 MiB | 0 B |
+| Change PNG compression only | 1.13 s | 273 MiB | 587,224 B |
+| Change the loop point only, including the 10,734,157-byte entry document | 1.11 s | 272 MiB | 25,884,096 B |
+
+Both requested interruptions returned failure with the prior selection intact. Repeating the same
+base, revision and arguments with `--stop-after image` or `--stop-after assembly` removed resumes
+the completed work. The generated image and audio agreed byte-for-byte with fresh targeted
+derivation, including the complete cue binding. Switching Python 3.13 to 3.12 with the same
+pinned Pillow invalidated both units. The production EntryPresentationReader admitted six tested
+selections, including Original fallback after HD withdrawal and the restored HD binding. Rollback
+and removing one disposable version preserved the prior descriptor, shared PNG and edited image.
+A recipe-link change updated the public projection while generating zero media.
+
+The resolver preserves logical source names beside each delivery key and checks containment
+against the resolved owner directory. Seed initialization maps those logical names to checked
+physical sources. **Confirmed.** Read-only resolution through a disposable shared junction
+selected the same 196 files and 2,836 public rows as the direct roots, including the logical
+`media/` prefix. A separate nested-world fixture copied 22 members through the link into
+independent files with those same relative names. These checks exercised input resolution and
+seeding. Full junction-backed Windows export remains pending.
+
+A disposable change to the assembler alone adjusted the Witch loop binding by one sample.
+The production entry reader reported 279420, then 279421, then 279420 on restoration.
+Both media keys stayed constant, all three assembly refreshes generated zero media, and the
+restored descriptor matched the first byte for byte. Repeating the restored recipe was a no-op.
+
+The peak observed checkout-local allocation including the retained preliminary run, interrupted
+outputs, alternate-interpreter cache, clean comparison and assembly counterexample was
+1,032,197,440 B. The regenerated
+tracked lookup was about 0.55 MiB. The highest observed publisher working set across both trials
+was 303,878,144 B. The first measurement wrapper used a truncated Windows process handle and
+failed to report its peak after seeding. The corrected measurement is the fresh seed above.
+Logical file sizes include repeated hard-linked names and can exceed physical allocation. Recheck
+headroom before any additional trial. These observations cover the selected entry reader and
+input closure. The real shared junction, a relocated Release and other families remain for cutover.
 
 **2. Move the supported roots and switch real consumers.** Depends on the pilot and its checked
 selection/projection. Inventory only the exact source selections, owners and necessary production

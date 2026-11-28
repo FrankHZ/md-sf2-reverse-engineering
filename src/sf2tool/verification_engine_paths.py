@@ -14,6 +14,9 @@ REMAKE_PRODUCER_PATHS = frozenset(
         "src/sf2tool/remake_retail_audio.py",
         "src/sf2tool/remake_private_package.py",
         "src/sf2tool/remake_windows_package.py",
+        "src/sf2tool/remake_media_selection.py",
+        "src/sf2tool/remake_media_metadata.py",
+        "src/sf2tool/remake_media_pilot.py",
         "src/sf2tool/remake_equipment_assets.py",
         "src/sf2tool/remake_promotion_appearances.py",
         "src/sf2tool/remake_private_inventory.py",
@@ -118,6 +121,8 @@ def engine_partitions_for_path(path: str) -> tuple[str, ...]:
         }
         else ()
     )
+    if path.startswith("remake/docs/content/metadata/"):
+        return ("research-public",)
     if path.endswith(".md") or path in RETIRED_ENGINE_TEST_PATHS:
         return ()
     if wiring:

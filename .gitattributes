@@ -4,3 +4,4 @@
 *.ps1 text eol=lf
 *.psd1 text eol=lf
 *.psm1 text eol=lf
+remake/docs/content/metadata/current-media.tsv text eol=lf

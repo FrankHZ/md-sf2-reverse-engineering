@@ -10,7 +10,7 @@ tracked selection and generated per-resource lookup proposed for the next pilot.
 **Standard scope.** [#2163](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2163)
 covers every presentation resource family, the two named private campaign selections and their
 owners. Review at the resource or binding level with direct document, manifest and package
-checks. Use the existing private manifests for per-ID graphics and SFX details. Capture, new
+checks. Use the tracked binding lookup for selected IDs and private manifests for payload identity. Capture, new
 consumers, release and hardware-equivalence decisions belong to their feature owners.
 
 ## Read a resource row
@@ -68,10 +68,9 @@ as provenance in the package record. Reserve a separate namespace for short-live
 
 This inventory and its linked resource owners record family and selected example metadata, including
 purpose, source and rights boundary, variants, shared-relative location, current consumers and
-required build inputs. Per-resource coverage still depends on private inputs. The
-[metadata design](asset-pipeline-workflow.md#tracked-metadata-and-private-records) assigns the
-full current lookup to main Git and specifies how it will be regenerated at publication. Private preparation records
-retain payload identities and detailed source custody. Extracted tables, media bytes and local
+required build inputs. The [generated binding table](metadata/current-media.tsv) gives the
+per-resource lookup in main Git. The [projection workflow](asset-pipeline-workflow.md#tracked-metadata-and-private-records)
+owns refresh and verification. Private preparation records retain payload identities and detailed source custody. Extracted tables, media bytes and local
 absolute paths stay private. Use the existing closure and identity checks.
 
 Trace supported Debug, Release and preparation inputs starting from their real entry points. A
@@ -120,33 +119,33 @@ export. When switching a source launcher, also check a native ordinary entry usi
 selections. Old complete packages needed for current build inputs or an approved rollback remain
 available until those consumers are switched.
 
-For an ordinary Debug launch after cutover, load the checkout configuration and set the existing
-reader inputs in the launch process. Use an isolated save namespace for verification.
+The [Debug launcher](../verification/debug-port.md#development-default) and
+[Windows input resolver](../windows-local-candidate.md#build-and-run) use the tracked
+[four-role selection](metadata/selection.json). Its current values select the registered inputs.
+A private Debug launch fills unset media variables after loading the checkout configuration.
+Explicit `--selection` or `--shared-root` chooses the whole set for that process. An authored
+scenario retains its original inputs unless media is requested explicitly.
+
+For a direct Godot launch from the checkout root, set the reader inputs in the same shell.
+Use an isolated save namespace for verification.
 
 ```powershell
 . ./local/private-inputs.ps1
-$media = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media'
-$campaign = Join-Path $media 'gameplay/kiwi-v1'
-$witch = Join-Path $media 'entry/witch-v1'
-$env:SF2_PRIVATE_EXPLORATION_CONTENT = Join-Path $campaign 'world.json'
-$env:SF2_PRIVATE_BATTLE_SCENE_CONTENT = Join-Path $campaign 'main-scenes.json'
-$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $witch 'entry.json'
-$env:SF2_ENTRY_DISPLAY_CATALOG = Join-Path $witch 'entry.zh-CN.json'
-$env:SF2_PRIVATE_OPENING_CONTENT = Join-Path $media 'opening/hd-v1/opening/opening.json'
-$env:SF2_DISPLAY_CATALOG = Join-Path $media 'display-catalog/campaign-zh-cn-v1/world.zh-CN.json'
-foreach ($file in Get-ChildItem -LiteralPath (Join-Path $campaign 'opening-inputs') -Filter 'SF2_PRIVATE_*.json' -File) {
-    [Environment]::SetEnvironmentVariable($file.BaseName, $file.FullName, 'Process')
+$json = uv run --locked python -m sf2tool.remake_media_selection
+if ($LASTEXITCODE) { throw 'Media selection failed' }
+$inputs = $json | ConvertFrom-Json -AsHashtable
+foreach ($item in $inputs.GetEnumerator()) {
+    [Environment]::SetEnvironmentVariable($item.Key, $item.Value, 'Process')
 }
 ```
 
-Use the [normal Debug launcher](../verification/debug-port.md#development-default) or the
-[Windows export command](../windows-local-candidate.md#build-and-run) with the same selections.
-
 ### Current image and audio metadata
 
-The following examples identify bindings in the current preparation and launch routes.
-Root selectors come from the table above. Within each selection, use the resource paths declared
-by the world, scene, entry or opening document.
+Search the [generated table](metadata/current-media.tsv) by semantic ID and consumer. For an
+embedded battle raster, resolve its encounter through the corresponding `battle-scene` row.
+The recipe column joins to the family owner. A bank binding establishes selection and graphics
+availability. Natural reach, playback and rights follow the named owner. The following examples
+explain the selected families and their provenance.
 
 | Semantic identity and purpose | Source and variant | Shared selection and consumer |
 | --- | --- | --- |

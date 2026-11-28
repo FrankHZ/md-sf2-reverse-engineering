@@ -33,22 +33,16 @@ The controlled route reached usable Map14 control. Natural dock portraits in thi
 
 ## Build and run
 
-Load the checkout's ignored private-input configuration in the same process. Input paths and output
-are explicit; no ROM extraction or asset generation occurs. Use the registered gameplay, independent
-opening, Witch and catalog selections together. The following command uses the staged layout after
-cutover. Before cutover, select the four corresponding roots from the registered column in
-[Pre-voyage package locations](content/asset-inventory.md#pre-voyage-package-locations) and keep
-the same filenames within each root.
+Load the checkout's ignored configuration to locate the shared root. The
+[tracked four-role selection](content/metadata/selection.json) supplies the prepared gameplay,
+opening, Witch and catalog inputs. `--selection` and `--shared-root` select another complete
+set. Each explicit `--campaign`, `--entry`, `--opening` or `--catalog` argument takes priority
+for that role. Supplying all four retains the standalone explicit-path workflow.
 
 ```powershell
 . ./local/private-inputs.ps1
 uv sync --locked
-$media = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media'
 uv run python -m sf2tool.remake_windows_package `
-  --campaign "$media/gameplay/kiwi-v1" `
-  --entry "$media/entry/witch-v1/entry.json" `
-  --opening "$media/opening/hd-v1/opening/opening.json" `
-  --catalog "$media/display-catalog/campaign-zh-cn-v1/world.zh-CN.json" `
   --templates "$env:SF2_SHARED_INPUT_ROOT/toolchains/godot-4.7.2/Godot_v4.7.2-stable_mono_export_templates.tpz" `
   --output "$PWD/local/windows-candidate-v1"
 ```

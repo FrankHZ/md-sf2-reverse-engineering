@@ -66,6 +66,8 @@ jobs:
               $research = $true
             } elseif ($changedPath -like 'docs/research/*' -or $changedPath -like 'docs/design/contracts/*') {
               $research = $true
+            } elseif ($changedPath -like 'remake/docs/content/metadata/*') {
+              $research = $true
             } elseif ($changedPath -like '*.md') {
               continue
             } elseif ($changedPath -like 'remake/tools/Sf2.Remake.PrivateAdmission/*') {
@@ -271,6 +273,8 @@ jobs:
         run: uv run ruff check src tests/python
       - name: Verify design-contract traceability
         run: uv run sf2 design-contracts test
+      - name: Check public media selection and bindings
+        run: uv run python -m sf2tool.remake_media_metadata --public-check
       - name: Verify research index
         run: uv run sf2 research-index test
 
