@@ -266,32 +266,11 @@ The compiled Debug adapter ran on the second checkout with an isolated namespace
 [Ordinary opening, Witch and Continue](../evidence/opening-loop-acceptance.md#launch-and-checkpoints)
 read the relocated inputs.
 
-To repeat the comparison, save the previous selection from the checkout root:
-
-```powershell
-. ./local/private-inputs.ps1
-git show 44d4305c:remake/docs/content/metadata/selection.json > local/previous-runtime.json
-@'
-from filecmp import cmp
-from pathlib import Path
-from sf2tool.remake_media_selection import package_arguments, read_selection, shared_root
-from sf2tool.remake_windows_package import inputs
-
-root = shared_root()
-old = inputs(**package_arguments(read_selection(Path("local/previous-runtime.json")), root))
-new = inputs(**package_arguments(read_selection(), root))
-assert old.keys() == new.keys() and len(new) == 196
-assert all(cmp(old[k], new[k], shallow=False) for k in new)
-'@ | uv run --locked python -
-if ($LASTEXITCODE) { throw 'Runtime comparison failed' }
-uv run --locked python -m sf2tool.remake_media_metadata
-```
-
-For a process rollback, pass `--selection <checkout>/local/previous-runtime.json` to the Debug
-launcher or Windows recipe and restart the reader. To roll back a tracked default, restore both
-`selection.json` and `current-media.tsv` from the same accepted revision on a review branch and
-verify the private projection. Keep the four predecessor roots, the existing installation and its
-launcher available through Debug and Release acceptance.
+For the current selection check, load the checkout configuration and run
+`uv run --locked python -m sf2tool.remake_media_metadata`. The 196-member comparison above
+used both complete selections during migration. Several predecessor directories have since been
+retired. For recovery use the registered installation or select a complete available version;
+verify its private projection before switching a source launcher.
 
 **Confirmed.** The first full junction-backed export attempt was refused before process creation.
 With automatic approval enabled, the maintained exporter read all four roles through the real
@@ -316,14 +295,9 @@ reproduced the C4 WAV and binding. Both outputs matched the accepted bytes. The 
 serially in 0.83 seconds with 289 MiB peak working set. The four runtime selections stayed fixed.
 [Production commands](presentation-assets.md#prepare-and-mount-retail-resources)
 
-For a preparation rollback, select the retained base and inventory with `-PreparationRoot` and
-the matching `-Library` explicitly. The former shared library alone lacks command 12. Restore
-its matching product source and runtime inputs into isolated scratch for that command. For a
-historical Git replay, select an isolated local-only checkout at the recorded former commit/tree
-with the original working-tree representation and hook configuration. Verify it with the same
-strict checkout preflight. The operator keeps the previous configuration and exact pins. A layout
-rollback requires quiescing the repositories and moving their intact current directories back
-together with the configuration switch.
+To reproduce a previous production result, select its retained stable inputs or restore the
+matching private Git revision into an isolated checkout and run the existing strict preflight.
+An old Git pin identifies the original bytes but does not restore a removed machine directory.
 
 **3. Retire exact obsolete consumers and data.** Depends on accepted launch/build/producer checks
 and a retained rollback. Main-gate reviews the selected script and directory list. Resolve active
@@ -339,3 +313,20 @@ Perform any remaining project-volume migration in measured batches under the
 [cutover owner](../../../docs/operations/local-private-inputs.md#cut-over-a-local-selection).
 Player saves/backups, both designated video projects, independent history, unique inputs and the
 previously excluded handoff stay protected.
+
+The manual-play launcher now uses the canonical selection and ordinary slot Continue was
+verified after its switch. The former Kiwi bank’s thirteen entry files match the retained Atlas
+bank byte for byte. The independent Witch role supplies the runtime entry. Regenerating it
+from Atlas and the relocated localization sources reproduced all fourteen selected files.
+The indexed producer input already has identical copies of the historical opening’s second
+scene and preparation record. The HD producer writes its own report with elapsed time and output
+size. None of these extra files requires keeping a previous complete runtime package.
+
+The retirement executor records exact paths, current readers, successors and exclusions in a
+private operator batch. Apply it only after independent review and a fresh writer, link and
+ownership check. Remove historical launchers with their old operands. Keep the current installation
+and ZIP, private source repositories, explicit player profiles and backups, named fixtures,
+designated video projects and the excluded video handoff. The [lantern study](hd-art-pilot.md#one-lantern-three-treatments)
+and [localization authority](../application/localization-design.md#current-full-text-chinese-corpus)
+have durable selections. The [open native-exit investigation](../verification/map3-commission-save.md)
+owns its evidence independently of package retention.

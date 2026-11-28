@@ -43,7 +43,7 @@ With only Windows system paths and isolated profile, settings, save and TEMP sel
 exported executable read adjacent content. Opening, title and HD Witch played their music through
 the silent driver. Ordinary Continue restored the disposable dock slot to settled Map44 with input
 available and MUSIC_BOSS_ATTACK playing. Quit exited with code 0. Godot reported two leaked
-ObjectDB instances at shutdown. Keep the prior selection and installation for operator rollback.
+ObjectDB instances at shutdown. The operator retains the registered installation and its ZIP for delivery recovery.
 [Runtime comparison and rollback](content/asset-pipeline-workflow.md#2-runtime-migration-and-validation)
 
 Each explicit `--campaign`, `--entry`, `--opening` or `--catalog` argument takes priority

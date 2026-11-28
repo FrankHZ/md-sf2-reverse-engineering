@@ -202,7 +202,7 @@ The root desktop's retained copy also matched, without establishing that Save wa
 An initial desktop-controller assertion wrongly
 required Y28 after Left; actual tile(25,29) matched both root failure receipts. That preparation failure
 ended with controller-forced124 before Quit, and is retained separately from game exits. The successful
-repeat changed only that assertion. The private registered `handoffs/issue1874/finalizer-controls`
+repeat changed only that assertion. The private operator evidence under `local/runs/diagnostics/native-quit-v1/ordinary-controls`
 contains the exact scripts, exit-only diff, native receipts, read-only snapshots and reproduction report;
 the original failing driver, all three earlier root failures and both new root controls remain intact.
 The root desktop preparation failure supplies no independent ordinary-Quit acceptance; the earlier
@@ -252,7 +252,9 @@ The recorded native process handle, rather than the debugger exit code, owns the
 Debugger timing/heap effects remain part of this observation's boundary.
 
 The one private dump is 1,469,930,520 bytes; observed target private memory peaked near 1.12 GiB.
-It remains in the external private `issue1716-finalizer` investigation root, with no handoff copy.
+Its registered location is the operator’s private `local/runs/diagnostics/native-quit-v1/finalizer` tree.
+Adjacent `matching-product` and `original-failures` hold the matching product modules, comparison seed
+and original observations. Paths embedded in acquisition records describe the original host layout.
 The two acquisitions plus small tools/receipts stayed below the 2 GiB new-output budget and left
 over 2.2 GiB free on the output volume. No further native sample followed this capture.
 
@@ -433,8 +435,9 @@ The original failed receipts and heap diagnosis remain authoritative for their n
 dump was taken or copied, and neither this success nor the already-included upstream fixes closes
 #1716. The first pair is preserved, not replaced by a retry-until-green result.
 
-Local receipts, upstream snapshots/ancestry and the bounded controller are retained in the external
-`issue1716-input-repro` investigation root. The initial estimate was under 200 MiB total new output,
+The original input observations and bounded controllers are retained under the private operator
+`local/runs/diagnostics/native-quit-v1/input-comparison` directory. The tracked diagnostic project
+and pinned upstream revision identify the source. The initial estimate was under 200 MiB total new output,
 with one process at a time and O(three input events); observed package/build/source/log output was
 about 140 MiB. Runtime concurrency deviated as recorded above. The project README gives standalone
 preparation and manual ordinary/synthetic reproduction without private paths. Only the explicit

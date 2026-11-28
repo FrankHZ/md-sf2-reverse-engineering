@@ -35,6 +35,13 @@ languages, a translation platform and UI redesign remain non-goals. Preserve the
 
 ## Current full-text Chinese corpus
 
+Under the configured shared input root, `sources/localization/v1/full-text` holds the source
+JSONL, accepted Chinese rows, names, terminology and bilingual review records. Its siblings
+`witch-entry` and `opening-world` keep the reviewed entry and opening selections.
+The [Witch producer](../content/presentation-assets.md#witch-continue-entry-bank-2255) reads the
+full-text authority and the six-row entry overlay. Keep game text, translations and review
+material private. The main repository records identities, provenance and coverage.
+
 **Standard rigor:** [#1495](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1495)
 authorizes static Chinese translation of all **4,267 message IDs 0–4266, 173,995 source characters**,
 including unimplemented chapters. The independent
