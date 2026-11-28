@@ -29,6 +29,13 @@ internal sealed partial class PartyDetailsPanel : Panel
     internal void ConfigureIcons(IdentityIcons icons, ScenarioDefinition definition) { _icons = icons; _definition = definition; }
     private string? _actor;
     private int _slotCount;
+    private int _memberSlotHeight = 88;
+    internal void SetMemberSlotHeight(int height)
+    {
+        _memberSlotHeight = height;
+        foreach (var slot in _itemRows) slot.Text.CustomMinimumSize = new(0, height);
+        FitMemberSlotGaps();
+    }
     // Member focus-entered signals retain the reading pane across a cover. Direct Full
     // uses the same detail projection with its own mapped reading pane.
     internal int FocusPane { get; set; }
@@ -50,7 +57,12 @@ internal sealed partial class PartyDetailsPanel : Panel
 
         _spells.SizeFlagsHorizontal = _inventory.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         _spells.AddThemeConstantOverride("separation", 12); _inventory.AddThemeConstantOverride("separation", 12);
-        if (MemberLayout) ConfigureMemberReaders();
+        if (MemberLayout)
+        {
+            ConfigureMemberReaders();
+            _items.Resized += FitMemberSlotGaps;
+            _inventory.MinimumSizeChanged += FitMemberSlotGaps;
+        }
         else _magic.AddChild(_spells);
         _items.AddChild(_inventory);
         if (PortraitSlot is { } portrait) BuildMemberSheet(portrait);
@@ -147,7 +159,7 @@ internal sealed partial class PartyDetailsPanel : Panel
             var label = Text("Entry" + labels.Count, 28);
             label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
             if (selectable) label.VerticalAlignment = VerticalAlignment.Center;
-            label.SizeFlagsHorizontal = SizeFlags.ExpandFill; label.CustomMinimumSize = new(0, selectable ? 88 : MemberLayout ? 80 : 56);
+            label.SizeFlagsHorizontal = SizeFlags.ExpandFill; label.CustomMinimumSize = new(0, selectable ? _memberSlotHeight : MemberLayout ? 80 : 56);
             var row = new HBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
             row.AddThemeConstantOverride("separation", 16);
             var icon = new IdentityIcon(MemberLayout ? 3 : 4);
@@ -259,7 +271,7 @@ internal sealed partial class PartyDetailsPanel : Panel
             icon = row.Icon.Observe() }) };
     private static string Number(object? value) => value?.ToString() ?? GameText.Get("party.value-unavailable");
     private static Label Text(string name, int size)
-    { var label = new Label { Name = name, MouseFilter = MouseFilterEnum.Ignore }; label.AddThemeFontSizeOverride("font_size", size); return label; }
+    { var label = new Label { Name = name, MouseFilter = MouseFilterEnum.Ignore }; label.ThemeTypeVariation = ReadingSize.Role(size); return label; }
     private static ScrollContainer Scroll(string name) => new() { Name = name, HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled,
         VerticalScrollMode = ScrollContainer.ScrollMode.Auto, FocusMode = FocusModeEnum.None };
 }

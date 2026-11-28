@@ -1,5 +1,7 @@
 extends "res://probes/engine_world_viewport_observation.gd"
 
+const SettingsNav = preload("res://probes/settings_navigation.gd")
+
 # Semantic checkpoints only. Ordinary mapped events; no session setters/completions.
 var receipts: Array = []
 var last_sequence := -1
@@ -37,7 +39,7 @@ func rect(d: Dictionary) -> Rect2:
 
 func layout(s: Dictionary) -> bool:
     var p: Dictionary = s.dialoguePanel if s.has("dialoguePanel") else s.story.panel
-    if not check(p.fontSize == 30 and p.visible, "Visible shared 30px dialogue"): return false
+    if not check(p.fontSize == SettingsNav.reading_size(host, 30, 36) and p.visible, "Visible dialogue at the installed reading size"): return false
     if not check(Rect2(32,32,1856,1016).encloses(rect(p.panel)), "Panel inside safe area"): return false
     if not check(rect(p.panel).encloses(rect(p.body)) and rect(p.panel).encloses(rect(p.hintRect)), "Body and hint inside panel"): return false
     if not check(not rect(p.body).intersects(rect(p.hintRect)), "Body clear of hint"): return false

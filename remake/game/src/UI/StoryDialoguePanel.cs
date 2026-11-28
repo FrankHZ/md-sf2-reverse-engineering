@@ -34,8 +34,19 @@ internal sealed partial class StoryDialoguePanel : Control
         AddChild(_frame); AddChild(_scroll); _scroll.AddChild(Body);
         AddChild(Portrait); AddChild(Choices); AddChild(Hint);
         Choices.JourneyStyle = JourneyChoices;
-        Hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
+        Hint.ThemeTypeVariation = ReadingSize.Role(StoryTheme.HintSize);
         Hide();
+        if (LayoutRegion is null)
+        {
+            int spacing = Body.GetThemeConstant("line_spacing");
+            ReadingSize.Follow(this, large =>
+            {
+                ReadingSize.Configure(Theme, large);
+                Body.AddThemeConstantOverride("line_spacing", large ? spacing + 4 : spacing);
+                _readThrough = _scroll.ScrollVertical;
+                Arrange();
+            });
+        }
     }
     internal void Present(bool visible, bool portrait, bool right, Rect2 subject, string hint, bool lifetimeOpen = true)
     {
@@ -60,7 +71,7 @@ internal sealed partial class StoryDialoguePanel : Control
         Hint.Text = _hint;
         Hint.CustomMaximumSize = new(bodyWidth, -1); Hint.Size = new(bodyWidth, 0);
         float hintHeight = Mathf.Max(34, Hint.GetMinimumSize().Y);
-        float choiceHeight = JourneyChoices ? 64 : 48;
+        float choiceHeight = Mathf.Max(JourneyChoices ? 64 : 48, Choices.GetCombinedMinimumSize().Y);
         float footer = hintHeight + 16 + (Choices.Visible ? choiceHeight + 12 : 0);
         float height = Mathf.Clamp(Mathf.Max(_portrait ? 304 : 280, bodyHeight + 48 + footer), 280, viewport.Y - inset * 2);
         Size = new(width, height);

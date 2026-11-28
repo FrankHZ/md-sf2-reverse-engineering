@@ -90,6 +90,15 @@ internal sealed partial class MemberPageView : Control
         Bind(_next, () => SwitchActor(1));
         Bind(_prepare, () => RequestAction?.Invoke(GameAction.Confirm));
         Bind(_close, () => RequestAction?.Invoke(GameAction.Cancel));
+        ReadingSize.Follow(this, large =>
+        {
+            ReadingSize.Configure(Theme, large);
+            page.OffsetLeft = -(PageWidth / 2 + (large ? 48 : 0));
+            page.OffsetRight = -page.OffsetLeft;
+            _selector.CustomMinimumSize = new(RosterWidth + (large ? 112 : 0), 52);
+            Details.SetMemberSlotHeight(large ? 80 : 88);
+            _pointer.Suspend();
+        });
         Resized += _pointer.Suspend;
     }
 
@@ -151,7 +160,9 @@ internal sealed partial class MemberPageView : Control
         }
     }
 
-    private static MarginContainer SummaryCell(Label label, Label value)
+    private readonly List<MarginContainer> _summaryCells = [];
+
+    private MarginContainer SummaryCell(Label label, Label value)
     {
         var cell = new MarginContainer { CustomMinimumSize = new(SummaryColumnWidth, 48) };
         cell.AddThemeConstantOverride("margin_left", 24);
@@ -165,7 +176,16 @@ internal sealed partial class MemberPageView : Control
         value.HorizontalAlignment = HorizontalAlignment.Right;
         row.AddChild(label);
         row.AddChild(value);
+        _summaryCells.Add(cell);
+        row.MinimumSizeChanged += FitSummaryColumns;
         return cell;
+    }
+
+    private void FitSummaryColumns()
+    {
+        // A localized unavailable value can be wider than six digits in large text.
+        float width = Mathf.Max(SummaryColumnWidth, _summaryCells.Max(cell => cell.GetMinimumSize().X));
+        foreach (var cell in _summaryCells) cell.CustomMinimumSize = new(width, 48);
     }
 
     private MemberPageButton ButtonFor(ScrollContainer? clip, Action activate) =>
@@ -323,5 +343,5 @@ internal sealed partial class MemberPageView : Control
         projection, rows = _roster.ObserveRows() };
     private static object Rect(Control control) => BattleMapViewport.Rectangle(control.GetGlobalRect());
     private static Label Text(string name, int size)
-    { var label = new Label { Name = name, MouseFilter = MouseFilterEnum.Ignore }; label.AddThemeFontSizeOverride("font_size", size); return label; }
+    { var label = new Label { Name = name, MouseFilter = MouseFilterEnum.Ignore }; label.ThemeTypeVariation = ReadingSize.Role(size); return label; }
 }

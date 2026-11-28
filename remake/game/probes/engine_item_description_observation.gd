@@ -1,5 +1,7 @@
 extends SceneTree
 
+const SettingsNav = preload("res://probes/settings_navigation.gd")
+
 # Serial native witness. Starts from controlled data and drives the ordinary mapped inputs.
 var host: Node
 var view: Node
@@ -52,10 +54,10 @@ func canvas_layer(node: Node) -> int:
     return node.layer if node is CanvasLayer else 0
 
 func description(label: String, detail: Dictionary, parent: Dictionary,
-        adjacent: Array, expected: String) -> void:
+        adjacent: Array, expected: String, body_size := 30) -> void:
     samples[label] = detail
     var area := rect(detail.rect)
-    check(detail.visible and detail.fontSize == 30, label + " visible fixed body font")
+    check(detail.visible and detail.fontSize == body_size, label + " visible fixed body font")
     check(rect(parent).encloses(area), label + " description contained by its panel")
     check(root.get_visible_rect().encloses(area), label + " viewport fit")
     for bounds in adjacent:
@@ -90,20 +92,21 @@ func party_flow(is_zh: bool) -> void:
     if not check(party.visible and party.focusPane == 2 and party.layout.itemSlot == 0, "Member / Items opens slot 1"):
         return
     var layout: Dictionary = party.layout
+    var body_size := SettingsNav.reading_size(host, 30, 36)
     description("party weapon", layout.description, layout.rect, [layout.items.rect, party.hintRect],
-        "装备后" if is_zh else "When equipped")
+        "装备后" if is_zh else "When equipped", body_size)
     var item_area: Dictionary = layout.items.rect
     var description_area: Dictionary = layout.description.rect
     await click(layout.items.entries[1].rowRect)
     party = read().partyStatus
     check(party.layout.itemSlot == 1 and not party.preparation.visible, "complete row click inspects without opening actions")
     description("party consumable", party.layout.description, party.layout.rect,
-        [item_area, party.hintRect], "10 点 HP" if is_zh else "10 HP")
+        [item_area, party.hintRect], "10 点 HP" if is_zh else "10 HP", body_size)
     check(party.layout.items.scroll == layout.items.scroll, "fully visible row selection keeps inventory scroll")
     await press(KEY_DOWN)
     party = read().partyStatus
     description("party empty", party.layout.description, party.layout.rect,
-        [item_area, party.hintRect], "")
+        [item_area, party.hintRect], "", body_size)
     check(party.layout.itemSlot == 2 and party.layout.items.rect == item_area and
         party.layout.description.rect == description_area, "empty slot keeps reading and list bounds")
     var actor = party.card.actor
@@ -249,18 +252,19 @@ func battle_flow(is_zh: bool) -> void:
     if not check(menu.page == "Items" and menu.layout.rows.size() == 4, "four battle item slots"):
         return
     var layout: Dictionary = menu.layout
+    var body_size := SettingsNav.reading_size(host, 30, 36)
     description("battle weapon", layout.reader, layout.description,
-        [layout.list, layout.actor], "装备后" if is_zh else "When equipped")
+        [layout.list, layout.actor], "装备后" if is_zh else "When equipped", body_size)
     await press(KEY_DOWN)
     var ring: Dictionary = read().menu.layout
     description("battle damaged ring", ring.reader, ring.description,
-        [ring.list, ring.actor], "道具会消失" if is_zh else "destroys it")
+        [ring.list, ring.actor], "道具会消失" if is_zh else "destroys it", body_size)
     check(ring.reader.rect == layout.reader.rect and ring.navigation == layout.navigation,
         "the long equipment description retains its panel and navigation")
     await press(KEY_DOWN)
     var item: Dictionary = read().menu.layout
     description("battle Herb", item.reader, item.description,
-        [item.list, item.actor], "10 点 HP" if is_zh else "10 HP")
+        [item.list, item.actor], "10 点 HP" if is_zh else "10 HP", body_size)
     check(item.list == layout.list and item.rowRects == layout.rowRects and item.scroll == layout.scroll and
         item.reader.rect == layout.reader.rect and item.navigation == layout.navigation,
         "Battle Item rows, Back, scroll and reading bounds are fixed")
@@ -283,7 +287,7 @@ func battle_flow(is_zh: bool) -> void:
     await press(KEY_DOWN)
     var empty: Dictionary = read().menu.layout
     description("battle empty", empty.reader, empty.description, [empty.list, empty.actor],
-        "栏" if is_zh else "slot is empty")
+        "栏" if is_zh else "slot is empty", body_size)
     await press(KEY_ENTER)
     check(read().menu.page == "Items" and battle_resources(read()) == baseline, "empty slot submits no gameplay")
     await press(KEY_ESCAPE)

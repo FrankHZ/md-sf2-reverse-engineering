@@ -1,5 +1,7 @@
 extends "res://probes/engine_dialogue_confirm_observation.gd"
 
+const SettingsNav = preload("res://probes/settings_navigation.gd")
+
 # Actual shared panel and ordinary host; generated content is installed before startup.
 var locale := OS.get_environment("SF2_REFLOW_LOCALE")
 var baseline := OS.get_environment("SF2_REFLOW_BASELINE") == "1"
@@ -49,12 +51,12 @@ func prepare_package() -> void:
     output.store_string(JSON.stringify(integral_numbers(overlay))); output.close()
     OS.set_environment("SF2_DISPLAY_CATALOG",overlay_path)
 
-func geometry(panel: Dictionary, bounds: Vector2) -> bool:
+func geometry(panel: Dictionary, bounds: Vector2, font_size: int) -> bool:
     var p: Dictionary = panel.panel
     var b: Dictionary = panel.body
     var h: Dictionary = panel.hintRect
     return require(p.x >= 0 and p.y >= 0 and p.x+p.width <= bounds.x+1 and p.y+p.height <= bounds.y+1 and
-        b.x >= p.x and b.x+b.width <= p.x+p.width+1 and b.y+b.height <= h.y+1 and panel.fontSize == 30,
+        b.x >= p.x and b.x+b.width <= p.x+p.width+1 and b.y+b.height <= h.y+1 and panel.fontSize == font_size,
         "panel, body and footer fit without shrinking text")
 
 func entry_state() -> Dictionary:
@@ -74,7 +76,7 @@ func _run_entry() -> void:
         if not require(s.page == page,"Witch page stays on expected segment"): return
         samples.append({"label":"entry-page", "page":page,"locale":s.displayLocale,"characters":s.totalCharacters,
             "hardBreaks":s.message.count("\n"),"dialogue":s.dialogue})
-        if not geometry(s.dialogue,Vector2(1920,1080)): return
+        if not geometry(s.dialogue,Vector2(1920,1080),30): return
         if not require(s.dialogue.panel.x >= 1216 and s.dialogue.panel.y+s.dialogue.panel.height <= 504,"entry safe region"): return
         if not baseline and not require(not s.message.contains("\n"),"confirmed entry source lines reflow"): return
         if not await tap(KEY_ENTER): return # Existing entry reveal-first policy.
@@ -118,7 +120,7 @@ func _run() -> void:
     if not await tap(KEY_ENTER): return
     if not await wait_until(func(): return state().wait in ["FieldTextWait","W1TextWait","DialogueWait"],"source text mounted"): return
     var first := record("source-layout")
-    if not geometry(first.dialoguePanel,Vector2(root.size)): return
+    if not geometry(first.dialoguePanel,Vector2(root.size),SettingsNav.reading_size(host, 30, 36)): return
     if not require(first.dialoguePanel.portraitVisible == reading_case.contains("portrait"),"expected portrait reservation"): return
     if not baseline:
         if not require(not first.dialogue.contains("opening\n") and not first.dialogue.contains("文字\n"),"soft source break reflowed"): return

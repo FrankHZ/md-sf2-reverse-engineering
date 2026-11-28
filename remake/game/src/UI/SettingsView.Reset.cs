@@ -33,6 +33,7 @@ internal sealed partial class SettingsView
                 break;
             case Page.Display:
                 _draft.Language = defaults.Language;
+                _draft.LargeText = defaults.LargeText;
                 _draft.GraphicsMode = defaults.GraphicsMode;
                 _draft.TextMode = defaults.TextMode;
                 _draft.CharactersPerSecond = defaults.CharactersPerSecond;

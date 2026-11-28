@@ -248,6 +248,10 @@ Build outputs, private inputs and retained prior reports remain ignored.
 
 ### Reproduce four-slot capacity and accounting
 
+Large text keeps four selectable items visible in the supported 1600×900 client. The inventory
+can reduce the gap between its 80px rows when a long name or status needs extra height. The
+three accounting cells share the width needed by the widest translated value.
+
 Load the checkout-local environment and build the adapter in Release and Debug using the
 [locked workflow](../development-and-verification.md#locked-net-workflow). From the repository root,
 prepare this controlled variant of the tracked shop sample. The fixture uses synthetic color rasters
@@ -333,7 +337,7 @@ native logs.
 **Confirmed, bounded native.** At both window sizes in both languages, native rectangles and
 font measurements show the full four-slot inventory at zero scroll, including the wide member name,
 wrapped item name, mounted icon, equipped/damaged labels and the second member's empty slots.
-The reader fits the selected text at 30px. Mouse and mapped actions select the same visible slots,
+The reader fits the selected text at 30px in standard mode and 36px in large text mode. Mouse and mapped actions select the same visible slots,
 and Prepare Back retains the member, pane, slot and geometry. Member changes retain the six-digit
 balance and update the personal record or localized unavailable value. The production preview
 observed 500 → 490 → 497 in both languages. The existing battle Member observer reached the details

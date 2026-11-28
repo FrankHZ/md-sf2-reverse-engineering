@@ -1,5 +1,7 @@
 extends "res://probes/localization_observation.gd"
 
+const SettingsNav = preload("res://probes/settings_navigation.gd")
+
 # Production F1, not DesignPreview. Use only an explicitly disposable save namespace.
 var entry_view: Node
 var output := OS.get_environment("SF2_ENTRY_UI_OUTPUT")
@@ -245,7 +247,7 @@ func story_choice() -> void:
     check(p.choice.height >= 64 and p.choice.y+p.choice.height <= p.hintRect.y,"attached choice and hint are disjoint")
     check(p.body.y+p.body.height <= p.choice.y,"reading area leaves actual choice space")
     check(p.panel.x >= 0 and p.panel.y >= 0 and p.panel.x+p.panel.width <= root.size.x and p.panel.y+p.panel.height <= root.size.y,"source dialogue fits viewport")
-    check(p.fontSize == 30,"source dialogue retains body size")
+    check(p.fontSize == SettingsNav.reading_size(host, 30, 36),"source dialogue retains body size")
     var row := view.find_child("Choice",true,false)
     var no := row.find_child("No",true,false) as Label
     var yes := row.find_child("Yes",true,false) as Label

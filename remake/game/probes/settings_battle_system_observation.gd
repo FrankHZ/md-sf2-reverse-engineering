@@ -37,13 +37,16 @@ func settings_layout(ids: Array) -> Array:
     for id in ids: measured.append((find("Setting_" + id) as Button).get_global_rect())
     return measured
 
+func settings_body_size() -> int:
+    return 36 if mounted().applied.LargeText else 30
+
 func check_display_layout(locale: String) -> void:
     await go_setting("display")
     var ids := ["language", "graphics", "text", "speed"]
     var shown := settings_layout(ids)
     var message := find("SettingsMessage") as Label
     check(settings().locale == locale and settings().focus == "language" and message.visible
-        and message.get_theme_font_size("font_size") == 30, locale + " description uses fixed reading text")
+        and message.get_theme_font_size("font_size") == settings_body_size(), locale + " description uses fixed reading text")
     for i in range(3): await Nav.tap(self, "down")
     check(settings().focus == "speed" and not message.visible and settings_layout(ids) == shown,
         locale + " switching to a row without a description preserves positions and row scroll")
@@ -260,15 +263,51 @@ func layout_error() -> void:
     await Nav.tap(self, "confirm")
     var message := find("SettingsMessage") as Label
     check("changed outside" in message.text and message.is_visible_in_tree()
-        and message.get_theme_font_size("font_size") == 30, "real storage refusal appears in details at normal font size")
+        and message.get_theme_font_size("font_size") == settings_body_size(), "real storage refusal appears in details at normal font size")
     check(settings().focus == "apply" and settings_layout(ids) == shown and mounted().applied.Language == "en"
         and bytes(prefs) == before and battle_state() == paused, "refusal keeps actions, focus, row scroll, preferences and battle")
     await back(); await back()
     check(find("SettingsView") == null and find("SystemMenuView") == null, "Cancel and Resume remain usable after refusal")
 
+# Run large-text then large-text-restart in two processes sharing one disposable namespace.
+func reading_size(restart_off: bool) -> void:
+    var before := bytes(prefs)
+    var initial := not restart_off
+    check(mounted().applied.LargeText == initial, "cold host loads expected reading size")
+    if not await open_general(): return
+    await activate("display")
+    var row := find("Setting_large-text") as Button
+    var expected_font := 36 if initial else 30
+    check(row != null and row.get_theme_font_size("font_size") == expected_font, "installed size shapes the real settings row")
+    if row == null: return
+    var caption := row.text
+    await activate("large-text")
+    check(settings().draft.LargeText != initial and row.text != caption and settings().applied.LargeText == initial, "toggle stages and relabels only the draft")
+    await back(); await back()
+    check(bytes(prefs) == before and mounted().applied.LargeText == initial, "Cancel retains bytes and installed size")
+    await back()
+    if not await open_general(): return
+    await activate("display")
+    if restart_off:
+        await activate("reset-page")
+        check(settings().draft.LargeText and not settings().applied.LargeText, "display reset stages on")
+        await activate("large-text")
+        await back(); await activate("reset-page")
+        check(settings().draft.LargeText and settings().reset, "whole reset stages on")
+    else:
+        await activate("large-text"); await back()
+    await activate("apply")
+    check(settings().is_empty() and mounted().applied.LargeText == restart_off, "Apply publishes the setting")
+    var saved: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(prefs))
+    check(saved.get("largeText") == restart_off, "ordinary preferences persist the explicit boolean")
+    await back(); await frames(5)
+    var card := find("ActorCard").find_child("CharacterName", true, false) as Label
+    check(card.is_visible_in_tree() and card.get_theme_font_size("font_size") == (36 if restart_off else 30), "retained battle card reflows on Apply")
+
 func run() -> void:
     var save_namespace := OS.get_environment("SF2_SAVE_NAMESPACE")
-    if output.is_empty() or not save_namespace.begins_with("issue2017-"): quit(2); return
+    var prefix := "issue2391-" if case_name.begins_with("large-text") else "issue2017-"
+    if output.is_empty() or not save_namespace.begins_with(prefix): quit(2); return
     prefs = OS.get_environment("SF2_SAVE_ROOT").path_join(save_namespace).path_join("sf2-preferences/input.json")
     root.size = Vector2i(1920,1080)
     host = load("res://Main.tscn").instantiate(); root.add_child(host)
@@ -278,6 +317,7 @@ func run() -> void:
     check(state().get("stage") == "Movement" and state().get("failure") == null, "authored Stone Court reaches a real player turn")
     if failures.is_empty():
         match case_name:
+            "large-text", "large-text-restart": await reading_size(case_name == "large-text-restart")
             "native-root": await native_root()
             "transaction": await transaction()
             "restart": await restart()

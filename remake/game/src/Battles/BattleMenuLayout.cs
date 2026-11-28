@@ -97,6 +97,17 @@ internal sealed partial class BattleMenuLayout : Control
         Actor.MinimumSizeChanged += () => Arrange(Size);
         Target.MinimumSizeChanged += () => Arrange(Size);
         _list.Hide();
+        UI.ReadingSize.Follow(this, large =>
+        {
+            UI.ReadingSize.Configure(Theme, large);
+            Context.AddThemeFontSizeOverride("font_size", UI.ReadingSize.Pixels(UI.StoryTheme.BodySize, large, secondary: true));
+            Help.AddThemeFontSizeOverride("font_size", UI.ReadingSize.Pixels(UI.StoryTheme.HintSize, large, secondary: true));
+            Terrain.SetReadingSize(large);
+            Actor.SetReadingSize(large);
+            Target.SetReadingSize(large);
+            Arrange(Size);
+            InvalidatePointer();
+        });
     }
 
     // Native wrapped-label minimum sizes settle after container sorting. Settle geometry before
@@ -304,7 +315,7 @@ internal sealed partial class BattleMenuLayout : Control
     {
         var label = new Label { Name = name, AutowrapMode = TextServer.AutowrapMode.WordSmart,
             SizeFlagsHorizontal = SizeFlags.ExpandFill, MouseFilter = MouseFilterEnum.Ignore };
-        label.AddThemeFontSizeOverride("font_size", size);
+        label.ThemeTypeVariation = UI.ReadingSize.Role(size);
         return label;
     }
 

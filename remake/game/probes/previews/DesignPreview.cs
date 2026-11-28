@@ -44,6 +44,7 @@ public partial class DesignPreview : Control
         BuildToolbar();
 
         var args = OS.GetCmdlineUserArgs();
+        StartScaleReview(args);
         _outcome = args.Contains("--retreat") ? Outcome.Retreat :
             args.Contains("--defeat") ? Outcome.Defeat : Outcome.Victory;
         var tab = args.Contains("--battle") ? Tab.Battle : args.Contains("--inspect") ? Tab.Inspect :
@@ -197,6 +198,7 @@ public partial class DesignPreview : Control
     public override void _Process(double delta)
     {
         if (_host?.PreviewSettings is { } settings) _settings = settings;
+        if (_scaleReview && _titleLargeText != _settings.LargeText) ShowReviewTitle();
         if (_presentedLanguage != _settings.Language || _presentedMotion != _settings.ReducedFlash ||
             _menuOpen != (_host?.PreviewSystemOpen == true)) PaintToolbar();
         if (_entry is { } entry && (_host?.AdvancePreviewEntry(entry) == true || Time.GetTicksMsec() >= _entryDeadline))
@@ -207,13 +209,24 @@ public partial class DesignPreview : Control
     {
         if (input is InputEventKey { Pressed: true, Echo: false, Keycode: >= Key.F1 and <= Key.F10 } shortcut)
         {
-            SelectTab((Tab)((int)shortcut.Keycode - (int)Key.F1));
+            var tab = (Tab)((int)shortcut.Keycode - (int)Key.F1);
+            SelectTab(tab, _scaleReview && tab == Tab.Members ? Sample.Preparation : null);
             GetViewport().SetInputAsHandled();
             return;
         }
         if (input is InputEventKey { Keycode: Key.L, Pressed: true, Echo: false } && _host?.PreviewNameEntryOpen != true)
         {
             ToggleLanguage();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+        if (_scaleReview)
+        {
+            if (input is InputEventKey { Keycode: Key.U, Pressed: true, Echo: false } && _host?.PreviewNameEntryOpen != true)
+            {
+                _host?.TogglePreviewReadingSize();
+            }
+            else _game.PushInput(input, inLocalCoords: true);
             GetViewport().SetInputAsHandled();
             return;
         }

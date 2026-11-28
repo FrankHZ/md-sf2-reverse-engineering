@@ -37,6 +37,15 @@ public sealed partial class GameRoot
         if (ApplySettings(candidate, false) is null) _battle?.RefreshSettingsProjection();
     }
 
+    internal void TogglePreviewReadingSize()
+    {
+        if (_preview is null || _input is null) return;
+        bool large = !_input.Settings.LargeText;
+        _input.Settings.LargeText = large;
+        ReadingSizeChanged?.Invoke(large);
+        _settings?.SetPreviewReadingSize(large);
+    }
+
     internal bool OpenPreviewSystemMenu()
     {
         if (_systemMenu is not null)

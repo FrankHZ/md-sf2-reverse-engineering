@@ -57,16 +57,22 @@ internal sealed partial class ControlsHelpView : Control
         _scroll = new ScrollContainer { Name = "HelpScroll", SizeFlagsVertical = SizeFlags.ExpandFill,
             HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled }; column.AddChild(_scroll);
         _body = new Label { Name = "HelpBody", AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            SizeFlagsHorizontal = SizeFlags.ExpandFill }; _body.AddThemeFontSizeOverride("font_size", 30); _scroll.AddChild(_body);
+            SizeFlagsHorizontal = SizeFlags.ExpandFill }; _scroll.AddChild(_body);
         _hint = new Label { Name = "HelpHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        _hint.AddThemeFontSizeOverride("font_size", 24); column.AddChild(_hint);
+        _hint.ThemeTypeVariation = ReadingSize.Role(StoryTheme.HintSize); column.AddChild(_hint);
         var actions = new HBoxContainer(); column.AddChild(actions);
         foreach (string text in new[] { "Previous", "Next" })
         {
             var button = new SettingsChoice { Id = text, Gesture = Gesture, Activate = _ => Turn(text == "Previous" ? -1 : 1),
                 Name = "Help" + text, SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new(0, 64) };
-            button.AddThemeFontSizeOverride("font_size", 24); actions.AddChild(button); _buttons.Add(button);
+            actions.AddChild(button); _buttons.Add(button);
         }
+        ReadingSize.Follow(this, large =>
+        {
+            ReadingSize.Configure(Theme, large);
+            foreach (var button in _buttons)
+                button.AddThemeFontSizeOverride("font_size", ReadingSize.Pixels(StoryTheme.HintSize, large));
+        });
         Resized += Arrange; Arrange(); Refresh();
         _buttons[1].GrabFocus();
     }

@@ -34,8 +34,8 @@ internal sealed partial class ItemDescriptionView : VBoxContainer
         CustomMinimumSize = new(0, ReadingHeight);
         AddThemeConstantOverride("separation", 0);
         _body.AddThemeConstantOverride("separation", 8);
-        Body.AddThemeFontSizeOverride("font_size", BodySize);
-        _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
+        Body.ThemeTypeVariation = ReadingSize.Role(BodySize);
+        _hint.ThemeTypeVariation = ReadingSize.Role(StoryTheme.HintSize);
         AddChild(_scroll); _scroll.AddChild(_body); _body.AddChild(Body);
         AddChild(_hintSlot); _hintSlot.AddChild(_hint);
         _hint.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);

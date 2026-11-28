@@ -162,6 +162,7 @@ internal static partial class GameText
         ["controls.acceleration.note"] = "Exploration, battle and automatic sequences run at {0}× while held. Release to return to 1×. Reading, menu controls and music keep normal speed. After a menu, message, map change or focus loss, release and press again.",
         ["controls.acceleration.hold"] = "Hold to accelerate",
         ["ui.settings.title"] = "Settings",
+        ["ui.settings.large-text"] = "Large text mode: {0}",
         ["ui.settings.language"] = "Language: {0}",
         ["ui.settings.graphics"] = "Graphics: {0}",
         ["ui.settings.graphics-original"] = "Original",

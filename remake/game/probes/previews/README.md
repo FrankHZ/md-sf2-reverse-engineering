@@ -71,6 +71,35 @@ same texture. Check that a purchase changes the party seen in F5, inspection ret
 the right parent, F10 restores the covered session, and outcome waits reach actual field
 control. The scene review records bounded visual findings by page. Ordinary-game reading comfort and physical-device review remain **Unknown**.
 
+## Compare UI size
+
+Run the dedicated production preview at the actual client size. In comparison mode it fills
+the window with the production viewport and puts the active choice in the window title. Use the
+registered Debug environment and isolated app data described above. Select
+`remake/content/authored/localization-pilot.zh-CN.json` as `SF2_DISPLAY_CATALOG` for Chinese.
+
+```powershell
+& $env:GODOT_BIN --path (Resolve-Path 'remake/game').Path --audio-driver Dummy --resolution 1920x1080 res://probes/previews/DesignPreview.tscn -- --scale-review --dialogue --larger
+```
+
+Press **U** to switch between **Standard** and **Larger** on the current page. Omitting
+`--larger` starts at Standard. The comparison covers these production presenters:
+
+| Keys | What to compare |
+| --- | --- |
+| **F2** | Read the invitation, press Enter for the next wait and compare text and hint inside the same frame. |
+| **F4**, Down, then Enter after the step settles | Compare the acting card and all four rows above the reader. Hover over Magic. |
+| **F5**, Tab twice | Compare the selected leaf's description and the fourth slot. Move Down for slot two. Escape returns to the field. |
+| **F10**, Enter from an eligible session | Open Settings, compare its categories, click Display and press Escape to return. |
+
+**L** switches language outside Settings and name entry. Resize to 1600×900 to see the fitted
+member sheet, or to 2560×1440 for native Settings. For the long-name check, start with
+`--scale-review --inspect --authored-package <path>` and the [14-member input](../../../docs/godot/battle-ui-composition.md#reproduce-the-shared-roster).
+Press Up, Enter twice and Tab twice to inspect the first item. The comparison switches the
+[production large text setting](../../../docs/godot/ui-design-language.md#large-text-mode) in memory.
+Ordinary play starts with large text enabled. In Settings, the Apply action saves the selection.
+See the [observed geometry and limits](../../../docs/godot/ui-scene-review.md#ui-size-calibration).
+
 ## Numbered saves and native window recovery
 
 Use the [dedicated Main launch and reset recipe](../../../docs/godot/host-ui.md#dedicated-numbered-save-and-native-recovery-demo)

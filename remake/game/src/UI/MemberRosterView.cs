@@ -172,7 +172,7 @@ internal sealed partial class MemberRosterView : ScrollContainer
             StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered, TextureFilter = TextureFilterEnum.Nearest };
         var label = new Label { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsHorizontal = SizeFlags.ExpandFill,
             VerticalAlignment = VerticalAlignment.Center, AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        label.AddThemeFontSizeOverride("font_size", 28);
+        label.ThemeTypeVariation = ReadingSize.Role(28);
         row.AddChild(marker); row.AddChild(image); row.AddChild(label);
         int index = _rows.Count;
         var frame = MemberPageButton.Stack(row);

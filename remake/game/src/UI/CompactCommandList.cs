@@ -33,8 +33,8 @@ internal sealed partial class CompactCommandList : Control
                 VerticalAlignment = VerticalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore };
             var marker = new Label { Text = "›", VerticalAlignment = VerticalAlignment.Center,
                 MouseFilter = MouseFilterEnum.Ignore };
-            label.AddThemeFontSizeOverride("font_size", CaptionSize);
-            marker.AddThemeFontSizeOverride("font_size", 30);
+            label.ThemeTypeVariation = ReadingSize.Role(CaptionSize);
+            marker.ThemeTypeVariation = ReadingSize.Role(30);
             // Buttons with a separate caption already hide their internal label and
             // retain their existing short focus emphasis in the row.
             _icons[i].IconOnly = !_icons[i].CaptionBeside;

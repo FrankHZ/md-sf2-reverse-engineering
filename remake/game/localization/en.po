@@ -56,6 +56,9 @@ msgid "ui.settings.title"
 msgstr "Settings"
 
 #. Settings display; actions use stable indexes.
+msgid "ui.settings.large-text"
+msgstr "Large text mode: {0}"
+
 msgid "ui.settings.language"
 msgstr "Language: {0}"
 

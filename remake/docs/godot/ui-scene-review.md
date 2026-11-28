@@ -44,6 +44,28 @@ opened Settings. Switching to F5, F6 and F7 reached Member, Shop and Adventure i
 field session. F3 mounted the practice Church wait. The deeper choices in the table are mapped
 from production owners and the linked observations.
 
+### UI size calibration
+
+Compare Standard and Larger at the same physical client size with **U** in the
+[dedicated demo](../../game/probes/previews/README.md#compare-ui-size). These are practice
+scenarios in the production host. Geometry below uses Godot canvas units. The 1600×900 client
+fits 1920×1080 once. The two larger clients used native coordinates. Windows reported 192 DPI.
+
+| Page and actual client | Observed result |
+| --- | --- |
+| F2, Chinese, 1920×1080 | At both reading waits the panel stays at (240, 768), 1440×280. Body text changes from 30 to 36 and the continuation hint from 24 to 29. The hint rises 8 units to keep its bottom inset. Both sampled waits fit on one line. |
+| F4, English, 1920×1080 | The acting card stays 560 wide and grows from 168 to 195 high. Commands use 29px captions in the same four 80px rows. The reader stays below them at the same x-position. All three English binding lines fit at 26px. Hover over Magic moves the selection from Stay. |
+| F5, Chinese, 1600×900 | The sheet grows from 1712 to 1808 wide. The Practice Leaf reader gains 41 units of width and displays the full effect in two lines. The four slots, field accounting, Prepare and Close are visible. Toggling size keeps the first slot focused and mapped D-pad Down selects the second. |
+| F8, English 14-member roster, 1600×900 | A narrow selector wrapped its counter, pushing slot four past the inventory viewport in an initial candidate. Giving the selector more width and using 80px slot rows leaves the 38px long name on three lines. Slot four ends at y=798 inside the viewport ending at 808. Resizing to 1080p and returning to Standard retained slot focus. |
+| F10 → Settings, Chinese, 2560×1440 | The centered 960×920 panel keeps its bounds. The 36px category names raise the actual row height from 64 to 73. Clicking Display opens the language row at the larger size. Cancel returns focus to Display. Both footer actions fit. |
+
+The [large text setting](ui-design-language.md#large-text-mode) uses these presenter layouts
+in the ordinary host. U compares them in memory in the demo. The normal Settings flow verifies
+Apply, Cancel, reset and restart against both a fresh namespace and older preferences.
+The four-slot capacity observation also exercises full inventory, long item names and unavailable
+accounting in both languages. Long dialogue with portraits and choices, target clearance in
+connected battles, other service pages and sustained reading comfort remain outside this sample.
+
 ### F2 and F5 sample observation
 
 Use the [preview launcher](../../game/probes/previews/README.md#run-from-the-repository-root) with

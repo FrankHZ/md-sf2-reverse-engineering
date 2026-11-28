@@ -101,6 +101,12 @@ internal sealed partial class BattleStatusCard : PanelContainer
         ArrangeIdentity();
     }
 
+    internal void SetReadingSize(bool large)
+    {
+        ReadingSize.Configure(Theme, large);
+        if (_actor is not null) ArrangeIdentity();
+    }
+
     private void ArrangeIdentity()
     {
         var font = _name.GetThemeFont("font");
@@ -111,7 +117,7 @@ internal sealed partial class BattleStatusCard : PanelContainer
             Width = innerWidth,
             BreakFlags = TextServer.LineBreakFlag.Mandatory | TextServer.LineBreakFlag.WordBound | TextServer.LineBreakFlag.Adaptive,
         };
-        shaped.AddString(_name.Text, font, StoryTheme.BodySize);
+        shaped.AddString(_name.Text, font, _name.GetThemeFontSize("font_size"));
         float maxWidth = Mathf.Min(MaxNameWidth, available) - 2 * HorizontalPadding;
         while (shaped.GetLineCount() > NameLines && shaped.Width < maxWidth)
             shaped.Width = Mathf.Min(shaped.Width + 16, maxWidth);

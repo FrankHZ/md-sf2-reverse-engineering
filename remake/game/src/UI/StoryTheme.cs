@@ -91,7 +91,8 @@ internal static class StoryTheme
     };
     internal static Theme Create()
     {
-        var theme = new Theme { DefaultFontSize = BodySize, DefaultFont = _font };
+        var theme = new Theme { DefaultFont = _font };
+        ReadingSize.Configure(theme, large: false);
         theme.SetColor("font_color", "Label", new Color("f4f5fc"));
         var frame = PanelFrame();
         foreach (string type in new[] { "PanelContainer", "Panel", "PopupMenu", "PopupPanel", "TooltipPanel" })
