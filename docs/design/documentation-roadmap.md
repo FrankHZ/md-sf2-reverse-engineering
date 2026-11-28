@@ -120,9 +120,9 @@ documentation status:
 
 | Design surface | Current status | Active coordination |
 | --- | --- | --- |
-| `game-vision.md`, `gameplay-overview.md`, `map-design-principles.md` (EN + `zh-CN`) | First reader-perspective rewrite sample merged (`#2129` / `#2228`); live Wiki still lags until Phase B2 publishes. | `#2259` Phase B2 |
-| `design-map.md`, `tactical-battle-loop.md`, `progression-and-economy.md` (EN + `zh-CN`) | Phase A readability rewrites merged (`#2392`); repo updated, live Wiki not yet synchronized. | `#2259` Phase B2 |
-| Wiki entry templates (`Home.md`, `_Sidebar.md`, `wiki-mirrors.tsv`) & live publication | Phase B1 updates `wiki_preview.py` reader-first layout and adds `Tactical-Battle-Loop` / `Progression-and-Economy` to `wiki-mirrors.tsv` (pending acceptance); live Wiki publication and readback remain Phase B2 after merge. | `#2259` Phases B1–B2 |
+| `game-vision.md`, `gameplay-overview.md`, `map-design-principles.md` (EN + `zh-CN`) | Reader-perspective rewrites are synchronized to the live Wiki. | `#2259` remaining Phase C |
+| `design-map.md`, `tactical-battle-loop.md`, `progression-and-economy.md` (EN + `zh-CN`) | Accepted bilingual rewrites are synchronized to the live Wiki, including both core L2 themes. | `#2259` remaining Phase C |
+| Wiki entry templates (`Home.md`, `_Sidebar.md`, `wiki-mirrors.tsv`) & live publication | Reader routes, compact source footers and six body mappings are published; independent remote readback and repeat-publication no-op passed. Follow the [publication workflow](../operations/wiki-preview.md) for subsequent accepted-source updates. | `#2259` Phases A–B complete |
 | Follow-on L2 design gaps (numeric/formula reference, original-vs-remake modernization overview, UI/UX L2 overview) | Explicitly tracked as open follow-on scopes rather than substituted with engineering pages. | `#2259` Phase C, `#2386` |
 | `story-progression.md` and campaign event/chapter overview | Currently a reader guide plus alphabetical chapter link wall; open for chronological event/chapter overview linked to developer flags and accepted scenario starts. | `#2366` |
 | Modern remake engine architecture & Debug support design entry | Technical docs exist in `remake/docs/`, but designer-facing entry and cross-layer trace are pending. | `#2358` |
