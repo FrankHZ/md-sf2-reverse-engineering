@@ -2,510 +2,245 @@
 
 - Status: **Confirmed repository governance guidance**; this document is not evidence about the
   original game and does not select a remake engine, product, platform, or commercial direction.
-- Scope: organize sourced contracts into concise player-facing explanations without changing their
-  evidence labels; distinguish original evidence, accepted remake choices and future work at their
-  owning decision and acceptance boundaries.
+- Revised: 2026-11-27 (governance update under `#2382`)
+- Scope: organize sourced rules and remake design into readable L0–L3 explanations without blurring
+  evidence labels, original-game provenance, accepted remake choices, or unresolved **Unknown**s.
 
 ## Design and Support Scope
 
-Use the [design map](design-map.md) to start with the relevant L0 vision, L1 gameplay, L2 system
-and L3 behavior. These levels describe the question being answered. The [ownership and evidence
-boundaries](#three-layer-boundary) still determine who can change a claim and how to substantiate it.
+Use the [design map](design-map.md) to enter at the right depth: L0 vision, L1 overall gameplay,
+L2 system design, or L3 mechanism specification. These levels organize reader questions; the
+[Three-Layer Boundary](#three-layer-boundary) still governs who may change a claim and what
+evidence backs it.
 
-The target body scope for Chinese documentation and Wiki publication is L0–L3. Apply the following
-decisions to sections of mixed pages before mapping them to the existing translation and Wiki
-indexes.
+Chinese documentation (`docs/design/zh-CN/`) and Design Wiki publication focus strictly on **L0–L3
+player- and designer-facing content**. Keep technical support in the canonical English repository:
 
 | Source content | Disposition |
 | --- | --- |
-| [Vision](game-vision.md), [Gameplay Overview](synthesis/gameplay-overview.md), and system themes | Include vision, loop, system responsibilities, player choices and handoffs. Keep the overview's demonstrated-slice comparison and the themes' evidence audits in the English repository. |
-| Chapter and encounter design | Include conditional progression, encounter constraints, alternative choices and consequences. The worked [battle analysis](synthesis/analyses/battle-design-analysis-pilot.md) contributes design interpretations within its assumptions. Source matrices, exact capture comparisons and reproduction records stay in English. |
-| [Map and exploration contract](contracts/world/map-exploration.md) and other mixed contracts | Include rule portions such as event precedence, legal movement/interaction and return behavior. Keep ROM layout, source dispatch, script operations, asset-loading records, fixture inventories and executable acceptance in English. |
-| [Spell resolution](contracts/battle/spell-resolution.md), [church promotion](../../remake/docs/application/church-promotion-design.md) and [support spells](../../remake/docs/domain/support-spell-status-design.md) | Include the engine-neutral rules, including formulas, legal choices, refusal and cancellation, state-transition order and the relevant accepted deviations. Keep source call chains, raw operands/tables, codec and implementation terms, commands and run results in English. |
-| [Item definitions](contracts/party/item-definition-data.md), [spell definitions](contracts/party/spell-definition-data.md), ROM inventories and campaign lifecycle indexes | English support for raw records, configuration values, provenance, content admission and observed availability. A value needed to state a behavior can be cited by that rule. |
-| Original evidence, [Map3 readiness](synthesis/milestones/map3-battle01-readiness.md), capability and verification ledgers, tooling and operations | English support. Keep the readiness ledger and equivalent acceptance reports out of Wiki and Chinese bodies. Extract or link a distinct player-facing decision through its design owner when needed. |
-| Navigation | Use L0–L3 entries with links back to English support. Publish design prose from accepted Git and keep the technical parts of mixed pages at the original English owners. |
+| [Vision](game-vision.md), [Gameplay Overview](synthesis/gameplay-overview.md), and system themes | Publish L0–L2 vision, gameplay loop, player choices, costs, and handoffs in English and Chinese. Keep evidence audits and historical slice comparisons in English repository owners. |
+| Chapter and encounter design | Include story flow, player goals, optional/missable branches, encounter rules, and consequences. Worked analyses (such as [Battle01, Taros and Chessboard](synthesis/analyses/battle-design-analysis-pilot.md)) contribute **Inferred** design readings under explicit assumptions. Source matrices, capture comparisons, and reproduction commands stay in English. |
+| Mixed behavior contracts (e.g., [map exploration](contracts/world/map-exploration.md), [spell resolution](contracts/battle/spell-resolution.md), [church promotion](../../remake/docs/application/church-promotion-design.md), [support spells](../../remake/docs/domain/support-spell-status-design.md)) | Include engine-neutral player rules: legal choices, formulas, refusal/cancellation, state order, and accepted deviations. Keep ROM layout, source call chains, raw tables/operands, implementation internals, commands, and run logs in English. |
+| Raw tables, ROM inventories, and developer lifecycle indexes ([items](contracts/party/item-definition-data.md), [spells](contracts/party/spell-definition-data.md), [campaign flags](../../remake/docs/content/campaign-flags.md)) | English technical support. Cite rule-significant values directly in L2/L3 design prose and link back to the single English owner. |
+| Original research, [Map3 readiness](synthesis/milestones/map3-battle01-readiness.md), capability/verification ledgers, tooling, and operations | English repository support. Keep readiness ledgers and acceptance reports out of Chinese design bodies and the Wiki; extract distinct player-facing decisions to their design owner when needed. |
+| Navigation | Use L0–L3 entries with Chinese links for design prose and clearly labeled `（英文源）` links back to English evidence, configuration, and implementation owners. |
 
-For a mixed page, scope the design passage by heading and preserve links to its exact sources.
-Original evidence, accepted design and implementation results retain their own authority even
-when one English page contains all three. Prefer a direct link to an existing rule passage when
-it already answers the design question. If a publication requires a design-only passage, extract
-only the behavior needed by the reader and retain the original evidence at its owner.
+For a mixed English page, scope the Chinese design excerpt by heading and preserve links to the
+exact English owner. Never duplicate raw tables or create a second evidence inventory inside
+Chinese design pages or the Wiki.
 
 ## Authoring Language Policy
 
-**Confirmed repository policy:** during the current design-synthesis phase, English is the canonical
-authoring and review language for new or materially revised design-synthesis documents. Preserve
-source-faithful identifiers, fixture IDs, evidence labels, and code vocabulary rather than inventing
-translated equivalents.
+**Confirmed repository policy:** English remains the canonical authoring and review language for
+technical authority, original-game evidence, and new design specifications. Chinese design pages
+under `docs/design/zh-CN/` provide readable L0–L3 design prose and reviewed excerpts derived from
+accepted `main`.
 
-**Confirmed repository decision (2026-08-04):** the project glossary is accepted at
-[`glossary.md`](./glossary.md). It is the single binding source for English-to-Chinese terminology
-in design-synthesis documents and governs the zh-CN mirror conventions under
-`docs/design/zh-CN/`. Do not create ad hoc bilingual terminology; use the glossary's fixed terms and
-rules (evidence-label translations, preserved source identifiers, one-term-one-translation, proper
-nouns kept in English with suggested annotations, and entry revision process).
+**Confirmed governance revision (2026-11-27):** [`glossary.md`](./glossary.md) governs terminology
+and readability across L0–L3 Chinese design prose:
 
-The [Chinese reader entry](../README.zh-CN.md) maintains L0–L3 design. A translated design excerpt
-can combine rule passages or remove technical sections from its English counterpart. Retain
-the glossary's terminology, evidence distinctions, rule-significant values and identifiers for
-what is translated. Fixture inventories, raw records, reproduction and implementation stay at
-their English owners. Design navigation should prefer existing Chinese counterparts and label
-necessary English sources.
+- **Natural L0–L3 design prose, exact technical identifiers:** explain player situations, choices,
+  costs, and consequences in natural Chinese rather than disassembly or audit jargon. Keep source
+  symbols, macros, handlers, fixture IDs, paths, and numeric literals verbatim under R2.
+- **Preserve gameplay-critical distinctions:** do not collapse `round` (整轮回合), `individual
+  turn` (轮到某单位行动), and `action` (具体行动), nor blur joined / active / temporary follower
+  or carried / equipped states.
+- **Accepted `#1468` proper nouns:** Chinese L0–L3 prose may use independently accepted Chinese
+  proper nouns from the `#1468` localization corpus (`#1504`/`#1506`, owned by
+  [`remake/docs/application/localization-design.md`](../../remake/docs/application/localization-design.md#current-full-text-chinese-corpus)),
+  optionally annotating the English name at first occurrence. Do **not** invent ad-hoc Chinese
+  proper nouns; leave unreviewed entries in English.
+- **Clean evidence placement:** collect repetitive general source/scope caveats into a compact
+  **依据与边界** note or table column, while keeping decision-changing conditions, **Inferred**
+  interpretations, and **Unknown** questions directly adjacent to the claim they qualify.
+- See [`glossary.md#calibration-examples-l0l3-chinese-design-prose`](./glossary.md#calibration-examples-l0l3-chinese-design-prose)
+  for the three short calibration examples (turn/action, proper nouns, evidence placement).
 
-The translation index covers the Chinese design pages present under the mirror root. An English
-addition creates no translation status by itself. English owners remain authoritative for
-original behavior and current remake support. Wiki publication is tracked in
-[#1978](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1978). Game localization has
-its own scope under [#1468](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1468).
+`manifests/zh-translation-index.json` tracks the Chinese design pages present under
+`docs/design/zh-CN/`. An English addition creates no automatic translation queue. Ongoing Wiki
+synchronization and L0–L3 readability rewrites are coordinated under `#2259`, `#2366`, and `#2358`
+(first Wiki publication `#1978` is closed); game localization remains under `#1468`.
 
 ## Design Information Architecture
 
-**Confirmed repository policy:** `docs/design/` uses ownership and evidence role, rather than game
-feature alone, as its first-level information architecture:
+**Confirmed repository policy:** `docs/design/` organizes its first level by ownership and evidence
+role:
 
-- `contracts/` contains evidence-bound subsystem contracts. These remain owned by the research slice
-  when accepted findings change.
-- `synthesis/` contains cross-subsystem or player-facing explanations that consume accepted evidence
-  from `main` and remain owned by the design-synthesis lane.
-- repository-governance documents, including this roadmap and `glossary.md`, remain at the design
-  root because they govern both categories.
-- `zh-CN/` preserves the canonical English relative hierarchy: for example,
-  `contracts/system/save-system.md` maps to `zh-CN/contracts/system/save-system.md`.
+- `contracts/` — evidence-bound subsystem contracts, updated with the research slice when accepted
+  findings change.
+- `synthesis/` — cross-subsystem and player-facing explanations (`gameplay-overview.md`, `themes/`,
+  `analyses/`, `milestones/`, and `chapters/`) consuming accepted evidence from `main`.
+- Root governance files (`documentation-roadmap.md`, `glossary.md`, `game-vision.md`,
+  `design-map.md`) govern or route across categories.
+- `zh-CN/` — L0–L3 Chinese design prose and reviewed excerpts preserving the canonical English
+  relative path.
 
-This split is an ownership boundary, not a claim about original-game architecture and not a future
-engine module layout. Add deeper subdirectories only when a concrete slice establishes a durable
-navigation or ownership need; do not create empty category scaffolding.
-
-The current directory organization uses **Standard** rigor because physical paths connect research,
-contract registrations, reader routes and reviewed translation anchors. Contracts group into
-`battle/`, `party/`, `world/`, `interface/`, `graphics/`, `system/` and `milestones/`. Synthesis keeps
-`gameplay-overview.md` at its root and separates `themes/`, `analyses/`, `milestones/` and detailed
-`chapters/`. Research uses subject folders and the same six story reading groups under `chapters/`;
-its baseline, indexing and coverage owners remain at the research root.
-
-Chapter folder names follow the existing editorial sequence: `grans-opening`, `eastern-parmecia`,
-`southern-travel-creed`, `northern-travel-mitula`, `moun-nazca-grans` and
-`final-confrontations-ending`. Detailed synthesis guides currently occupy the first four groups;
-later explanations remain sections of Story Progression with links to their research owners. Keep
-one owner for cross-cutting content and use links for other entry points. Directory changes preserve
-evidence, contract and language boundaries; they do not create new research, translations or gameplay
-capabilities. Acceptance requires working physical routes, registered consumers and paired mirror
-paths, with pre-existing translation drift retained until its own review.
+Chapter folders follow the editorial sequence: `grans-opening`, `eastern-parmecia`,
+`southern-travel-creed`, `northern-travel-mitula`, `moun-nazca-grans`, and
+`final-confrontations-ending`. Keep one owner per cross-cutting topic and link rather than copying.
+Do not create empty category scaffolding or wholesale file moves without a concrete navigation
+need.
 
 ## Three-Layer Boundary
 
 | Layer | Ownership and allowed content | Prohibited shortcut |
 | --- | --- | --- |
-| A. Original behavior/data contracts | `docs/research/`, `schemas/`, manifests, H2/H3 fixtures, and sourced design contracts record **Confirmed**, **Inferred**, and **Unknown** facts. | A source macro, field, or symbol name does not automatically establish player-visible meaning. Preserve the source label and explain only interpretations supported by evidence. |
-| B. Reconstructed design explanation | `docs/design/` may explain player-facing consequences supported by Layer A, link the local research/fixture owner, and mark gaps as **Unknown**. | Do not promote a static call, address, or plausible reading into original behavior, a campaign conclusion, or a player-experience fact. |
-| C. Future remake decisions | Modernization, implementation intent, and product choices belong in explicit decisions and separate expected-deviation/H4 acceptance boundaries. | Do not rewrite modernization as original behavior or use a synthesis document to choose an engine or product direction. |
+| A. Original behavior/data contracts | `docs/research/`, `schemas/`, manifests, H2/H3 fixtures, and sourced design contracts record **Confirmed**, **Inferred**, and **Unknown** facts. | A source macro, field, or symbol name does not automatically establish player-visible meaning. Preserve the source label and explain only supported interpretations. |
+| B. Reconstructed design explanation | `docs/design/` explains player-facing rules and consequences supported by Layer A, links the owning evidence, and keeps gaps **Unknown**. | Do not promote a static call, address, or plausible reading into confirmed original behavior, natural campaign reach, or original author intent. |
+| C. Remake decisions | Modernization, implementation intent, and product choices belong in explicit decisions and remake acceptance owners. | Do not rewrite modernization as original behavior or use a synthesis page to silently pick an engine or product direction. |
 
 **Confirmed repository rule:** Layer B is a traceable interpretation of accepted Layer A evidence,
-not a second evidence system. **Inferred** interpretations retain that label, and **Unknown** behavior
-remains a question rather than being completed as narrative.
+not a second evidence system. **Inferred** readings remain **Inferred**, and **Unknown** behavior
+stays explicit rather than being filled with narrative guesses.
 
 ## Pre-Synthesis Evidence Review
 
-**Confirmed repository rule:** every Layer B synthesis slice must adversarially review the Layer A
-evidence it will explain. A link to an accepted document is necessary but not sufficient. The review
-must inspect, where present, the owning research prose, evidence-bound design contract, executable
-fixture payload and exact fixture ID, schema/verifier or focused test, and the narrow H2/H3 command
-that owns the claimed quantity, unit, order, or state transition.
+**Confirmed repository rule:** every substantive Layer B synthesis change must adversarially review
+the Layer A evidence it explains—not merely copy a link. Where relevant to a claimed quantity,
+order, or state transition, inspect the owning research prose, contract, fixture payload/ID, and
+narrow H2/H3 owner. Test specifically for stale question queues, summaries broader than their
+fixture, units reused across lifecycle stages, static call order presented as runtime outcome, and
+controlled test seams presented as natural campaign play.
 
-The review must specifically test for stale question queues, summary prose that is broader than its
-fixture, units reused across different lifecycle stages, source-static call order described as a
-runtime outcome, and controlled validation seams presented as natural campaign behavior. Record the
-surfaces checked and the disposition in the synthesis document or its review record.
-
-When owners disagree, Layer B must not select the convenient answer or silently repair Layer A.
-Exclude the disputed conclusion or retain it as **Unknown**, report the exact mismatch to the owning
-research lane, and wait for an accepted owner correction before expanding the synthesis. A stale
-queue or over-broad summary may be nonblocking only when the executable owner and the stricter claim
-boundary agree; the synthesis must use that stricter boundary and keep the discrepancy visible to
-reviewers.
+When owners disagree, do not pick the convenient answer or silently edit Layer A: exclude the
+disputed claim or keep it **Unknown**, report the mismatch to the owning research lane, and wait
+for an accepted owner correction.
 
 ## Current Baseline and Near-Term Synthesis
 
-**Current scope agreement — Standard.** [Epic #1975](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1975)
-uses L0–L3 to lead from the player experience to the accepted behavior, then to separate English
-evidence, configuration and implementation. Standard rigor fits the cross-system ownership and
-the risk of repeating authority across published views. The [design map](design-map.md) follows
-equipment and promotion, status spells, and exploration services and persistence through named
-owners, accepted observations and remaining work. Resolve missing decisions at the owning system.
-The current work organizes existing design and evidence, with Chinese and Wiki migration handled
-by their respective Issues.
+**Current scope agreement — Standard.** L0–L3 design documentation leads readers from player
+experience (`design-map.md`, `game-vision.md`, `gameplay-overview.md`) through system themes and
+chapter overviews to exact behavior rules, then links out to English research, configuration, and
+remake implementation owners.
 
-### Reader calibration for the Wiki entry
+Previous round-freeze notes (such as historical claims that the five core themes needed no further
+rewrite) are **superseded**; full historical round records (`#1280`, `#1047`, `#2129`, `#2228`)
+remain in Git and their Issue/PR history rather than being repeated here. Current active design
+documentation status:
 
-[Issue #2129](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2129) applies the
-Standard agreement to three English pages and their existing Chinese design excerpts. A reader
-coming from the Wiki should be able to retell a journey from the [vision](game-vision.md), explain
-a position and healing decision from the [overview](synthesis/gameplay-overview.md), and say what
-changes if the party leaves Polca early in [Map Design Principles](synthesis/themes/map-design-principles.md).
-Review each answer against its conditions in both languages. The existing Wiki mappings continue
-to select the Chinese pages. Wider revisions and publication await separate decisions after
-independent reading of the sample.
+| Design surface | Current status | Active coordination |
+| --- | --- | --- |
+| `game-vision.md`, `gameplay-overview.md`, `map-design-principles.md` (EN + `zh-CN`) | First reader-perspective rewrite sample merged (`#2129` / `#2228`); pending Wiki publication reconciliation. | `#2259` |
+| `design-map.md`, `tactical-battle-loop.md`, `progression-and-economy.md`, Wiki entry templates | Still contain stiff audit/disassembly prose, stale backlog links, or incomplete Wiki L2 coverage; open for scoped readability rewrites. | `#2259` |
+| `story-progression.md` and campaign event/chapter overview | Currently a reader guide plus alphabetical chapter link wall; open for chronological event/chapter overview linked to developer flags and accepted scenario starts. | `#2366` |
+| Modern remake engine architecture & Debug support design entry | Technical docs exist in `remake/docs/`, but designer-facing entry and cross-layer trace are pending. | `#2358` |
+| Detailed chapter guides through Battle27 & later story sections | Accepted static research/synthesis within each page's stated boundary; later chapters link directly to English research rather than pending Chinese guides. | Story coverage in `docs/research/story-content-coverage.md` |
+
+Historical reports, failed comparisons, [Map3–Battle01 readiness](synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone),
+[retained comparisons](../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review),
+and [capability status](../../remake/docs/capability-status.md) retain their own authority.
+Reorganizing or rewriting design prose never upgrades an **Unknown**, turns a failed comparison
+into PASS, or expands claimed natural-play or remake coverage. [ADR 0019](../decisions/0019-state-and-content-driven-remake-engine.md)
+owns current engine direction.
 
 ### Campaign lifecycle indexes
 
-[Epic #1931](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1931) uses **Standard**
-rigor because item, place and character lookups cross chapter, service, and save boundaries.
-This round covers the opening through first Pacalon town and castle and the post-Battle26 Map71
-departure. Later consumers are linked at the relevant dependency. The
-[campaign flag index](../../remake/docs/content/campaign-flags.md) routes state and receipts.
-The [campaign item index](../../remake/docs/content/campaign-items.md) routes acquisition, custody,
-effects, and persistence. The [campaign locations index](../../remake/docs/content/campaign-locations.md)
-routes visits, setup and service changes, exits, and return or Continue. The
-[campaign characters index](../../remake/docs/content/campaign-characters.md) routes recruitment,
-following, deployment and return or Continue. The [campaign feature trace](../../remake/docs/capability-status.md#campaign-feature-trace)
-is the shared implementation entry point. The accepted [church promotion design](../../remake/docs/application/church-promotion-design.md)
-covers ordinary and special-item promotion. Bowie's ordinary HERO route is playable within the
-[recorded boundary](../../remake/docs/application/church-promotion-design.md#playable-hero-and-reproduction).
-Other ordinary and special destinations remain with their respective follow-ups.
+Developer lifecycle lookups under `remake/docs/content/` remain English technical owners linked
+from L2/L3 design prose:
 
-The indexes cite the original research and contracts for original behavior and the application
-owners for remake admission and observations. Acceptance follows each reader route through its
-condition, failure or repeat case, evidence and current support boundary. Use accepted evidence and keep the
-observed boundaries attached to the corresponding implementation owners.
+- [campaign flags](../../remake/docs/content/campaign-flags.md) — flag writers, readers, lifetimes,
+  and receipts;
+- [campaign items](../../remake/docs/content/campaign-items.md) — acquisition, custody, effects,
+  and persistence;
+- [campaign locations](../../remake/docs/content/campaign-locations.md) — setups, services, exits,
+  and return/Continue;
+- [campaign characters](../../remake/docs/content/campaign-characters.md) — recruitment, following,
+  deployment, and persistence;
+- [campaign feature trace](../../remake/docs/capability-status.md#campaign-feature-trace) — shared
+  remake capability entry.
+
+Design pages cite these owners for technical lookup rather than copying raw flag or item tables.
 
 ### Bounded battle-design analysis pilot
 
-**Current scope agreement — Standard:** [Issue #1402](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1402)
-owns one [English analysis page](synthesis/analyses/battle-design-analysis-pilot.md) covering Battle01,
-Taros/Battle18 and Chessboard/Battle22. Existing evidence owners are known, but joining placement,
-activation, equipment and outcomes needs cross-system review. Each example explains its design
-emphasis, overall terrain/starting arrangement, enemy roles and relevant activation, explicit
-player-preparation assumptions, and one or two simple responses with tradeoffs. A design solution
-links problem → rule/placement → response; interpretations remain **Inferred**, not proof of
-original author intent. Missing facts may narrow an explanation or remain **Unknown**.
+The accepted [battle-design analysis pilot](synthesis/analyses/battle-design-analysis-pilot.md)
+([中文](zh-CN/synthesis/analyses/battle-design-analysis-pilot.md)) and
+[Battle02 first-contact analysis](synthesis/analyses/battle02-first-contact.md)
+([中文](zh-CN/synthesis/analyses/battle02-first-contact.md)) demonstrate encounter-level design
+readings: problem → rule/placement → player response and tradeoffs. Such readings remain
+**Inferred** under explicit preparation assumptions and never claim original author intent,
+optimal routes, or difficulty scores.
 
-Reuse the tactical/progression themes and the selected encounters' accepted research, contracts
-and fixture payloads. No new collection, engine/contract/fixture changes, optimal route, turn script,
-win-rate/difficulty score, damage matrix, normal-player level model, simulator, solver or campaign
-framework is in scope. UI/UX and existing translation-drift repair remain separate work.
+### Reader structure and readability checklist
 
-The milestone is three usable examples with their residual gaps, then a clean pushed Draft PR for
-independent reader/evidence acceptance. Direct prose, source, links/anchors, UTF-8/private-boundary
-and diff checks, the existing `zh-meta test`, clean-head planner and selected documentation CI own
-verification; no normal/full, SDK, Godot or emulator suite is selected. This is small text synthesis
-using retained tools and inputs, with no data-processing run or new environment.
+Organize L0–L3 design prose around three depths—**Overview** (L0/L1), **Themes and Chapter
+Groups** (L2), and **Detailed References** (L3/contracts/research)—and check every revised design
+page against these five rules:
 
-The [Chinese design excerpt](zh-CN/synthesis/analyses/battle-design-analysis-pilot.md) presents the
-three design problems and conditional choices. The English source retains exact evidence and
-assumptions.
+1. **Player-first framing:** lead with the player's situation, legal choices, costs, and
+   consequences—not disassembly call order, internal guards, or C# class lists.
+2. **Natural wording with exact distinctions:** apply [`glossary.md`](./glossary.md) (keeping
+   `round` / `individual turn` / `action`, joined / active / follower, and held / equipped
+   distinct; preserving R2 identifiers only where needed).
+3. **Disciplined evidence placement:** put general baseline/scope caveats in a compact
+   **依据与边界** note or table column; keep decision-changing conditions, **Inferred** readings,
+   and **Unknown**s immediately next to the affected claim.
+4. **No execution-log bloat:** keep per-PR test transcripts, seed logs, and historical acceptance
+   receipts in `remake/docs/evidence/` or PR history, never piled onto design prose.
+5. **No invented intent or ad-hoc names:** never speculate on original author intent or invent
+   Chinese proper nouns outside accepted `#1468` / reviewed glossary entries.
 
-### Accepted starting point
-
-The [design map](design-map.md) is the design-first entry. The
-[Gameplay Overview](synthesis/gameplay-overview.md) owns the overall loop. Existing
-[Tactical Battle Loop](synthesis/themes/tactical-battle-loop.md),
-[Progression and Economy](synthesis/themes/progression-and-economy.md),
-[Story Progression](synthesis/themes/story-progression.md) and
-[Map Design Principles](synthesis/themes/map-design-principles.md) remain the system design owners.
-Existing detailed story guides remain available through Story Progression and the
-[design index](../README.md#design), including the
-[Battle27 activation guide](synthesis/chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md).
-
-The [story-content coverage owner](../research/story-content-coverage.md#four-different-frontiers)
-separates original static research, original observations, English synthesis and remake production.
-Accepted static chapter connections extend through the ending, credits and Battle0 reset, with
-selected optional encounters and branches. This supports a qualified campaign-level explanation,
-not a naturally played walkthrough, every NPC/chest/service visit, every legal combat action or
-an exhaustive content census. Later research has not automatically become accepted synthesis.
-The coverage owner's [remaining dispositions](../research/story-content-coverage.md#remaining-labels-and-next-content-task)
-select no automatic collection queue.
-
-### Selected English source set and reconciliation
-
-The bounded English source set is exactly these five existing synthesis files. Each now has its
-substantive explanation; **no further substantive rewrite is planned for any of them in this round**.
-This disposition concerns the selected themes, not all design contracts or detailed chapter guides.
-
-| Selected source | Current reader responsibility | Substantive rewrite remaining |
-| --- | --- | --- |
-| [gameplay-overview.md](synthesis/gameplay-overview.md) | Connected loop, theme entry and original/observed/remake/production boundaries. | None planned. |
-| [story-progression.md](synthesis/themes/story-progression.md) | Six chapter groups through ending/reset, selected optional branches and the Taros/Caravan dependency example. | None planned. |
-| [tactical-battle-loop.md](synthesis/themes/tactical-battle-loop.md) | Common choices, resolution and returns, with five encounter comparisons and their exceptions. | None planned. |
-| [progression-and-economy.md](synthesis/themes/progression-and-economy.md) | Membership, class, equipment and growth joined to receipt, capacity, spending and recovery. | None planned. |
-| [map-design-principles.md](synthesis/themes/map-design-principles.md) | Attempted interaction, dialogue continuation, transport, live/rebuilt state and persistence boundaries. | None planned. |
-
-**Accepted integrated source disposition:** the five-source English set has passed independent
-main-gate reader acceptance and is merged, with no substantive rewrite planned in this round.
-Its Chinese theme mirrors have also been independently accepted and merged. The review route is
-overview → appropriate theme → chapter/example → named evidence,
-with thematic and chapter links back to useful reading entry points. Its connected example follows
-[Ribble/Achilles → Taros → Caravan](synthesis/themes/story-progression.md#worked-example-taros-and-the-caravan):
-capacity/refusal, custody versus equipment, admission versus effect, first/repeat and non-victory
-returns, acquisition versus boarding, and separate service access. Complementary Creed/Jaro,
-reward/smith and Polca no-scroll/scroll branches check membership/control, resource and lifecycle
-seams. These are selected static connections and bounded observations, not one naturally played
-campaign or an all-content audit. Detailed review routes, exact accepted source objects and actual
-check results belong to [Issue #1280](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1280)
-and its PR. The [Chinese reader entry](../README.zh-CN.md) routes through the accepted themes to
-Chinese chapter guides and English evidence owners; the translation index records reviewed anchors
-for the complete indexed design corpus.
-
-The five-theme source disposition is the integrated thematic baseline. The broader corpus has since
-received independent full bilingual acceptance within each document's scope. Existing chapter guides
-through Battle27 have Chinese counterparts. Later chapter explanations link directly to English
-research where no separate design guide exists; those links are evidence routes, not pending Chinese
-design guides. Corpus coverage does not extend natural-play proof, research coverage or remake support.
-
-The retained questions are precise limits on the explanation, not planned rewrites or automatic
-research tasks:
-
-| Retained question | Owning boundary |
-| --- | --- |
-| Natural campaign reach, every legal action/interaction and unobserved caller/presentation completion. | [Story coverage's four frontiers](../research/story-content-coverage.md#four-different-frontiers) and the selected chapter/encounter owners. Static connections do not extend the original observed route. |
-| Complete promotion mutation, all-roster choices and campaign balance/scarcity. | [Party/resource judgment boundary](synthesis/themes/progression-and-economy.md#judgment-boundary), [promotion](synthesis/themes/progression-and-economy.md#definitions-current-class-and-promotion) and their named contracts. No optimal-build or universal curve claim is made. |
-| Full transport/return lifecycles and durable save/suspend survival. | [Map return/persistence](synthesis/themes/map-design-principles.md#return-and-persistence), [resource persistence](synthesis/themes/progression-and-economy.md#persistence-boundary) and [save contract](contracts/system/save-system.md). Save-domain inclusion, save return and durable storage remain separate. |
-| Broader playable content, hardware fidelity and future UI/UX or save choices. | [Capability owner](../../remake/docs/capability-status.md), [accepted milestone](synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone) and [accepted/future choices](synthesis/gameplay-overview.md#made-remake-choices-and-remaining-product-choices). English coverage grants no production admission. |
-
-Historical original/modern failures, #1047's twelve completed unresolved comparisons and prior
-actual diagnostics, corrections and CI remain with the linked evidence and Issue/PR owners.
-No historical suite is rerun or relabeled to establish this source disposition.
-
-The [Map3–Battle01 readiness owner](synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone)
-and [retained comparison owner](../../remake/docs/evidence/retained-comparisons.md#accepted-composition-review)
-retain the accepted composition and completed failures. Original observations retain their
-[separate boundary](synthesis/milestones/map3-battle01-readiness.md#accepted-original-frontier).
-Current production support belongs to the
-[capability ledger](../../remake/docs/capability-status.md), its linked consumers and the
-[coverage distinction](../research/story-content-coverage.md#four-different-frontiers).
-None of those boundaries advances when prose is reorganized. Historical reports, failed
-comparisons and Unknowns remain with their owners; this plan neither replaces them with PASS
-nor restarts them. The [Phase 4 bootstrap plan](synthesis/milestones/phase4-bootstrap-plan.md) remains historical;
-[ADR 0019](../decisions/0019-state-and-content-driven-remake-engine.md) owns current engine direction.
-
-### Reader structure and ownership
-
-Use three reading depths within the existing architecture:
-
-1. **Overview:** explain the exploration, encounter, battle, reward/recovery and world-return loop,
-   and point to the relevant thematic explanation. Keep original knowledge distinct from playable
-   remake support and accepted deviations.
-2. **Themes and chapter groups:** explain rules and dependencies in ordinary gameplay terms.
-   A reader should understand what can be attempted, its conditions, changes, failure/refusal and
-   return behavior, and the remaining uncertainty without reading assembly or raw fixture rows.
-3. **Detailed references:** link existing segment guides, contracts and research for exact flags,
-   source order, parameters and proof. Keep each fact's canonical owner; do not copy full source
-   tables, repeat a technical audit in every chapter or create a second evidence inventory.
-
-Chapter organization follows meaningful world changes and content dependencies, rather than one
-page per battle number or investigation task. The initial editorial grouping is **Inferred**:
-Grans opening and departure; New Granseal and eastern Parmecia; southern travel, Caravan and Creed;
-northern travel, Pacalon, Tristan and Mitula; Moun/Nazca and the return to Grans; final confrontations
-and ending. Optional recruitment, transport, trials and revisits appear beside their actual gates,
-not as mandatory numbered steps. These are reading groups, not assertions about natural chronology
-or the original authors' intended chapters.
-
-Reuse existing pages first. Add a thematic page only when its responsibility has no adequate owner;
-its Issue must name the file and the boundaries it takes from existing pages. Retain stable links or
-repair their actual callers when reorganizing. Do not create empty directories, a new catalog
-framework or wholesale file moves. Length follows content and readability, not a cap.
-
-### Delivery order and acceptance
-
-These five accepted reader boundaries govern the selected source set, not one task per row or a new
-writing queue. They remain criteria for future substantive changes. Each executable Issue owns one
-coherent reader outcome and exact paths; independent
-review judges reader usefulness as well as evidence interpretation.
-
-| Milestone | Reader question and deliverable | Owners and dependencies | Acceptance boundary |
-| --- | --- | --- | --- |
-| 1. Connected overview and campaign structure | How do the systems fit together, what changes across the world, and where do choices branch? Refresh the overview and turn Story Progression into a chapter-oriented route with links to existing detail. Extend the later chapter explanation from accepted research. | Existing overview/story owners; [chapter coverage](../research/story-content-coverage.md), [gameflow](../research/system/gameflow-core.md), [dialogue](contracts/interface/dialogue-system.md), [roster](contracts/party/party-roster-state.md). | A reader can follow qualified entry, prerequisite, encounter/outcome and return connections through the selected chapter spine to the ending, find optional branches and distinguish static connections from observed play. Every selected group is explained or explicitly bounded; chronological numbering is not proof. |
-| 2. Tactical rules and encounter composition | What can a combatant do, how is a turn resolved, what activates enemies, and what changes between encounters? Revise Tactical Battle Loop and organize evidence-backed encounter differences with representative examples. | [Battle control](contracts/battle/battle-control-lifecycle.md), [actions](contracts/battle/battle-action-construction.md), [navigation](contracts/battle/battlefield-navigation.md), [AI](contracts/battle/battle-ai-decision.md), [combat](contracts/battle/combat-resolution.md), [spells](contracts/battle/spell-resolution.md), selected encounter research linked by coverage. | Explain legal actions, movement/target conditions, resolution, enemy activation/control, outcome and retry/return boundaries. Separate common rules from boss, neutral, repeat and special-encounter exceptions; an initial formation or first dispatch does not prove a played battle or every AI decision. No simulator, difficulty rating or balance proposal. |
-| 3. Party development and resources | How do recruitment, active party, class/promotion, equipment and growth interact, and how do items, magic, money and services constrain choices? Give party development a clear owner and revise Progression and Economy around those relationships. | [Roster](contracts/party/party-roster-state.md), [growth](contracts/party/level-up.md), [ally definitions](contracts/party/ally-definition-data.md), [item definitions](contracts/party/item-definition-data.md), [spellbook](contracts/party/spellbook-state.md), [services](contracts/party/service-interactions.md), [Caravan/deals](contracts/party/caravan-and-deals-state.md), accepted recruitment and service research. | Keep joining, following, active membership and AI distinct; connect growth/equipment to actual rule application. Explain resource sources, transfers, sinks, capacity, refusal/failure and recovery with actual service boundaries. Reference parameters at their owners; do not invent optimal builds, campaign balance curves or complete service/runtime coverage. |
-| 4. Exploration, interaction and continuity | How do movement, interaction, map transitions, dialogue, transport and world changes compose, and which state survives each kind of return? Update Map Design Principles and the relevant story/overview sections, separating save/suspend from ordinary map return. | [Map exploration](contracts/world/map-exploration.md), [dialogue](contracts/interface/dialogue-system.md), [map-entry state](contracts/world/map-entry-routing-state.md), [save](contracts/system/save-system.md), [input](contracts/interface/input-system.md), accepted scene/service/transport owners. | Explain conditional interactions, current versus rebuilt entities, story gates, return/re-entry and persistence limits. Summarize accepted feedback/input/audio choices by linking their owners; no new UI layout, art/accessibility choice, save design or hardware-parity target. |
-| 5. Integrated reader acceptance | Can a reader move from overview to a theme, through a chapter example, and back to its evidence without contradictions? Reconcile cross-links and repeated explanations; record the selected English themes that are stable and any deferred questions. | All accepted theme revisions; roadmap and existing navigation; independent main-gate review. | Review at least one connected route plus an optional/refusal or failure branch across themes. Verify consistent terminology, state distinctions and original/remake boundaries, not just links. Unexplained claimed transitions return to their owner. English completion does not complete the bilingual Epic. |
-
-Integrated review uses the existing reading structure and worked cross-system example. Its accepted
-detail remains in the
-[sword acquisition guide](synthesis/chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md),
-[Taros admission guide](synthesis/chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md),
-[Battle18 initialization/first-control research](../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md),
-[Caravan acquisition guide](synthesis/chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md) and
-[Caravan travel guide](synthesis/chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md).
-The example connects an item/encounter condition, battle and outcome boundaries, acquisition and a
-later traversal option, preserving refusal/failure and missing-prerequisite branches. An outcome
-not established remains a precise gap; the example asserts no naturally uninterrupted itinerary.
-Detailed reference owners remain read-only unless a concrete correction is separately scoped.
-Main-gate serializes roadmap/index and other shared edits. Integrated acceptance checks these
-connections and repeated terminology across themes; it is not another general rewrite or research
-campaign. A new contradiction returns to its owner before the affected claim expands.
-
-### Evidence, effort and stopping rules
-
-Apply the pre-synthesis evidence review to the claims actually selected. Reuse accepted exact
-objects, detailed reviews and public facts; inspect the relevant source/fixture boundaries when a
-quantity, state transition or interpretation needs checking. Do not mechanically replay every
-prior extraction, geometric calculation or experiment just because a thematic guide cites it.
-Conflicting owners require an explicit correction or exclusion of the disputed claim. An unresolved
-fact can remain **Unknown** while independent explanation proceeds.
-
-For each substantive rule, preserve its conditions, observable or source-defined consequence,
-important exception and linked owner. Label interpretations **Inferred**; static proof stays static.
-New remake choices require their own product/decision owner. A synthesis gap becomes a research
-Issue only when it blocks a named explanation or implementation decision and accepted owners cannot
-answer it. Such an Issue names the smallest missing condition and required evidence; it is not an
-instruction to collect all remaining data. Existing detailed failures and #1047's completed
-unresolved comparisons remain preserved, not relabeled as interruptions or rerun to clear prose.
-
-This is a documentation program using existing text and public facts. Work uses one
-active theme writer, independent review and sequential integration, with small Markdown diffs and
-local review notes. No new raw acquisition, private payload copy, generated data corpus, database,
-comparison framework or maintained checker is needed. The uncertain cost is evidence reconciliation
-and readable synthesis, not processing volume. Use actual authoring, review and correction effort
-when sizing any later expansion. If a theme needs the same fact copied, a task cannot define its
-reader question, or evidence repair starts dominating explanation, reassess ownership and scope before scaling. Necessary design
-and review are not sacrificed to an arbitrary cost or document-length target.
-
-Each slice requires direct prose/scope, relative-link/anchor, UTF-8/private-boundary and
-`git diff --check` inspection, plus the configured committed planner and actual scoped CI under the
-documentation-only policy. Translation slices use the existing glossary, index and direct
-scope-appropriate label, structure, fixture and anchor checks; run the existing `zh-meta test`
-at the bounded handoff and preserve any outside-scope FAIL. Do not launch blanket normal/full Python,
-.NET, Godot or H3/H4 suites for this agreement. Independent review checks evidence interpretation and reader usefulness;
-a mechanical PASS alone is insufficient. Leave a clean committed/pushed Draft PR for independent
-acceptance. No historical report, private input or retained failure is deleted by this plan.
-
-This roadmap owns the current agreement and source disposition; Issues own task coordination.
-Any later English expansion or Chinese synchronization uses a separately scoped Issue with its own
-source-stability assessment, exact files and acceptance boundary. Existing corpus acceptance does not
-pre-accept later source revisions or new documents.
-[#438](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/438) and its UI/UX
-tasks keep product ownership; [#638](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/638)
-remains paused. This round does not authorize production admission, new art, save/load implementation,
-full-game parity or a general comparator.
+**Verification for documentation-only slices:** run direct prose/scope review, relative-link and
+anchor checks, UTF-8 and private-boundary checks, `git diff --check`, applicable `zh-meta` checks,
+and the clean-head verification planner / scoped CI. Do **not** run Godot, engine suites, H3, or
+normal/full verification solely for documentation changes.
 
 ### Bounded translation repair agreement
 
-**Current scope agreement — Standard.** The Chinese body covers the
-[L0–L3 decisions](#design-and-support-scope). A translated design excerpt carries the same
-relative path as its English counterpart and is declared in the existing index. The index and
-the on-disk Chinese pages must agree. English-only technical pages and new English design sources
-have no automatic pending or drift record. Independent review checks retained conditions, choices,
-formulas, evidence levels and terms. Whole-source Markdown structure, fixture sequences and label
-counts apply to full translations. Excerpts check Chinese text, evidence-label vocabulary, local
-links and anchors; the review establishes equivalence of the selected behavior.
+**Current scope agreement — Standard.** Chinese design work covers L0–L3 prose and reviewed
+excerpts listed in `manifests/zh-translation-index.json`. The index and on-disk `docs/design/zh-CN/`
+files must match. English-only technical pages and new English design files do not create an
+automatic translation queue.
 
-Run `uv run --locked sf2 zh-meta test` for strict inventory, link and reviewed-anchor checks and
-`uv run --locked sf2 zh-meta list` for per-page drift. Whole-English-file anchors on retained
-mixed pages are conservative: edits to support passages can still require checking whether the
-selected rules changed. Keep an older source anchor if a relevant revision has not been reviewed.
+Use `uv run --locked sf2 zh-meta test` for inventory, link, anchor, and drift verification, and
+`uv run --locked sf2 zh-meta list` to inspect per-page drift. Whole-file anchors on retained mixed
+pages are conservative; keep an older anchor when a source edit has not been semantically reviewed.
 
-For each later change:
+For each bounded Chinese design update:
 
-1. **Establish a stable source.** Consume accepted `main`, identify the source's owner and actual
-   substantive changes, and check competing work or planned rewrites before translating. A new or
-   expanded English document receives its own source-stability and reader-scope assessment.
-2. **Translate and review the content.** Update the retained design within the affected mirror
-   under the existing glossary. Independently review meaning, conditions, refusal/failure branches,
-   evidence labels, identifiers and fixture sequences. Keep Historical and Proposed identities
-   in their original context. Review the overview → theme → chapter/example → evidence route in both
-   languages, including optional branches and useful return links.
-3. **Keep link roles explicit.** Reader links may use accepted Chinese counterparts and corresponding
-   sections. Canonical-English, source/provenance, fixture, research, ADR and engine/acceptance links
-   stay with their owners. Later English research is labeled as research, not as an untranslated
-   design guide. Preserve established anchors or verify and repair their incoming references.
-4. **Re-anchor only reviewed changes.** Update only the affected index records after real bilingual
-   review, preserving unrelated records and glossary metadata. If a source change is accepted before
-   its mirror is synchronized, retain the old reviewed anchor and report the synchronization gap;
-   keep drift visible until semantic review. If a scope retires a mirror, remove its index record
-   in the same change.
-5. **Verify and hand off.** Run the original global checks after loading the retained private-input
-   configuration in the same process, plus direct scope, links/fragments, semantic targets, metadata
-   and private-boundary checks. Inspect the clean-head planner and actual scoped CI under the
-   documentation-only policy. Independent full bilingual and reader-route acceptance remains
-   necessary even when metadata passes; preserve every completed failure and Unknown.
-
-Reuse the current glossary, index, mirrors and direct checks. No new catalog, synchronization
-framework or per-file microtask queue is needed. Source disagreement, a new research requirement or
-evidence repair dominating translation triggers scope reassessment before expansion. This agreement
-grants no new acquisition, engine capability, UI/UX choice, game-script localization or cleanup.
-The [current scope agreement](#current-baseline-and-near-term-synthesis) routes synchronization work.
-Main-gate owns independent integration.
+1. **Start from accepted `main`:** confirm the canonical English owner, actual substantive changes,
+   and competing work before editing.
+2. **Translate and review for readability and accuracy:** apply [`glossary.md`](./glossary.md) (L0–L3
+   natural prose, preserved gameplay distinctions, accepted `#1468` names, R1 evidence labels, R2
+   identifiers where cited). Full translations preserve structure/fixture sequences; `design-excerpt`
+   pages omit technical sections while preserving selected rules and boundaries.
+3. **Keep link roles explicit:** route L0–L3 navigation to Chinese counterparts where available and
+   label canonical English technical/evidence/implementation links clearly.
+4. **Re-anchor only reviewed pages:** update only the reviewed records in
+   `manifests/zh-translation-index.json`. When `glossary.md` changes without reviewing all existing
+   mirrors, leave `glossaryDrift` visible until each affected L0–L3 mirror is reviewed in its own
+   slice.
+5. **Verify proportionally:** run direct scope, relative-link/anchor, private-boundary, and
+   `zh-meta` checks plus the clean-head verification planner and scoped CI. Independent bilingual
+   reader review remains required even when metadata passes.
 
 ## Long-Term Directions
 
-Beyond the bounded theme explanations above, the following extensions remain **Unknown future directions**, not current
-commitments. Work may begin only when entry criteria cite accepted local evidence; none authorizes a
-new engine design or treats remake functionality as original-game evidence.
-
-| Direction | Entry criteria and evidence dependencies | Non-goal |
-| --- | --- | --- |
-| experiential extension of map-design principles | The existing structural synthesis is the baseline; additional reachability and interaction-outcome observations must distinguish layout facts from player-route interpretation. | Do not infer authorial intent or redesign levels from 64x64 layout data alone. |
-| exhaustive roster choice space across campaign states | The current round explains accepted recruitment/development rules. A wider comparison needs compatible capacity, lifecycle and encounter context beyond those selected accounts. | No tier list, “best party” advice, assumed preferences or complete campaign optimization. |
-| player/enemy numerical curves | Complete source-backed numeric tables plus runtime-confirmed application, caps, and level/encounter context sufficient to name units and boundaries. | Do not set remake balance targets or describe mathematical curves as intended difficulty. |
-| battle simulation | Complete and mutually compatible battle-loop/action/AI/pathfinding/state contracts plus a bounded H4 adapter acceptance surface. | Do not select a simulation architecture, claim general predictive accuracy, or use a model to fill unresolved branches. |
+Beyond bounded L0–L3 explanations, broader extensions—experiential map redesign, exhaustive roster
+optimization, balance curves, or battle simulators—remain **Unknown future directions**, not active
+commitments or remake balance targets.
 
 ## Reusable Authoring Structure
 
-Future `docs/design/` synthesis documents may selectively use the following structure. This describes
-document shape, not a parallel workspace or a mandatory full GDD template.
-
-**Confirmed authoring guidance:** organize design documents by coherent subject matter, reader flow
-and maintainable ownership. Include the explanation needed to make the bounded subject understandable;
-do not impose line, word or page caps, split documents solely for length, or remove necessary
-explanation to meet a brevity target. The handwritten-source line limit does not apply to design
-Markdown. Effort budgets bound work expansion, not document length.
-
-Choose the opening to match the question. At L0, give a reader a sense of travelling with this
-party and what the remake preserves. At L1, follow an outing far enough to see how preparation,
-a turn and its aftermath affect one another. At L2, explain a choice in its setting, including a
-condition under which another answer changes the result. At L3, retain the values, order,
-exceptions, cancellation and failure rules needed to decide a case.
-
-For example, a reader can understand Jaha's choice of terrain once they know what the second
-hit does and when Sarah can act. The [first-contact analysis](synthesis/analyses/battle02-first-contact.md)
-owns the coordinates, arithmetic and ordering assumptions. Include the assumptions that could
-change the answer alongside the example. Use similar judgment when writing a chapter where the
-choice turns on a conversation or a return visit instead of a number.
-
-Keep original rules, conditional interpretations and accepted or proposed remake choices
-identifiable. Put proof details in a supporting passage or link the evidence owner. Preserve
-the [evidence review](#pre-synthesis-evidence-review), including completed failures and remaining
-**Unknown** questions. Adapter results and fixture inventories belong with their acceptance owners.
-They need enter the reader's account only where they change what the reader can conclude.
+Organize design documents by coherent subject matter, reader flow, and maintainable ownership. Do
+not impose arbitrary line or word caps, split documents solely for length, or strip necessary
+explanation to hit a brevity target (the handwritten-source line limit does not apply to design
+Markdown). Choose an opening that fits the level: L0 conveys the journey and remake vision; L1
+connects preparation, battle, and return; L2 explains system choices and tradeoffs; L3 states exact
+conditions, order, exceptions, cancellation, and failure rules.
 
 ## External Reference Provenance and Selective Adoption
 
-**Confirmed external-reference provenance:** the
-[DY-2026/GameDesignOS README](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/README.md),
-[contract catalog](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/contracts/README.md), and
-[player-promise contract schema](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/contracts/player-promise-contract.schema.json)
-were accessed on 2026-08-01 at pinned `main` commit
-`d01dfebc6eac7a619b9a18f3cbafa51270d1edba`; the repository uses the
-[MIT license](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/LICENSE).
-The reproduction command `git ls-remote https://github.com/DY-2026/GameDesignOS.git` observed that
-commit at `refs/heads/main`, and requests for each listed pinned raw document/template returned HTTP
-200.
-
-The following structural prompts were selectively adopted:
-[player-verb inventory](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-concept-architect/templates/player-verb-inventory.md),
-[system-dynamics map](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-concept-architect/templates/system-dynamics-map.md),
-[game-dissection report](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-experience-analyzer/templates/game-dissection-report.md),
-[full design brief](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-concept-architect/templates/full-design-brief.md), and
-[reference-game boundary](https://github.com/DY-2026/GameDesignOS/blob/d01dfebc6eac7a619b9a18f3cbafa51270d1edba/game-concept-architect/templates/reference-game-boundary.md):
-reader/action scope, visible uncertainty, loop mapping, evidence links, scope gates, and validation
-conditions. They were adapted to this repository's evidence labels and H4 boundary without copying
-template text.
-
-This project explicitly rejects the external project's nine-directory workspace, commercial
-pitch/market assumptions, and second evidence/decision system. This repository already owns
-`docs/research/`, `docs/design/`, `docs/decisions/`, `schemas/`, `manifests/research-index`, H2/H3
-fixtures, and the H4 acceptance boundary. The external reference contributes only selective
-authoring perspective; it is not a project dependency or a new source of truth.
+**Confirmed external-reference provenance:** selected structural prompts (player-verb inventory,
+system-dynamics map, game-dissection report, full design brief, reference-game boundary) were
+adapted on 2026-08-01 from MIT-licensed `DY-2026/GameDesignOS` at pinned commit
+`d01dfebc6eac7a619b9a18f3cbafa51270d1edba` without copying template text or adopting its
+nine-directory workspace, commercial framing, or second evidence system.
 
 ## Collaboration and Continuing Hygiene
 
-**Confirmed collaboration rule:** synthesis documents may be added over accepted evidence while
-reverse engineering continues, but they must not rewrite a subsystem contract in parallel with its
-active worker. When a future finding changes a conclusion, update the owning research note,
-fixture/contract, and design explanation together so the trace remains bidirectional.
-
-**Confirmed repository hygiene closure:** [`party-roster-state.md`](contracts/party/party-roster-state.md) is now
-registered in `src/sf2tool/design_contracts.py` with its H2 map-script and H3 active-party fixtures.
-The public tracked-input gate validates document path, fixture path, and fixture ID traceability in
-both directions. This closure does not change any original-game finding.
+Synthesis edits must not rewrite a Layer A subsystem contract in parallel with its active research
+worker. When an accepted finding changes a conclusion, update the owning research note,
+fixture/contract, and design explanation together so traceability stays bidirectional.
+[`party-roster-state.md`](contracts/party/party-roster-state.md) remains registered in
+`src/sf2tool/design_contracts.py` with bidirectional fixture validation.

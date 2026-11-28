@@ -1,162 +1,221 @@
 # Design Localization Glossary (EN → 中文)
 
-- Status: **accepted repository governance** for zh-CN localization of `docs/design/` synthesis
-  documents; this document adds no original-game fact and selects no remake product direction.
-- Record date: 2026-08-04
+- Status: **accepted repository governance** for L0–L3 design prose and Chinese design documents
+  under `docs/design/zh-CN/`; this document adds no original-game fact and selects no remake
+  product direction.
+- Initial acceptance: 2026-08-04 · Governance revision: 2026-11-27
 - Owner: design-synthesis lane
-- Scope: canonical English Markdown under `docs/design/` and hierarchy-preserving zh-CN mirrors
-  under `docs/design/zh-CN/`
-- Authority: the Authoring Language Policy in
-  [`documentation-roadmap.md`](./documentation-roadmap.md) accepts this glossary as the project
-  glossary required before non-English localization begins.
+- Scope: canonical English design prose under `docs/design/` and L0–L3 Chinese design documents and
+  excerpts under `docs/design/zh-CN/`
+- Authority: the [Authoring Language Policy](./documentation-roadmap.md#authoring-language-policy)
+  in [`documentation-roadmap.md`](./documentation-roadmap.md).
 
 ## Purpose and Authority
 
-This glossary is the single binding source for English-to-Chinese terminology in design-synthesis
-documents. It exists so a localization batch produces terminology-consistent output instead of ad hoc
-bilingual invention, which the Authoring Language Policy explicitly prohibits while the glossary is
-unsettled.
+This glossary keeps Chinese design documents readable for game designers and players while
+preserving exact gameplay distinctions and Layer A technical traceability.
 
 It governs:
 
-- future zh-CN translations of canonical English design Markdown under `docs/design/`, mirrored
-  beneath `docs/design/zh-CN/` with the same relative path;
-- bilingual annotations already allowed inside English design documents (for example a parenthetical
-  Chinese term next to a proper noun at first occurrence).
+- L0–L3 Chinese design prose, system themes, chapter overviews, and reviewed design excerpts under
+  `docs/design/zh-CN/` (and the subset mapped to the Design Wiki);
+- bilingual annotations inside English design documents where helpful.
 
-It does not govern:
+It does **not** govern:
 
-- `docs/research/`, `schemas/`, `manifests/`, fixtures, or source-adjacent vocabulary, whose content
-  stays source-faithful and English-first; this glossary may later be extended by an explicit
-  governance decision if those lanes adopt localization;
-- code vocabulary, symbol names, or fixture IDs, which are preserved verbatim under rule R2 below;
-  evidence labels are the explicit exception and use the fixed R1 translations.
+- `docs/research/`, `schemas/`, `manifests/`, fixtures, or source-adjacent engineering references,
+  which remain English-first and source-faithful;
+- code symbols, memory labels, macros, handlers, and fixture IDs, which stay verbatim under R2;
+- in-game UI/script localization (`#1468`), which has its own runtime owner in
+  [`remake/docs/application/localization-design.md`](../../remake/docs/application/localization-design.md).
 
 ## Terminology Rules
 
-The rules below are normative. Term tables at the bottom are the accepted translations. A conflict
-between a rule and a table resolves in favor of the rule; a conflict between two tables resolves in
-favor of the more specific category.
+The rules below are normative. Term tables at the bottom distinguish **L0–L3 design prose** from
+**technical/traceability contexts**. A conflict between a rule and a table resolves in favor of the
+rule; a conflict between two tables resolves in favor of the more specific category.
 
-### R1 — Evidence labels and verification layers use fixed translations
+### R1 — Evidence labels, verification layers, and evidence placement
 
-Evidence labels must remain recognizable in every document, translated or not, because they gate the
-evidence model. Use the fixed Chinese renderings below everywhere, including inside zh-CN mirrors:
+Evidence labels must remain recognizable in every document because they gate the repository's
+evidence model. Keep these fixed Chinese translations wherever an evidence label appears:
 
-| English | 中文 | Note |
+| English | 中文 | Usage |
 | --- | --- | --- |
-| Confirmed | 已确认 | Evidence label; a reproduced or source-and-runtime-backed claim |
-| Inferred | 推断 | Evidence label; strong but not yet independently reproduced |
-| Unknown | 未知 | Evidence label; explicit open question, never filled by assumption |
-| Contract | 合同 | Implementation-neutral contract; matches existing usage in `docs/README.md` |
-| Fixture | 测试夹具 | May remain "fixture"; the fixture ID itself is never translated |
-| Evidence owner | 证据所有者 | The research document that owns the claim |
-| Evidence date | 证据日期 | Header field; must be the actual observation date |
+| Confirmed | 已确认 | Reproduced or directly source/runtime-backed claim |
+| Inferred | 推断 | Supported interpretation not independently reproduced at the stated boundary |
+| Unknown | 未知 | Explicit open question; never fill with an assumption |
+| Contract | 规则 / 规格（L0–L3 正文）；合同（Layer A 合同标题与溯源语境） | Avoid awkward prose like “结果合同”; keep “合同” when naming Layer A evidence-bound contracts |
+| Fixture | 测试夹具（或 fixture） | Fixture ID itself is never translated |
+| Evidence owner | 证据所有者 | Owning research or contract document |
+| Evidence date | 证据日期 | Actual observation date |
 | Source baseline | 源码基线 | Pinned upstream commit identity |
-| Traceability | 可追溯性 | Contract-to-fixture relationship |
-| Provenance | 溯源 | Reproducible source/command/ROM evidence trail |
+| Traceability | 可追溯性 | Contract-to-fixture link |
+| Provenance | 溯源 | Reproducible source/command/ROM trail |
 
-Verification layers `H0` through `H5`, phases `Phase 0` through `Phase 5`, `Layer A/B/C`, and `ADR`
-numbers are identifiers and are never translated or renumbered.
+Verification layers `H0`–`H5`, `Phase 0`–`Phase 5`, `Layer A/B/C`, and `ADR` numbers are identifiers
+and are never translated or renumbered.
 
-### R2 — Source-faithful identifiers are never translated
+**Placement in L0–L3 design prose:**
 
-The Authoring Language Policy requires preserving source-faithful identifiers, fixture IDs, and code
-vocabulary rather than inventing translated equivalents. Evidence labels are the explicit exception:
-they must use the fixed Chinese forms in R1. A zh-CN translation must copy the following classes
-verbatim:
+- Gather repetitive general disclaimers (overall source baseline, static-vs-runtime scope notes,
+  or chapter-wide caveats) into a compact top/bottom **依据与边界** block or a dedicated table
+  column instead of repeating boilerplate disclaimers in every paragraph.
+- Keep any **Unknown（未知）**, **Inferred（推断）**, or rule condition that changes what the
+  player or designer can conclude **directly adjacent to the affected statement**; never bury a
+  decision-changing unknown only in a footer.
+
+### R2 — Source-faithful identifiers stay verbatim
+
+Never invent Chinese substitutes for source symbols, routine/macro/handler labels, fixture IDs,
+file paths, opcodes, registers, or contract-significant numeric literals:
 
 - source symbols and memory labels, e.g. `CURRENT_BATTLEACTION`, `RANDOM_SEED`,
   `CUTSCENE_DIALOG_INDEX`, `LEVELUP_ARGUMENTS`, `UpdatePlayerInputs`, `CheckSram`, `LevelUp`;
-- source macro names, e.g. `nextSingleText`, `textCursor`, `setPos`, `setFacing`, `join`,
-  `reviveAlly`, `addNewFollower`, `warp`, `loadMapFadeIn`;
-- source handler labels, e.g. `csc00_displaySingleTextbox`, `csc25_cloneEntity`,
-  `csc0E_jumpIfForceMemberInList`;
-- fixture IDs and file paths, e.g. `sf2-map-script-engine-static-v1`,
-  `tests/fixtures/h3/map-script-dialogue-v1.json`;
-- source- or contract-significant numeric literals, packed bytes, opcodes, operand widths, addresses,
-  and register names (`$00`, `0xFF`, `$FFFF`, 6-byte, `d1`, `a6`, VDP, DMA, VInt, SRAM, Z80, 68000);
-- verification layer names, command names, and any identifier spelled in `code` or `UPPER_SNAKE`.
+- source macro and handler labels, e.g. `nextSingleText`, `setPos`, `join`, `addNewFollower`,
+  `warp`, `csc00_displaySingleTextbox`;
+- fixture IDs, paths, and exact flag/encounter IDs when cited as identifiers, e.g.
+  `sf2-map-script-engine-static-v1`, `tests/fixtures/h3/map-script-dialogue-v1.json`, `F401`;
+- numeric/byte literals and hardware names (`$00`, `0xFF`, `6-byte`, `d1`, `a6`, VDP, DMA, VInt,
+  SRAM, Z80, 68000).
 
-A translation may add a Chinese gloss after the identifier the first time it appears, e.g.
-`UpdateCombatantStats（刷新战斗员派生属性）`, but it must not replace the identifier or change its
-spelling, case, or separators. Ordinary prose ordinals and quantities may use natural Chinese
-wording only when their value and unit remain unchanged; values that identify a source record,
-fixture case, field, byte, offset, address, or executable boundary stay verbatim.
+L0–L3 prose should avoid dragging raw symbols into ordinary gameplay sentences unless a rule
+depends on that identifier; put technical references in links or trace columns. When an identifier
+is cited in prose, a first-occurrence Chinese gloss is allowed (e.g. `UpdateCombatantStats（刷新战斗员派生属性）`),
+without altering the identifier itself.
 
-### R3 — Mechanics and process terms use one term, one translation
+### R3 — Natural L0–L3 gameplay wording with exact semantic distinctions
 
-Binding terms are translated consistently across all documents. When an English term has multiple
-Chinese senses in this repository, the table records both senses and their context (for example
-`cursor` as UI cursor vs script stream cursor, `inventory` as item container vs source inventory).
-Use the recorded rendering; do not introduce synonyms for an already-listed term.
+L0–L3 design prose should read as natural Chinese game design—describing the player's situation,
+choices, costs, and consequences—rather than literal translations of disassembly or audit prose.
 
-### R4 — Proper nouns are bilingual in the glossary; the body keeps English
+- Prefer natural gameplay phrasing over stiff literals in L0–L3 prose (for example, use `进入条件`
+  / `触发条件` instead of `准入`, `规则` / `机制规格` instead of `合同`, `条件限制` / `触发条件`
+  instead of `守卫`, `实测案例` instead of `证人`).
+- **Preserve gameplay-critical semantic distinctions.** Never blur distinct mechanics into one
+  vague word:
+  - `round` = **整轮回合 / 战斗回合**（一轮完整的敌我行动周期）
+  - `turn` (individual actor turn) = **轮到某单位行动 / 个人行动回合**（队列中单个单位的一次出手窗口；正文避免生硬的“首次单次行动交接”）
+  - `action` = **具体行动 / 操作**（攻击、施法、使用物品、待机、搜索等单次命令提交）
+  - `joined` / `active party` / `follower` = **已加入军团** / **出战队伍** / **临时随行（随从）**
+  - `held (custody)` / `equipped` = **携带（持有）** / **已装备**
+- When an English term has multiple repository senses (`cursor` as UI 光标 vs script 游标;
+  `inventory` as 物品栏 vs source 清单), keep the senses distinct.
+- Do **not** perform blind repository-wide search/replace when adopting natural wording; apply
+  revisions deliberately when each L0–L3 page is reviewed.
 
-Character, spell, item, and class names keep their English form in English and zh-CN bodies. The
-glossary records suggested Chinese renderings for first-occurrence annotations. These renderings are
-**suggestions to be finalized per entry during the localization batch review**; they are not
-original-game evidence and do not affect source identifiers, fixture IDs, or evidence labels. Where
-no community-standard rendering exists, the entry stays `待定` until the batch review decides it.
+### R4 — Proper nouns follow accepted `#1468` game localization
 
-### R5 — Adding or revising entries
+Chinese L0–L3 design prose is no longer required to leave all character, spell, item, and class
+names in English.
 
-1. Propose the term in the owning localization branch with the English form, proposed Chinese form,
-   category, and one or two documents that use it.
-2. Review against existing entries; a near-duplicate updates the existing row instead of adding a new
-   one.
-3. Accept in the same design lane review that accepts the translation batch; record the date.
-4. Update every affected zh-CN mirror in the same batch so the glossary and the mirrors do not drift.
+- **Use independently accepted Chinese names when available.** The accepted game name corpus under
+  `#1468` (`#1504` / `#1506`, owned by
+  [`remake/docs/application/localization-design.md`](../../remake/docs/application/localization-design.md#current-full-text-chinese-corpus))
+  is the authority for adopted Chinese proper nouns. In Chinese L0–L3 prose, you may use an
+  accepted Chinese name directly and optionally annotate the English name at first occurrence when
+  helpful for cross-referencing English specs or in-game English mode (e.g., `鲍伊（Bowie）`、
+  `治疗（HEAL）`).
+- **Do not invent ad-hoc Chinese proper nouns.** If a proper noun has no accepted Chinese name in
+  the `#1468` corpus or an explicitly reviewed glossary row, keep its English name in the body
+  until localization or glossary review settles it.
+- Keep class codes (e.g., `SDMN`, `MAGE`, `MMNK`, `SORC`) and source command tokens (e.g.,
+  `EGRESS`) recognizable when a rule compares exact class tables or source commands; pair them with
+  their accepted Chinese name where it helps readability.
 
-A binding term (R3) may only be changed together with a batch-wide search/replace of all affected
-documents; a proper-noun suggestion (R4) may be changed per entry.
+### R5 — Revising glossary entries without forced whole-corpus churn
 
-### R6 — zh-CN mirror conventions
+1. Propose new or revised entries in the owning design/governance slice with the English form,
+   L0–L3 Chinese wording, technical sense (if different), and affected context.
+2. Update an existing row rather than creating near-duplicates; record the revision date.
+3. Updating `glossary.md` does **not** require a mechanical search/replace across every existing
+   `docs/design/zh-CN/` file in the same PR. Existing mirrors intentionally keep their prior
+   `glossarySha256` anchor in `manifests/zh-translation-index.json` until each L0–L3 page is
+   reviewed and updated in its own scoped slice (such as `#2259`, `#2366`, or `#2358`).
+4. Never re-anchor an unreviewed mirror just to silence `zh-meta` glossary drift.
 
-- A mirror preserves its canonical English source's relative path beneath `docs/design/zh-CN/`.
-  For example, `docs/design/contracts/system/save-system.md` maps to
-  `docs/design/zh-CN/contracts/system/save-system.md`. It is a derivative; the English file remains the
-  review baseline.
-- Preserve verbatim under R2: identifiers, fixture IDs and paths, source/code labels,
-  contract-significant numeric literals, header field values, and evidence-layer/phase/ADR names.
-- Rewrite relative links for the mirror's actual location. Because inserting `zh-CN/` makes every
-  mirror one directory deeper than its parallel English source, repository-external targets usually
-  add one `../` level. Link integrity is an acceptance criterion of every batch.
-- Keep the evidence-label translations from R1 so a Chinese reader can still recognize label
-  boundaries.
-- Translate player- or reader-visible prose inside diagrams, including Mermaid node and edge labels;
-  preserve only the source identifiers embedded in those labels.
-- A mirror is not registered in `src/sf2tool/design_contracts.py`; the English file owns contract
-  traceability.
+### R6 — Chinese design document and excerpt conventions (L0–L3 scope)
+
+- Chinese design files live under `docs/design/zh-CN/` preserving the canonical English relative
+  path (e.g., `docs/design/synthesis/themes/tactical-battle-loop.md` →
+  `docs/design/zh-CN/synthesis/themes/tactical-battle-loop.md`). Canonical English files remain
+  the review baseline for original evidence and technical authority.
+- **L0–L3 focus only:** consistent with
+  [`documentation-roadmap.md#design-and-support-scope`](./documentation-roadmap.md#design-and-support-scope),
+  Chinese documents and Wiki pages cover L0–L3 player-facing design, rules, choices, and
+  consequences. Do **not** restore full Chinese translations of research ledgers, ROM/byte tables,
+  script opcodes, fixture inventories, or verification logs—link directly to their canonical English
+  owners and label them `（英文源）`.
+- Both full translations and reviewed `design-excerpt` pages are supported in
+  `manifests/zh-translation-index.json`. Excerpts may omit technical audit sections while retaining
+  the rule's conditions, formulas, exceptions, and evidence boundaries.
+- Rewrite relative links for the extra `zh-CN/` directory depth and verify link/anchor integrity.
+  Prefer existing Chinese L0–L3 links for design navigation and English links for technical support.
+- Preserve R2 identifiers whenever cited by a rule, keep R1 evidence labels recognizable, and
+  translate reader-visible Mermaid labels (keeping embedded source symbols verbatim).
+- Chinese pages are not registered in `src/sf2tool/design_contracts.py`; the canonical English file
+  owns contract traceability.
 
 ### R7 — Docs-index counterpart
 
-The docs index `docs/README.md` stays English-only and does not list zh-CN mirrors. Its Chinese
-reading copy lives as the sibling file `docs/README.zh-CN.md`, which is not a mirror of a design
-synthesis document and is outside the zh-meta translatable set. Each file cross-links the other at
-the top; the English file remains the review baseline.
+`docs/README.md` stays English-only and does not list zh-CN mirrors. Its Chinese reading entry is
+the sibling file `docs/README.zh-CN.md`, which is outside the `zh-meta` mirror set. Each file links
+to the other at the top; the English index remains the repository-wide baseline.
+
+## Calibration Examples (L0–L3 Chinese Design Prose)
+
+Use these three short examples to calibrate tone and precision when revising L0–L3 Chinese pages:
+
+### 1. 行动与回合（区分 `round` / `individual turn` / `action`）
+
+- **避免（反汇编直译腔）：**
+  > 每回合建立队列后，首次单次行动交接进入该行动者的动作选择；提交动作或取消目标选择分别走不同分支。
+- **推荐（自然策划语言，保留 `round` / `individual turn` / `action` 区别）：**
+  > 每一整轮战斗回合开始时，系统排定敌我出手顺序。轮到某名队员行动时，可以先移动并查看可选目标；在最终确认攻击、施法、使用物品或待机这类具体行动前，取消选择不会消耗资源。
+
+### 2. 专名与源码标识（遵循 `#1468` 已定译名，不自造、不改写标识）
+
+- **避免（生硬中英夹杂或擅自臆造译名）：**
+  > Bowie 受伤后，同伴施放 HEAL 给他回血；若某件尚未核对定名的道具叫 `Wooden Panel`，顺手自造译名写成“神秘木板”。
+- **推荐（采用 `#1468` 已定译名、未核对专名保留英文、标识原样保留）：**
+  > 鲍伊（Bowie）受伤后，同伴可以施放治疗（HEAL）为他回血；尚未核对定名的专名（如 `Wooden Panel`）保持英文原名，不自行创造译名。剧情标记和英文规则链接（如 `F401`、英文契约锚点）留在技术追踪列或文末链接中，原样保留不翻译。
+
+### 3. 证据说明与未知边界（通用说明集中，关键未知紧邻结论）
+
+- **避免（每段穿插免责咒语，或把关键未知藏到文末）：**
+  > **已确认（静态）：** 玩家施放 BOOST 1 可提高防御。以上规则以所引静态条件为限，系统联系为**推断**，完整表现仍为**未知**。重施失败时仍会刷新属性。（把“未刷新状态读档行为未知”藏在文末脚注）
+- **推荐（通用来源放边界栏，关键条件与未知紧跟对应规则）：**
+  > 施放强化类法术可提升目标属性；但若重施失败，计数变化与属性刷新分开结算，可能暂时沿用旧的有效属性。原版携带未刷新状态读档后的行为仍为**未知**，重制版在战斗 Continue 中保留该差异直至该单位下次刷新。
+  > *(文末“依据与边界”集中说明：本节原版规则基于已确认的静态与受限运行证据，详见[英文法术结算规则](contracts/battle/spell-resolution.md)。)*
 
 ## Term Tables
 
-### A. Evidence and verification vocabulary
+Where a row lists both **L0–L3 prose** and **technical/traceability** usage, use the natural form
+in L0–L3 design text and reserve the technical form for Layer A references or exact-source notes.
 
-| English | 中文 | Note |
+### A. Evidence, contract, and verification vocabulary
+
+| English | 中文（L0–L3 策划 / 技术溯源） | Note |
 | --- | --- | --- |
 | Confirmed / Inferred / Unknown | 已确认 / 推断 / 未知 | R1 fixed labels |
-| evidence | 证据 | |
-| evidence owner | 证据所有者 | |
+| evidence | 证据 / 依据 | |
+| evidence owner | 证据所有者（技术）/ 规则来源（策划） | |
 | evidence label | 证据标签 | |
-| evidence-bound contract | 证据绑定合同 | Layer B contract tied to Layer A evidence |
+| evidence-bound contract | 证据绑定合同（技术）/ 有据规则（策划） | Layer A/B boundary |
 | provenance | 溯源 | source/command/ROM reproduction trail |
-| contract | 合同 | implementation-neutral contract |
-| fixture | 测试夹具 | may keep "fixture"; ID untranslated |
+| contract | 规则 / 规格（L0–L3 正文）；合同（Layer A 标题与溯源） | avoid “结果合同” in prose |
+| admission | 进入条件 / 触发条件（L0–L3 正文）；准入（技术/验证） | avoid “Battle 02 准入” in story prose |
+| guard | 触发条件 / 限制条件（L0–L3 正文）；守卫（技术） | avoid “各自守卫” in prose |
+| witness | 实测案例 / 观察记录（L0–L3 正文）；证人（技术） | |
+| disposition | 处理结果 / 范围结论（L0–L3 正文）；处置（技术） | |
+| fixture | 测试夹具 / fixture | ID untranslated |
 | golden fixture | 黄金夹具 | exact expected-output fixture |
-| schema | schema（模式） | keep "schema"; schemas are canonical data contracts |
-| gate | 门禁 | verification gate; matches `docs/README.md` |
+| schema | schema（模式） | keep "schema" |
+| gate | 门禁 / 门槛（触发门槛） | verification gate vs story gate |
 | verification rail | 验证轨道 | maintained H2/H3 verification surface |
 | verification layer | 验证层 | H0–H5 |
 | baseline | 基线 | pinned source/ROM baseline |
-| canonical | 规范 | authoritative, canonical output |
+| canonical | 规范 / 权威 | authoritative, canonical output |
 | parity | 一致性 | source/ROM/fixture agreement |
 | bit-perfect | 逐位一致 | byte-for-byte rebuild |
 | rebuild | 重建 | original ROM reconstruction |
@@ -170,48 +229,48 @@ the top; the English file remains the review baseline.
 | --- | --- | --- |
 | battle | 战斗 | |
 | combat | 交战 | physical combat resolution |
-| round | 回合 | one full battle round |
-| turn | 回合（单次行动） | an individual actor's turn |
-| actor | 行动者 | acting combatant |
+| round | 整轮回合 / 战斗回合 | one full battle round (all eligible combatants); distinct from individual turn |
+| turn | 行动回合 / 轮到某单位行动 | one individual combatant's turn; avoid stiff “单次行动” in prose |
+| action | 行动 / 操作 | committed command (Attack, Magic, Item, Stay, Search); distinct from turn/round |
+| actor | 行动单位 / 行动者 | acting combatant |
 | attack | 攻击 | |
 | physical attack | 物理攻击 | |
 | dodge | 闪避 | |
-| critical | 会心一击 | may gloss 暴击 |
+| critical | 会心一击（暴击） | |
 | double attack | 二连击 | |
 | counterattack | 反击 | |
 | damage | 伤害 | |
 | damage stage | 伤害阶段 | per-stage integer damage |
-| land effect | 地形效果 | decoded terrain land-effect value |
+| land effect | 地形效果 / 地形防御加成 | decoded terrain land-effect value |
 | terrain | 地形 | |
 | movement type | 移动类型 | combatant movement classification |
-| prowess | 特殊攻击概率（会心/二连/反击） | SF2 特有的打包字节：低半字节为会心率、高半字节为二连/反击率；被动概率设定而非可主动施放的技能 |
+| prowess | 特殊攻击概率（会心/二连/反击） | SF2 打包字节：低半字节会心率、高半字节二连/反击率 |
 | spell | 法术 | |
 | spell level | 法术等级 | |
-| element | 元素 | spell element, e.g. FIRE 火元素 |
+| element | 元素 / 属性 | spell element, e.g. FIRE 火属性 |
 | elemental resistance | 属性抗性 | two-bit packed resistance setting |
 | weakness | 弱点 | resistance setting 3 for damage |
 | immunity | 免疫 | resistance setting 3 for status |
-| status effect | 状态效果 | |
+| status effect | 状态效果 / 异常状态 | |
 | instant death | 即死 | DESOUL-style outcome |
 | MP absorption | MP 吸收 | |
 | target | 目标 | |
 | target selection | 目标选择 | |
-| targeting list | 目标列表 | ordered candidate targets |
+| targeting list | 候选目标列表 | ordered candidate targets |
 | move range | 移动范围 | |
 | pathfinding | 寻路 | |
 | movement cost | 移动消耗 | |
 | terrain obstruction | 地形阻挡 | |
-| attack position | 攻击位置 | selected attack-adjacent tile |
-| turn order | 行动顺序 | |
-| region activation | 区域激活 | enemy region activation |
+| attack position | 攻击站位 / 攻击位置 | selected attack-adjacent tile |
+| turn order | 行动顺序 / 出手顺序 | |
+| region activation | 区域激活 / 敌军触发区 | enemy region activation |
 | battle scene | 战斗演出 | generated battle-scene command replay |
-| reaction | 反应（演出） | HP reaction replay |
-| action | 行动 | committed battle action |
+| reaction | 受击反应（演出） | HP reaction replay |
 | stay / search | 待机 / 搜索 | battle menu actions |
 | victory / defeat | 胜利 / 败北 | |
-| battle exit | 战斗退出 | EGRESS/Angel Wing exit state |
+| battle exit | 撤退 / 退出战斗 | EGRESS/Angel Wing exit state |
 | AI | AI | keep "AI" |
-| commandset | 指令集 | AI commandset |
+| commandset | AI 指令集 | AI commandset |
 
 ### C. Growth, stats, and economy
 
@@ -221,32 +280,33 @@ the top; the English file remains the review baseline.
 | level | 等级 | |
 | level cap | 等级上限 | class level cap |
 | stat | 属性值 | HP/MP/ATT/DEF/AGI |
-| stat gain | 属性增益 | randomized gain per level |
+| stat gain | 属性成长值 / 属性增益 | randomized gain per level |
 | stat growth | 属性成长 | growth-curve behavior |
 | growth curve | 成长曲线 | |
 | projection | 成长投影 | per-level projected gain |
-| minimum-stat pity | 最低成长补偿 | expected-minimum floor |
-| refresh | 刷新 | derived-stat refresh |
-| derived stat | 派生属性 | current/base-derived combatant stats |
+| minimum-stat pity | 最低成长保底（补偿） | expected-minimum floor |
+| refresh | 属性刷新 | derived-stat refresh |
+| derived stat | 派生属性 / 当前有效属性 | current/base-derived combatant stats |
 | class | 职业 | |
-| class block | 职业块 | class growth block |
+| class block | 职业成长块 | class growth block |
 | promotion | 转职 | |
 | promoted | 转职后 | promoted effective level |
-| ally | 己方角色（伙伴） | playable force member; vs enemy |
+| ally | 己方队员 / 伙伴 | playable force member; vs enemy |
 | enemy | 敌人 | opposing combatant |
-| combatant | 战斗员 | any battlefield unit with combat stats, ally or enemy |
+| combatant | 战斗单位 / 战斗员 | any battlefield unit with combat stats, ally or enemy |
 | party | 出战队伍 | active/battle party subset of the force |
 | force | 军团（我方部队） | the whole player Force; aggregate of all allies |
-| roster | 名册 | persistent member/defeated list |
-| follower | 随从 | map-following unit, `addNewFollower` |
-| member | 成员 | generic group member |
-| join | 加入 | |
+| roster | 名册 / 队伍名册 | persistent member/defeated list |
+| follower | 临时随行 / 随从 | map-following unit, `addNewFollower`; distinct from joined/active |
+| member | 成员 / 队员 | generic group member |
+| join | 正式入队 / 加入 | |
 | revive | 复活 | |
-| defeated allies | 败北同伴 | |
-| inventory | 物品栏 | item container (design sense); see note |
-| item | 物品 | |
+| defeated allies | 倒下（败北）同伴 | |
+| inventory | 物品栏 / 背包 | item container (design sense); distinct from 清单 |
+| item | 物品 / 道具 | |
 | equipment | 装备 | |
 | equip / unequip | 装备 / 卸下 | |
+| custody | 持有（携带保管） | carried by a member vs equipped |
 | curse | 诅咒 | cursed equipment |
 | gold | 金币 | |
 | price | 价格 | |
@@ -254,16 +314,16 @@ the top; the English file remains the review baseline.
 | rare drop | 珍稀掉落 | |
 | chest | 宝箱 | |
 | reward | 奖励 | |
-| EXP | EXP | keep the abbreviation |
+| EXP | EXP（经验值） | may keep "EXP" |
 | EXP command | EXP 指令 | battle EXP award command |
-| EXP threshold | EXP 阈值 | 100-point level-up threshold |
-| kill EXP | 击杀 EXP | kill-level-difference EXP |
-| clamp | 钳位 | clamp/underflow/saturation bounds |
+| EXP threshold | 升级经验阈值 | 100-point level-up threshold |
+| kill EXP | 击杀经验 | kill-level-difference EXP |
+| clamp | 数值钳位（上下限截断） | clamp/underflow/saturation bounds |
 | saturation | 饱和 | byte/word carry saturation |
 | underflow | 下溢 | byte underflow |
 | threshold | 阈值 | |
 | capacity | 容量 | inventory/roster capacity |
-| deals | 特卖 | rare-item deals route |
+| deals | 特卖（稀有品回购） | rare-item deals route |
 | mithril | 秘银 | mithril weapon rows |
 
 ### D. Map, exploration, and events
@@ -273,43 +333,43 @@ the top; the English file remains the review baseline.
 | map | 地图 | |
 | map definition | 地图定义 | `MapDefinition` import record |
 | map entry | 地图条目 | 79-map header entry |
-| blockset | 图块集 | keep "blockset" glossed |
-| layout | 布局 | 64x64 map layout |
+| blockset | 图块集（blockset） | |
+| layout | 地图布局 | 64x64 map layout |
 | tileset | 瓦片集 | |
-| tile | 瓦片 | map tile |
+| tile | 瓦片 / 格子 | map tile |
 | block | 图块 | 3x3-tile block |
 | palette | 调色板 | |
 | area | 区域 | area description records |
-| zone | 区域（事件） | zone events; keep "zone" where ambiguous |
+| zone | 触发区 / 区域（事件） | zone events; keep "zone" where ambiguous |
 | event | 事件 | |
-| entity | 实体 | map entity |
-| player entity | 玩家实体 | controlled entity |
+| entity | 地图角色 / 实体 | map entity |
+| player entity | 玩家角色 / 玩家实体 | controlled entity |
 | trigger | 触发 | |
-| step event | 踩踏事件 | |
-| roof event | 屋顶事件 | |
-| warp | 传送 | warp-style transition |
+| step event | 踩踏触发事件 | |
+| roof event | 屋顶显隐事件 | |
+| warp | 切换地图 / 传送 | warp-style transition |
 | chest event | 宝箱事件 | |
-| item event | 物品事件 | |
-| setup | 配置 | map setup definition; six-pointer setup |
+| item event | 物品交互事件 | |
+| setup | 地图配置 / 场景布置 | map setup definition; six-pointer setup |
 | setup route | 配置路由 | ordered default/flag route |
-| dispatch | 分发 | first-match dispatch |
-| first-match | 首匹配 | first matching record wins |
-| last-set-flag-wins | 最后设置标志胜出 | setup selection rule |
+| dispatch | 触发分发 | first-match dispatch |
+| first-match | 首条匹配优先 | first matching record wins |
+| last-set-flag-wins | 后置已满足配置优先 | setup selection rule |
 | reachability | 可达性 | normal-story reachability |
-| collision | 碰撞 | |
-| pathfinding consumer | 寻路消费者 | collision/pathfinding effects |
-| camera | 摄像机 | camera control |
-| view target | 视野目标 | camera destination |
-| scroll | 滚动 | |
+| collision | 碰撞 / 阻挡 | |
+| pathfinding consumer | 寻路使用方 | collision/pathfinding effects |
+| camera | 镜头 / 摄像机 | camera control |
+| view target | 镜头目标 | camera destination |
+| scroll | 边界滚屏过图 / 滚动 | |
 | fade | 淡入淡出 | fade in/out |
 | exploration | 探索 | map exploration mode |
 | map switch | 地图切换 | |
-| savepoint | 存档点 | |
-| working layout | 工作布局 | mutable layout copy |
-| layout copy | 布局复制 | block-copy command |
-| area description | 区域描述 | `d6`-conditioned description path |
+| savepoint | 存档点 / 撤退返回点 | |
+| working layout | 当前工作布局 | mutable layout copy |
+| layout copy | 局部地形改写（布局复制） | block-copy command |
+| area description | 调查描述（区域描述） | `d6`-conditioned description path |
 
-### E. Scripts, programs, and command forms
+### E. Scripts, programs, and command forms (technical reference contexts)
 
 | English | 中文 | Note |
 | --- | --- | --- |
@@ -318,27 +378,27 @@ the top; the English file remains the review baseline.
 | command | 命令 | |
 | command form | 命令形式 | source-named macro form |
 | macro | 宏 | source macro |
-| handler | 处理器 | named handler section; may keep "handler" |
+| handler | 处理器（handler） | named handler section |
 | dispatcher | 分发器 | slot dispatcher |
 | opcode | 操作码 | |
 | operand | 操作数 | |
 | operand width | 操作数宽度 | byte/word/long |
-| program | 程序 | map-script program |
+| program | 脚本程序 | map-script program |
 | program row | 程序行 | zero-inclusive 304-row corpus row |
 | label | 标签 | |
-| stream | 流 | source byte stream |
+| stream | 字节流 | source byte stream |
 | stream offset | 流偏移 | |
-| site | 位置 | program site / use-site |
+| site | 调用位置 | program site / use-site |
 | use-site | 使用位置 | parsed use-site record |
 | invocation | 调用（次数） | command invocation count |
 | corpus | 语料 | complete command corpus |
-| cursor | 游标 | script stream cursor (A6); distinct from UI cursor |
+| cursor | 游标 | script stream cursor (A6); distinct from UI 光标 |
 | inline | 内联 | inline payload/program |
 | jump | 跳转 | |
 | branch | 分支 | conditional branch |
 | subroutine call | 子程序调用 | 68000 subroutine call |
 | direct call | 直接调用 | |
-| caller | 调用方 | |
+| caller | 调用入口 / 调用方 | prefer “触发入口” in L0–L2 prose |
 | effective target | 有效目标 | resolved alias target |
 | instruction target | 指令目标 | direct jump-interface target |
 | alias | 别名 | jump-interface alias |
@@ -361,35 +421,35 @@ the top; the English file remains the review baseline.
 | diamond menu | 菱形菜单 | action/selection diamond menu |
 | main menu | 主菜单 | seven-icon main-menu payload |
 | page | 菜单页 | witch-menu page |
-| witch | 女巫 | witch save/load/copy/delete screen |
+| witch | 女巫（存档/开局界面） | witch save/load/copy/delete screen |
 | shop | 商店 | |
 | church | 教堂 | |
-| caravan | 车队 | matches `docs/README.md`; the traveling caravan service |
+| caravan | 车队（Caravan） | traveling caravan vehicle and service |
 | blacksmith | 铁匠 | |
-| depot | 仓库 | caravan depot |
+| depot | 车队仓库 / 仓库 | caravan depot |
 | repair | 修理 | |
 | buy / sell | 购买 / 出售 | |
 | raise | 复活（教堂） | church raise action |
-| cure | 治疗（教堂） | church cure action |
+| cure | 治疗异常 / 解除诅咒（教堂） | church cure action |
 | promote | 转职（教堂） | church promote action |
 | save | 存档 | |
 | load | 读档 | |
 | copy | 复制 | slot copy |
 | delete | 删除 | slot delete |
-| slot | 槽位 | two-slot SRAM |
+| slot | 存档槽位 / 格子 | two-slot SRAM or inventory slot (disambiguate by context) |
 | occupied flag | 占用标志 | save-flag bit |
 | checksum | 校验和 | additive low-byte checksum |
 | signature | 签名 | SRAM signature |
 | SRAM | SRAM | keep "SRAM" |
 | window | 窗口 | eight-slot window system |
-| textbox | 文本框 | |
+| textbox | 对话框 / 文本框 | |
 | dialogue | 对话 | |
-| portrait | 立绘 | |
-| speech | 台词 | speech SFX/property |
+| portrait | 立绘 / 头像 | |
+| speech | 说话音效 / 台词 | speech SFX/property |
 | text line | 文本行 | declared text-line ID |
-| prompt | 提示 | yes/no prompt |
-| suspend | 挂起 | suspend save/state |
-| cursor | 光标 | UI cursor; distinct from script stream cursor |
+| prompt | 确认提示 / 询问 | yes/no prompt |
+| suspend | 战斗中断存档（挂起） | suspend save/state |
+| cursor | 光标 | UI cursor; distinct from script 游标 |
 | highlight | 高亮 | highlight mask/copy |
 | icon | 图标 | menu icon payload |
 | layout allocation | 布局分配 | window layout allocation |
@@ -399,11 +459,11 @@ the top; the English file remains the review baseline.
 
 | English | 中文 | Note |
 | --- | --- | --- |
-| input | 输入 | |
-| controller | 控制器 | |
+| input | 输入 / 操作 | |
+| controller | 控制器 / 手柄 | |
 | button state | 按键状态 | |
 | raw sampling | 原始采样 | two-port sampling |
-| repeat | 输入重复 | repeat filtering cadence |
+| repeat | 连发（输入重复） | repeat filtering cadence |
 | initial delay | 初始延迟 | 24-frame delay |
 | wait helper | 等待辅助 | input wait helper |
 | VInt | VInt | vertical interrupt; keep "VInt" |
@@ -411,8 +471,8 @@ the top; the English file remains the review baseline.
 | interrupt | 中断 | |
 | trap | trap（系统调用） | keep "trap" |
 | handshake | 握手 | wait/sleep handshake |
-| RNG | RNG | keep "RNG"; random number generator |
-| seed | 种子 | |
+| RNG | 随机数（RNG） | may keep "RNG" |
+| seed | 随机种子 | |
 | random seed copy | 随机种子副本 | `RANDOM_SEED_COPY` |
 | range | 范围 | bounded sampling range |
 | debug override | 调试覆盖 | debug direction override |
@@ -426,14 +486,14 @@ the top; the English file remains the review baseline.
 
 | English | 中文 | Note |
 | --- | --- | --- |
-| slice | 切片 | one bounded evidence slice |
-| lane | 车道 | research/design lane |
+| slice | 切片 | one bounded task/evidence slice |
+| lane | 车道 / 专题线 | research/design lane |
 | worktree | worktree（工作树） | isolated Git worktree |
 | topic branch | 主题分支 | short-lived topic branch |
 | milestone | 里程碑 | |
 | matrix | 矩阵 | grouped runtime case table |
 | case | 用例 | one runtime scenario |
-| scenario | 场景 | scripted scenario |
+| scenario | 场景 / 剧本起点 | scripted scenario |
 | harness | 测试台（harness） | BizHawk runtime harness |
 | observer | 观察器 | Lua observer script |
 | replay | 回放 | command/state replay |
@@ -442,24 +502,27 @@ the top; the English file remains the review baseline.
 | inventory | 清单 | source inventory (research sense); distinct from 物品栏 |
 | audit | 审计 | cross-owner adversarial audit |
 | consumer | 使用方（消费者） | |
-| owner | 所有者 | evidence owner |
+| owner | 所有者 / 负责人文档 | evidence or doc owner |
 | index | 索引 | research index |
 | manifest | 清单文件 | tracked manifest |
 | report | 报告 | generated report |
 | derived | 派生 | derived field/value |
-| mutation | 变更 | mutation order/guard |
+| mutation | 状态变更 | mutation order/guard |
 | mutation guard | 变更守卫 | smallest-scope mutation test |
 | boundary | 边界 | contract boundary |
 | domain | 域 | declared target domain |
 | comment | 注释 | source comment |
 | exclude | 排除 | explicit exclusion |
 
-### I. Proper nouns (suggestions, to be finalized per entry under R4)
+### I. Proper nouns (historical suggestions — reconcile against `#1468` before use)
 
-Chinese renderings here are **suggestions for first-occurrence annotations**. The body keeps the
-English name. Entries marked 待定 await a community-standard rendering decided in the batch review.
+Under revised **R4**, the accepted 337-entry game name corpus under `#1468` (`#1504`/`#1506`,
+see [`remake/docs/application/localization-design.md`](../../remake/docs/application/localization-design.md#current-full-text-chinese-corpus))
+takes precedence for Chinese proper nouns in L0–L3 prose. The table below retains the 2026-08-04
+initial suggestions for reference only; verify each entry against the accepted `#1468` corpus
+before adopting it in prose, and keep unreviewed entries in English rather than inventing names.
 
-| English | 中文（建议） | Note |
+| English | 早期建议（2026-08-04，待与 `#1468` 核对） | Note |
 | --- | --- | --- |
 | Shining Force II | 光明力量 II | game title |
 | Bowie | 波伊 | protagonist |
@@ -468,7 +531,7 @@ English name. Entries marked 待定 await a community-standard rendering decided
 | Karna | 卡娜 | |
 | Kiwi | 奇威 | |
 | Taros | 塔洛斯 | battle special enemy |
-| SDMN | SDMN（剑士） | base class label; keep the class code |
+| SDMN | SDMN（剑士） | base class code |
 | MAGE | MAGE（法师） | class code |
 | TORT | TORT（龟人） | class code; TORT effective-level quirk |
 | Blaze | 烈焰 | fire spell |
@@ -485,12 +548,12 @@ English name. Entries marked 待定 await a community-standard rendering decided
 | Dispel | 驱散 | |
 | Detox | 解毒 | |
 | Silence | 沉默 | |
-| Attack | 攻击 | buff spell; keep English to avoid clash with verb 攻击 |
+| Attack | Attack（攻击强化术） | buff spell; distinguish from verb 攻击 |
 | Dao | 达欧 | summon index |
 | Apollo | 阿波罗 | summon index |
 | Neptun | 尼普顿 | summon index |
 | Atlas | 阿特拉斯 | summon index |
-| EGRESS | EGRESS（逃脱） | exit spell; keep the source name |
+| EGRESS | EGRESS（逃脱） | exit spell; keep source token where rule cites it |
 | Angel Wing | 天使之翼 | exit item |
 | Power Water | 力量之水 | 待定 |
 | Church | 教堂 | covered in table F |
@@ -511,4 +574,4 @@ These classes are copied verbatim under R2; the examples are representative, not
 | Register/hardware name | `d1`, `a6`, `d7`, VDP, DMA, VInt, SRAM, Z80, 68000, Plane-A | unchanged |
 | Opcode / operand width | `$19`, `$23`, `$2D`, 4/6/8-byte | unchanged |
 | Verification layer / phase | `H0`–`H5`, `Phase 0`–`Phase 5`, `Layer A/B/C` | unchanged |
-| Decision record | `ADR 0001`–`ADR 0007` | unchanged |
+| Decision record | `ADR 0001`–`ADR 0019` | unchanged |

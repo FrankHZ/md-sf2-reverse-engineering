@@ -287,6 +287,9 @@ message when needed. Do not broaden this permission to unrelated chats, ordinary
 external recipients. If messaging is unavailable or rejected, retain the frozen handoff and report
 the delivery limitation in the worker's final answer; do not bypass the rejection or repeatedly retry.
 
+For Antigravity Desktop audits and user-selected documentation execution, use the short
+[collaboration guide](antigravity-collaboration.md). Audit access alone does not grant worktree write ownership; an explicit dispatch defines the execution boundary.
+
 #### Completion Intake
 
 Development/debug dispatches name the save predecessor or E2E scenario to start from, alongside
