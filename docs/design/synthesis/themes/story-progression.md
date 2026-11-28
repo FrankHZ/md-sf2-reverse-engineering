@@ -38,10 +38,13 @@ The chapter reading route below explains selected accepted content dependencies.
 
 Enter from the [gameplay overview](../gameplay-overview.md#follow-the-loop-and-choose-a-reading-depth),
 then start with the chronological
-[Grans opening chapter overview](../chapters/grans-opening/chapter-overview.md) for New Game through
-docks departure (`#2366` Phase A), or use the six chapter groups below and the Taros worked example
-for cross-chapter dependencies (remaining chronological chapter overviews and cross-chapter
-recruitment/vehicle indexes are tracked under `#2366` Phases B–C).
+[Grans opening chapter overview](../chapters/grans-opening/chapter-overview.md) (New Game through
+docks departure, `#2366` Phase A) and
+[New Granseal and Eastern Parmecia chapter overview](../chapters/eastern-parmecia/chapter-overview.md)
+(sea voyage and landing through Polca raft boarding and first water move, `#2366` Phase B1), or use
+the six chapter groups below and the Taros worked example for cross-chapter dependencies (remaining
+chronological chapter overviews and cross-chapter recruitment/vehicle indexes are tracked under
+`#2366` Phases B2–C).
 [Tactical Battle Loop](tactical-battle-loop.md) and [Progression and Economy](progression-and-economy.md)
 explain the local systems these chapters coordinate. Keep **original static source**, **bounded
 original runtime observations** (`Map3`–`Battle01` only), **remake ordinary play** (through first
@@ -161,6 +164,11 @@ services/pending outcomes retain their limits; player plank progression and Batt
 </details>
 
 ### New Granseal and eastern Parmecia
+
+**Start here:** [New Granseal and Eastern Parmecia — Chapter Overview](../chapters/eastern-parmecia/chapter-overview.md)
+gives the dependency-ordered event table (`E1`–`E20`, sea voyage and landing through Polca raft
+boarding and first water move), character/control quick reference, raft progression chain, and
+compact flag/scenario trace.
 
 Landing does not immediately establish a settled new town. The plank/rescue encounter and its
 outcome precede the selected construction/address and rebuilt population boundaries. From New
