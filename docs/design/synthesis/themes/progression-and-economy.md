@@ -113,7 +113,9 @@ Two controlled original runtime cases show how growth, equipment, and caps inter
   threshold without granting another level.
 
 These are separate controlled original cases, not one continuous natural playthrough and not a
-recommendation on when to promote.
+recommendation on when to promote. For the complete integer EXP brackets, stat-refresh order, and
+worked hand calculations, see
+[Battle Numbers & Growth](battle-numbers.md#5-action-exp-kill-brackets-thresholds-and-level-up).
 
 ## Gold, item capacity, and services
 
@@ -217,7 +219,7 @@ independent:
 | --- | --- |
 | Membership, active cap 12, Creed & Jaro | [Membership](../../contracts/party/party-membership-state.md), [roster](../../contracts/party/party-roster-state.md), [Creed](../../../research/chapters/southern-travel-creed/creed-return-fairy-and-recruitment-choices.md), [Battle32 Jaro](../../../research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md) |
 | Ally/item/spell definitions & spellbook | [Ally data](../../contracts/party/ally-definition-data.md), [item data](../../contracts/party/item-definition-data.md), [spell data](../../contracts/party/spell-definition-data.md), [spellbook](../../contracts/party/spellbook-state.md) |
-| Growth, EXP thresholds, caps & refresh | [Level-up contract](../../contracts/party/level-up.md), [ally growth](../../../research/party/ally-growth.md), [runtime battle math](../../../research/battle/runtime-rng-and-battle-math.md) |
+| Growth, EXP thresholds, caps & refresh | [Battle Numbers & Growth](battle-numbers.md), [Level-up contract](../../contracts/party/level-up.md), [ally growth](../../../research/party/ally-growth.md), [runtime battle math](../../../research/battle/runtime-rng-and-battle-math.md) |
 | Gold, drops & field/story capacity | [Enemy rewards](../../../research/party/enemy-promotions.md), [field Search](../../../research/world/field-search-control.md), [Sky Orb](../../../research/chapters/moun-nazca-grans/battle34-outcomes-and-sky-orb-handoff.md#sky-orb-mandatory-inventory-award), [Force Sword](../../../research/chapters/final-confrontations-ending/battle39-outcomes-and-force-sword-route.md#map42-attraction-extraction-and-mandatory-inventory) |
 | Shop, Church, Caravan, Deals & Mithril smith | [Services](../../contracts/party/service-interactions.md), [Caravan & Deals](../../contracts/party/caravan-and-deals-state.md), [common menus](../../../research/presentation/common-menus.md), [Mithril smithing](../../../research/chapters/moun-nazca-grans/dwarven-village-and-mithril-smithing.md) |
 | Save domain & remake support | [Save contract](../../contracts/system/save-system.md), [capability status](../../../../remake/docs/capability-status.md#campaign-feature-trace) |

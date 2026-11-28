@@ -53,7 +53,7 @@
 - **鲍伊（Bowie）升级不回血**：1 级、99 EXP 时获得 24 点经验，跨过 100 门槛后升至 2 级、余 23 EXP；HP 上限升至 14，但当前 HP/MP 仍停在 `12/8`，临时战斗增益也被刷新后的属性取代。
 - **斯莱德（Slade）带装备升级与触顶**：盗贼（THIF）39 级升 40 级时，基础攻击从 45 涨到 47，配合已装备的短刀（Short Knife，+5）刷新后总攻击为 **52**；HP 上限从 42 升至 44，但当前 HP 仍只有 **7**——他依然重伤，需要另行治疗。达到 40 级上限后（未转职上限 40，转职职业上限 99），再攒满 100 EXP 仍会扣掉 100 点但不再升级。
 
-以上为彼此独立的原版受控实测案例，不是连续自然游玩记录，也不代表“40 级才是最佳转职时机”。
+以上为彼此独立的原版受控实测案例，不是连续自然游玩记录，也不代表“40 级才是最佳转职时机”。完整的整数经验档位、属性刷新顺序与手算示例见[核心战斗数值与成长速查](battle-numbers.md#5-行动经验等级差档位阈值与升级刷新)。
 
 ## 金币与物品经济边界
 
@@ -105,7 +105,7 @@
 
 - **返回不等于存档**：逛完商店、教堂、铁匠或打完战斗只改变了当前内存状态，不会自动写盘。原版 4,016 字节存档域虽包含队友、物品、金币、剧情标记（含 F80）与秘银订单，但跨断电全流程持久性仍为**未知**；重制版场地与战斗存档见[场地存档边界（英文源）](../../../../../remake/docs/application/opening-session-lifecycle.md)与[战斗存档边界（英文源）](../../../../../remake/docs/application/battle-save-and-continue.md)。
 - **不做强度榜或平衡预设**：本文说明机制与代价，不预设“最佳转职时机”“最强阵容”或原版难度曲线。
-- **权威英文来源**：[Progression and Economy（英文规范源）](../../../synthesis/themes/progression-and-economy.md) · [名册](../../contracts/party/party-roster-state.md) · [升级](../../contracts/party/level-up.md) · [法术书](../../contracts/party/spellbook-state.md) · [服务交互](../../contracts/party/service-interactions.md) · [车队与特卖](../../contracts/party/caravan-and-deals-state.md) · [存档规则](../../contracts/system/save-system.md)。
+- **权威英文来源**：[Progression and Economy（英文规范源）](../../../synthesis/themes/progression-and-economy.md) · [战斗数值与成长速查](battle-numbers.md) · [名册](../../contracts/party/party-roster-state.md) · [升级](../../contracts/party/level-up.md) · [法术书](../../contracts/party/spellbook-state.md) · [服务交互](../../contracts/party/service-interactions.md) · [车队与特卖](../../contracts/party/caravan-and-deals-state.md) · [存档规则](../../contracts/system/save-system.md)。
 
 ### 兼容锚点（供既有规则链接跳转）
 

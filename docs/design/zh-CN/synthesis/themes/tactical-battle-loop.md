@@ -63,7 +63,7 @@
 
 ### 物理交战
 
-先判定闪避（闪避则直接跳过伤害），再综合当前攻防、地形防御加成与对空加成计算伤害，并按条件结算会心一击（暴击）与向下浮动，HP 最低截断为 0。一击致命会直接跳过后续效果；二连击和反击各有独立条件（反击还会受射程、催眠、眩晕、同阵营及特殊敌人规则排除）。
+先判定闪避（闪避则直接跳过伤害），再综合当前攻防、地形防御加成与对空加成计算伤害，并按条件结算会心一击（暴击）与向下浮动，HP 最低截断为 0。一击致命会直接跳过后续效果；二连击和反击各有独立条件（反击还会受射程、催眠、眩晕、同阵营及特殊敌人规则排除）。具体整数步骤、地形因子、敏捷排序区间与手算示例见[核心战斗数值与成长速查](battle-numbers.md)。
 
 ### 魔法、治疗与辅助
 
@@ -118,7 +118,7 @@
 ## 依据与边界
 
 - **原版 vs 重制**：本文规则以原版静态与受控观察为基础，完整自然通关、全部硬件时序与原版断电读档仍为**未知**。重制版在此之上采纳了有限音乐时钟（可能改变整局随机序列）、战斗检视与战场地图、可调战斗速度、按住加速以及己方移动阶段战斗存档等现代化改进；当前实际可玩范围见[重制能力状态（英文源）](../../../../../remake/docs/capability-status.md#campaign-feature-trace)。
-- **权威英文来源**：[Tactical Battle Loop（英文规范源）](../../../synthesis/themes/tactical-battle-loop.md) · [战斗生命周期](../../contracts/battle/battle-control-lifecycle.md) · [战场寻路](../../contracts/battle/battlefield-navigation.md) · [AI 选择](../../contracts/battle/battle-ai-decision.md) · [行动结算](../../contracts/battle/battle-action-construction.md) · [物理交战](../../contracts/battle/combat-resolution.md) · [法术结算](../../contracts/battle/spell-resolution.md)。
+- **权威英文来源**：[Tactical Battle Loop（英文规范源）](../../../synthesis/themes/tactical-battle-loop.md) · [战斗数值与成长速查](battle-numbers.md) · [战斗生命周期](../../contracts/battle/battle-control-lifecycle.md) · [战场寻路](../../contracts/battle/battlefield-navigation.md) · [AI 选择](../../contracts/battle/battle-ai-decision.md) · [行动结算](../../contracts/battle/battle-action-construction.md) · [物理交战](../../contracts/battle/combat-resolution.md) · [法术结算](../../contracts/battle/spell-resolution.md)。
 
 ### 兼容锚点（供既有规则链接跳转）
 
