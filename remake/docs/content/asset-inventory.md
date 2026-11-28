@@ -4,7 +4,7 @@ This is the entry point for tracking a resource from its USA source identity thr
 selection, delivery and verification. The [presentation assets guide](presentation-assets.md)
 owns the current preparation, package assembly and local provenance. The
 [asset pipeline workflow](asset-pipeline-workflow.md) specifies incremental publication, the
-tracked selection and generated per-resource lookup proposed for the next pilot. The
+tracked selection and generated per-resource lookup. The
 [music command inventory](music-command-inventory.md) tracks each BGM command.
 
 **Standard scope.** [#2163](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2163)
@@ -34,7 +34,7 @@ inputs from the [pre-voyage package locations](#pre-voyage-package-locations). T
 packages below identify the scope of their recorded observations. Keep the selected world,
 scenes, external resources and six `opening-inputs` together.
 
-The independent opening selection is `derived/issue2324/opening-hd-v1/opening/opening.json`.
+The independent opening selection is `media/opening/hd-v1/opening/opening.json`.
 Its Map42 HD bank and actor/portrait resources come from the accepted #2252 opening; the
 successor adds127 Map65 blocks,166 contexts, nine finite color banks and complete183/187 HD
 direction strips. [Preparation and actual-consumer boundary](hd-rollout.md#opening-terrain-and-palette-banks-2324)
@@ -62,8 +62,8 @@ remain separate from campaign, Witch and catalog selection and from human visual
 ### Shared package retention
 
 For the [single-volume target layout](../../../docs/operations/local-private-inputs.md#single-volume-local-layout),
-organize promoted packages by consumer role and immutable version. The selections above continue
-to identify the registered operating inputs until a verified cutover. Use issue and PR references
+organize promoted packages by consumer role and immutable version. Historical selections identify the inputs for their recorded observations.
+The table below distinguishes the four runtime roles from the remaining preparation inputs. Use issue and PR references
 as provenance in the package record. Reserve a separate namespace for short-lived acceptance runs.
 
 This inventory and its linked resource owners record family and selected example metadata, including
@@ -85,11 +85,11 @@ superseded packages and generated review data once their remaining consumers hav
 
 The paths in this table are relative to the configured shared input root. The `media/` junction
 points to the canonical checkout's ignored `private-media/`. Media packages keep their content
-documents with the relative image and audio payloads. Use the staged paths after the operator
-verifies the copy and switches the launch configuration. Existing recipes can still select their
-registered locations during the transition.
+documents with the relative image and audio payloads. Debug and Windows input discovery select the four runtime roles under this junction.
+Their previous locations remain available for rollback. Atlas, indexed opening, retail preparation
+and independent Git repositories still use the registered locations in the middle column.
 
-| Selection and consumers | Registered location | Staged location |
+| Selection and consumers | Previous runtime or current preparation location | Runtime selection or planned preparation location |
 | --- | --- | --- |
 | Aqua v1 (#2315), Kiwi preparation and exact-version reproduction | `derived/issue2315/aqua-v1` | [Build into checkout scratch on demand](presentation-assets.md#aqua-successor-2315) |
 | Kiwi v1 (#2316), Windows export and ordinary development launch | `derived/issue2316/kiwi-v1` | `media/gameplay/kiwi-v1` |
@@ -121,7 +121,7 @@ available until those consumers are switched.
 
 The [Debug launcher](../verification/debug-port.md#development-default) and
 [Windows input resolver](../windows-local-candidate.md#build-and-run) use the tracked
-[four-role selection](metadata/selection.json). Its current values select the registered inputs.
+[four-role selection](metadata/selection.json). Its four values select the runtime versions under `media/`.
 A private Debug launch fills unset media variables after loading the checkout configuration.
 Explicit `--selection` or `--shared-root` chooses the whole set for that process. An authored
 scenario retains its original inputs unless media is requested explicitly.
@@ -1190,7 +1190,8 @@ spell 29–32 normal/selected icons. Current mounted appearance choices are expl
 rods 85/86/87/88/89/90/92 for both SORC/WIZ actors and both VICR actors in all 26
 loaded scenes. The production reader checks body, palette and separate weapon frames.
 Guardian Staff (91) remains outside the admitted equipment rules because of its DEF effect.
-The five accepted translated names live in `derived/issue2266/catalogs-v1/world.zh-CN.json`.
+The selected catalog for the five accepted translated names is now
+`media/display-catalog/campaign-zh-cn-v1/world.zh-CN.json`.
 
 Preparation used one serial bounded pass; 1 GiB RAM and 1 GiB scratch/publication allowances
 were sufficient for the initial pass. The corrective run recorded v2's rejection and published v3.

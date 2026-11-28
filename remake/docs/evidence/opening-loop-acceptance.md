@@ -119,6 +119,15 @@ in the same launch shell before running the commands below. The block loads the 
 configuration and resolves the tracked selection into the twelve normal reader inputs for
 this direct Godot launch.
 
+**Confirmed.** For the runtime relocation, an independent checkout launched ordinary Debug with
+`debug_dev.py --entry --selection <candidate-selection> --settings <isolated-HD-settings>
+--run-dir <fresh-external-run> --port <unused-port>`. A disposable slot 1 contained a copy of
+the registered dock seed. The opening reported active playback of MUSIC_INTRO. Skip reached
+the title with MUSIC_TITLE. The Witch reported the HD variant, six loaded textures, MUSIC_WITCH
+and no asset error. Ordinary Continue restored slot 1 to settled Map44 exploration with input
+available and MUSIC_BOSS_ATTACK playing. The background instance used the silent driver and
+exited through Quit with code 0 and empty stderr.
+
 A packaged Release uses its own adjacent content, as in the archived #2336 observation. For that
 route, load `local/private-inputs.ps1` first to select the shared inputs used by the seed recipe
 below. Use the same disposable copy and settings preparation for either host.

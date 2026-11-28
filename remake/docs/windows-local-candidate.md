@@ -36,7 +36,17 @@ The controlled route reached usable Map14 control. Natural dock portraits in thi
 Load the checkout's ignored configuration to locate the shared root. The
 [tracked four-role selection](content/metadata/selection.json) supplies the prepared gameplay,
 opening, Witch and catalog inputs. `--selection` and `--shared-root` select another complete
-set. Each explicit `--campaign`, `--entry`, `--opening` or `--catalog` argument takes priority
+set. The input resolver has directly compared all 196 delivery members through the real
+junction. The maintained exporter on clean commit `90884924` built the 621,611,446-byte
+candidate and 381,710,119-byte ZIP in 79.03 seconds. The ZIP was unpacked to a fresh directory.
+With only Windows system paths and isolated profile, settings, save and TEMP selections, the
+exported executable read adjacent content. Opening, title and HD Witch played their music through
+the silent driver. Ordinary Continue restored the disposable dock slot to settled Map44 with input
+available and MUSIC_BOSS_ATTACK playing. Quit exited with code 0. Godot reported two leaked
+ObjectDB instances at shutdown. Keep the prior selection and installation for operator rollback.
+[Runtime comparison and rollback](content/asset-pipeline-workflow.md#2-runtime-migration-and-validation)
+
+Each explicit `--campaign`, `--entry`, `--opening` or `--catalog` argument takes priority
 for that role. Supplying all four retains the standalone explicit-path workflow.
 
 ```powershell
