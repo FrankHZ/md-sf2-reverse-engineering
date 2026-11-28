@@ -30,6 +30,7 @@ from sf2tool.remake_exploration_scene import (
     promotion_sprite_fields,
     promotion_sprites,
 )
+from sf2tool.remake_media_selection import OPENING_INPUTS
 from sf2tool.remake_promotion_appearances import (
     installed_png,
     mount_promotion_appearances,
@@ -40,15 +41,6 @@ from sf2tool.remake_promotion_appearances import (
     shared_color_weapon_frames,
 )
 from sf2tool.texture_extract import md_palette_color, write_png_rgba
-
-OPENING_INPUTS = (
-    "SF2_PRIVATE_BATTLE01_DATA",
-    "SF2_PRIVATE_BATTLE01_SCENE",
-    "SF2_PRIVATE_BATTLE01_TERRAIN",
-    "SF2_PRIVATE_STATIC_DATA",
-    "SF2_PRIVATE_ENEMY_DATA",
-    "SF2_PRIVATE_ENEMY_GOLD",
-)
 
 
 def private_output(path: Path) -> Path:

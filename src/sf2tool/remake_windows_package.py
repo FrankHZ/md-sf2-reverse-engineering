@@ -14,6 +14,12 @@ from pathlib import Path
 from sf2tool.dotnet_environment import shared_dotnet_environment
 from sf2tool.paths import REPO_ROOT
 from sf2tool.remake_command_menu import world_dependencies
+from sf2tool.remake_media_selection import (
+    DEFAULT_SELECTION,
+    package_arguments,
+    read_selection,
+    shared_root,
+)
 from sf2tool.remake_private_package import OPENING_INPUTS, package_files, private_output, verify
 
 
@@ -233,12 +239,28 @@ def build(args: argparse.Namespace) -> None:
     )
 
 
+def runtime_arguments(selection, root, campaign=None, entry=None, opening=None, catalog=None):
+    paths = dict(campaign=campaign, entry=entry, opening=opening, catalog=catalog)
+    if any(value is None for value in paths.values()):
+        defaults = package_arguments(read_selection(selection), shared_root(root))
+        paths = {key: defaults[key] if value is None else value for key, value in paths.items()}
+    return paths
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ("campaign", "entry", "opening", "catalog", "templates", "output"):
+    parser.add_argument("--selection", type=Path, default=DEFAULT_SELECTION)
+    parser.add_argument("--shared-root", type=Path)
+    for name in ("campaign", "entry", "opening", "catalog"):
+        parser.add_argument("--" + name, type=Path, help="explicit override for this role")
+    for name in ("templates", "output"):
         parser.add_argument("--" + name, type=Path, required=True)
     try:
-        build(parser.parse_args())
+        args = parser.parse_args()
+        paths = runtime_arguments(
+            args.selection, args.shared_root, args.campaign, args.entry, args.opening, args.catalog
+        )
+        build(argparse.Namespace(**paths, templates=args.templates, output=args.output))
     except (ValueError, OSError, KeyError, zipfile.BadZipFile, subprocess.TimeoutExpired) as error:
         parser.exit(1, f"Windows candidate failed: {error}\n")
 

@@ -115,10 +115,9 @@ choose the occupied record. Slot 2 can follow an empty Slot 1.
 
 For development Main, run the PowerShell reader-input block in
 [Pre-voyage package locations](../content/asset-inventory.md#pre-voyage-package-locations)
-in the same launch shell before running the commands below. Until cutover, substitute the four
-registered roots from the table for its staged roots, preserving all reader filenames. Loading `local/private-inputs.ps1`
-sets the shared root and tools. The inventory block selects the Kiwi world, HD opening, Witch,
-catalog and battle inputs for development Main.
+in the same launch shell before running the commands below. The block loads the private
+configuration and resolves the tracked selection into the twelve normal reader inputs for
+this direct Godot launch.
 
 A packaged Release uses its own adjacent content, as in the archived #2336 observation. For that
 route, load `local/private-inputs.ps1` first to select the shared inputs used by the seed recipe

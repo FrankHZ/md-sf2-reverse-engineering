@@ -4,7 +4,34 @@ import argparse
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
+
+
+def launch_environment(args):
+    environment = os.environ.copy()
+    if (
+        args.selection
+        or args.shared_root
+        or (environment.get("SF2_SHARED_INPUT_ROOT") and not args.scenario)
+    ):
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+        from sf2tool.remake_media_selection import (
+            DEFAULT_SELECTION,
+            debug_environment,
+            read_selection,
+            shared_root,
+        )
+
+        selected = debug_environment(
+            read_selection(args.selection or DEFAULT_SELECTION), shared_root(args.shared_root)
+        )
+        for key, value in selected.items():
+            if args.selection or args.shared_root:
+                environment[key] = value
+            else:
+                environment.setdefault(key, value)
+    return environment
 
 
 def main():
@@ -51,6 +78,8 @@ def main():
     parser.add_argument(
         "--foreground", action="store_true", help="show the game for visual/input review"
     )
+    parser.add_argument("--selection", type=Path, help="use exactly this four-role media selection")
+    parser.add_argument("--shared-root", type=Path, help="root for shared-relative media roles")
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
         parser.error("port must be in 1..65535")
@@ -67,6 +96,7 @@ def main():
     executable = os.environ.get("GODOT_BIN", "")
     if not Path(executable).is_absolute() or not Path(executable).is_file():
         parser.error("load the checkout's private-input configuration with GODOT_BIN first")
+    environment = launch_environment(args)
     options = []
     for value, option in (
         (args.save, "--load-save"),
@@ -80,7 +110,7 @@ def main():
                 parser.error(f"missing input: {value}")
             options.extend((option, str(value.resolve())))
     if args.opening_act is not None:
-        opening = Path(os.environ.get("SF2_PRIVATE_OPENING_CONTENT", ""))
+        opening = Path(environment.get("SF2_PRIVATE_OPENING_CONTENT", ""))
         if not opening.is_absolute() or not opening.is_file():
             parser.error("--opening-act requires the registered SF2_PRIVATE_OPENING_CONTENT")
         options.extend(("--opening-act", str(args.opening_act)))
@@ -124,7 +154,7 @@ def main():
     if settings:
         options.extend(("--input-settings", str(settings)))
     environment = dict(
-        os.environ,
+        environment,
         SF2_DEBUG_PORT=str(args.port),
         SF2_DEBUG_BACKGROUND_CLOCK="1" if args.continue_journey and not args.foreground else "0",
         SF2_SAVE_ROOT=str(save_root),
