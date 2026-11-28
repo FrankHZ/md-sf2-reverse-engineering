@@ -181,8 +181,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/design-map.md",
-      "sourceSha256": "d8b4c6c90e7987c7887bd44f31ee633180801f2563fdd155626c1098a3c0015d",
-      "mirrorSha256": "6edcbc1da8184e8da2fb406ef8b014bdf573ab81d7d8960e494a4c2982589864",
+      "sourceSha256": "37de7ce53eb332597bb55bde86075465ac2df9b9d818e26798697f1c54e74256",
+      "mirrorSha256": "5319e8602f21a07dfdfae69a2b87239281040c1491952339a4ca3fdb93295872",
       "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
       "translatedDate": "2026-11-28"
     },
@@ -857,6 +857,16 @@
       "translatedDate": "2026-11-20"
     },
     {
+      "source": "docs/design/synthesis/chapters/southern-travel-creed/chapter-overview.md",
+      "status": "translated",
+      "scope": "design-excerpt",
+      "mirror": "docs/design/zh-CN/synthesis/chapters/southern-travel-creed/chapter-overview.md",
+      "sourceSha256": "f87e97b6ed9d4a21914b907ae2b7e18f91f44d5031ef8b461795ef3b62a798fd",
+      "mirrorSha256": "b0939c5320bc29ff330bf1f1c33460e4addd1aad3226fd5831a78732eb77445b",
+      "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
+      "translatedDate": "2026-11-28"
+    },
+    {
       "source": "docs/design/synthesis/chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md",
       "status": "translated",
       "scope": "design-excerpt",
@@ -1161,8 +1171,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/story-progression.md",
-      "sourceSha256": "ce600cbff0343ce4f58b162d7c05631bcf5bc779a450ca6dd0b1c6f3bac4367b",
-      "mirrorSha256": "344327e539e5360a973e7f90b7053b208feddc042dd53bad881e5cef81e7db67",
+      "sourceSha256": "903f450b6af918051464912e6c3351e05b7dbca7c7f3ddba2a7a59e54b436fc9",
+      "mirrorSha256": "32f27b61a18c14d16d05a637b21d97dedffb7d2082c60d89b0fac8f177a138b3",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },

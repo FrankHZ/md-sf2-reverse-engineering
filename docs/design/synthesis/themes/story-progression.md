@@ -39,12 +39,14 @@ The chapter reading route below explains selected accepted content dependencies.
 Enter from the [gameplay overview](../gameplay-overview.md#follow-the-loop-and-choose-a-reading-depth),
 then start with the chronological
 [Grans opening chapter overview](../chapters/grans-opening/chapter-overview.md) (New Game through
-docks departure, `#2366` Phase A) and
+docks departure, `#2366` Phase A),
 [New Granseal and Eastern Parmecia chapter overview](../chapters/eastern-parmecia/chapter-overview.md)
-(sea voyage and landing through Polca raft boarding and first water move, `#2366` Phase B1), or use
-the six chapter groups below and the Taros worked example for cross-chapter dependencies (remaining
+(sea voyage and landing through Polca raft boarding and first water move, `#2366` Phase B1), and
+[Southern Travel, Caravan, and Creed chapter overview](../chapters/southern-travel-creed/chapter-overview.md)
+(southern river Kraken through Creed and the Dwarven Mine Cannon, `#2366` Phase B2), or use the six
+chapter groups below and the Taros worked example for cross-chapter dependencies (remaining
 chronological chapter overviews and cross-chapter recruitment/vehicle indexes are tracked under
-`#2366` Phases B2–C).
+`#2366` Phases B3–C).
 [Tactical Battle Loop](tactical-battle-loop.md) and [Progression and Economy](progression-and-economy.md)
 explain the local systems these chapters coordinate. Keep **original static source**, **bounded
 original runtime observations** (`Map3`–`Battle01` only), **remake ordinary play** (through first
@@ -350,6 +352,11 @@ input and persistence Unknowns; Luke's Down1 proves neither boarding nor Battle1
 </details>
 
 ### Southern travel, Caravan and Creed
+
+**Start here:** [Southern Travel, Caravan, and Creed — Chapter Overview](../chapters/southern-travel-creed/chapter-overview.md)
+gives the dependency-ordered event table (`S1`–`S16`, Kraken and Hassan through Creed's small worlds,
+recruitment, Oddler/Fairy handoff, and the Dwarven Mine Cannon), character/following quick
+reference, story-item & Caravan chain, and compact flag/scenario trace.
 
 Transport and item custody connect this group's systems. A raft grant differs from boarding or
 landing; Hassan's Rohde proposal differs from Taros admission; Sword custody differs from Bowie's
