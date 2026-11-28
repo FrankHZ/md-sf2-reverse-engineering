@@ -61,13 +61,19 @@ internal sealed partial class SettingsView : Control
         _message = new Label { Name = "SettingsMessage", AutowrapMode = TextServer.AutowrapMode.WordSmart }; detailsText.AddChild(_message);
         _diagnostics = new Label { Name = "SettingsDiagnostics", AutowrapMode = TextServer.AutowrapMode.WordSmart }; detailsText.AddChild(_diagnostics);
         _detailsHint = new Label { Name = "SettingsDetailsHint", CustomMinimumSize = new(0, 36) };
-        _detailsHint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize);
+        _detailsHint.ThemeTypeVariation = ReadingSize.Role(StoryTheme.HintSize);
         detailsPane.AddChild(_detailsHint);
         _details.GetVScrollBar().VisibilityChanged += RefreshDetailsHint;
         _footer = new HBoxContainer { Name = "SettingsActions" }; layout.AddChild(_footer);
         _footer.AddThemeConstantOverride("separation", 12);
         _hint = new Label { Name = "SettingsHint", AutowrapMode = TextServer.AutowrapMode.WordSmart };
-        _hint.AddThemeFontSizeOverride("font_size", StoryTheme.HintSize); layout.AddChild(_hint);
+        _hint.ThemeTypeVariation = ReadingSize.Role(StoryTheme.HintSize); layout.AddChild(_hint);
+        ReadingSize.Follow(this, large =>
+        {
+            ReadingSize.Configure(Theme, large);
+            ReadingSize.Configure(_column.Theme, large);
+            _pointer.Suspend();
+        });
         SeedCaptureControls(); Resized += Arrange; Arrange(); ShowPage();
     }
 
@@ -104,7 +110,8 @@ internal sealed partial class SettingsView : Control
         Page.Display => [new("language", T("ui.settings.language", _draft.Language == "en" ? "English" : "简体中文"), ReadOnly),
             new("graphics", T("ui.settings.graphics", T("ui.settings.graphics-" + _draft.GraphicsMode)), ReadOnly),
             new("text", T("ui.settings.text", T(_draft.TextMode == "instant" ? "ui.settings.instant" : "ui.settings.gradual")), ReadOnly),
-            new("speed", T("ui.settings.speed", _draft.CharactersPerSecond), ReadOnly)],
+            new("speed", T("ui.settings.speed", _draft.CharactersPerSecond), ReadOnly),
+            new("large-text", T("ui.settings.large-text", Toggle(_draft.LargeText)), ReadOnly)],
         Page.Audio => [
             new("music-volume", S("music-volume", _draft.MusicVolume), ReadOnly),
             new("system-effects-volume", S("system-effects-volume", _draft.SystemEffectsVolume), ReadOnly),
@@ -212,6 +219,12 @@ internal sealed partial class SettingsView : Control
         Paint(); _help?.RefreshInputHints();
     }
 
+    internal void SetPreviewReadingSize(bool large)
+    {
+        _draft.LargeText = large;
+        RefreshCaptions();
+    }
+
     private void RefreshCaptions()
     {
         foreach (var (button, row) in _buttons.Zip(Choices()))
@@ -263,7 +276,7 @@ internal sealed partial class SettingsView : Control
         }
     }
 
-    private static bool IsValue(string id) => id is "language" or "graphics" or "text" or "speed" or "convention" or
+    private static bool IsValue(string id) => id is "large-text" or "language" or "graphics" or "text" or "speed" or "convention" or
         "flash" or "guidance" or "background" or "acceleration" or "diagnostics" or "victory" or "battle-speed" or "messages" or
         "music-volume" or "system-effects-volume" or "battle-effects-volume";
 
@@ -311,6 +324,7 @@ internal sealed partial class SettingsView : Control
             case "text": _draft.TextMode = _draft.TextMode == "instant" ? "adjustable" : "instant"; break;
             case "speed": _draft.CharactersPerSecond = Math.Clamp(_draft.CharactersPerSecond + direction * 10, 1, 240); break;
             case "convention": _draft.ConfirmCancel = _draft.ConfirmCancel == "standard" ? "swapped" : "standard"; break;
+            case "large-text": _draft.LargeText = !_draft.LargeText; break;
             case "flash": _draft.ReducedFlash = !_draft.ReducedFlash; break;
             case "language": _draft.Language = _draft.Language == "en" ? "zh-CN" : "en"; break;
             case "graphics": _draft.GraphicsMode = _draft.GraphicsMode == "original" ? "hd" : "original"; break;

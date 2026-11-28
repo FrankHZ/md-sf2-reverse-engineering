@@ -1,5 +1,7 @@
 extends "res://probes/host_ui_observation.gd"
 
+const SettingsNav = preload("res://probes/settings_navigation.gd")
+
 # Ordinary Continue from an occupied first test slot. No capture or save publication.
 func hints() -> Dictionary:
     return observation(host, "ReadSettingsHostObservationJson").hints
@@ -159,7 +161,7 @@ func run() -> void:
     var cancel := InputMap.action_get_events("sf2_cancel").filter(func(e): return e is InputEventKey)[0] as InputEventKey
     await key(KEY_ENTER)
     var party_hint := find("PartyHint") as Label
-    check(party_hint.get_theme_font_size("font_size") == 24 and
+    check(party_hint.get_theme_font_size("font_size") == SettingsNav.reading_size(host, 24, 29) and
         root.get_visible_rect().encloses(party_hint.get_global_rect()), "member footer fits at fixed role size")
     check(not (find("ContextHint") as Control).is_visible_in_tree(), "member page retires field cues")
     check(party_hint.is_visible_in_tree() and (find("SystemMenuEntry") as Button).disabled,

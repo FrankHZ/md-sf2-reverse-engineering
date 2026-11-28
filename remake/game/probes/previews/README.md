@@ -95,8 +95,9 @@ Press **U** to switch between **Standard** and **Larger** on the current page. O
 **L** switches language outside Settings and name entry. Resize to 1600×900 to see the fitted
 member sheet, or to 2560×1440 for native Settings. For the long-name check, start with
 `--scale-review --inspect --authored-package <path>` and the [14-member input](../../../docs/godot/battle-ui-composition.md#reproduce-the-shared-roster).
-Press Up, Enter twice and Tab twice to inspect the first item. The comparison is an in-memory
-preview of the [proposed reading size](../../../docs/godot/ui-design-language.md#proposed-reading-size).
+Press Up, Enter twice and Tab twice to inspect the first item. The comparison switches the
+[production large text setting](../../../docs/godot/ui-design-language.md#large-text-mode) in memory.
+Ordinary play starts with large text enabled. In Settings, the Apply action saves the selection.
 See the [observed geometry and limits](../../../docs/godot/ui-scene-review.md#ui-size-calibration).
 
 ## Numbered saves and native window recovery

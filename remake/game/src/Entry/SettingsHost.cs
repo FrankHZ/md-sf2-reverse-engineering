@@ -8,6 +8,9 @@ namespace Sf2.Remake.GodotAdapter;
 
 public sealed partial class GameRoot
 {
+    internal bool LargeTextEnabled => _input?.Settings.LargeText ?? true;
+    internal event Action<bool>? ReadingSizeChanged;
+
     private SettingsStore? _preferences;
     private SettingsView? _settings;
     private string? _settingsNotice;
@@ -164,7 +167,9 @@ public sealed partial class GameRoot
         string? error = _preferences?.Write(candidate, reset);
         if (error is not null) return error + "\n" + GameText.Get("ui.settings.storage");
         _settingsRelease = _settingsActivation;
+        bool resizeText = LargeTextEnabled != candidate.LargeText;
         _input!.Apply(candidate, prepared);
+        if (resizeText) ReadingSizeChanged?.Invoke(candidate.LargeText);
         SessionAudioBuses.Apply(candidate);
         GameText.Publish(display); RefreshInputHints(); _settingsNotice = null;
         _exploration?.PublishGraphics();

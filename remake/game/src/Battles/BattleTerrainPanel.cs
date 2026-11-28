@@ -18,6 +18,9 @@ internal sealed partial class BattleTerrainPanel : PanelContainer
         AddChild(_reading);
     }
 
+    internal void SetReadingSize(bool large) =>
+        _reading.AddThemeFontSizeOverride("font_size", ReadingSize.Pixels(StoryTheme.BodySize, large, secondary: true));
+
     internal void Present(BattleLandEffect land) =>
         Present(land.Position, GameText.Get("battle.inspect.land-percent", land.Percent));
 

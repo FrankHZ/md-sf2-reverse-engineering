@@ -164,7 +164,7 @@ func reader() -> void:
     var msg := find("SettingsMessage") as Label
     var scroll := find("SettingsDetails") as ScrollContainer
     check(scroll.get_global_rect().size.x >= msg.get_global_rect().size.x and msg.get_line_count() >= 3 and
-        (find("SettingsHint") as Label).get_theme_font_size("font_size") == 24, "720p wraps the binding review with fixed hint size")
+        (find("SettingsHint") as Label).get_theme_font_size("font_size") == Nav.reading_size(host, 24, 29), "720p wraps the binding review with fixed hint size")
     var accept_rect := (find("Setting_accept") as Button).get_global_rect()
     var row_scroll: Variant = settings().scroll
     await Nav.tap(self, "target")
@@ -182,7 +182,7 @@ func reader() -> void:
         "GUI-picked wheel scrolls only the details region")
     await confirm_review(); await to_root(); await go_setting("help")
     geometry("HelpWindow")
-    check((find("HelpHint") as Label).get_theme_font_size("font_size") == 24,"720p reader keeps native help hint size")
+    check((find("HelpHint") as Label).get_theme_font_size("font_size") == Nav.reading_size(host, 24, 29),"720p reader keeps native help hint size")
     await back(); await to_root(); await back()
     check(mounted().applied.Bindings.is_empty(),"reader Cancel retains installed bindings")
 

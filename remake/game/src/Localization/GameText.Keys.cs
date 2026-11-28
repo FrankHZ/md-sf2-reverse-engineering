@@ -618,6 +618,7 @@ internal static partial class GameText
         ["new.start"] = 1,
         ["new.error"] = 1,
         ["ui.settings.title"] = 0,
+        ["ui.settings.large-text"] = 1,
         ["ui.settings.language"] = 1,
         ["ui.settings.graphics"] = 1,
         ["ui.settings.graphics-original"] = 0,

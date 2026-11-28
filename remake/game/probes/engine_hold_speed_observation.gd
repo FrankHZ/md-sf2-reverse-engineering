@@ -207,7 +207,8 @@ func battle() -> void:
     check(settings().labels[settings().selected] == "按住加速：3×", "Chinese label shows persisted multiplier")
     var row := host.find_child("Setting_acceleration", true, false) as Button
     var hint := host.find_child("SettingsHint", true, false) as Label
-    check(row.get_theme_font_size("font_size") == 30 and hint.get_theme_font_size("font_size") == 24, "production Body/Hint sizes")
+    var large: bool = settings().applied.LargeText
+    check(row.get_theme_font_size("font_size") == (36 if large else 30) and hint.get_theme_font_size("font_size") == (29 if large else 24), "production Body/Hint sizes")
     await tap(KEY_ESCAPE)
     await tap(KEY_DOWN)
     await tap(KEY_ENTER)

@@ -51,7 +51,7 @@ func inventory(party: Dictionary) -> bool:
         if row.icon.visible and not check(rect(row.rowRect).encloses(rect(row.icon.rect)) and row.icon.scale == 3,
                 "Field identity icon fits its row"): return false
     for label in scroll.find_children("Entry*", "Label", true, false):
-        if not check(readable(label, area, 28), "Read all item lines at the normal size: " + label.text): return false
+        if not check(readable(label, area, 34), "Read all item lines at the default large size: " + label.text): return false
     return true
 
 func summary(party: Dictionary, values: Array) -> bool:
@@ -71,9 +71,9 @@ func summary(party: Dictionary, values: Array) -> bool:
         if i == 1: cell.position.x += width
         var l := label.get_global_rect()
         var n := number.get_global_rect()
-        if not check(readable(label, cell, 30) and readable(number, cell, 30) and number.text == values[i]
+        if not check(readable(label, cell, 36) and readable(number, cell, 36) and number.text == values[i]
                 and number.horizontal_alignment == HORIZONTAL_ALIGNMENT_RIGHT and label.horizontal_alignment == HORIZONTAL_ALIGNMENT_LEFT
-                and l.position.y == n.position.y and n.size.y == 48 and l.size.y == n.size.y
+                and l.position.y == n.position.y and n.size.y == maxf(48, number.get_minimum_size().y) and l.size.y == n.size.y
                 and l.position.x - cell.position.x == 24 and cell.end.x - n.end.x == 24 and n.position.x - l.end.x == 12,
                 "Shared summary metrics and value: " + number.text): return false
     var chinese := OS.get_environment("SF2_PARTY_LANGUAGE") == "zh-CN"
@@ -102,7 +102,7 @@ func capacity() -> void:
     if not check(Vector2(root.size) == expected and (root.get_stretch_transform() * viewport.size).distance_to(expected) < 1,
             "Window and canvas mapping at " + str(expected) + " (actual " + str(root.size) + ")"): return
     var name_label := view.find_child("MemberName", true, false) as Label
-    if not check(name_label.text == "WWWWWWW" and readable(name_label, rect(party.layout.rect), 32),
+    if not check(name_label.text == "WWWWWWW" and readable(name_label, rect(party.layout.rect), 38),
             "A wide legal member name fits the sheet"): return
     var stable := geometry_key(party)
     var full: Array = party.projection[0].Inventory
@@ -119,11 +119,11 @@ func capacity() -> void:
     await tap(KEY_TAB)
     party = state().partyStatus
     if not check(party.focusPane == 2 and int(party.layout.itemSlot) == 0 and geometry_key(party) == stable
-            and party.layout.description.fontSize == 30 and party.layout.description.text.length() > 0
+            and party.layout.description.fontSize == 36 and party.layout.description.text.length() > 0
             and party.layout.description.maximum <= 0,
-            "Selected description fits at 30px in its reserved rectangle"): return
+            "Selected description fits at 36px in its reserved rectangle"): return
     var body := view.find_child("ItemDescription", true, false).find_child("Body", true, false) as Label
-    if not check(readable(body, rect(party.layout.description.rect), 30), "Reader body measured and uncut"): return
+    if not check(readable(body, rect(party.layout.description.rect), 36), "Reader body measured and uncut"): return
     var row: Dictionary = party.layout.items.entries[3]
     await press_mouse(rect(row.rowRect).get_center())
     party = state().partyStatus

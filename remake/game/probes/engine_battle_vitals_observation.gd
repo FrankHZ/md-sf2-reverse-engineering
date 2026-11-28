@@ -1,5 +1,7 @@
 extends "res://probes/engine_battle_cursor_observation.gd"
 
+const SettingsNav = preload("res://probes/settings_navigation.gd")
+
 # Bounded correction witness: decision, inspection and playback cards in Main.tscn.
 var vitals_case := OS.get_environment("SF2_VITALS_CASE")
 
@@ -10,21 +12,22 @@ func inside(r: Dictionary) -> bool:
     return within(r,state().viewport)
 
 func card_geometry(card: Dictionary, label: String) -> bool:
+    var body_size := SettingsNav.reading_size(host, 30, 36) if card.decisionHeader else 30
     if not expect(card.visible and card.frame and inside(card.rect),label+": framed live card fits"): return false
-    if not expect(not card.name.is_empty() and card.nameFontSize == 30 and within(card.nameRect,card.rect)
+    if not expect(not card.name.is_empty() and card.nameFontSize == body_size and within(card.nameRect,card.rect)
             and card.nameVisibleLines == card.nameLines,label+": complete name fits at body size"): return false
     if not expect(card.roleVisible == (card.level != null),label+": role disclosure follows projected level"): return false
     var header_bottom: float = card.nameRect.y+card.nameRect.height
     if card.roleVisible:
         var level := ("等级 %d" if TranslationServer.get_locale().begins_with("zh") else "Level %d") % int(card.level)
         var inline: bool = abs(card.roleRect.y-card.nameRect.y)<1
-        if not expect(card.roleFontSize == 30 and level in card.role and within(card.roleRect,card.rect)
+        if not expect(card.roleFontSize == body_size and level in card.role and within(card.roleRect,card.rect)
                 and abs(card.roleRect.x+card.roleRect.width-card.rect.x-card.rect.width+18)<1
                 and (card.nameLines == 1 and card.nameRect.x+card.nameRect.width+12 <= card.roleRect.x+1 if inline
                 else card.roleRect.y >= header_bottom-1),label+": right-aligned role fits beside or below the name at body size"): return false
         header_bottom = maxf(header_bottom,card.roleRect.y+card.roleRect.height)
     for vital in [card.hp,card.mp]:
-        if not expect(vital.labelFontSize == 30 and vital.fontSize == 30 and vital.image.rect.width >= 220
+        if not expect(vital.labelFontSize == body_size and vital.fontSize == body_size and vital.image.rect.width >= 220
                 and vital.image.rect.height == 28,label+": vital labels and values use body size"): return false
         if not expect(vital.image.rect.x+vital.image.rect.width <= vital.valueRect.x+1 and
                 vital.labelRect.x+vital.labelRect.width <= vital.image.rect.x+1 and
@@ -82,7 +85,7 @@ func header_geometry(label: String) -> bool:
         if row.visible and not expect(within(row.rect,layout.description),label+": target controls contained"): return false
     if not expect(inside(layout.description),label+": actual footer fits viewport"): return false
     var hint := view.find_child("DescriptionPanel",true,false).find_child("Help",true,false) as Label
-    if not expect(hint.is_visible_in_tree() and hint.get_theme_font_size("font_size") == 24,
+    if not expect(hint.is_visible_in_tree() and hint.get_theme_font_size("font_size") == SettingsNav.reading_size(host, 24, 26),
             label+": operating help uses the hint size"): return false
     var entry := host.find_child("SystemMenuEntry",true,false) as Control
     return expect(disjoint(card.rect,control_rect(entry)) and disjoint(layout.description,control_rect(entry)),label+": host entry remains separate")

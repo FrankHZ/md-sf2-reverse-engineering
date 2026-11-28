@@ -46,7 +46,7 @@ from production owners and the linked observations.
 
 ### UI size calibration
 
-**Proposed.** Compare Standard and Larger at the same physical client size with **U** in the
+Compare Standard and Larger at the same physical client size with **U** in the
 [dedicated demo](../../game/probes/previews/README.md#compare-ui-size). These are practice
 scenarios in the production host. Geometry below uses Godot canvas units. The 1600×900 client
 fits 1920×1080 once. The two larger clients used native coordinates. Windows reported 192 DPI.
@@ -59,12 +59,12 @@ fits 1920×1080 once. The two larger clients used native coordinates. Windows re
 | F8, English 14-member roster, 1600×900 | A narrow selector wrapped its counter, pushing slot four past the inventory viewport in an initial candidate. Giving the selector more width and using 80px slot rows leaves the 38px long name on three lines. Slot four ends at y=798 inside the viewport ending at 808. Resizing to 1080p and returning to Standard retained slot focus. |
 | F10 → Settings, Chinese, 2560×1440 | The centered 960×920 panel keeps its bounds. The 36px category names raise the actual row height from 64 to 73. Clicking Display opens the language row at the larger size. Cancel returns focus to Display. Both footer actions fit. |
 
-The [proposal](ui-design-language.md#proposed-reading-size) awaits the player's visual decision.
-The stills cover portraitless dialogue, a short acting name, four commands, the shared member
-sheet and Settings. Long dialogue with portraits and choices, long combat header measurement,
-target clearance in connected battles, other service pages and sustained reading comfort remain
-**Unknown**. U changes the demo in memory. Preference persistence belongs to the later
-production implementation.
+The [large text setting](ui-design-language.md#large-text-mode) uses these presenter layouts
+in the ordinary host. U compares them in memory in the demo. The normal Settings flow verifies
+Apply, Cancel, reset and restart against both a fresh namespace and older preferences.
+The four-slot capacity observation also exercises full inventory, long item names and unavailable
+accounting in both languages. Long dialogue with portraits and choices, target clearance in
+connected battles, other service pages and sustained reading comfort remain outside this sample.
 
 ### F2 and F5 sample observation
 

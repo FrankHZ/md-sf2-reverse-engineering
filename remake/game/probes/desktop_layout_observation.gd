@@ -1,5 +1,7 @@
 extends "res://probes/host_ui_observation.gd"
 
+const SettingsNav = preload("res://probes/settings_navigation.gd")
+
 # --resolution selects an actual client. Inputs enter Godot in client pixels, including
 # entry letterboxing. Observe mounted production controls, never inject logical GUI events.
 func pointer(at: Vector2, click := true) -> void:
@@ -73,7 +75,7 @@ func field_pages() -> void:
             var glyph := text_label.get_character_bounds(index)
             if glyph.has_area(): glyphs = glyphs.merge(glyph) if glyphs.has_area() else glyph
         check(glyphs.has_area() and bounds.encloses(glyphs), str(label.name) + " shaped glyphs fit")
-    check(hint.get_theme_font_size("font_size") == 24, "party hint retains design type size")
+    check(hint.get_theme_font_size("font_size") == SettingsNav.reading_size(host, 24, 29), "party hint retains design type size")
     await hit(close)
     check(not state().partyStatus.visible, "scaled party Close hit")
     if state().fieldMenu.visible: await key(KEY_ESCAPE)
@@ -197,7 +199,7 @@ func shop_pages() -> void:
         if s.dialoguePanel.visible and s.wait == "FieldTextWait" and not story_seen:
             story_seen = true
             samples.append({"text":s.textId, "wait":s.wait, "fontSize":s.dialoguePanel.fontSize, "body":s.dialoguePanel.body})
-            check(s.textId == 158 and s.dialoguePanel.fontSize == 30, "merchant greeting retains body type size")
+            check(s.textId == 158 and s.dialoguePanel.fontSize == SettingsNav.reading_size(host, 30, 36), "merchant greeting retains body type size")
             var p: Dictionary = s.dialoguePanel.panel
             check(root.get_visible_rect().encloses(Rect2(p.x,p.y,p.width,p.height)), "story text inside canvas")
         if s.canWaitForText: await key(KEY_ENTER)

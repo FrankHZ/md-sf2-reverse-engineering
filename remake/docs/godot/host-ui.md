@@ -56,6 +56,17 @@ Godot GUI dispatch. Release over an eligible button invokes the same row operati
 activation. Resize, window exit and loss of focus cancel a pending click.
 [Input ownership](ui-architecture.md#settings-and-its-children) · [Reproduction](../verification/host.md#native-settings-focus-and-gui-picking)
 
+Display & text → Large text mode is a single On/Off choice. It starts On, including when a
+format 1 preference file lacks `largeText`. Off restores the standard presentation. Apply
+updates the mounted views and saves the choice across restarts. Cancel discards edits. Both
+the Display reset and whole-settings reset stage On. See the [presenter sizes and layouts](ui-design-language.md#large-text-mode).
+
+To observe this on the ordinary host, run `res://probes/settings_battle_system_observation.gd`
+with the authored `stone-court.json` package, a disposable `SF2_SAVE_ROOT`, a namespace starting
+with `issue2391-` and a separate `SF2_HOST_UI_OUTPUT` JSON path per run. Set `SF2_HOST_UI_CASE`
+to `large-text`, then restart the same namespace with `large-text-restart`. Exercise both an
+empty namespace and one seeded with a format 1 preferences file lacking the field.
+
 Gameplay aids → Hold speed cycles through 1.5×, 2×, 2.5× and 3×. The row shows the draft
 multiplier and its details show the installed Accelerate binding. Apply installs and saves the
 selected multiplier, Cancel discards the draft, and Restore defaults stages 1.5×. Existing

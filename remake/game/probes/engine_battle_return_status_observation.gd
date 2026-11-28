@@ -1,5 +1,7 @@
 extends "res://probes/engine_world_viewport_observation.gd"
 
+const SettingsNav = preload("res://probes/settings_navigation.gd")
+
 var events: Array = []
 var last_sequence := -1
 var seen: Dictionary = {}
@@ -53,7 +55,7 @@ func run() -> void:
                     if scene.message != "":
                         await frames(2)
                         s = record("message-" + str(scene.phase))
-                        if not check(s.scene.messagePanel.visible and s.scene.messagePanel.fontSize == 30, "Shared readable message panel"): return
+                        if not check(s.scene.messagePanel.visible and s.scene.messagePanel.fontSize == SettingsNav.reading_size(host, 30, 36), "Shared readable message panel"): return
                 if "Continue" in str(scene.messagePanel.hint) or "Reveal" in str(scene.messagePanel.hint): await tap(KEY_ENTER)
                 else: await process_frame
             elif s.stage == "Movement" and s.stopReason == "PlayerInput":

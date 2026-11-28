@@ -624,7 +624,8 @@ this observation; it is not natural original timing, physical pad hardware or hu
 ## Basic preferences agreement
 
 **Standard rigor; [#1451](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1451).**
-Deliver the four existing `InputSettings` preferences: instant/adjustable text, 1–240 characters
+See [host preferences](host-ui.md#implemented-composition-and-return) for the current large text switch.
+The original agreement covers four `InputSettings` preferences: instant/adjustable text, 1–240 characters
 per second, standard/swapped Confirm/Cancel and reduced flash. Existing blue/gold controls expose
 Settings and control help on the Witch menu. The title shows only Start. At settled exploration input,
 the mapped Menu action opens the [system Menu](#system-menu-agreement-1518), then Settings; field Cancel opens the gameplay diamond. Settings remains

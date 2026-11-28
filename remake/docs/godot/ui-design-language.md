@@ -84,8 +84,8 @@ or IME admission follows from these layouts.
 
 ### Gameplay typography
 
-Use the bundled font at two sizes on the native 1920×1080 canvas. Apply the following roles
-when revising a gameplay screen.
+Use these standard sizes for the bundled font on the native 1920×1080 canvas.
+Presenters with large text support adapt these roles as described below.
 
 | Size | What the player reads | Examples |
 | --- | --- | --- |
@@ -104,13 +104,12 @@ The two gauges share aligned label and value columns. Other screens still have l
 including compact command captions. Update those with their owning screen and verify fit in
 English and Chinese.
 
-### Proposed reading size
+### Large text mode
 
-Offer one **Text and UI size** preference in **Settings → Display and text**, with **Standard**
-(the current presentation) and **Larger**. Larger is the candidate default for visual review.
-Use the current role size as the starting point. In the demo, a 30px body becomes 36px and a
-24px command caption becomes 29px. Give secondary battle information a smaller increase so the
-player can read the action first. The same preference lets each presenter use its available space.
+**Settings → Display & text → Large text mode** defaults to On. Turning it Off restores
+standard type and spacing. With large text enabled, 30px body type becomes 36px and a 24px
+command caption becomes 29px. Secondary battle information grows more gently to leave room
+for the board. Each presenter uses the space available to its content.
 
 | Presenter | Response to Larger |
 | --- | --- |
@@ -126,14 +125,11 @@ occupies 80. At native 1080p and larger gameplay sizes, keep 96px cells and let 
 reveal the world. Apply the reading choice once on high-DPI screens. Keep the same map,
 characters and camera framing when switching choices on a page.
 
-For a production implementation after review, stage the choice in the existing settings draft.
-Apply saves it across sessions and reflows the live page while preserving the current selection.
-Cancel restores the previously applied choice. Display Reset and whole-settings Reset stage the
-chosen product default until Apply. An older preferences file with the field absent loads that
-default. Use shared theme roles and the existing presenters' text measurements, native hit
-regions and scroll owners. In particular, the status card's name measurement must use the
-selected face size. The preference default, sustained comfort and adoption on additional pages
-await review of the [production preview](../../game/probes/previews/README.md#compare-ui-size).
+Apply saves the draft in the existing format 1 preferences and updates mounted presenters.
+Cancel discards the edit. Display reset and whole-settings reset both stage On until Apply.
+An older file without `largeText` loads as On. The status card measures names and vitals at
+the applied font size. Use the [production preview](../../game/probes/previews/README.md#compare-ui-size)
+to compare both sizes on the same sample.
 
 ### Panels and states
 

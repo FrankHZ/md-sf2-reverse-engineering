@@ -197,8 +197,8 @@ public partial class DesignPreview : Control
 
     public override void _Process(double delta)
     {
-        if (_scaleReview) ReviewLayout();
         if (_host?.PreviewSettings is { } settings) _settings = settings;
+        if (_scaleReview && _titleLargeText != _settings.LargeText) ShowReviewTitle();
         if (_presentedLanguage != _settings.Language || _presentedMotion != _settings.ReducedFlash ||
             _menuOpen != (_host?.PreviewSystemOpen == true)) PaintToolbar();
         if (_entry is { } entry && (_host?.AdvancePreviewEntry(entry) == true || Time.GetTicksMsec() >= _entryDeadline))
@@ -224,7 +224,7 @@ public partial class DesignPreview : Control
         {
             if (input is InputEventKey { Keycode: Key.U, Pressed: true, Echo: false } && _host?.PreviewNameEntryOpen != true)
             {
-                ToggleReview();
+                _host?.TogglePreviewReadingSize();
             }
             else _game.PushInput(input, inLocalCoords: true);
             GetViewport().SetInputAsHandled();

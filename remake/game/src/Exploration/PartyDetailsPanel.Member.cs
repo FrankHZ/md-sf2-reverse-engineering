@@ -5,6 +5,19 @@ namespace Sf2.Remake.GodotAdapter.Exploration;
 
 internal sealed partial class PartyDetailsPanel
 {
+    private void FitMemberSlotGaps()
+    {
+        int gap = 12;
+        if (_memberSlotHeight == 80 && _slotCount > 1 && _items.Size.Y > 0)
+        {
+            // Keep the normal gaps unless wrapped item names need that space.
+            float rowHeight = _itemRows.Take(_slotCount).Sum(slot => slot.Row.GetCombinedMinimumSize().Y);
+            gap = Mathf.Clamp(Mathf.FloorToInt((_items.Size.Y - rowHeight) / (_slotCount - 1)), 0, gap);
+        }
+        if (_inventory.GetThemeConstant("separation") != gap)
+            _inventory.AddThemeConstantOverride("separation", gap);
+    }
+
     private void ConfigureMemberReaders()
     {
         _magicTitle.FocusMode = _itemsTitle.FocusMode = FocusModeEnum.All;

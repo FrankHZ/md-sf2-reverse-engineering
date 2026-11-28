@@ -13,6 +13,7 @@ internal sealed class InputSettings
     public required int FormatVersion { get; set; }
     public string ConfirmCancel { get; set; } = "standard";
     public bool RunInBackground { get; set; }
+    public bool LargeText { get; set; } = true;
     public bool ReducedFlash { get; set; }
     public string Language { get; set; } = "en";
     public int MusicVolume { get; set; } = 100;
@@ -71,7 +72,7 @@ internal sealed class InputSettings
     {
         var draft = defaults ? Load(null) : new InputSettings
         {
-            FormatVersion = FormatVersion, ConfirmCancel = ConfirmCancel, ReducedFlash = ReducedFlash,
+            FormatVersion = FormatVersion, ConfirmCancel = ConfirmCancel, ReducedFlash = ReducedFlash, LargeText = LargeText,
             Language = Language, GraphicsMode = GraphicsMode, TextMode = TextMode, CharactersPerSecond = CharactersPerSecond,
             ModernGuidance = ModernGuidance, AccelerationMultiplier = AccelerationMultiplier,
             RunInBackground = RunInBackground,
@@ -87,6 +88,7 @@ internal sealed class InputSettings
     internal void Publish(InputSettings candidate)
     {
         ConfirmCancel = candidate.ConfirmCancel; ReducedFlash = candidate.ReducedFlash;
+        LargeText = candidate.LargeText;
         Language = candidate.Language; TextMode = candidate.TextMode; CharactersPerSecond = candidate.CharactersPerSecond;
         RunInBackground = candidate.RunInBackground;
         MusicVolume = candidate.MusicVolume;

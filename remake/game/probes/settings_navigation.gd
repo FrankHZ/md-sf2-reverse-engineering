@@ -1,5 +1,9 @@
 extends RefCounted
 
+static func reading_size(host: Node, standard: int, large: int) -> int:
+    var preferences: Dictionary = JSON.parse_string(host.call("ReadSettingsHostObservationJson"))
+    return large if preferences.applied.LargeText else standard
+
 # Navigate actual visible controls by their stable meaning using the installed keys.
 static func tap(tree: SceneTree, action: String) -> void:
     var key: InputEventKey = InputMap.action_get_events("sf2_" + action).filter(func(e): return e is InputEventKey)[0]
@@ -21,7 +25,7 @@ static func setting(view: Node, id: String) -> bool:
     if view == null: return false
     var tree := view.get_tree()
     var obs: Dictionary = JSON.parse_string(view.call("ReadSettingsObservationJson"))
-    var sections := {"language":"display","graphics":"display","text":"display","speed":"display",
+    var sections := {"language":"display","graphics":"display","text":"display","speed":"display","large-text":"display",
         "guidance":"assist","flash":"assist","convention":"input","help":"input",
         "edit":"input","diagnostics":"debug","victory":"debug"}
     if not id in obs.rows:
