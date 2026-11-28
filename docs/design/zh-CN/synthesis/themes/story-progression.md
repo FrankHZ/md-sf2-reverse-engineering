@@ -1,6 +1,6 @@
 # L2 · 剧情推进
 
-沿着地图、在场者、玩家选择及其后果阅读。阅读已整理的章节剧情时序与人物/物品速查，请先进入[Grans 开篇与离岛章节总览](../chapters/grans-opening/chapter-overview.md)（`#2366` A 片）与[新格兰希尔与东部 Parmecia 章节总览](../chapters/eastern-parmecia/chapter-overview.md)（`#2366` B1 片；其余大章的时序总表与全角色/载具索引留待 `#2366` B2–C 片整理）。原版**已确认**静态条件支持下列连接，幕间意义是**推断**；原版受限实测（`Map3`–`Battle01`）、重制普通流程与受控 Debug 起点保持分立——旧段级页里的原版**未知**不代表重制未实装，受控速胜也不等于自然完整通关。参阅[玩法总览](../gameplay-overview.md)、[英文剧情推进](../../../synthesis/themes/story-progression.md)及[原版观察范围（英文源）](../../../../research/story-content-coverage.md)。
+沿着地图、在场者、玩家选择及其后果阅读。阅读已整理的章节剧情时序与人物/物品速查，请先进入[Grans 开篇与离岛章节总览](../chapters/grans-opening/chapter-overview.md)（`#2366` A 片）、[新格兰希尔与东部 Parmecia 章节总览](../chapters/eastern-parmecia/chapter-overview.md)（`#2366` B1 片）与[南方旅行、车队与 Creed 章节总览](../chapters/southern-travel-creed/chapter-overview.md)（`#2366` B2 片；其余大章的时序总表与全角色/载具索引留待 `#2366` B3–C 片整理）。原版**已确认**静态条件支持下列连接，幕间意义是**推断**；原版受限实测（`Map3`–`Battle01`）、重制普通流程与受控 Debug 起点保持分立——旧段级页里的原版**未知**不代表重制未实装，受控速胜也不等于自然完整通关。参阅[玩法总览](../gameplay-overview.md)、[英文剧情推进](../../../synthesis/themes/story-progression.md)及[原版观察范围（英文源）](../../../../research/story-content-coverage.md)。
 
 ## 分段阅读故事内容
 
@@ -48,45 +48,45 @@
 
 ### 南方旅行、Caravan 与 Creed
 
-在 Polca 另行登乘；Kraken 结果影响返回模式。Wooden Panel 与 Achilles Sword 的选用帮助连接 Rohde、Taros 及之后的 Caravan。获救的 Elric、桌面棋盘、Floor World 和 Creed 的同伴选择各有独立条件。参阅[Taros 的完整示例](#完整示例taros-与-caravan)。
+**推荐入口：**[南方旅行、车队（Caravan）与 Creed 章节总览](../chapters/southern-travel-creed/chapter-overview.md)按实际依赖与路线串起南下 Kraken、Hassan、Wooden Panel / 阿喀琉斯之剑、塔罗斯与车队、Elven Village、埃尔里克、Fairy Cave、Creed 桌面与地板世界、四选一招募、Oddler/妖精交接直至矮人矿洞取得 Cannon（`S1`–`S16`），另可参阅[Taros 的完整示例](#完整示例taros-与-caravan)。以下 37 篇段级详解按路线依赖整理，供深入查阅各段条件与交接（沙漠战 `Battle14` 与神殿 `Battle15` 的原版研究链接保留在总览与英文主题页）：
 
+- [Polca 木筏登乘与 South Parmecia 入场](../chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)
+- [South Parmecia、Kraken 现身与 Battle16 进入](../chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md)
 - [Battle16 结果、下筏与条件 Hassan 入场](../chapters/southern-travel-creed/battle16-outcomes-through-hassan-entry.md)
+- [Hassan 祖先对话与 Rohde 的 Caravan 选择](../chapters/southern-travel-creed/hassan-ancestry-and-rohde-caravan-choice.md)
+- [Ribble 树洞开启与 Achilles Sword](../chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md)
+- [Hassan 出发、Battle17 进入与条件返回](../chapters/southern-travel-creed/hassan-departure-and-battle17-outcomes.md)
+- [Southwest Parmecia、Taros 的警告与有条件的 Battle18 进入](../chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md)
 - [Battle18 结果与 Caravan 获取](../chapters/southern-travel-creed/battle18-outcomes-and-caravan-acquisition.md)
-- [Battle19 结果与独立 Elven Village 入场](../chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md)
-- [Battle20 结果与 Elric 招募](../chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md)
-- [Battle21 开场与初始名册](../chapters/southern-travel-creed/battle21-opening-and-initial-roster.md)
-- [Battle21 结果与 Devil's Tail 返回](../chapters/southern-travel-creed/battle21-outcomes-and-devils-tail-return.md)
-- [棋盘：Battle22 初始化与初始名册](../chapters/southern-travel-creed/battle22-initialization-and-roster.md)
-- [棋盘结果与返回 Desktop Kingdom](../chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md)
-- [Battle23 初始编队与挂起入场](../chapters/southern-travel-creed/battle23-initialization-and-roster.md)
-- [Battle23 结果与返回 Willard Burrow](../chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md)
+- [Hassan Rick 招募与跟随](../chapters/southern-travel-creed/hassan-rick-recruitment.md)
 - [Caravan 登乘与 Southwest Parmecia 旅行](../chapters/southern-travel-creed/caravan-boarding-and-southwest-parmecia-travel.md)
-- [Cotton Balloon 获取与前往 Floor World](../chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md)
-- [Creed 离开、矮人恢复与 Cannon 赠礼](../chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md)
-- [Creed 魔法门与 Desktop 转移](../chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md)
-- [Creed Mansion 入场与首次 Goliath 阻拦](../chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md)
-- [Creed 恢复与主房间离开](../chapters/southern-travel-creed/creed-restoration-and-basement-departure.md)
-- [Creed 返回、Fairy 跟随与招募选择](../chapters/southern-travel-creed/creed-return-fairy-and-recruitment-choices.md)
-- [Desktop Kingdom：首次抵达与条件控制](../chapters/southern-travel-creed/desktop-kingdom-first-arrival.md)
-- [Desktop Kingdom：对话与棋盘挑战](../chapters/southern-travel-creed/desktop-kingdom-interactions-through-battle22-entry.md)
+- [Battle19 结果与独立 Elven Village 入场](../chapters/southern-travel-creed/battle19-outcomes-through-elven-village-entry.md)
 - [Elven Village 对话与局部探索](../chapters/southern-travel-creed/elven-village-conversations-and-local-exploration.md)
 - [Elven Village 离开至 Harpy Pond 入场](../chapters/southern-travel-creed/elven-village-departure-through-harpy-pond-entry.md)
-- [Evil Spirit 咨询与条件区域（事件）返回](../chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md)
-- [Evil Spirit Shrine 入口与咨询准入](../chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md)
+- [Harpy Pond 接近至 Battle20 入场](../chapters/southern-travel-creed/harpy-pond-approach-through-battle20-entry.md)
+- [Battle20 结果与 Elric 招募](../chapters/southern-travel-creed/battle20-outcomes-and-elric-recruitment.md)
+- [Harpy Pond 离开至 Fairy Cave 入场](../chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md)
 - [Fairy Cave 探索与 Devil's Tail 返回](../chapters/southern-travel-creed/fairy-cave-exploration-and-devils-tail-return.md)
+- [Battle21 开场与初始名册](../chapters/southern-travel-creed/battle21-opening-and-initial-roster.md)
+- [Battle21 结果与 Devil's Tail 返回](../chapters/southern-travel-creed/battle21-outcomes-and-devils-tail-return.md)
+- [Creed Mansion 入场与首次 Goliath 阻拦](../chapters/southern-travel-creed/creed-mansion-entry-and-first-goliath-scene.md)
+- [Creed 魔法门与 Desktop 转移](../chapters/southern-travel-creed/creed-magic-door-and-desktop-transfer.md)
+- [Desktop Kingdom：首次抵达与条件控制](../chapters/southern-travel-creed/desktop-kingdom-first-arrival.md)
+- [Desktop Kingdom：对话与棋盘挑战](../chapters/southern-travel-creed/desktop-kingdom-interactions-through-battle22-entry.md)
+- [棋盘：Battle22 初始化与初始名册](../chapters/southern-travel-creed/battle22-initialization-and-roster.md)
+- [棋盘结果与返回 Desktop Kingdom](../chapters/southern-travel-creed/battle22-outcomes-and-desktop-return.md)
+- [Cotton Balloon 获取与前往 Floor World](../chapters/southern-travel-creed/cotton-balloon-through-floor-world-entry.md)
 - [Floor World 首次抵达与条件探索](../chapters/southern-travel-creed/floor-world-first-arrival.md)
 - [Floor World 居民、巨环与对外退出](../chapters/southern-travel-creed/floor-world-interactions-and-exits.md)
-- [Harpy Pond 接近至 Battle20 入场](../chapters/southern-travel-creed/harpy-pond-approach-through-battle20-entry.md)
-- [Harpy Pond 离开至 Fairy Cave 入场](../chapters/southern-travel-creed/harpy-pond-departure-through-fairy-cave-entry.md)
-- [Hassan 祖先对话与 Rohde 的 Caravan 选择](../chapters/southern-travel-creed/hassan-ancestry-and-rohde-caravan-choice.md)
-- [Hassan 出发、Battle17 进入与条件返回](../chapters/southern-travel-creed/hassan-departure-and-battle17-outcomes.md)
-- [Hassan Rick 招募与跟随](../chapters/southern-travel-creed/hassan-rick-recruitment.md)
-- [Oddler 留下与 Fairy 交接](../chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md)
-- [Polca 木筏登乘与 South Parmecia 入场](../chapters/southern-travel-creed/polca-raft-boarding-through-south-parmecia-entry.md)
-- [Ribble 树洞开启与 Achilles Sword](../chapters/southern-travel-creed/ribble-tree-opening-and-achilles-sword.md)
-- [South Parmecia、Kraken 现身与 Battle16 进入](../chapters/southern-travel-creed/south-parmecia-through-kraken-battle16-entry.md)
-- [Southwest Parmecia、Taros 的警告与有条件的 Battle18 进入](../chapters/southern-travel-creed/southwest-parmecia-through-taros-battle18-entry.md)
 - [Willard Burrow 探索与 Battle23 准入](../chapters/southern-travel-creed/willard-burrow-through-battle23-entry.md)
+- [Battle23 初始编队与挂起入场](../chapters/southern-travel-creed/battle23-initialization-and-roster.md)
+- [Battle23 结果与返回 Willard Burrow](../chapters/southern-travel-creed/battle23-outcomes-and-burrow-return.md)
+- [Creed 恢复与主房间离开](../chapters/southern-travel-creed/creed-restoration-and-basement-departure.md)
+- [Evil Spirit Shrine 入口与咨询准入](../chapters/southern-travel-creed/evil-spirit-shrine-entry-and-scene-admission.md)
+- [Evil Spirit 咨询与条件区域（事件）返回](../chapters/southern-travel-creed/evil-spirit-consultation-and-zone-return.md)
+- [Creed 返回、Fairy 跟随与招募选择](../chapters/southern-travel-creed/creed-return-fairy-and-recruitment-choices.md)
+- [Oddler 留下与 Fairy 交接](../chapters/southern-travel-creed/oddler-stays-and-fairy-handoff.md)
+- [Creed 离开、矮人恢复与 Cannon 赠礼](../chapters/southern-travel-creed/creed-departure-dwarf-recovery-and-cannon-gift.md)
 
 ### 北方旅行、Pacalon、Tristan 与 Mitula
 
