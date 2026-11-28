@@ -1,6 +1,6 @@
 # Private media production and publication
 
-**Design for review.** The first milestone is an incremental image and sound pilot. Ordinary
+**Accepted design; implementation pending.** The first milestone is an incremental image and sound pilot. Ordinary
 launch and release still use the [registered selections](asset-inventory.md#pre-voyage-package-locations).
 A proposed path or example below becomes operational only after its migration step passes.
 [#2370](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2370) has High rigor because
@@ -185,13 +185,14 @@ Keep old selection and rollback resources until Debug **and** Release pass.
 **3. Retire exact obsolete consumers and data.** Depends on accepted launch/build/producer checks
 and a retained rollback. Main-gate reviews the selected script and directory list. Resolve active
 callers, ownership, sole sources and pending work. Retire obsolete fixed-path scripts and historical
-collection copies when supported production no longer needs them. Compare the size of any remaining unique material with destination and rollback headroom
-   before including it in a batch. Review any remaining worktree
-with Git before retirement and preserve unique sources first. Keep the canonical checkout and
-three to four reusable worktrees including the manual-play maintenance checkout. Check recovered
-space and closure again. Hold the old root through the agreed rollback window. After deletion,
-   recovery uses the retained source/recipe or approved backup for that item. Keep any unique
-   item without such a recovery path out of the retirement set. Perform any remaining project-volume migration in measured batches under
-the [cutover owner](../../../docs/operations/local-private-inputs.md#cut-over-a-local-selection).
+collection copies when supported production no longer needs them. Compare the size of any
+remaining unique material with destination and rollback headroom before including it in a batch.
+Review any remaining worktree with Git before retirement and preserve unique sources first.
+Keep the canonical checkout and three to four reusable worktrees including the manual-play
+maintenance checkout. Check recovered space and closure again. Hold the old root through the
+agreed rollback window. After deletion, recovery uses the retained source/recipe or approved
+backup for that item. Keep any unique item without such a recovery path out of the retirement set.
+Perform any remaining project-volume migration in measured batches under the
+[cutover owner](../../../docs/operations/local-private-inputs.md#cut-over-a-local-selection).
 Player saves/backups, both designated video projects, independent history, unique inputs and the
 previously excluded handoff stay protected.
