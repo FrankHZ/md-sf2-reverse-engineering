@@ -181,8 +181,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/design-map.md",
-      "sourceSha256": "908bede5685f38d721659561e511714b0d0427c22f63bdedae67e25c4921fcd9",
-      "mirrorSha256": "38d30c5aa5826efbd9d37ca7afeb532523e27e7cf8dba8fec6909b499bb091f9",
+      "sourceSha256": "7651d78918381df1e1f68b7831a2a873da386406eb80c904bf2c8869ebcfae1a",
+      "mirrorSha256": "1a4cf45f4a0ccdf88c7a39f80259dcccfcb40b3f4ce09a6dd74ebb3712b21481",
       "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
       "translatedDate": "2026-11-28"
     },
@@ -1107,6 +1107,16 @@
       "translatedDate": "2026-11-24"
     },
     {
+      "source": "docs/design/synthesis/themes/battle-numbers.md",
+      "status": "translated",
+      "scope": "design-excerpt",
+      "mirror": "docs/design/zh-CN/synthesis/themes/battle-numbers.md",
+      "sourceSha256": "7671b17e66ea137281c87c954a5d0ea8e8927eafb2ac8f6a28a1e723565e9734",
+      "mirrorSha256": "a4fda265a46e74dc62b94ad354e28ce2dc50812e32b275e2c4552b473010bb16",
+      "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
+      "translatedDate": "2026-11-28"
+    },
+    {
       "source": "docs/design/synthesis/themes/map-design-principles.md",
       "status": "translated",
       "scope": "design-excerpt",
@@ -1121,8 +1131,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/progression-and-economy.md",
-      "sourceSha256": "f142d5cd9749c327c48182052d8af977a44ecca23ffcb63b2b3ca8aaf95e903c",
-      "mirrorSha256": "f2d8980fc98afa1a1e40e9552a965db8d928ae956dd4b606bc9506f43c93776c",
+      "sourceSha256": "39a3c32d4596a4d46186de0042f071c38a2b2158ba7501d7bd7ee24651c42b7c",
+      "mirrorSha256": "b458c5126f123306f553b85479401e9179a06513120324e7314227dc0b030034",
       "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
       "translatedDate": "2026-11-28"
     },
@@ -1141,8 +1151,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/tactical-battle-loop.md",
-      "sourceSha256": "76eaac589b95239042339968b9b76c3edb52f857b188067b9ac3dd60725c7893",
-      "mirrorSha256": "cf27ac113e2d04c6ad02e954b495b96286431379c8f1a6acbc55b6e692e91508",
+      "sourceSha256": "729ba31164a7633b32d67d5fa58d9417951f7a3b07afa314dc664e0c2d25c4f2",
+      "mirrorSha256": "7a8767918e68e2e653162ed17a21797f8f09b4ef437166f232c2f11ec24c077d",
       "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
       "translatedDate": "2026-11-28"
     }

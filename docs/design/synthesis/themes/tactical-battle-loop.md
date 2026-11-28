@@ -130,7 +130,9 @@ and downward variance where admitted, clamping HP at 0.
 
 A first hit can trigger a double attack and then a counterattack, but neither is guaranteed: a
 lethal hit stops follow-ups, double attacks reject muddled/same-side cases, and counterattacks have
-their own range, sleep, stun, same-side, and special-enemy exclusions.
+their own range, sleep, stun, same-side, and special-enemy exclusions. For step-by-step integer
+formulas, terrain factors, turn-order bands, and worked examples, see
+[Core Battle Numbers and Growth Quick Reference](battle-numbers.md).
 
 ### Magic, healing, and support
 
@@ -258,5 +260,5 @@ and [Battle18 research](../../../research/chapters/southern-travel-creed/battle1
 | Movement cost, ranges & target lists | [Battlefield navigation](../../contracts/battle/battlefield-navigation.md), [pathfinding](../../../research/battle/battlefield-pathfinding.md) |
 | AI commandsets, resource filters & scoring | [AI decision](../../contracts/battle/battle-ai-decision.md), [AI research](../../../research/battle/battle-ai.md) |
 | Action pipeline, item break & replay | [Action construction](../../contracts/battle/battle-action-construction.md), [scene engine](../../../research/battle/battle-scene-engine.md) |
-| Combat math, spells, statuses & rewards | [Physical combat](../../contracts/battle/combat-resolution.md), [spell resolution](../../contracts/battle/spell-resolution.md), [runtime battle math](../../../research/battle/runtime-rng-and-battle-math.md) |
+| Combat math, spells, statuses & rewards | [Battle Numbers & Growth](battle-numbers.md), [Physical combat](../../contracts/battle/combat-resolution.md), [spell resolution](../../contracts/battle/spell-resolution.md), [runtime battle math](../../../research/battle/runtime-rng-and-battle-math.md) |
 | Encounter exceptions (Taros, Jaro, Prism Flowers, Fairy Woods, Battle0) | [Story Progression](story-progression.md), [Battle18](../../../research/chapters/southern-travel-creed/battle18-initialization-and-first-control.md), [Battle32](../../../research/chapters/moun-nazca-grans/battle32-activation-jaro-and-first-turn-dispatch.md), [Battle36](../../../research/chapters/moun-nazca-grans/battle36-prism-flower-laser.md), [Battle44](../../../research/chapters/eastern-parmecia/battle44-fairy-woods-trial-and-records.md), [Battle0](../../../research/chapters/final-confrontations-ending/battle00-bonus-battle-and-reset.md) |
