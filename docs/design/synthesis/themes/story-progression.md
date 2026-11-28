@@ -37,11 +37,18 @@ The chapter reading route below explains selected accepted content dependencies.
    is not yet demonstrated.
 
 Enter from the [gameplay overview](../gameplay-overview.md#follow-the-loop-and-choose-a-reading-depth),
-then use the chapter groups for world changes and the worked example for one connected dependency.
+then start with the chronological
+[Grans opening chapter overview](../chapters/grans-opening/chapter-overview.md) for New Game through
+docks departure (`#2366` Phase A), or use the six chapter groups below and the Taros worked example
+for cross-chapter dependencies (remaining chronological chapter overviews and cross-chapter
+recruitment/vehicle indexes are tracked under `#2366` Phases B–C).
 [Tactical Battle Loop](tactical-battle-loop.md) and [Progression and Economy](progression-and-economy.md)
-explain the local systems these chapters coordinate. The
-[documentation roadmap](../../documentation-roadmap.md) owns the scope and review sequence; none of
-these explanations supplies missing natural chronology.
+explain the local systems these chapters coordinate. Keep **original static source**, **bounded
+original runtime observations** (`Map3`–`Battle01` only), **remake ordinary play** (through first
+Pacalon / `Battle26` in `remake/docs/`), and **controlled Debug starts** distinct: an original
+**Unknown** never means unimplemented in the remake, and a controlled Debug victory never proves a
+natural full playthrough. The [documentation roadmap](../../documentation-roadmap.md) owns the scope
+and review sequence.
 
 ## Read Story Content in Segments
 
@@ -69,15 +76,21 @@ static research, original observations, English synthesis and remake support.
 
 ### Grans opening and departure
 
+**Start here:** [Grans Opening and Departure — Chapter Overview](../chapters/grans-opening/chapter-overview.md)
+gives the chronological event table (`G1`–`G20`, New Game through Captain's committed departure),
+character/follower quick reference, key-item & pickup summary, and compact flag/scenario trace.
+
 The opening connects town interaction, castle/tower events and battle, then changes the world through
 captivity, the tower aftermath, earthquake and departure by ship. **Confirmed:** the selected opening
-has bounded original observations; later local guides explain static outcome/return and event gates.
+has bounded original observations; later local guides explain static outcome/return and event gates,
+while ordinary remake play and controlled Debug starts are tracked in
+[pre-voyage campaign](../../../../remake/docs/application/pre-voyage-campaign.md).
 The earthquake-town exit, boarding choice, departure scene and damaged-ship arrival are distinct
 handoffs rather than one transition. A scripted relocation is not another player movement decision.
 
 Use [opening through Battle01](../chapters/grans-opening/opening-through-battle01.md) for the connected start and
 [docks departure](../chapters/grans-opening/earthquake-town-through-docks-departure.md) for its actual Yes/No branch. Optional
-Kiwi and other opening interactions remain beside their local conditions in the guides below.
+Kiwi and other opening interactions remain beside their local conditions in the overview and guides below.
 [Grans coverage](../../../research/story-content-coverage.md#grans-opening-captivity-and-the-first-tower)
 and [departure coverage](../../../research/story-content-coverage.md#leaving-grans-and-establishing-new-granseal)
 route to accepted evidence. Defeat, escape and repeat setups keep their own returns; neither a
