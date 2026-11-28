@@ -396,7 +396,7 @@ The current tracked layout in that independent repository is:
 | `runtime/` | reviewed runtime-ready 2x/4x textures, UI, fonts, music, and sound assets |
 | `manifests/` | local identity, semantic mapping, derivation, import policy, and code-compatibility records |
 
-The [planned directory responsibilities](asset-pipeline-workflow.md#directory-responsibilities)
+The [directory responsibilities](asset-pipeline-workflow.md#directory-responsibilities)
 cover relocation of the real independent Git root, the canonical media entity and the shared
 reader entry. Existing private manifest mappings describe the revisions that produced them.
 
@@ -435,9 +435,9 @@ selection together. Save slots and locale catalogs use their existing independen
 
 Run PowerShell 7 in the owning checkout. Bootstrap its private configuration as needed using
 [Local Private Inputs](../../../docs/operations/local-private-inputs.md#fresh-worktree-setup).
-The following selects the registered handoff inputs for the first publication. A second command
-checks the complete file set and bytes. To copy only from the stable publication, change the four
-source selections to the same files/directories under `$stable` and select a new destination.
+The original publication used the historical handoff selections below. To reproduce its copy,
+select a fresh ignored checkout destination. Current mounting reads the published base under
+`media/retail-preparation/v1/issue1966-original`.
 
 ```powershell
 . ./local/private-inputs.ps1
@@ -445,7 +445,7 @@ uv sync --locked
 $handoffs = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs'
 $base = Join-Path $handoffs 'issue1966/content/package'
 $opening = Join-Path $handoffs 'issue1857'
-$stable = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/issue1966-original'
+$stable = Join-Path (Get-Location).Path ('local/retail-base-' + [guid]::NewGuid().ToString('N'))
 $packageArgs = @('--world', "$base/world.json", '--scene', "$base/main-scenes.json",
     '--entry', "$opening/entry/entry.json", '--opening-inputs', "$opening/inputs",
     '--destination', $stable)
@@ -496,19 +496,24 @@ uv run --locked python -m sf2tool.remake_private_inventory --upstream $upstream 
 Use the tracked PowerShell 7 launcher from any directory. Select a checkout containing this
 revision. Its checkout-local configuration selects the registered ROM, toolchains and shared data
 root. The source checkout and matching H1 listing are read-only. The launcher accepts explicit
-`-Upstream`, `-Listing`, `-Library` and `-Package` paths for installations with different layouts.
-The existing `issue1966-original` package and its retail source CSV are the baseline selections.
+`-PreparationRoot`, `-Upstream`, `-Listing`, `-Library` and `-Package` paths for installations with different layouts.
+The default preparation root is `media/retail-preparation/v1` beneath the shared input root.
+Its `issue1966-original` and `retail-source-and-coverage.csv` supply the base and inventory.
+Coverage and Mount read its published `retail-v1`. Prepare writes to the owning checkout's
+`local/retail-prepare/retail-v1` by default. To inspect newly generated results, pass that same
+absolute `-Library` to Coverage or Mount. An explicit preparation root selects a matching
+inventory and base for a different version.
 The local-only asset Git records the reviewed version in `manifests/retail-v1.json`.
 `runtime/retail-v1` is directly selectable as `-Library` for Mount. Its matching
 `source/retail-v1` subtree holds the command captures and driver boundaries at the same relative
-family/command paths. For production recovery, copy both subtrees into a new registered derived
+family/command paths. For production recovery, copy both subtrees into a fresh private staging
 library directory, retaining the file layout. The separately versioned base package still provides
 the existing campaign consumers and already admitted audio variants.
 
 ```powershell
 $repo = (Get-Location).ProviderPath    # start here in the selected code checkout
 $run = Join-Path $repo 'tools/Prepare-PrivateAssets.ps1'
-& $run -Repo $repo -Operation Prepare -Family All
+& $run -Repo $repo -Operation Prepare -Family icons
 ```
 
 `All` verifies existing results and prepares missing families, including the three-member PLDN
@@ -526,15 +531,15 @@ individually. Retain a failure's named native scratch before retrying its comman
 published versions are immutable. Restore damaged reviewed files from their private Git version
 or choose a fresh library destination.
 
-To regenerate coverage and assemble the supported first-consumer packages, select `$assetRoot`
-as the absolute path to the private asset Git checkout and `$pinnedSource` as the absolute
-source checkout at the revisions named in the
-[asset inventory](asset-inventory.md#retail-original-preparation).
+To regenerate coverage or assemble a package from the reviewed library, load the same checkout
+configuration and choose a fresh output. For mounts that prepare character progressions, set
+`$pinnedSource` to the matching pinned upstream checkout.
 
 ```powershell
 . (Join-Path $repo 'local/private-inputs.ps1')
-$root = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001'
-$runtime = Join-Path $assetRoot 'runtime/retail-v1'
+$root = Join-Path $repo 'local/retail-mounts'
+[void][IO.Directory]::CreateDirectory($root)
+$runtime = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media/retail-preparation/v1/retail-v1'
 $token = [guid]::NewGuid().ToString('N')
 & $run -Repo $repo -Operation Coverage -Library $runtime -Destination "$root/coverage-$token.csv"
 # Current accepted readers can use these field, UI and audio additions now.
@@ -547,40 +552,39 @@ $token = [guid]::NewGuid().ToString('N')
 # Add the two WIZ progressions and appearances to the registered PLDN package.
 $progression = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue1956'
 & $run -Repo $repo -Operation Mount -Library $runtime -Family wiz `
-    -Package "$progression/pldn-v1" -Upstream $pinnedSource -Destination "$progression/wiz-$token"
+    -Package "$progression/pldn-v1" -Upstream $pinnedSource -Destination "$root/wiz-$token"
 
 # Add the three GLDT/BDBT progressions and appearances to the registered WIZ package.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family melee `
-    -Package "$progression/wiz-v1" -Upstream $pinnedSource -Destination "$progression/melee-$token"
+    -Package "$progression/wiz-v1" -Upstream $pinnedSource -Destination "$root/melee-$token"
 
 # Add the three SNIP/BWNT progressions and appearances to the registered melee package.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family ranged `
-    -Package "$progression/melee-v1" -Upstream $pinnedSource -Destination "$progression/ranged-$token"
+    -Package "$progression/melee-v1" -Upstream $pinnedSource -Destination "$root/ranged-$token"
 
 # Add the two VICR progressions and appearances to the registered ranged package.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family vicar `
-    -Package "$progression/ranged-v1" -Upstream $pinnedSource -Destination "$progression/vicar-$token"
+    -Package "$progression/ranged-v1" -Upstream $pinnedSource -Destination "$root/vicar-$token"
 
 # Add the WFBR and PHNX progressions and appearances to the registered Vicar package.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family innate `
-    -Package "$progression/vicar-v1" -Upstream $pinnedSource -Destination "$progression/innate-$token"
+    -Package "$progression/vicar-v1" -Upstream $pinnedSource -Destination "$root/innate-$token"
 
 # Add Slade's NINJ progression and appearances to the registered innate package.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family ninja `
-    -Package "$progression/innate-v1" -Upstream $pinnedSource -Destination "$progression/ninja-$token"
+    -Package "$progression/innate-v1" -Upstream $pinnedSource -Destination "$root/ninja-$token"
 
 # Add Kiwi's MNST progression and appearances to the registered Ninja package.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family monster `
-    -Package "$progression/ninja-v1" -Upstream $pinnedSource -Destination "$progression/monster-$token"
+    -Package "$progression/ninja-v1" -Upstream $pinnedSource -Destination "$root/monster-$token"
 
 # Add the prepared sound-wave overlay to the registered Monster package.
 & $run -Repo $repo -Operation Mount -Library $runtime -Family phoenix-wave `
-    -Package "$progression/monster-v1" -Destination "$progression/phoenix-wave-$token"
+    -Package "$progression/monster-v1" -Destination "$root/phoenix-wave-$token"
 
 # Bind Indra Staff and the after-break unarmed appearances for WIZ and VICR.
-$equipment = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue1952'
 & $run -Repo $repo -Operation Mount -Library $runtime -Family indra `
-    -Package "$progression/phoenix-wave-v1" -Destination "$equipment/indra-$token"
+    -Package "$progression/phoenix-wave-v1" -Destination "$root/indra-$token"
 ```
 
 The Indra mount consumes the already prepared weapon bank 16 and palette 31. It adds four
@@ -596,7 +600,7 @@ prepared media and needs no ROM, audio capture or production scratch. [PLDN repr
 
 <a id="bedoe-audio-package"></a>
 
-For Bedoe rescue, select the registered `derived/issue2001/priority-v1` package under the
+For Bedoe rescue, select the registered `media/retail-preparation/v1/priority-v1` package under the
 shared input root. Use its `world.json`, `main-scenes.json` and `entry/entry.json` for
 `SF2_PRIVATE_EXPLORATION_CONTENT`, `SF2_PRIVATE_BATTLE_SCENE_CONTENT` and
 `SF2_PRIVATE_ENTRY_CONTENT`. Each JSON filename in `opening-inputs/` names its matching
@@ -1631,17 +1635,16 @@ runs with the producer package path absent; one fallback only rewrites Battle26'
 
 ```powershell
 . ./local/private-inputs.ps1
-$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
+$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media/retail-preparation/v1/retail-v1'
 # Select the fresh Aqua output from the preparation command below as $aquaPackage.
 uv run --locked --with pillow==13.0.0 python -m sf2tool.remake_retail_assets `
   --root $library --base $aquaPackage --mount $freshAbsolutePackage `
-  --family kiwi-family --gfx-root $registeredGraphicsRoot
+  --family kiwi-family --gfx-root $env:SF2_GRAPHICS_ROOT
 ```
 
 Use a fresh worktree-local ignored destination and the registered graphics selection.
 The Aqua recipe below prepares the same complete input as the earlier publication.
 `derived/issue2316/review-v1` owns reader/Boot recipes and retained receipts.
-After cutover select `$library` from `media/retail-preparation/v1/retail-v1`.
 [Source correction, results and limits](../godot/spell-presentation.md#kiwi-converted-attack-playback-2316).
 
 ### AQUA successor #2315
@@ -1663,19 +1666,18 @@ links unchanged immutable inputs. The producer package path is absent during acc
 
 ```powershell
 . ./local/private-inputs.ps1
-$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
-$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2314/atlas-v1'
+$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media/retail-preparation/v1/retail-v1'
+$base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media/gameplay/atlas-v1'
 $aquaPackage = Join-Path (Get-Location).Path ('local/aqua-' + [guid]::NewGuid().ToString('N'))
 uv run --locked --with pillow==11.3.0 python -m sf2tool.remake_retail_assets `
   --root $library --base $base --mount $aquaPackage `
-  --family aqua-family --gfx-root $registeredGraphicsRoot
+  --family aqua-family --gfx-root $env:SF2_GRAPHICS_ROOT
 if ($LASTEXITCODE) { throw 'Aqua preparation failed' }
 ```
 
 A fresh checkout-local build reproduced all 181 published files byte for byte with the
 pinned graphics checkout. Select `$aquaPackage` when preparing Kiwi or reproducing the Aqua
-selection. After cutover select `$library` from `media/retail-preparation/v1/retail-v1` and
-`$base` from `media/gameplay/atlas-v1` in the [asset inventory](asset-inventory.md#pre-voyage-package-locations). Published `derived/issue2315/review-v1` holds reader and ordinary-input
+selection. The [asset inventory](asset-inventory.md#pre-voyage-package-locations) records both producer inputs. Published `derived/issue2315/review-v1` holds reader and ordinary-input
 recipes and retained receipts. Boot stages writable files beneath
 the selected worktree and requires an explicit disposable save root.
 [Source, caller distinction, checks and failures](../godot/spell-presentation.md#aqua-family-playback-2315).
@@ -1701,10 +1703,10 @@ uses pilot/scratch files. [Source, results and retained failures](../godot/spell
 
 ```powershell
 . ./local/private-inputs.ps1
-$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
+$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media/retail-preparation/v1/retail-v1'
 $base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2313/neptun-v1'
 uv run --with pillow python -m sf2tool.remake_retail_assets --root $library --base $base `
-  --mount $freshAbsolutePackage --family atlas-family --gfx-root $registeredGraphicsRoot
+  --mount $freshAbsolutePackage --family atlas-family --gfx-root $env:SF2_GRAPHICS_ROOT
 ```
 
 Generate to fresh checkout-local ignored output. Published `derived/issue2314/review-v1`
@@ -1737,10 +1739,10 @@ retained with the [source and acceptance](../godot/spell-presentation.md#neptun-
 
 ```powershell
 . ./local/private-inputs.ps1
-$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
+$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media/retail-preparation/v1/retail-v1'
 $base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2312/apollo-v1'
 uv run --with pillow python -m sf2tool.remake_retail_assets --root $library --base $base `
-  --mount $freshAbsolutePackage --family neptun-family --gfx-root $registeredGraphicsRoot
+  --mount $freshAbsolutePackage --family neptun-family --gfx-root $env:SF2_GRAPHICS_ROOT
 ```
 
 Use the registered graphics commit above; generate into a fresh checkout-local ignored path.
@@ -1766,10 +1768,10 @@ The extracted shared invocation decoder reproduces existing DAO Original rasters
 
 ```powershell
 . ./local/private-inputs.ps1
-$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
+$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media/retail-preparation/v1/retail-v1'
 $base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2310/dao-v2'
 uv run --with pillow python -m sf2tool.remake_retail_assets --root $library --base $base `
-  --mount $freshAbsolutePackage --family apollo-family --gfx-root $registeredGraphicsRoot
+  --mount $freshAbsolutePackage --family apollo-family --gfx-root $env:SF2_GRAPHICS_ROOT
 ```
 
 Use the registered graphics checkout `172662709b31cb296b55f51894754ce810c30f6c`.
@@ -1797,10 +1799,10 @@ From the checkout, use registered roots and a fresh absolute output:
 
 ```powershell
 . ./local/private-inputs.ps1
-$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001/retail-v1'
+$library = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media/retail-preparation/v1/retail-v1'
 $base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2307/desoul-v1'
 uv run --with pillow python -m sf2tool.remake_retail_assets --root $library --base $base `
-  --mount $freshAbsolutePackage --family dao-family --gfx-root $registeredGraphicsRoot
+  --mount $freshAbsolutePackage --family dao-family --gfx-root $env:SF2_GRAPHICS_ROOT
 ```
 
 The graphics checkout is pinned to `172662709b31cb296b55f51894754ce810c30f6c`.

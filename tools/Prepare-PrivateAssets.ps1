@@ -9,7 +9,8 @@ param(
     [string]$Listing,
     [string]$Library,
     [string]$Package,
-    [string]$Destination
+    [string]$Destination,
+    [string]$PreparationRoot
 )
 $ErrorActionPreference = 'Stop'
 if (![IO.Path]::IsPathFullyQualified($Repo)) { throw 'Select an absolute -Repo' }
@@ -27,15 +28,22 @@ Push-Location -LiteralPath $repoRoot
 try {
     . $configuration
     [void][IO.Directory]::CreateDirectory($env:TEMP)
-    $root = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2001'
-    if (!$Library) { $Library = Join-Path $root 'retail-v1' }
-    if (!$Package) { $Package = Join-Path $root 'issue1966-original' }
+    if (!$PreparationRoot) { $PreparationRoot = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media/retail-preparation/v1' }
+    if (![IO.Path]::IsPathFullyQualified($PreparationRoot)) { throw 'Select an absolute -PreparationRoot' }
+    if (!$Library) {
+        $Library = if ($Operation -eq 'Prepare') {
+            Join-Path $repoRoot 'local/retail-prepare/retail-v1'
+        } else {
+            Join-Path $PreparationRoot 'retail-v1'
+        }
+    }
+    if (!$Package) { $Package = Join-Path $PreparationRoot 'issue1966-original' }
     $selection = @('--root',$Library,'--base',$Package)
     foreach ($name in $Family) { $selection += @('--family',$name.ToLowerInvariant()) }
     foreach ($id in $Command) { $selection += @('--command',$id.ToString()) }
     if ($Operation -eq 'Coverage') {
         if (!$Destination) { throw 'Coverage requires a fresh absolute CSV filename' }
-        $selection += @('--coverage',$Destination,'--inventory',(Join-Path $root 'retail-source-and-coverage.csv'))
+        $selection += @('--coverage',$Destination,'--inventory',(Join-Path $PreparationRoot 'retail-source-and-coverage.csv'))
     } elseif ($Operation -eq 'Mount') {
         if (!$Destination) { throw 'Mount requires a fresh absolute -Destination' }
         $selection += @('--mount',$Destination)
@@ -43,7 +51,7 @@ try {
     } else {
         if (!$Upstream) { $Upstream = Join-Path (Split-Path -Parent $env:SF2_SHARED_INPUT_ROOT) 'upstream/SF2DISASM' }
         if (!$Listing) { $Listing = Join-Path $env:SF2_SHARED_INPUT_ROOT 'handoffs/upstream/SF2DISASM/build/sf2build-h1.lst' }
-        $selection += @('--upstream',$Upstream,'--listing',$Listing,'--inventory',(Join-Path $root 'retail-source-and-coverage.csv'))
+        $selection += @('--upstream',$Upstream,'--listing',$Listing,'--inventory',(Join-Path $PreparationRoot 'retail-source-and-coverage.csv'))
     }
     & uv run --locked python -m sf2tool.remake_retail_assets @selection
     if ($LASTEXITCODE) { throw "Retail asset preparation failed with exit $LASTEXITCODE" }
