@@ -92,10 +92,17 @@ range rings, and **Burst Rock** affects both factions while excluding its center
 On a player-controlled turn, the actor moves provisionally and chooses Attack, Magic, Item, or
 Stay/Search:
 
-- **Cancellation is free before commitment:** backing out of target selection or canceling movement
-  restores the actor's turn-start position and leaves no action committed (spending no MP or item).
-  Choosing Attack with no valid target does not manufacture a target. Original nested-menu timing
-  remains **Unknown**.
+- **Backing out before commitment spends no MP, item, or turn** (and choosing Attack with no valid
+  target manufactures no target), but the exact rollback step differs between layers:
+  - **Original outer cancel:** canceling the outer movement/action diamond menu (`-1` return)
+    restores the actor's turn-start position and rebuilds the movement grid; complete nested-menu
+    rollback and original input timing remain **Unknown**.
+  - **Accepted remake reselection:** backing out of Target restores the originating command or
+    spell/item row (and Magic/Item Back returns to Main); **Main Back** keeps the preview stop and
+    resumes Movement within the turn origin's current MOV (reversing to the origin only if an
+    equipment change put that stop outside current MOV); a fresh **Movement Cancel** then undoes
+    movement and opens free inspection. See
+    [Main Back and movement reselection](../../../../remake/docs/godot/battle-ui-composition.md#main-back-and-movement-reselection).
 - **STAY is a committed action:** unlike Cancel, STAY spends the individual turn and proceeds
   through post-action and end-of-turn checks.
 - **Search in battle:** handles chests separately—a trap triggers the trapped-chest route, an

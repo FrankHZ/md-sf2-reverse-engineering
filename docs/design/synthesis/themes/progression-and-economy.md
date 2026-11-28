@@ -129,9 +129,11 @@ Three separate capacity limits shape inventory planning:
 
 ### Sources, receipts, and the capacity decision
 
-Enemy gold uses a 103-entry table and saturates at **9,999,999** on addition. Enemy item drops
-use 30 keyed records (only three boss weapons require `RNG(32) == 0`). When every eligible pack is
-full, **different item sources follow deliberately different fallback policies**:
+Each enemy's gold reward comes from the 103-entry enemy gold table, while adding rewards into the
+party's cumulative balance (`CURRENT_GOLD`) saturates at **`FORCE_MAX_GOLD = 9,999,999`** (see
+[gold addition and cap boundaries](../../../research/battle/runtime-rng-and-battle-math.md#confirmed-gold-addition-and-cap-boundaries)).
+Enemy item drops use 30 keyed records (only three boss weapons require `RNG(32) == 0`). When every
+eligible pack is full, **different item sources follow deliberately different fallback policies**:
 
 - **Battle enemy drop:** sets the one-time flag and removes the enemy's item before routing. On a
   full pack, a **rare** item enters shop Deals, while a **non-rare** item is **discarded** (no

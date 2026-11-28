@@ -1121,8 +1121,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/progression-and-economy.md",
-      "sourceSha256": "7638a173abe140248106b138a657582e75a16c4f610b8a9b12a1332864f2f5df",
-      "mirrorSha256": "84693453caaf271cc8f8b9cde0cb7f0a4c544c4886cfc6a6d830b51633601181",
+      "sourceSha256": "f142d5cd9749c327c48182052d8af977a44ecca23ffcb63b2b3ca8aaf95e903c",
+      "mirrorSha256": "f2d8980fc98afa1a1e40e9552a965db8d928ae956dd4b606bc9506f43c93776c",
       "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
       "translatedDate": "2026-11-28"
     },
@@ -1141,8 +1141,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/tactical-battle-loop.md",
-      "sourceSha256": "9c18452dca22fceeecb05225b543339ab59d77126759f8856aef3a7dff40e3f6",
-      "mirrorSha256": "9f4274b609839450ac0ce3ff4730249e679e8d2fc7b874e903163bc057a229fd",
+      "sourceSha256": "76eaac589b95239042339968b9b76c3edb52f857b188067b9ac3dd60725c7893",
+      "mirrorSha256": "cf27ac113e2d04c6ad02e954b495b96286431379c8f1a6acbc55b6e692e91508",
       "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
       "translatedDate": "2026-11-28"
     }
