@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "glossary": {
     "path": "docs/design/glossary.md",
-    "sha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd"
+    "sha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1"
   },
   "mirrorRoot": "docs/design/zh-CN",
   "documents": [
@@ -181,10 +181,10 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/design-map.md",
-      "sourceSha256": "f25a35e4dbb7223cb610c3ffc34ee02a9d72288df494bee2514bdd0904de353a",
-      "mirrorSha256": "3c3b22a53ff396b1a038ac65e920cc17e0fddbacd5842d6e1b95b5387cf565c7",
-      "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
-      "translatedDate": "2026-11-24"
+      "sourceSha256": "908bede5685f38d721659561e511714b0d0427c22f63bdedae67e25c4921fcd9",
+      "mirrorSha256": "38d30c5aa5826efbd9d37ca7afeb532523e27e7cf8dba8fec6909b499bb091f9",
+      "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
+      "translatedDate": "2026-11-28"
     },
     {
       "source": "docs/design/game-vision.md",
@@ -1121,10 +1121,10 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/progression-and-economy.md",
-      "sourceSha256": "f99b0ceff46ac9c1ef21132b7a4d0521e65486ec381492ec52f1cf6f6d4c85fa",
-      "mirrorSha256": "230b8075305349ab26977a2c39fe5fca21f3b46145ca33177ee553ed3c2eeadd",
-      "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
-      "translatedDate": "2026-11-20"
+      "sourceSha256": "7638a173abe140248106b138a657582e75a16c4f610b8a9b12a1332864f2f5df",
+      "mirrorSha256": "84693453caaf271cc8f8b9cde0cb7f0a4c544c4886cfc6a6d830b51633601181",
+      "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
+      "translatedDate": "2026-11-28"
     },
     {
       "source": "docs/design/synthesis/themes/story-progression.md",
@@ -1141,10 +1141,10 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/tactical-battle-loop.md",
-      "sourceSha256": "94b2381c70aa41b92cd1e5de4e17884d77d8828d7990fbd3fe6009754af1ed51",
-      "mirrorSha256": "09dfbc8b6b06f2d7cfe3ec728dbe77b5bf441c45b644379a531fa6cdaa63b77d",
-      "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
-      "translatedDate": "2026-11-24"
+      "sourceSha256": "9c18452dca22fceeecb05225b543339ab59d77126759f8856aef3a7dff40e3f6",
+      "mirrorSha256": "9f4274b609839450ac0ce3ff4730249e679e8d2fc7b874e903163bc057a229fd",
+      "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
+      "translatedDate": "2026-11-28"
     }
   ]
 }
