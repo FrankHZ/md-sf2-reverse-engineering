@@ -120,8 +120,10 @@ documentation status:
 
 | Design surface | Current status | Active coordination |
 | --- | --- | --- |
-| `game-vision.md`, `gameplay-overview.md`, `map-design-principles.md` (EN + `zh-CN`) | First reader-perspective rewrite sample merged (`#2129` / `#2228`); pending Wiki publication reconciliation. | `#2259` |
-| `design-map.md`, `tactical-battle-loop.md`, `progression-and-economy.md`, Wiki entry templates | Still contain stiff audit/disassembly prose, stale backlog links, or incomplete Wiki L2 coverage; open for scoped readability rewrites. | `#2259` |
+| `game-vision.md`, `gameplay-overview.md`, `map-design-principles.md` (EN + `zh-CN`) | First reader-perspective rewrite sample merged (`#2129` / `#2228`); pending Wiki publication reconciliation. | `#2259` Phase B |
+| `design-map.md`, `tactical-battle-loop.md`, `progression-and-economy.md` (EN + `zh-CN`) | Rewritten for player-first readability with concrete examples and updated system map (`#2259` Phase A); pending Wiki entry update and publication. | `#2259` Phases A–B |
+| Wiki entry templates (`Home.md`, `_Sidebar.md`, `wiki-mirrors.tsv`) & live publication | Live Wiki publication and L2 entry coverage reconciliation await Phase A acceptance. | `#2259` Phase B |
+| Follow-on L2 design gaps (numeric/formula reference, original-vs-remake modernization overview, UI/UX L2 overview) | Explicitly tracked as open follow-on scopes rather than substituted with engineering pages. | `#2259` Phase C, `#2386` |
 | `story-progression.md` and campaign event/chapter overview | Currently a reader guide plus alphabetical chapter link wall; open for chronological event/chapter overview linked to developer flags and accepted scenario starts. | `#2366` |
 | Modern remake engine architecture & Debug support design entry | Technical docs exist in `remake/docs/`, but designer-facing entry and cross-layer trace are pending. | `#2358` |
 | Detailed chapter guides through Battle27 & later story sections | Accepted static research/synthesis within each page's stated boundary; later chapters link directly to English research rather than pending Chinese guides. | Story coverage in `docs/research/story-content-coverage.md` |
