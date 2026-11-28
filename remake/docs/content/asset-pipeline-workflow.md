@@ -1,8 +1,8 @@
 # Private media production and publication
 
 The [tracked selection](metadata/selection.json) now reads four runtime roles through the canonical
-media junction. Debug and the metadata projection have consumed this selection. Full Windows
-export through the junction awaits execution review. Keep the previous version available for
+media junction. Debug, the metadata projection and the Windows exporter have consumed this selection.
+The relocated Release restored a disposable save through ordinary Continue. Keep the previous version available for
 rollback. The incremental publisher still operates in disposable checkout-local storage.
 [#2370](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2370) has High rigor because
 a producer, two kinds of launch, multiple checkouts and irreversible source retirement share these inputs.
@@ -35,7 +35,7 @@ runtime overlay, a general asset service and filesystem-wide fingerprints are un
 | [Prepare-PrivateAssets](../../../tools/Prepare-PrivateAssets.ps1) and [retail preparation](presentation-assets.md#prepare-and-mount-retail-resources) | Prepare selects families, and SFX/music accept command IDs. The audio producer verifies existing command, cue, timer and WAV identities and can resume by command. Coverage joins an inventory to prepared results. | Pass the same explicit selection to discovery, Prepare, Coverage and Mount. The wrapper currently builds the inventory path under its fixed issue root. File existence or a valid *previous* result alone cannot prove an unchanged recipe. |
 | [Private asset preflight](../../../src/sf2tool/remake_assets.py) and [local product assets](presentation-assets.md#local-asset-repository) | Exact private Git identities, versioned manifests, checked source/master/runtime relationships. Keep the existing checks on real Git roots. | Import the permitted identity and derivation fields into main Git once. Retain detailed operand, byte identity and custody records with their private source. |
 | [Private package mount](../../../src/sf2tool/remake_private_package.py) and [Kiwi producer](../../../src/sf2tool/remake_kiwi_mount.py) | Existing family-specific transforms, fresh destinations, relative dependency closure and selected-file comparison. Kiwi derives six frame pairs, then writes each selected encounter's raster banks. Some mount modes already link unaffected files and copy the rest. | Separate calculation of changed outputs from role assembly. The current mount prepares a complete destination and can silently fall back to copying on link failure. Do not run a writer on a candidate tree sharing writable files with an accepted revision. |
-| [Windows input resolver](../../../src/sf2tool/remake_windows_package.py), [ordinary entry](../evidence/opening-loop-acceptance.md) | Resolve the actual world, encounter inputs, opening documents, named Witch PNG siblings and catalogs. Packaged startup reads adjacent content. Content readers check semantic admission. | The pilot uses one selection for the resolver, Debug environment and projected reader bindings. Debug has consumed the real shared entrance. Junction-backed Windows export and relocated Continue are pending. |
+| [Windows input resolver](../../../src/sf2tool/remake_windows_package.py), [ordinary entry](../evidence/opening-loop-acceptance.md) | Resolve the actual world, encounter inputs, opening documents, named Witch PNG siblings and catalogs. Packaged startup reads adjacent content. Content readers check semantic admission. | The pilot uses one selection for the resolver, Debug environment and projected reader bindings. Debug and Windows export both consumed the real shared entrance. The relocated executable completed ordinary Continue. |
 | Historical full successors and one-off wrappers | Existing evidence identifies a source or past observation. Atlas and the indexed opening subtree are still producer inputs. | Replace active fixed paths, including the Aqua reproduction/rollback defaults. Once supported consumers and unique sources are accounted for, retire surplus successors and scripts through the cleanup owner. Git preserves tracked recipes. |
 
 ## Tracked metadata and private records
@@ -228,7 +228,7 @@ physical sources. **Confirmed.** Read-only resolution through a disposable share
 selected the same 196 files and 2,836 public rows as the direct roots, including the logical
 `media/` prefix. A separate nested-world fixture copied 22 members through the link into
 independent files with those same relative names. These checks exercised input resolution and
-seeding. Full junction-backed Windows export remains pending.
+seeding. The runtime migration below covers full Windows export.
 
 A disposable change to the assembler alone adjusted the Witch loop binding by one sample.
 The production entry reader reported 279420, then 279421, then 279420 on restoration.
@@ -260,8 +260,8 @@ shared-relative selection and 15 remained identical. A second checkout reproduce
 projection from outside Git with an explicit selection and table. The comparison and projection
 took 1.82 seconds and peaked at 260 MiB in the Python process. Staging and final publication used
 one payload copy. After Debug, the project volume showed roughly 0.53 GiB less free space than
-before staging, including tool caches and run output. The exporter's free-space preflight would
-reserve 4,740,314,411 bytes against 16,769,994,752 available. No export candidate was created.
+before staging, including tool caches and run output. The exporter required 4,740,314,411 free bytes at preflight. After export and unpacking for
+validation, the volume used about 2.73 GiB more than before staging, within the 3 GiB allowance.
 The compiled Debug adapter ran on the second checkout with an isolated namespace.
 [Ordinary opening, Witch and Continue](../evidence/opening-loop-acceptance.md#launch-and-checkpoints)
 read the relocated inputs.
@@ -293,11 +293,11 @@ launcher or Windows recipe and restart the reader. To roll back a tracked defaul
 verify the private projection. Keep the four predecessor roots, the existing installation and its
 launcher available through Debug and Release acceptance.
 
-**Pending.** The full Windows candidate export through this junction was previously refused
-before process creation. The relocated executable and its clean-environment Continue remain
-unverified. The earlier ordinary-directory export covers a different input layout.
-[Windows acceptance](../windows-local-candidate.md#build-and-run) remains a prerequisite for
-retiring rollback inputs. Atlas, indexed opening, retail preparation and the three independent
+**Confirmed.** The first full junction-backed export attempt was refused before process creation.
+With automatic approval enabled, the maintained exporter read all four roles through the real
+junction. The unpacked Release used adjacent content and restored Map44 with an isolated slot
+through ordinary Continue. The [Windows observation](../windows-local-candidate.md#build-and-run)
+records the exit diagnostic. Keep rollback inputs until independent acceptance and operator cutover. Atlas, indexed opening, retail preparation and the three independent
 source repositories remain at their registered locations. Their producer migration is a separate
 stage with its own ownership, capacity and reproducibility checks.
 
