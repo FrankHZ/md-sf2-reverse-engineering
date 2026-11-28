@@ -183,7 +183,11 @@ The entry reader requires a loop; this trial keeps every PCM sample. No capture 
 
 The publisher holds one OS writer lock. Cache keys include each unit's reviewed source, actual
 generator and helper revisions, relevant parameters and tools. The entry reader and Python version
-are shared dependencies. A change names its affected units in the result; `generated` identifies
+are shared dependencies. Entry assembly has its own identity for the binding and serialization
+code. A revision without this identity receives one assembly refresh. When the assembler changes,
+replay both verified unit outputs against the original entry role and write an independent
+descriptor. Unchanged units can be read directly from their checked caches.
+The result lists the affected stages. The `generated` field identifies
 work actually performed after checking completed units. A PNG-only change preserves the old
 `entry.json` by file identity. An audio-binding or HD-bank membership change rewrites that document
 once. The role carries immutable regular-file hard links only inside the trial. The prior selection
@@ -219,8 +223,22 @@ selections, including Original fallback after HD withdrawal and the restored HD 
 and removing one disposable version preserved the prior descriptor, shared PNG and edited image.
 A recipe-link change updated the public projection while generating zero media.
 
+The resolver preserves logical source names beside each delivery key and checks containment
+against the resolved owner directory. Seed initialization maps those logical names to checked
+physical sources. **Confirmed.** Read-only resolution through a disposable shared junction
+selected the same 196 files and 2,836 public rows as the direct roots, including the logical
+`media/` prefix. A separate nested-world fixture copied 22 members through the link into
+independent files with those same relative names. These checks exercised input resolution and
+seeding. Full junction-backed Windows export remains pending.
+
+A disposable change to the assembler alone adjusted the Witch loop binding by one sample.
+The production entry reader reported 279420, then 279421, then 279420 on restoration.
+Both media keys stayed constant, all three assembly refreshes generated zero media, and the
+restored descriptor matched the first byte for byte. Repeating the restored recipe was a no-op.
+
 The peak observed checkout-local allocation including the retained preliminary run, interrupted
-outputs, alternate-interpreter cache and clean comparison was 998,203,808 B. The regenerated
+outputs, alternate-interpreter cache, clean comparison and assembly counterexample was
+1,032,197,440 B. The regenerated
 tracked lookup was about 0.55 MiB. The highest observed publisher working set across both trials
 was 303,878,144 B. The first measurement wrapper used a truncated Windows process handle and
 failed to report its peak after seeding. The corrected measurement is the fresh seed above.

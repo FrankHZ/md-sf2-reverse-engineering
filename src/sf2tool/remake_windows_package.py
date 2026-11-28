@@ -20,27 +20,25 @@ from sf2tool.remake_media_selection import (
     read_selection,
     shared_root,
 )
-from sf2tool.remake_private_package import OPENING_INPUTS, package_files, private_output, verify
-
-
-def relative_file(root: Path, name: str) -> Path:
-    path = (root / name).resolve(strict=True)
-    if (
-        Path(name).is_absolute()
-        or ".." in Path(name).parts
-        or not path.is_relative_to(root.resolve())
-        or not path.is_file()
-    ):
-        raise ValueError("runtime dependency must be a contained file")
-    return path
+from sf2tool.remake_private_package import (
+    OPENING_INPUTS,
+    package_files,
+    private_output,
+    relative_file,
+    verify,
+)
 
 
 def inputs(campaign: Path, entry: Path, opening: Path, catalog: Path) -> dict[Path, Path]:
-    files = package_files(
-        campaign / "world.json", campaign / "main-scenes.json", entry, campaign / "opening-inputs"
-    )
-    files[Path("entry/entry.zh-CN.json")] = entry.with_name("entry.zh-CN.json")
-    files[Path("world.zh-CN.json")] = catalog
+    # Delivery keys are package-relative. Source values retain the caller's logical roots.
+    campaign, entry, opening, catalog = (p.absolute() for p in (campaign, entry, opening, catalog))
+    opening = relative_file(opening.parent, opening.name)
+    encounter = campaign / "opening-inputs"
+    if not encounter.resolve(strict=True).is_relative_to(campaign.resolve(strict=True)):
+        raise ValueError("encounter inputs escape the gameplay role")
+    files = package_files(campaign / "world.json", campaign / "main-scenes.json", entry, encounter)
+    files[Path("entry/entry.zh-CN.json")] = relative_file(entry.parent, "entry.zh-CN.json")
+    files[Path("world.zh-CN.json")] = relative_file(catalog.parent, catalog.name)
     selection = json.loads(opening.read_text(encoding="utf-8"))
     base = opening.parent
     selected = {"opening.json": opening}
@@ -74,10 +72,10 @@ def build(args: argparse.Namespace) -> None:
     if log_root.exists():
         raise ValueError("candidate name already has retained build logs; choose a new name")
     files = inputs(
-        args.campaign.resolve(),
-        args.entry.resolve(),
-        args.opening.resolve(),
-        args.catalog.resolve(),
+        args.campaign,
+        args.entry,
+        args.opening,
+        args.catalog,
     )
     environment = shared_dotnet_environment(os.environ, REPO_ROOT)
     godot = Path(environment.get("GODOT_BIN", ""))

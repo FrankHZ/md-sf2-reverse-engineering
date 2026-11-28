@@ -59,10 +59,27 @@ def private_output(path: Path) -> Path:
     return output
 
 
+def relative_file(root: Path, name: str) -> Path:
+    """Keep the selected reader path while checking containment in its real role directory."""
+    relative = Path(name)
+    if relative.anchor or ".." in relative.parts:
+        raise ValueError("runtime dependency must be a contained file")
+    path = root / relative
+    real = path.resolve(strict=True)
+    if not real.is_relative_to(root.resolve(strict=True)) or not real.is_file():
+        raise ValueError("runtime dependency must be a contained file")
+    return path
+
+
 def package_files(world: Path, scene: Path, entry: Path, opening_inputs: Path) -> dict[Path, Path]:
-    world = world.resolve(strict=True)
+    world = relative_file(world.absolute().parent, world.name)
+    scene = relative_file(scene.parent, scene.name)
+    entry = relative_file(entry.parent, entry.name)
     document = read_json(world)
-    files = {Path(name): world.parent / name for name in world_dependencies(document, world)}
+    files = {
+        Path(name): relative_file(world.parent, name)
+        for name in world_dependencies(document, world)
+    }
     extras = {
         Path("world.json"): world,
         Path("main-scenes.json"): scene,
@@ -74,13 +91,10 @@ def package_files(world: Path, scene: Path, entry: Path, opening_inputs: Path) -
             name = resource["file"]
             if Path(name).name != name or name != resource["name"] + suffix:
                 raise ValueError("entry resource is not a named sibling PNG")
-            path = (entry.parent / name).resolve(strict=True)
-            if not path.is_relative_to(entry.parent.resolve()):
-                raise ValueError("entry resource escapes input directory")
-            extras[Path("entry") / name] = path
+            extras[Path("entry") / name] = relative_file(entry.parent, name)
     extras.update(
         {
-            Path("opening-inputs") / (name + ".json"): opening_inputs / (name + ".json")
+            Path("opening-inputs") / (name + ".json"): relative_file(opening_inputs, name + ".json")
             for name in OPENING_INPUTS
         }
     )

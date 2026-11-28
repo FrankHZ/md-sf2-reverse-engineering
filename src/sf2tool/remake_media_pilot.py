@@ -99,13 +99,20 @@ def writer(root):
 
 def initialize(root, source, selection):
     roles = read_selection(selection)
-    sources = set(inputs(**package_arguments(roles, source)).values())
-    if root.is_relative_to(source.resolve()) or source.resolve().is_relative_to(root):
-        raise ValueError("source and disposable pilot roots must be separate")
+    # Keep the logical seed layout even when its validated physical source is across a junction.
+    members = {
+        path.relative_to(source): path.resolve(strict=True)
+        for path in inputs(**package_arguments(roles, source)).values()
+    }
+    # The shared entrance may resolve outside its parent. Protect each actual source role.
+    for owner in (source, *(source / value for value in roles.values())):
+        real = owner.resolve(strict=True)
+        if root.is_relative_to(real) or real.is_relative_to(root):
+            raise ValueError("source and disposable pilot roots must be separate")
     root.mkdir(parents=True, exist_ok=False)
-    budget(root, sum(p.stat().st_size for p in sources) + 4 * 1024**2)
-    for path in sources:
-        target = root / path.relative_to(source)
+    budget(root, sum(p.stat().st_size for p in members.values()) + 4 * 1024**2)
+    for relative, path in members.items():
+        target = root / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(path, target)
         if not filecmp.cmp(path, target, shallow=False):
@@ -117,7 +124,7 @@ def initialize(root, source, selection):
     seal(initial)
     (root / "writer.lock").write_bytes(b"0")
     atomic_text(root / "ACTIVE", "base")
-    return len(sources)
+    return len(members)
 
 
 def selected(root, name):
@@ -166,11 +173,11 @@ def cached_unit(root, family, identity, generate, outputs):
     return final, True
 
 
-def assemble_entry(entry, old_entry, changed, image, audio, omit_hd):
+def assemble_entry(entry, old_entry, bindings, image, audio, omit_hd, rebuild):
     entry.mkdir(parents=True)
     doc = load(old_entry / "entry.json")
-    dirty_document = False
-    if "image" in changed:
+    dirty_document = rebuild
+    if "image" in bindings:
         bank = doc.setdefault("hdResources", [])
         found = [r for r in bank if r["name"] == "numeral"]
         if found and omit_hd:
@@ -181,7 +188,7 @@ def assemble_entry(entry, old_entry, changed, image, audio, omit_hd):
             if not found:
                 bank.append(dict(name="numeral", file=IMAGE, width=1024, height=896))
                 dirty_document = True
-    if "audio" in changed:
+    if "audio" in bindings:
         rows = doc["presentation"]["audio"]
         old_cue = cue(doc)
         new_cue = load(audio / "cue.json")
@@ -195,7 +202,7 @@ def assemble_entry(entry, old_entry, changed, image, audio, omit_hd):
     unchanged = {"entry.zh-CN.json"} | {
         row["file"] for group in ("resources", "hdResources") for row in doc.get(group, [])
     }
-    if "image" in changed:
+    if "image" in bindings:
         unchanged.discard(IMAGE)
     for name in sorted(unchanged):
         if Path(name).name != name or not (old_entry / name).is_file():
@@ -285,8 +292,12 @@ def run(root, args):
         helpers=dependencies("remake_audio", "remake_entry_content"),
     )
     old_keys = {} if previous == "base" else load(version(root, previous) / "units.json")
-    keys = {"image": signature(image_key), "audio": signature(audio_key)}
+    # Unit producers own media bytes. Binding and serialization changes invalidate the entry role.
+    assembly = signature([inspect.getsource(fn) for fn in (assemble_entry, cue, load, save)])
+    keys = {"image": signature(image_key), "audio": signature(audio_key), "assembly": assembly}
     changed = [k for k in keys if keys[k] != old_keys.get(k)]
+    rebuild = previous != "base" and "assembly" in changed
+    bindings = ("image", "audio") if rebuild else changed
     if not changed:
         old_dir = version(root, previous)
         metadata = project(root, old)
@@ -296,7 +307,7 @@ def run(root, args):
 
     generated = []
     image = audio = None
-    if "image" in changed:
+    if "image" in bindings:
         image, made = cached_unit(
             root, "image", image_key, image_unit, [] if args.omit_hd else [IMAGE]
         )
@@ -304,7 +315,7 @@ def run(root, args):
             generated.append("image")
     if args.stop_after == "image":
         raise RuntimeError("requested interruption after completed image unit")
-    if "audio" in changed:
+    if "audio" in bindings:
         audio, made = cached_unit(root, "audio", audio_key, audio_unit, ["cue.json"])
         if made:
             generated.append("audio")
@@ -325,7 +336,17 @@ def run(root, args):
             entry = stage / "entry"
             stage.mkdir()
             if changed:
-                assemble_entry(entry, old_entry, changed, image, audio, args.omit_hd)
+                # Replay both bindings from the original role on a new assembly recipe, so a
+                # removed or renamed binding cannot survive from the previous assembler.
+                assemble_entry(
+                    entry,
+                    base_entry if rebuild else old_entry,
+                    bindings,
+                    image,
+                    audio,
+                    args.omit_hd,
+                    rebuild,
+                )
                 metadata = project(root, roles, staged_entry=entry)
             save(stage / "selection.json", roles)
             save(stage / "units.json", keys)
