@@ -56,8 +56,8 @@ remain separate from campaign, Witch and catalog selection and from human visual
 | **Enemy healing successor** · `derived/issue2227/pre-voyage-healing-v1` | Complete #2180 successor with Original/HD evil-fairy artwork and shared faction selection. [Resource and native boundary](#enemy-healing-family-2227) |
 | **DETOX successor** · `derived/issue2232/pre-voyage-detox-v1` | Complete #2227 successor with 11 Original/HD DETOX frames across its declared close-ups. [Resource and closure](#detox-family-2232) |
 | **PGNT** · `derived/issue1957/pgnt-v3` | Separate registered later progression/Battle26 witness. Its older Map3 HD bank has no L1 contexts and its cue 12 is the defeat placeholder. Preserve that evidence selection. Check resource lineage when proposing a successor that combines later progression with pre-voyage corrections. [PGNT reproduction](../development-and-verification.md#high-rank-elemental-magic-observation) |
-| **Display catalogs** · `derived/issue1957/catalogs-v1`, `derived/issue2001/catalogs-v1` | Independent prepared Chinese name overlays for the owning reproductions. Match the catalog and entry locale to the named reproduction. A catalog supplies display names and does not select world, scene or media. [PGNT catalog selection](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Retail catalog selection](presentation-assets.md#sleep-display-name) |
-| **Retail base and library** · `derived/issue2001/issue1966-original`, private asset Git `runtime/retail-v1` | Base world/entry provenance and preparation outputs used to assemble packages. Some prepared candidates have no current package binding. [Retail preparation](#retail-original-preparation) |
+| **Display catalogs** · `derived/issue1957/catalogs-v1`, `media/retail-preparation/v1/catalogs-v1` | Independent prepared Chinese name overlays for the owning reproductions. Match the catalog and entry locale to the named reproduction. A catalog supplies display names and does not select world, scene or media. [PGNT catalog selection](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Retail catalog selection](presentation-assets.md#sleep-display-name) |
+| **Retail base and library** · `media/retail-preparation/v1/issue1966-original`, private asset Git `runtime/retail-v1` | Base world/entry provenance and preparation outputs used to assemble packages. Some prepared candidates have no current package binding. [Retail preparation](#retail-original-preparation) |
 
 ### Shared package retention
 
@@ -86,10 +86,11 @@ superseded packages and generated review data once their remaining consumers hav
 The paths in this table are relative to the configured shared input root. The `media/` junction
 points to the canonical checkout's ignored `private-media/`. Media packages keep their content
 documents with the relative image and audio payloads. Debug and Windows input discovery select the four runtime roles under this junction.
-Their previous locations remain available for rollback. Atlas, indexed opening, retail preparation
-and independent Git repositories still use the registered locations in the middle column.
+Atlas, indexed opening and retail preparation also use this junction. The three independent Git
+repositories use real directories under the shared root. Previous media packages remain available
+for operator rollback.
 
-| Selection and consumers | Previous runtime or current preparation location | Runtime selection or planned preparation location |
+| Selection and consumers | Previous location | Current selection |
 | --- | --- | --- |
 | Aqua v1 (#2315), Kiwi preparation and exact-version reproduction | `derived/issue2315/aqua-v1` | [Build into checkout scratch on demand](presentation-assets.md#aqua-successor-2315) |
 | Kiwi v1 (#2316), Windows export and ordinary development launch | `derived/issue2316/kiwi-v1` | `media/gameplay/kiwi-v1` |
@@ -104,8 +105,8 @@ and independent Git repositories still use the registered locations in the middl
 The [private preparation records](presentation-assets.md#reuse-a-closed-private-package) keep the
 retail base, library and source identities. Preserve the preparation family's relative filenames,
 including `retail-v1`, `prepared-library-v1`, `issue1966-original` and
-`retail-source-and-coverage.csv`. Stage the selected inputs before switching the producer defaults
-and private manifest references. Keep the separately selected pinned upstream and H1 listing
+`retail-source-and-coverage.csv`. The preparation root also includes the selected catalogs, priority and promotion mounts. The
+product repository records their current private selections. Keep the separately selected pinned upstream and H1 listing
 available for Prepare. A receipt about a previous run can retain its original path.
 
 Kiwi contains the accepted Aqua resources. The Aqua producer regenerated the original published
@@ -684,7 +685,7 @@ previous package's sibling paths.
 ```powershell
 . ./local/private-inputs.ps1
 $base = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2175/pre-voyage-terrain-v1'
-$gfx = '<configured independent graphics repository at 172662709b31cb296b55f51894754ce810c30f6c>'
+$gfx = $env:SF2_GRAPHICS_ROOT
 $candidate = Join-Path (Get-Location) 'local/actors-candidate'
 uv run --locked --with pillow==11.3.0 python -B -m sf2tool.remake_hd_actors `
     --base $base --gfx-root $gfx --out $candidate

@@ -313,6 +313,31 @@ durable data. Keep each package's image and audio paths relative to its content 
 scratch, `local/shared` itself and independent Git repositories. Keep authored and licensed
 resources used by the public project tracked with their provenance.
 
+For production, the checkout configuration selects three independent real Git roots via
+`SF2_PRODUCT_ASSET_ROOT`, `SF2_GRAPHICS_ROOT` and `SF2_AUDIO_SOURCE_ROOT`. They resolve to
+`sources/product-assets`, `sources/graphics` and `sources/audio` beneath the shared root.
+The product repo owns the private source, runtime families and their detailed manifests. The graphics
+repo owns pinned generation code and masters. The audio repo owns MIDI preparation and rendering
+inputs. The retail original-driver audio recipe uses the captured source and boundaries in the
+published retail library. Refresh an older checkout's production settings from the registered
+template, preserving checkout-specific overrides. Load only the checkout copy. Verify the clean
+product checkout and its selected working-tree manifest bytes before production:
+
+```powershell
+. ./local/private-inputs.ps1
+uv run --locked python -m sf2tool.remake_assets checkout --asset-root $env:SF2_PRODUCT_ASSET_ROOT `
+    --expected-commit $env:SF2_PRODUCT_ASSET_COMMIT --expected-tree $env:SF2_PRODUCT_ASSET_TREE `
+    --expected-manifest-sha256 $env:SF2_PRODUCT_ASSET_MANIFEST_SHA256
+```
+
+For standalone MIDI tooling, start a fresh PowerShell process, load the checkout configuration,
+set `UV_PROJECT_ENVIRONMENT` to an absolute checkout-local environment, then run
+`uv run --locked --project $env:SF2_AUDIO_SOURCE_ROOT sf2remake render --help`. Supply explicit
+MIDI, soundfont and scratch output paths when rendering. Ignored environments retained inside
+the independent repos may still contain absolute editable-install paths from older hosts.
+The supported graphics producers load the pinned filter via `--gfx-root` or `--graphics`.
+Historical standalone graphics experiments also require their own research checkout.
+
 Before switching this entry, verify the linked target is the intended real `private-media/`
 under the canonical checkout. Keep the junction's location and resolved entity out of normal
 scratch cleanup. A cleanup of the shared parent must skip reparse points. To retire the junction,

@@ -32,11 +32,11 @@ runtime overlay, a general asset service and filesystem-wide fingerprints are un
 
 | Owner | Reuse | Remaining production work |
 | --- | --- | --- |
-| [Prepare-PrivateAssets](../../../tools/Prepare-PrivateAssets.ps1) and [retail preparation](presentation-assets.md#prepare-and-mount-retail-resources) | Prepare selects families, and SFX/music accept command IDs. The audio producer verifies existing command, cue, timer and WAV identities and can resume by command. Coverage joins an inventory to prepared results. | Pass the same explicit selection to discovery, Prepare, Coverage and Mount. The wrapper currently builds the inventory path under its fixed issue root. File existence or a valid *previous* result alone cannot prove an unchanged recipe. |
+| [Prepare-PrivateAssets](../../../tools/Prepare-PrivateAssets.ps1) and [retail preparation](presentation-assets.md#prepare-and-mount-retail-resources) | Prepare selects families, and SFX/music accept command IDs. The audio producer verifies existing command, cue, timer and WAV identities and can resume by command. Coverage joins an inventory to prepared results. | The wrapper selects a versioned preparation root for the inventory and base, and separates the writable candidate library from the published selection. File existence or a valid *previous* result alone cannot prove an unchanged recipe. |
 | [Private asset preflight](../../../src/sf2tool/remake_assets.py) and [local product assets](presentation-assets.md#local-asset-repository) | Exact private Git identities, versioned manifests, checked source/master/runtime relationships. Keep the existing checks on real Git roots. | Import the permitted identity and derivation fields into main Git once. Retain detailed operand, byte identity and custody records with their private source. |
 | [Private package mount](../../../src/sf2tool/remake_private_package.py) and [Kiwi producer](../../../src/sf2tool/remake_kiwi_mount.py) | Existing family-specific transforms, fresh destinations, relative dependency closure and selected-file comparison. Kiwi derives six frame pairs, then writes each selected encounter's raster banks. Some mount modes already link unaffected files and copy the rest. | Separate calculation of changed outputs from role assembly. The current mount prepares a complete destination and can silently fall back to copying on link failure. Do not run a writer on a candidate tree sharing writable files with an accepted revision. |
 | [Windows input resolver](../../../src/sf2tool/remake_windows_package.py), [ordinary entry](../evidence/opening-loop-acceptance.md) | Resolve the actual world, encounter inputs, opening documents, named Witch PNG siblings and catalogs. Packaged startup reads adjacent content. Content readers check semantic admission. | The pilot uses one selection for the resolver, Debug environment and projected reader bindings. Debug and Windows export both consumed the real shared entrance. The relocated executable completed ordinary Continue. |
-| Historical full successors and one-off wrappers | Existing evidence identifies a source or past observation. Atlas and the indexed opening subtree are still producer inputs. | Replace active fixed paths, including the Aqua reproduction/rollback defaults. Once supported consumers and unique sources are accounted for, retire surplus successors and scripts through the cleanup owner. Git preserves tracked recipes. |
+| Historical full successors and one-off wrappers | Existing evidence identifies a source or past observation. Atlas and the indexed opening subtree are still producer inputs. | Rebuild Aqua into checkout scratch from the selected Atlas and retail inputs. Once supported consumers and unique sources are accounted for, retire surplus successors and scripts through the cleanup owner. Git preserves tracked recipes. |
 
 ## Tracked metadata and private records
 
@@ -153,7 +153,7 @@ path resolved through the shared alias as a cleanup target.
 
 ### 1. Run the incremental pilot
 
-Run PowerShell in the owning Windows checkout. Set `$gfx` to the real pinned graphics checkout used
+Run PowerShell in the owning Windows checkout. The registered graphics root selects the pinned code used
 by the [HD entry producer](presentation-assets.md#switchable-entry-layers). The seed copy costs
 about 390 MiB once per fresh trial and keeps all reader-relative paths. Allow 1 GiB free for the
 pilot and a 2 GiB process working set. Count previous trials, interrupted candidates and tool caches
@@ -167,11 +167,11 @@ $pilot = @('run','--locked','--with','pillow==11.3.0','python','-B','-m',
            'sf2tool.remake_media_pilot','--root',$root)
 & uv @pilot init
 if ($LASTEXITCODE) { throw 'Seed selection failed' }
-& uv @pilot publish --base base --revision v1 --gfx-root $gfx
+& uv @pilot publish --base base --revision v1 --gfx-root $env:SF2_GRAPHICS_ROOT
 if ($LASTEXITCODE) { throw 'Initial pilot failed' }
-& uv @pilot publish --base v1 --revision png9 --png-compression 9 --gfx-root $gfx
+& uv @pilot publish --base v1 --revision png9 --png-compression 9 --gfx-root $env:SF2_GRAPHICS_ROOT
 if ($LASTEXITCODE) { throw 'Image pilot failed' }
-& uv @pilot publish --base png9 --revision loop --png-compression 9 --loop-begin 279420 --gfx-root $gfx
+& uv @pilot publish --base png9 --revision loop --png-compression 9 --loop-begin 279420 --gfx-root $env:SF2_GRAPHICS_ROOT
 if ($LASTEXITCODE) { throw 'Audio pilot failed' }
 ```
 
@@ -297,9 +297,33 @@ launcher available through Debug and Release acceptance.
 With automatic approval enabled, the maintained exporter read all four roles through the real
 junction. The unpacked Release used adjacent content and restored Map44 with an isolated slot
 through ordinary Continue. The [Windows observation](../windows-local-candidate.md#build-and-run)
-records the exit diagnostic. Keep rollback inputs until independent acceptance and operator cutover. Atlas, indexed opening, retail preparation and the three independent
-source repositories remain at their registered locations. Their producer migration is a separate
-stage with its own ownership, capacity and reproducibility checks.
+records the exit diagnostic. Retain any previous selections still used by an operator launcher.
+
+**Production inputs.** Atlas, the indexed opening subtree and the selected retail preparation
+families now live under the [versioned media roots](asset-inventory.md#pre-voyage-package-locations).
+The independent source repositories moved on the same volume. Comparing Git roots, HEADs, refs,
+working state and file identities before and after the move covered ignored masters as well as Git
+objects. A subsequent product-repository commit updated four private manifest selections. The
+previous commit remains reachable. Graphics and audio kept their original commits.
+
+The copied preparation inputs total 4,501 files and 2,666,855,494 bytes. Initial Coverage found
+music command 12 missing from the previous library. Its recorded candidate, WAV, driver boundaries
+and source recording were recovered from the pinned product checkout. Coverage then reported
+3,375 prepared, 32 present, 204 not applicable and zero missing. With reads of former producer
+packages blocked in the Python producers, icon Prepare, Coverage and command-12 Mount succeeded.
+The relocated graphics filter reproduced the entry numeral HD PNG. The prepared-audio recipe
+reproduced the C4 WAV and binding. Both outputs matched the accepted bytes. The two units ran
+serially in 0.83 seconds with 289 MiB peak working set. The four runtime selections stayed fixed.
+[Production commands](presentation-assets.md#prepare-and-mount-retail-resources)
+
+For a preparation rollback, select the retained base and inventory with `-PreparationRoot` and
+the matching `-Library` explicitly. The former shared library alone lacks command 12. Restore
+its matching product source and runtime inputs into isolated scratch for that command. For a
+historical Git replay, select an isolated local-only checkout at the recorded former commit/tree
+with the original working-tree representation and hook configuration. Verify it with the same
+strict checkout preflight. The operator keeps the previous configuration and exact pins. A layout
+rollback requires quiescing the repositories and moving their intact current directories back
+together with the configuration switch.
 
 **3. Retire exact obsolete consumers and data.** Depends on accepted launch/build/producer checks
 and a retained rollback. Main-gate reviews the selected script and directory list. Resolve active
