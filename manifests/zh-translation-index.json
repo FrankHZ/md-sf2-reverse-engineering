@@ -181,8 +181,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/design-map.md",
-      "sourceSha256": "37de7ce53eb332597bb55bde86075465ac2df9b9d818e26798697f1c54e74256",
-      "mirrorSha256": "5319e8602f21a07dfdfae69a2b87239281040c1491952339a4ca3fdb93295872",
+      "sourceSha256": "d1a62aef66b4c08d8d165bd55dc42d4295ea93d7e75694d6b3e471ecd4cc65d1",
+      "mirrorSha256": "502e12585c6b65a46fd01146ce02701b775216e9b826308e9fb8987f790f1543",
       "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
       "translatedDate": "2026-11-28"
     },
@@ -645,6 +645,16 @@
       "mirrorSha256": "46a1125cb99210a2dba21a6221e3d1198c29e916d7ee01b77501b13b4951cfe6",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
+    },
+    {
+      "source": "docs/design/synthesis/chapters/northern-travel-mitula/chapter-overview.md",
+      "status": "translated",
+      "scope": "design-excerpt",
+      "mirror": "docs/design/zh-CN/synthesis/chapters/northern-travel-mitula/chapter-overview.md",
+      "sourceSha256": "98059064f4c209fbcb3c1bed220ac20051e34bcb19487ec6aa78b7b1a220c52d",
+      "mirrorSha256": "f61674909d998a239bfe51763ef664e6e0f1c11161613d92db45b2f80fc9fb60",
+      "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
+      "translatedDate": "2026-11-28"
     },
     {
       "source": "docs/design/synthesis/chapters/northern-travel-mitula/ketto-interactions-and-merchant-relocation.md",
@@ -1171,8 +1181,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/story-progression.md",
-      "sourceSha256": "903f450b6af918051464912e6c3351e05b7dbca7c7f3ddba2a7a59e54b436fc9",
-      "mirrorSha256": "32f27b61a18c14d16d05a637b21d97dedffb7d2082c60d89b0fac8f177a138b3",
+      "sourceSha256": "ff519d10dda1057b3c54c345b4bf0cec8a267e1aca05b504ccf3d0715e4b196c",
+      "mirrorSha256": "4cdaf33f284b2b13c576103ad62f7882df31c2eb1e1e16b8ef1c23ee9fba519c",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },

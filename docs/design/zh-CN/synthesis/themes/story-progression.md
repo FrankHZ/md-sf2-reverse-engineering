@@ -1,6 +1,6 @@
 # L2 · 剧情推进
 
-沿着地图、在场者、玩家选择及其后果阅读。阅读已整理的章节剧情时序与人物/物品速查，请先进入[Grans 开篇与离岛章节总览](../chapters/grans-opening/chapter-overview.md)（`#2366` A 片）、[新格兰希尔与东部 Parmecia 章节总览](../chapters/eastern-parmecia/chapter-overview.md)（`#2366` B1 片）与[南方旅行、车队与 Creed 章节总览](../chapters/southern-travel-creed/chapter-overview.md)（`#2366` B2 片；其余大章的时序总表与全角色/载具索引留待 `#2366` B3–C 片整理）。原版**已确认**静态条件支持下列连接，幕间意义是**推断**；原版受限实测（`Map3`–`Battle01`）、重制普通流程与受控 Debug 起点保持分立——旧段级页里的原版**未知**不代表重制未实装，受控速胜也不等于自然完整通关。参阅[玩法总览](../gameplay-overview.md)、[英文剧情推进](../../../synthesis/themes/story-progression.md)及[原版观察范围（英文源）](../../../../research/story-content-coverage.md)。
+沿着地图、在场者、玩家选择及其后果阅读。阅读已整理的章节剧情时序与人物/物品速查，请先进入[Grans 开篇与离岛章节总览](../chapters/grans-opening/chapter-overview.md)（`#2366` A 片）、[新格兰希尔与东部 Parmecia 章节总览](../chapters/eastern-parmecia/chapter-overview.md)（`#2366` B1 片）、[南方旅行、车队与 Creed 章节总览](../chapters/southern-travel-creed/chapter-overview.md)（`#2366` B2 片）与[北方旅行至首次 Pacalon 章节总览](../chapters/northern-travel-mitula/chapter-overview.md)（`#2366` B3 片；北方后半段、其余大章时序总表与全角色/载具索引留待 `#2366` 后续分片与 C 片整理）。原版**已确认**静态条件支持下列连接，幕间意义是**推断**；原版受限实测（`Map3`–`Battle01`）、重制普通流程与受控 Debug 起点保持分立——旧段级页里的原版**未知**不代表重制未实装，受控速胜也不等于自然完整通关。参阅[玩法总览](../gameplay-overview.md)、[英文剧情推进](../../../synthesis/themes/story-progression.md)及[原版观察范围（英文源）](../../../../research/story-content-coverage.md)。
 
 ## 分段阅读故事内容
 
@@ -90,27 +90,32 @@
 
 ### 北方旅行、Pacalon、Tristan 与 Mitula
 
-New Granseal 再访让 Astral 随行。Cannon 与 Dynamite 同时在军团携带栏时，North Cliff 才能完成炮击并让 Rohde 加入。后经 Ketto、Battle26 营救 Higins、Pacalon 和 Battle27。Higins 加入并不同时把队伍送到 Pacalon。
+**推荐入口（前半段至首次旱灾状态 Pacalon）：**[北方旅行至首次 Pacalon 章节总览](../chapters/northern-travel-mitula/chapter-overview.md)按情节依赖串起重返新格兰希尔（阿斯特拉尔、Dynamite、Janet）、`Battle24`、North Cliff 爆破与罗德、North Cave（`Battle25`）、Ketto、Geshp / `Battle26` / Higins 以及旱灾状态 Pacalon 城镇与城堡至南出 `Map71`（`N1`–`N9`），并附本章人物、道具与技术对照。*`Battle27`、Tristan、Mitula、恢复降雨、`Battle31` 与后期 Frayja 超出该 B3 总览范围，见下方延伸段落。*
 
-- [Battle24 结果至 North Cliff 准备](../chapters/northern-travel-mitula/battle24-outcomes-through-north-cliff-preparation.md)
-- [Battle25 结果至 Ketto 入场](../chapters/northern-travel-mitula/battle25-outcomes-through-ketto-entry.md)
-- [Battle26：激活与首次单次行动交接](../chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md)
-- [Battle26 准入与 Geshp 对峙](../chapters/northern-travel-mitula/battle26-admission-and-geshp-confrontation.md)
-- [Battle26 初始编队与中立 Higins](../chapters/northern-travel-mitula/battle26-initialization-and-roster.md)
-- [Battle26 结果与 Higins 招募](../chapters/northern-travel-mitula/battle26-outcomes-and-higins-recruitment.md)
-- [Battle26 返回至有条件 Pacalon 入口](../chapters/northern-travel-mitula/battle26-return-through-pacalon-entry.md)
-- [Battle27：激活与首次单次行动交接](../chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md)
-- [Battle27：初始编队与限制对峙](../chapters/northern-travel-mitula/battle27-initialization-and-opening.md)
-- [Ketto：对话、商店与商人搬移](../chapters/northern-travel-mitula/ketto-interactions-and-merchant-relocation.md)
-- [New Granseal 离开至 Battle24 准入](../chapters/northern-travel-mitula/new-granseal-departure-through-battle24-admission.md)
+New Granseal 再访让 Astral 随行。Cannon 与 Dynamite 同时在军团携带栏时，North Cliff 才能完成炮击并让 Rohde 加入。后经 Ketto、Battle26 营救 Higins、Pacalon 和 Battle27。Higins 加入并不同时把队伍送到 Pacalon。以下前 16 篇段级详解按剧情依赖排列，对应 B3 总览覆盖范围：
+
+- [返回 New Granseal 与 Astral 跟随](../chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md)
 - [New Granseal 发明家与 Dynamite 赠礼](../chapters/northern-travel-mitula/new-granseal-inventor-and-dynamite-gift.md)
 - [New Granseal Janet 招募与离开](../chapters/northern-travel-mitula/new-granseal-janet-recruitment-and-departure.md)
-- [返回 New Granseal 与 Astral 跟随](../chapters/northern-travel-mitula/new-granseal-return-and-astral-following.md)
-- [North Cliff 入场至 Battle25 准入](../chapters/northern-travel-mitula/north-cliff-entry-through-battle25-admission.md)
+- [New Granseal 离开至 Battle24 准入](../chapters/northern-travel-mitula/new-granseal-departure-through-battle24-admission.md)
+- [Battle24 结果至 North Cliff 准备](../chapters/northern-travel-mitula/battle24-outcomes-through-north-cliff-preparation.md)
 - [North Cliff 打开与 Rohde 招募](../chapters/northern-travel-mitula/north-cliff-opening-and-rohde-recruitment.md)
-- [Pacalon 城堡：入口与首次旱灾状态访问](../chapters/northern-travel-mitula/pacalon-castle-entry-and-first-visit.md)
-- [Pacalon 离开：北向滚动与有条件 Battle27 准入](../chapters/northern-travel-mitula/pacalon-departure-to-battle27-admission.md)
+- [North Cliff 入场至 Battle25 准入](../chapters/northern-travel-mitula/north-cliff-entry-through-battle25-admission.md)
+- [Battle25 结果至 Ketto 入场](../chapters/northern-travel-mitula/battle25-outcomes-through-ketto-entry.md)
+- [Ketto：对话、商店与商人搬移](../chapters/northern-travel-mitula/ketto-interactions-and-merchant-relocation.md)
+- [Battle26 准入与 Geshp 对峙](../chapters/northern-travel-mitula/battle26-admission-and-geshp-confrontation.md)
+- [Battle26 初始编队与中立 Higins](../chapters/northern-travel-mitula/battle26-initialization-and-roster.md)
+- [Battle26：激活与首次单次行动交接](../chapters/northern-travel-mitula/battle26-activation-and-first-turn-dispatch.md)
+- [Battle26 结果与 Higins 招募](../chapters/northern-travel-mitula/battle26-outcomes-and-higins-recruitment.md)
+- [Battle26 返回至有条件 Pacalon 入口](../chapters/northern-travel-mitula/battle26-return-through-pacalon-entry.md)
 - [Pacalon：对话、补给与城堡交接](../chapters/northern-travel-mitula/pacalon-interactions-and-castle-handoff.md)
+- [Pacalon 城堡：入口与首次旱灾状态访问](../chapters/northern-travel-mitula/pacalon-castle-entry-and-first-visit.md)
+
+以下 3 篇属首次 Pacalon 之后的北行与 `Battle27` 研究边界（超出 B3 总览范围）：
+
+- [Pacalon 离开：北向滚动与有条件 Battle27 准入](../chapters/northern-travel-mitula/pacalon-departure-to-battle27-admission.md)
+- [Battle27：初始编队与限制对峙](../chapters/northern-travel-mitula/battle27-initialization-and-opening.md)
+- [Battle27：激活与首次单次行动交接](../chapters/northern-travel-mitula/battle27-activation-and-first-turn-dispatch.md)
 
 以下后段以所引选定剧情、地方选择和结果为**已确认**的边界。自然旅行、可见时序和存档持久性仍按各处证据区分。
 

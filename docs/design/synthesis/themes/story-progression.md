@@ -41,12 +41,15 @@ then start with the chronological
 [Grans opening chapter overview](../chapters/grans-opening/chapter-overview.md) (New Game through
 docks departure, `#2366` Phase A),
 [New Granseal and Eastern Parmecia chapter overview](../chapters/eastern-parmecia/chapter-overview.md)
-(sea voyage and landing through Polca raft boarding and first water move, `#2366` Phase B1), and
+(sea voyage and landing through Polca raft boarding and first water move, `#2366` Phase B1),
 [Southern Travel, Caravan, and Creed chapter overview](../chapters/southern-travel-creed/chapter-overview.md)
-(southern river Kraken through Creed and the Dwarven Mine Cannon, `#2366` Phase B2), or use the six
-chapter groups below and the Taros worked example for cross-chapter dependencies (remaining
-chronological chapter overviews and cross-chapter recruitment/vehicle indexes are tracked under
-`#2366` Phases B3–C).
+(southern river Kraken through Creed and the Dwarven Mine Cannon, `#2366` Phase B2), and
+[Northern Travel through First Pacalon chapter overview](../chapters/northern-travel-mitula/chapter-overview.md)
+(New Granseal return, Astral, Dynamite, Janet, North Cliff, Ketto, and drought-state Pacalon
+through admitted `Map71` departure, `#2366` Phase B3), or use the six chapter groups below and the
+Taros worked example for cross-chapter dependencies (the remaining Northern second half through the
+ending and cross-chapter recruitment/vehicle indexes remain under `#2366` follow-on phases and
+Phase C).
 [Tactical Battle Loop](tactical-battle-loop.md) and [Progression and Economy](progression-and-economy.md)
 explain the local systems these chapters coordinate. Keep **original static source**, **bounded
 original runtime observations** (`Map3`–`Battle01` only), **remake ordinary play** (through first
@@ -749,6 +752,15 @@ guide stops before Cannon use, subsequent journeys or New Granseal/Astral.
 </details>
 
 ### Northern travel, Pacalon, Tristan and Mitula
+
+**Recommended entry (first half — through first drought-state Pacalon):**
+[Northern Travel through First Pacalon — Chapter Overview](../chapters/northern-travel-mitula/chapter-overview.md)
+organizes the return to New Granseal (**Astral**, **Dynamite**, **Janet**), `Battle24`, **North
+Cliff** and **Rohde**, **North Cave** (`Battle25`), **Ketto**, **Geshp** / `Battle26` / **Higins**,
+and **drought-state Pacalon Town and Castle** through admitted `Map71` departure in dependency
+order (`N1`–`N9`), with character, item, and technical lookup tables. *`Battle27`, Tristan, Mitula,
+restored rain, `Battle31`, and later Frayja are outside that B3 overview and continue in the
+research sections below.*
 
 The return for the Cannon, Astral's following, Dynamite and North Cliff is organized around what each
 interaction changes. **Confirmed static:** those gifts, recruitment and outgoing requests have
