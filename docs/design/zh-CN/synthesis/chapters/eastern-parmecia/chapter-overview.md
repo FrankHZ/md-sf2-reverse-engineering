@@ -85,7 +85,7 @@
 | **船木板（`E1`–`E2`）与 Sky Orb（`E10`）** | **纯剧情演出（不进背包）** | 损坏船只（`E1`–`E2`）；East Shrine 老者讲述（`E10`） | 本章均不进入任何角色物品栏；Sky Orb 实际获取属游戏后期路线。 |
 | **Power Ring** | 可选战斗掉落（ATT +5；使用施放 `ATTACK 1`，可损坏） | `Battle10` 女巫（`E9`） | 须由合格己方行动击倒持有女巫才掉落；漏拿或满包时走珍稀掉落回流特卖（Deals）规则。 |
 | **秘银（Mithril）** | 可选后期锻造材料 | Ribble（`E8`–`E9`） | Ribble 开放后可拾取；东部 Parmecia 无装备/使用效果也无铁匠（留待后期矮人村）。 |
-| **Quick Ring** | 可选戒指（AGI +5，可损坏） | Bedoe 场地拾取（`E13`–`E15`） | 原版放置已静态确认；重制版普通游玩下的单独拾取记录仍为**未知**。 |
+| **Quick Ring** | 可选戒指（AGI +5，无使用效果） | Bedoe 场地拾取（`E13`–`E15`） | 原版放置已静态确认；重制版普通游玩下的单独拾取记录仍为**未知**。 |
 | **Protect Milk** | 可选永久 DEF 成长道具 | 战后 Polca（`E17`） | `Battle13` 后的 Polca 城镇搜索可拾取。 |
 | **Steel Sword** | 可选武器宝箱 | East Shrine（`E10`） | 受上文 East Shrine 可达性边界约束（重制连贯流程在 B2 沙漠折返后拾取）。 |
 | **后续 B2 道具与载具链** *（不在本章）* | 后续主线道具与载具 | East Shrine / Ancient Hall（`Wooden Panel`）、Ribble 树洞（`Achilles Sword`）、Taros Shrine（`Caravan`） | **非 B1 前置**，仅提供指向[南方旅行、Caravan 与 Creed](../../themes/story-progression.md#南方旅行caravan-与-creed)的后续衔接。 |

@@ -321,8 +321,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/eastern-parmecia/chapter-overview.md",
-      "sourceSha256": "21019b918cf5cec7d989410979aec0262349c35f48189c68bf9c0af804bedcaa",
-      "mirrorSha256": "4520d7e24c8a7e760635fa01b1e2e8b5a5d2c15e8abc2967d6e352bc3ee3d377",
+      "sourceSha256": "77a87b1321ae980afe4fe267e56aa2b0a51ed1de8b3eb84365404d7626efd223",
+      "mirrorSha256": "0fc5d2d2c33340bac20f029d336637635ef95b01e18304e6ce6d9898d8071fc3",
       "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
       "translatedDate": "2026-11-28"
     },
