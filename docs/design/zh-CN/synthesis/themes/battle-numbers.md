@@ -10,21 +10,21 @@
 
 | 属性层级 | 保存什么 | 避免算错的关键区分 |
 | --- | --- | --- |
-| **基础属性与职业值** | 存储的最大 HP/MP、基础 ATT/DEF/AGI、职业 MOV、抗性与特殊攻击概率 | 仅在升级或转职时改写；**基础 ATT 不含已装备武器加成**。 |
+| **存储基础属性与职业初始值** | 存储的最大 HP/MP、基础 ATT/DEF/AGI、**`MOV_BASE`**（由职业加载初始化），以及职业抗性与特殊攻击概率 | 升级、转职或**永久成长消耗品**（如 Power Water、Running Pimento，见[永久成长道具（英文源）](../../../../../remake/docs/domain/permanent-growth-items-design.md#effects-and-feedback)）都会改写存储基础值。刷新时 `InitializeCurrentStats` 复制的是存储的 **`MOV_BASE`**，因此 Running Pimento 不会在普通刷新中被职业默认值抹掉（仅转职重载职业时会改写 `MOV_BASE`）。**基础 ATT 不含已装备武器加成**。 |
 | **当前 HP / MP** | 战场上的实时血量与法力 | 升级和属性刷新**不会改动当前 HP/MP**——提高上限不会顺带回血回蓝。 |
-| **当前有效属性** | 实际代入战斗公式的 ATT/DEF/AGI/MOV/抗性/特殊攻击概率 | 按“基础/职业值 → 状态修正 → 已装备武器与戒指”顺序重算。读取已刷新好的面板或参考队伍数据时，**不要再次叠加武器 ATT**。 |
+| **当前有效属性** | 实际代入战斗公式的 ATT/DEF/AGI/MOV/抗性/特殊攻击概率 | 按“存储基础/职业值 → 状态修正 → 按背包槽位顺序依次结算已装备物品”重算。读取已刷新好的面板或参考队伍数据时，**不要再次叠加武器 ATT**。 |
 
-**已确认的刷新顺序**（[属性刷新规则（英文源）](../../../contracts/party/level-up.md#confirmed-current-and-derived-stat-refresh)）：
+**已确认的刷新顺序**（[属性刷新规则（英文源）](../../../contracts/party/level-up.md#confirmed-current-and-derived-stat-refresh) · [戒指与刷新规则（英文源）](../../../../../remake/docs/domain/ring-equipment-design.md#original-rules-and-evidence)）：
 
-1. 先按最新基础值与职业值重置当前 ATT、DEF、AGI、MOV、抗性与特殊攻击概率。
+1. 将存储的基础 ATT、DEF、打包 AGI 与 `MOV_BASE`（以及职业抗性与特殊攻击概率）复制到当前属性（[基础值复制源码（英文源）](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/updatecombatantstats.asm#L293-L304)）。
 2. 按**刷新后的基础值**独立计算各状态档位的整数向下取整修正（状态计数 `counter` 为 `1`、`2` 或 `3`，代表档位大小，不是简单的有/无开关）：
    - **强攻（ATTACK）**：`当前 ATT += floor(基础 ATT × counter / 8)`
    - **强化（BOOST）**：`当前 DEF += floor(基础 DEF × counter / 8)`，`当前 AGI += floor(基础 AGI × counter / 8)`
    - **迟缓（SLOW）**：`当前 DEF -= floor(基础 DEF × counter / 8)`，`当前 AGI -= floor(基础 AGI × counter / 8)`
    - **眩晕（STUN）**：`当前 AGI -= 5`，`当前 MOV -= 1`
-3. **最后**叠加已装备武器与戒指的属性加成（例如斯莱德 THIF 基础 `ATT 47 / DEF 39 / AGI 40` 在满层 ATTACK/BOOST/SLOW + STUN 且装备 Thieve's Dagger `ATT +17, AGI +5` 时，刷新为 `ATT = 47 + 17 + 17 = 81`、`DEF = 39 + 14 - 14 = 39`、`AGI = 40 + 15 - 15 - 5 + 5 = 40`、`MOV = 6`）。己方佩戴诅咒装备会在刷新时重新附上诅咒（CURSE）；敌人佩戴诅咒装备时仍享受属性加成，但会抑制诅咒状态写入（[敌人诅咒抑制（英文源）](../../../contracts/party/level-up.md#confirmed-enemy-curse-suppression)）。
+3. 按**实际携带槽位顺序**遍历 4 格物品栏，对每件已装备物品逐项执行属性增减并各自钳位——原版**不存在固定的“先武器后戒指”顺序**，当多件装备在中间步骤触及 `0` 或上限时，直接合并净增减并不等价（[装备刷新顺序（英文源）](../../../../../remake/docs/domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268)）。仅在只穿戴单件装备且中间未触发钳位时，直接相加才与逐步刷新结果一致：例如斯莱德 THIF 基础 `ATT 47 / DEF 39 / AGI 40 / MOV 7`，在满层 ATTACK/BOOST/SLOW + STUN 且仅装备 Thieve's Dagger（`ATT +17, AGI +5`，无中间钳位）时，刷新为 `ATT = 47 + 17 + 17 = 81`、`DEF = 39 + 14 - 14 = 39`、`AGI = 40 + 15 - 15 - 5 + 5 = 40`、`MOV = 6`。己方佩戴诅咒装备会在刷新时重新附上诅咒（CURSE）；敌人佩戴诅咒装备时仍享受属性加成，但会抑制诅咒状态写入（[敌人诅咒抑制（英文源）](../../../contracts/party/level-up.md#confirmed-enemy-curse-suppression)）。
 
-**已确认的数值钳位（上下限截断）**（[钳位边界（英文源）](../../../contracts/party/level-up.md#confirmed-stat-clamp-boundaries)）：基础 ATT/DEF 上限 **200**；基础 AGI 低 7 位上限 **100**（同时保留第 7 位的二次出手标记）；当前属性减法截断到 **0**（不下溢回绕）。极端边界（如 `IncreaseAndClampWord` 在 `65535 + 2` 时回绕成 `1`，以及 Ninja Katana 的 `INCREASE_DOUBLE` 覆盖反击位缺陷）详见[升级与成长规则](../../contracts/party/level-up.md)。**未知：**当前 ATT 减法下溢与未覆盖的辅助钳位路径尚无对应运行实测。
+**已确认的数值钳位（上下限截断）**（[钳位边界（英文源）](../../../contracts/party/level-up.md#confirmed-stat-clamp-boundaries)）：基础与当前 ATT/DEF/MOV 增长上限均为 **200**；**基础 AGI** 低 7 位上限 **100**（保留第 7 位），而**当前有效 AGI** 增长（如 Quick Ring、Quick Chicken）低 7 位上限 **127**（保留当前第 7 位）；当前属性减法截断到 **0**（不下溢回绕）。极端验证边界（如 `IncreaseAndClampWord` 在 `65535 + 2` 时回绕成 `1`）留在[升级与成长规则（英文源）](../../../contracts/party/level-up.md#confirmed-stat-clamp-boundaries)的证据边界中。**未知：**当前 ATT 减法下溢与未覆盖的辅助钳位路径尚无对应运行实测。
 
 ## 2. 物理伤害、地形防御与追击
 
@@ -38,8 +38,8 @@
 | 4. 对空加成 | 飞行或浮空目标面对 Brass Gunner / Archer / Centaur Archer / Stealth Archer：`damage += floor(damage / 4)` | 在地形减伤**之后**计算（实测例：`79 → floor(79×205/256) = 63 → 63 + floor(63/4) = 78`）。 |
 | 5. 会心一击（暴击） | 已确认特殊攻击定义 0 的首次攻击：`RNG(32) == 0` 时 `damage += floor(damage / 2)`（`78 → 117`）。 | 其余暴击定义以及二连击/反击能否暴击仍为**未知**（[暴击步骤（英文源）](../../../contracts/battle/combat-resolution.md#3-apply-the-confirmed-critical-modifier)）。 |
 | 6. 反击减半 | 反击（attack type 2）在随机浮动**之前**减半：`damage = floor(damage / 2)`（`10 → 5`）。 | 仅反击生效（[反击减半（英文源）](../../../contracts/battle/combat-resolution.md#4-apply-counter-half-damage-before-spread)）。 |
-| 7. 两次向下浮动 | `range = floor(damage / 8) + 1`；连续减两次 `RNG(range)`（两次共用同一个 `range`）。 | **低伤害无浮动**：只要浮动前 `damage < 8`，就有 `range = 1`，两次 `RNG(1)` 必为 `0`，伤害不会再往下掉（[浮动步骤（英文源）](../../../contracts/battle/combat-resolution.md#5-apply-the-two-roll-downward-spread)）。 |
-| 8. HP 截断与回放 | 临时 HP 扣减并截断到 `0`；演出回放前先恢复快照再写入持久伤害（不是治疗）。 | 更多随机种子与全输入区间的下限边界仍为**未知**。 |
+| 7. 两次向下浮动与最终保底 `1` | 普通路径：`range = floor(damage / 8) + 1`；`damage = max(damage - RNG(range) - RNG(range), 1)`（两次共用同一个 `range`）。Burst Rock 分支跳过浮动，同样把 `0` 恢复为 `1`。 | **最终保底 `1` 位于地形、反击减半与浮动之后**（[固定源码 `InflictDamage`（英文源）](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/inflictdamage.asm) · [共用浮动规则（英文源）](../../../contracts/battle/spell-resolution.md#4-reuse-the-common-downward-damage-spread)）。**静态规则手算（推断）：**攻防差 `1` 打在平原上（`floor(1 × 230 / 256) = 0`）或反击减半 `floor(1 / 2) = 0` 进入浮动时为 `0`，抽得两次 `RNG(1) = 0` 后仍被恢复为 **`1` 点伤害**（不会打出 `0`）。浮动前 `damage < 8` 时 `range = 1`，无向下浮动（[浮动步骤（英文源）](../../../contracts/battle/combat-resolution.md#5-apply-the-two-roll-downward-spread)）。 |
+| 8. HP 截断与回放 | 临时 HP 扣减并截断到 `0`；演出回放前先恢复快照再写入持久伤害（不是治疗）。 | 更多随机种子与全输入区间的运行时下限边界仍为**未知**。 |
 
 **单次攻击 vs 二连击 vs 反击**：物理交战按固定顺序`首次攻击 → 二连击 → 反击`依次构建（[追击构建（英文源）](../../../contracts/battle/combat-resolution.md#7-construct-follow-up-attacks-in-original-order)）。每次出手各自独立判闪避和算伤害，二连击读取目标已扣减后的临时 HP。**一击致命会直接取消二连击与反击**；二连击还会被混乱行动者或同阵营目标拦截；反击则会因超出射程、催眠（SLEEP）、眩晕（STUN）、同阵营或特殊敌人规则被拒绝（Burst Rock、Kraken Head、Prism Flower、Zeon Guard 不能反击；塔罗斯 Taros 不可被反击）。
 
@@ -124,7 +124,7 @@
 | --- | --- | --- |
 | **伤害与击杀经验** | 有效等级差 `diff = 行动者等级 + (转职 ? 20 : 0) - 目标等级`（职业 ID `>= 12` 为转职）。<br>击杀基准：`diff < 3 → 50`，`3 → 40`，`4 → 30`，`5 → 20`，`6 → 10`，`>= 7 → 0`。<br>伤害经验：`floor(击杀基准 × 最终伤害 / 目标最大 HP)`。致命一击先加伤害经验、再加完整击杀基准。 | 每次累加后均截断到 **`49`** 上限。 |
 | **治疗经验** | 仅己方 `PRST`、`VICR`、`MMNK` 且 `目标最大 HP > 0`：每名目标 `max(floor(25 × 回复量 / 目标最大 HP), 10)`。 | 整次行动共用 **`25`** 上限（如群体治疗 2 治疗 3 名伤员时累计 `0 → 10 → 20 → 25`）。 |
-| **状态 / 吸魔经验** | 每名生效目标 `+5`（含对 `0 MP` 目标放吸魔 SPOIT；无效目标 `+0`）。 | 计入同一次行动累计器。 |
+| **已实测状态 / 吸魔经验** | 适用于已实测的 `ATTACK 1`、`BOOST 1`、`SLOW 1`、`SLEEP 1`、`MUDDLE 1/2`、`DISPEL 1`、生效 `DETOX` 与 `SPOIT`（含对 `0 MP` 目标放 `SPOIT`）：每名生效目标 `+5`（无效 `+0`）。**例外：**摄魂（`DESOUL`）虽用 `STATUS` 抗性，但即死成功按**击杀经验（上限 `49`）+ 敌人金币**结算，而非固定 `+5`（[DESOUL 奖励（英文源）](../../../contracts/battle/spell-resolution.md#confirmed-desoul-1-resistance-and-multi-target-rewards)）。 | 计入同一次行动累计器；其余状态法术未经单独实测，仍为**未知**。 |
 | **最终 EXP 指令** | Battle 01 对敌行动先整除减半 `floor(acc / 2)`（同阵营行动不减半）；随后两次有序 `RNG(16)`：首抽 `0` 加 `1`，次抽 `0` 减 `1`（双 `0` 抵消）。 | 最终指令保底 **`1 EXP`**（哪怕累计为 `0`，如转职达奥打 1 级敌人）。 |
 | **金币** | 击杀按 103 条敌人金币表入账，全队余额上限 **`9,999,999`**。 | **不被** Battle 01 减半，也**不参与**随机波动（[金币上限（英文源）](../../../../research/battle/runtime-rng-and-battle-math.md#confirmed-gold-addition-and-cap-boundaries)）。 |
 
@@ -145,8 +145,9 @@
 
 ## 6. 原版事实与已接受的重制边界
 
-- **不把原版缺陷或重制改动混为一谈**：上述公式与边界基于锁定美版 ROM 与 `SF2DISASM` 源码基线。陆龟（TORT，职业 11）法术学习误判、Ninja Katana `INCREASE_DOUBLE` 清除反击位、`ATTACK`/`BOOST`/`SLOW` 重施失败后计数与属性暂不同步，以及 `65535 + 2 → 1` 的字长回绕均属**原版保真事实**；重制版若要刻意修正，必须单独记录决策与预期偏离，不能悄悄改写原版结论。
-- **已接受的重制偏离**：
+- **不把原版缺陷或重制改动混为一谈**：上述公式与边界基于锁定美版 ROM 与 `SF2DISASM` 源码基线。陆龟（TORT，职业 11）法术学习误判以及 `ATTACK`/`BOOST`/`SLOW` 重施失败后计数与属性暂不同步均属**原版保真事实**；重制版若要刻意修正，必须单独记录决策与预期偏离，不能悄悄改写原版结论。极端验证边界（如 `IncreaseAndClampWord` `65535 + 2 → 1` 回绕）保持在[升级与成长规则（英文源）](../../../contracts/party/level-up.md#confirmed-stat-clamp-boundaries)的证据边界内。
+- **已接受的重制实现与偏离**：
+  - **Ninja Katana 特殊攻击位（`0x94 → 0x24`）**：保留原版 `INCREASE_DOUBLE` 清除 NINJ 反击位的行为已在 `#2271` 装备切片中**明确接受并实现**（[装备特殊攻击与 Gisarme（英文源）](../../../../../remake/docs/domain/equipment-use-repair-design.md#equipment-prowess-and-gisarme-2271)）。
   - **有限音乐时钟**（[音乐等待策略（英文源）](../../../contracts/interface/music-wait-service.md#accepted-modern-finite-music-policy)）：替代原版硬件等待时序，可能使整局随机序列与原版分岔，但不改变单次交战或升级公式。
   - **战斗 Continue 保留未刷新重施状态**：重制版在战斗读档继续中保留 `BOOST`/`SLOW` 计数与旧有效属性的暂时差异，直到下次刷新（[设计地图](../../design-map.md#状态法术)）。
 - **当前可玩范围与 Wiki 说明**：重制引擎当前实际可玩范围以[重制能力状态（英文源）](../../../../../remake/docs/capability-status.md#campaign-feature-trace)为准。本页先在主仓完成规范化与验收，线上 Wiki 同步属于合并后的独立发布步骤，**当前尚未发布到线上 Wiki**。

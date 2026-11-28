@@ -18,22 +18,31 @@ whenever `UpdateCombatantStats` runs—never stacked incrementally on top of sta
 
 | Stat layer | What it holds | Critical rule to avoid double-counting |
 | --- | --- | --- |
-| **Base stats & class values** | Stored max HP/MP, base ATT/DEF/AGI, class MOV, resistance, prowess | Updated on level-up or promotion; **base ATT never includes equipped weapon ATT**. |
+| **Stored base stats & class defaults** | Stored max HP/MP, base ATT/DEF/AGI, **`MOV_BASE`** (initialized from class load), plus class resistance and prowess | Changed by level-up, promotion, or **permanent growth items** (e.g., Power Water, Running Pimento; [growth items](../../../../remake/docs/domain/permanent-growth-items-design.md#effects-and-feedback)). `InitializeCurrentStats` copies stored `MOV_BASE` to `MOV_CURRENT`, so Running Pimento persists across refreshes (while class load on promotion overwrites `MOV_BASE`). **Base ATT never includes worn weapon ATT.** |
 | **Current HP / MP** | Live expendable battle pools | **Untouched** by `LevelUp` and `UpdateCombatantStats`—raising max HP/MP does not heal. |
-| **Derived current stats** | Live ATT/DEF/AGI/MOV/resistance/prowess used in battle formulas | Rebuilt from base/class values → status modifiers → equipped weapon and ring. **Do not add weapon ATT again** to an already-refreshed combatant row (e.g., Battle02 reference rows). |
+| **Derived current stats** | Live ATT/DEF/AGI/MOV/resistance/prowess used in battle formulas | Rebuilt from stored bases/class defaults → status modifiers → worn items in carried-slot order. **Do not add weapon ATT again** to an already-refreshed combatant row (e.g., Battle02 reference rows). |
 
-**Confirmed refresh order** ([stat refresh contract](../../contracts/party/level-up.md#confirmed-current-and-derived-stat-refresh)):
+**Confirmed refresh order** ([stat refresh contract](../../contracts/party/level-up.md#confirmed-current-and-derived-stat-refresh) · [ring & refresh rules](../../../../remake/docs/domain/ring-equipment-design.md#original-rules-and-evidence)):
 
-1. Reset current ATT, DEF, AGI, MOV, resistance, and prowess from base and class values.
+1. Copy stored base ATT, DEF, packed AGI, and `MOV_BASE` (plus class resistance and prowess) to current stats ([pinned base-to-current copy](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/updatecombatantstats.asm#L293-L304)).
 2. Apply active status counters independently using integer floor division against the **refreshed
    base stat** (`counter` is `1`, `2`, or `3`, not a boolean):
    - **ATTACK**: `currentATT += floor(baseATT * counter / 8)`
    - **BOOST**: `currentDEF += floor(baseDEF * counter / 8)`, `currentAGI += floor(baseAGI * counter / 8)`
    - **SLOW**: `currentDEF -= floor(baseDEF * counter / 8)`, `currentAGI -= floor(baseAGI * counter / 8)`
    - **STUN**: `currentAGI -= 5`, `currentMOV -= 1`
-3. Apply equipped weapon and ring stat modifiers **last** (e.g., Slade's THIF base `ATT 47 / DEF 39 / AGI 40` with max ATTACK/BOOST/SLOW + STUN + Thieve's Dagger `ATT +17, AGI +5` yields `ATT = 47 + 17 + 17 = 81`, `DEF = 39 + 14 - 14 = 39`, `AGI = 40 + 15 - 15 - 5 + 5 = 40`, `MOV = 6`). For allies, equipped cursed gear re-applies `CURSE` during refresh; for enemies, item stat bonuses still apply while `CURSE` insertion is suppressed ([enemy curse suppression](../../contracts/party/level-up.md#confirmed-enemy-curse-suppression)).
+3. Walk the four inventory slots and apply each equipped item's stat operations **in actual
+   carried-slot order**, clamping after each operation—there is **no fixed weapon-then-ring pass**,
+   and summing multiple items' deltas is not generally equivalent when an intermediate step hits
+   `0` or a cap ([equipment refresh order](../../../../remake/docs/domain/equipment-use-repair-design.md#whole-game-equipment-agreement-2268)).
+   When only one item is worn and no intermediate clamp triggers, direct addition matches step-by-step
+   refresh: for example, Slade's THIF base `ATT 47 / DEF 39 / AGI 40 / MOV 7` with max
+   ATTACK/BOOST/SLOW + STUN + worn Thieve's Dagger (`ATT +17, AGI +5`, single worn item, no clamp
+   hit) yields `ATT = 47 + 17 + 17 = 81`, `DEF = 39 + 14 - 14 = 39`, `AGI = 40 + 15 - 15 - 5 + 5 = 40`,
+   `MOV = 6`. For allies, worn cursed gear re-applies `CURSE` during refresh; for enemies, item stat
+   bonuses still apply while `CURSE` insertion is suppressed ([enemy curse suppression](../../contracts/party/level-up.md#confirmed-enemy-curse-suppression)).
 
-**Confirmed stat clamps** ([clamp boundaries](../../contracts/party/level-up.md#confirmed-stat-clamp-boundaries)): base ATT/DEF saturate at **200**; base AGI clamps its low 7 bits to **100** while preserving bit 7 (the second-turn flag); current-stat subtractions clamp at **0** without wrapping. Extreme validation-seam exceptions (such as `IncreaseAndClampWord` wrapping `65535 + 2 → 1` and the `INCREASE_DOUBLE` prowess-mask bug on Ninja Katana) are documented in [level-up.md](../../contracts/party/level-up.md). **Unknown:** current-ATT decrease underflow and unused clamp helpers remain outside current runtime fixtures.
+**Confirmed stat clamps** ([clamp boundaries](../../contracts/party/level-up.md#confirmed-stat-clamp-boundaries)): base and current ATT/DEF/MOV increases saturate at **200**; **base AGI** clamps its low 7 bits to **100** (preserving bit 7), whereas **effective/current AGI** increases (e.g., Quick Ring, Quick Chicken) clamp their low 7 bits to **127** while preserving effective bit 7; unsigned current-stat subtractions clamp at **0** without wrapping. Extreme validation-seam edges (such as `IncreaseAndClampWord` wrapping `65535 + 2 → 1`) stay at the evidence boundary in [level-up.md](../../contracts/party/level-up.md#confirmed-stat-clamp-boundaries). **Unknown:** current-ATT decrease underflow and unused clamp helpers remain outside current runtime fixtures.
 
 ## 2. Physical damage, terrain land effect, and follow-ups
 
@@ -48,8 +57,8 @@ appear anywhere in original combat ([combat resolution](../../contracts/battle/c
 | 4. Anti-air bonus | Flying or hovering target vs. Brass Gunner, Archer, Centaur Archer, or Stealth Archer: `damage += floor(damage / 4)` | Applied **after** land-effect truncation (`79 → floor(79*205/256) = 63 → 63 + floor(63/4) = 78`). |
 | 5. Critical hit | Prowess definition 0 on first attack: `RNG(32) == 0` → `damage += floor(damage / 2)` (`78 → 117`). | Other critical definitions and second/counter critical eligibility remain **Unknown** ([critical step](../../contracts/battle/combat-resolution.md#3-apply-the-confirmed-critical-modifier)). |
 | 6. Counter halving | Counterattack (attack type 2): `damage = floor(damage / 2)` **before** spread (`10 → 5`). | Applies only to counterattacks ([counter halving](../../contracts/battle/combat-resolution.md#4-apply-counter-half-damage-before-spread)). |
-| 7. Downward spread | `range = floor(damage / 8) + 1`; subtract `RNG(range)` twice (same `range` for both draws). | **Notice the low-damage floor:** whenever pre-spread `damage < 8`, `range = 1`, so both `RNG(1)` draws return `0`—there is **zero downward variance** ([spread step](../../contracts/battle/combat-resolution.md#5-apply-the-two-roll-downward-spread)). |
-| 8. HP clamp | Temporary HP subtracts final damage clamped at `0`; saved HP restores before persistent command replay (not healing). | Additional spread seeds and lower-bound edges across all ranges remain **Unknown**. |
+| 7. Downward spread & minimum damage | Ordinary path: `range = floor(damage / 8) + 1`; `damage = max(damage - RNG(range) - RNG(range), 1)` (same `range` for both draws). Burst Rock skips the two spread draws and also restores `0` to `1`. | **Minimum 1 applies after terrain, counter halving, and spread** ([pinned `InflictDamage`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/gameflow/battle/battleactions/inflictdamage.asm) · [shared spread contract](../../contracts/battle/spell-resolution.md#4-reuse-the-common-downward-damage-spread)). **Static check (Inferred):** a gap of `1` on plains (`floor(1 * 230 / 256) = 0`) or counter-halved `1` (`floor(1 / 2) = 0`) enters spread at `0`, draws `RNG(1) = 0` twice, and is restored to **`1` damage** (never `0`). Whenever pre-spread `damage < 8`, `range = 1` gives zero downward variance ([spread step](../../contracts/battle/combat-resolution.md#5-apply-the-two-roll-downward-spread)). |
+| 8. HP clamp | Temporary HP subtracts final damage clamped at `0`; saved HP restores before persistent command replay (not healing). | Additional spread seeds and runtime lower-bound edges across all physical input ranges remain **Unknown**. |
 
 **Single hit vs. double attack vs. counterattack:** a physical action resolves in fixed order
 `first attack → second attack → counterattack` ([follow-up construction](../../contracts/battle/combat-resolution.md#7-construct-follow-up-attacks-in-original-order)).
@@ -179,7 +188,7 @@ EXP, and gold into one formula ([combat EXP](../../contracts/battle/combat-resol
 | --- | --- | --- |
 | **Damage & Kill EXP** | Effective level difference `diff = actorLevel + (promoted ? 20 : 0) - targetLevel` (`promoted`: class ID `>= 12`).<br>Kill bracket: `diff < 3 → 50`, `3 → 40`, `4 → 30`, `5 → 20`, `6 → 10`, `>= 7 → 0`.<br>Damage EXP: `floor(killBracket * finalDamage / targetMaxHp)`. A lethal hit adds damage EXP first, then full `killBracket`. | Each addition clamps the action accumulator at **`49`**. |
 | **Healing EXP** | Allied `PRST`, `VICR`, or `MMNK` only (and `targetMaxHp > 0`): `max(floor(25 * recoveredHp / targetMaxHp), 10)` per target. | Shared cumulative cap **`25`** per action (e.g., `AURA 2` across 3 wounded allies accumulates `0 → 10 → 20 → 25`). |
-| **Status / SPOIT EXP** | `+5` per effective target (including `SPOIT` against a `0 MP` target; ineffective targets add `0`). | Enters the action accumulator. |
+| **Confirmed status / SPOIT EXP** | Observed for `ATTACK 1`, `BOOST 1`, `SLOW 1`, `SLEEP 1`, `MUDDLE 1/2`, `DISPEL 1`, effective `DETOX`, and `SPOIT` (including `SPOIT` on a `0 MP` target): `+5` per effective target (`0` on failure). **Exception:** `DESOUL` uses `STATUS` resistance, but successful kills grant **kill EXP (capped at `49`) + enemy gold**, not flat `+5` ([DESOUL rewards](../../contracts/battle/spell-resolution.md#confirmed-desoul-1-resistance-and-multi-target-rewards)). | Enters the action accumulator; other status spells remain **Unknown** until separately observed. |
 | **Final EXP command** | Enemy-target actions in Battle 01 halve `floor(acc / 2)` (same-side actions skip halving). Then two ordered `RNG(16)` rolls: first `== 0` adds `+1`, second `== 0` subtracts `-1` (two zeroes cancel). | Final command has a **minimum of `1` EXP** even when `acc == 0` (e.g., promoted DAO vs. level-1 enemies). |
 | **Gold** | Indexed from the 103-entry enemy gold table on kill; party balance saturates at **`9,999,999`**. | **Never** halved by Battle 01 and **never** randomized ([gold boundaries](../../../research/battle/runtime-rng-and-battle-math.md#confirmed-gold-addition-and-cap-boundaries)). |
 
@@ -217,12 +226,15 @@ table-miss seam remain unverified in natural play.
 
 - **Original facts stay separate from remake choices:** the formulas and quirks above describe the
   pinned USA Mega Drive/Genesis original (`SF2DISASM` `c834c652b6862bc5679fd7f69a38a7093206efc6` +
-  pinned USA ROM). Original quirks such as TORT (class 11) spell-learning classification,
-  `INCREASE_DOUBLE` clearing counter prowess on Ninja Katana, failed `ATTACK`/`BOOST`/`SLOW` recast
-  counter-vs-stat mismatches, and the `65535 + 2 → 1` word-clamp wrap are **fidelity facts**, not
-  automatic product defaults—any deliberate modernization requires its own decision and
-  expected-deviation record.
-- **Accepted remake deviations affecting observable runs:**
+  pinned USA ROM). Original quirks such as TORT (class 11) spell-learning classification and failed
+  `ATTACK`/`BOOST`/`SLOW` recast counter-vs-stat mismatches are **fidelity facts**, not automatic
+  product defaults—any deliberate modernization requires its own decision and expected-deviation
+  record. Extreme validation-seam overflow edges (such as `IncreaseAndClampWord` `65535 + 2 → 1`)
+  remain bounded at [level-up.md](../../contracts/party/level-up.md#confirmed-stat-clamp-boundaries).
+- **Accepted remake choices & deviations affecting observable runs:**
+  - **Ninja Katana prowess (`0x94 → 0x24`):** preserving the original `INCREASE_DOUBLE` behavior
+    (including clearing NINJ's counter field) is **already accepted and implemented** in the remake
+    under `#2271` ([equipment prowess and Gisarme](../../../../remake/docs/domain/equipment-use-repair-design.md#equipment-prowess-and-gisarme-2271)).
   - **Finite music clock** ([music-wait policy](../../contracts/interface/music-wait-service.md#accepted-modern-finite-music-policy)):
     replaces original hardware wait-loop timing and can diverge whole-run RNG sequences without
     altering the individual combat/growth formulas above.
