@@ -77,7 +77,10 @@ Packaged startup sets the existing readers' inputs relative to the executable, i
 and developer content variables. Settings and numbered saves default to
 `%LOCALAPPDATA%/Sf2Remake/saves/local-candidate/`, with separate `sf2-preferences` and `sf2-opening`
 subdirectories. The existing `SF2_SAVE_ROOT` and `SF2_SAVE_NAMESPACE` overrides support isolated
-operator validation; their path/link/Git-ancestor checks still apply. Never select a real player
+operator validation and explicit manual play. For a shared manual profile, apply the
+[profile selection](../../docs/operations/local-private-inputs.md#player-profiles-fixtures-and-runs)
+in the launching shell and pass both values to the executable. A fresh process can continue the
+same compatible slot after changing builds. The path/link/Git-ancestor checks still apply. Never select a real player
 namespace for validation. Exported storage rejects the install directory; development storage retains
 the checkout boundary. Copying an install does not copy saves or settings.
 
