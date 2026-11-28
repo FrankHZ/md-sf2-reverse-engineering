@@ -1,6 +1,6 @@
 {
-  "gameplay": "derived/issue2316/kiwi-v1",
-  "opening": "derived/issue2324/opening-hd-v1",
-  "entry": "derived/issue2255/witch-entry-v1",
-  "display-catalog": "derived/issue2266/catalogs-v1"
+  "gameplay": "media/gameplay/kiwi-v1",
+  "opening": "media/opening/hd-v1",
+  "entry": "media/entry/witch-v1",
+  "display-catalog": "media/display-catalog/campaign-zh-cn-v1"
 }

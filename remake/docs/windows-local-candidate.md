@@ -36,7 +36,13 @@ The controlled route reached usable Map14 control. Natural dock portraits in thi
 Load the checkout's ignored configuration to locate the shared root. The
 [tracked four-role selection](content/metadata/selection.json) supplies the prepared gameplay,
 opening, Witch and catalog inputs. `--selection` and `--shared-root` select another complete
-set. Each explicit `--campaign`, `--entry`, `--opening` or `--catalog` argument takes priority
+set. The input resolver has directly compared all 196 delivery members through the real
+junction. Full Windows export through that entrance was refused by the execution tool before
+process creation. Launching that candidate with adjacent content in a clean environment and
+choosing Continue remain pending. Keep the prior selection and installation for rollback.
+[Runtime comparison and rollback](content/asset-pipeline-workflow.md#2-runtime-migration-and-validation)
+
+Each explicit `--campaign`, `--entry`, `--opening` or `--catalog` argument takes priority
 for that role. Supplying all four retains the standalone explicit-path workflow.
 
 ```powershell

@@ -146,8 +146,8 @@ identified.
 
 ## Four-scene startup package (#2252)
 
-The current independent HD opening is
-`derived/issue2324/opening-hd-v1/opening/opening.json`; select it with the accepted full-game
+The four-role [runtime selection](metadata/selection.json) selects the HD opening at
+`media/opening/hd-v1/opening/opening.json`; select it with the accepted full-game
 world, Witch and catalogs without replacing those packages.
 [HD production, palette banks and camera observations](hd-rollout.md#opening-terrain-and-palette-banks-2324)
 extend the lifecycle selection below. Human visual acceptance remains **Unknown**.
@@ -1333,7 +1333,8 @@ remains unchanged; it does not itself contain the independent four-scene payload
 
 #### Witch Continue entry bank (#2255)
 
-The current bounded entry selection is `derived/issue2255/witch-entry-v1` beneath
+Ordinary Debug selects the Witch bank and its catalog through the [runtime selection](metadata/selection.json).
+The following #2255 reproduction used `derived/issue2255/witch-entry-v1` beneath
 `SF2_SHARED_INPUT_ROOT`. Use its bank and catalog together alongside the same MMNK world, world
 catalog, six opening-battle inputs and #2252 four-scene startup above:
 

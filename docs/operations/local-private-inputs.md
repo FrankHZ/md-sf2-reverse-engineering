@@ -304,9 +304,10 @@ during staged cutover. Preserve separately designated media projects, source rec
 at their operator-owned paths.
 
 Use the ignored checkout-local `local/private-inputs.ps1` to select the shared root via
-`SF2_SHARED_INPUT_ROOT`. Pass the explicit `media/` paths from the
-[asset inventory](../../remake/docs/content/asset-inventory.md#pre-voyage-package-locations)
-to the normal readers and build tools. The canonical checkout's `private-media/` is Git-ignored
+`SF2_SHARED_INPUT_ROOT`. The [tracked runtime selection](../../remake/docs/content/metadata/selection.json)
+resolves all four runtime inputs through the verified `media` junction. Use the
+[reader-input block](../../remake/docs/content/asset-inventory.md#pre-voyage-package-locations)
+for direct Godot launches. Keep machine launcher overrides under their operator's ownership. The canonical checkout's `private-media/` is Git-ignored
 durable data. Keep each package's image and audio paths relative to its content documents. The
 `media` junction is the only linked entry in this layout. Use real directories for checkout
 scratch, `local/shared` itself and independent Git repositories. Keep authored and licensed

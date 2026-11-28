@@ -1,10 +1,9 @@
 # Private media production and publication
 
-**The image and audio pilot is implemented.** Debug input setup, Windows input discovery and the
-metadata projection use the [tracked selection](metadata/selection.json). It still identifies the
-four [registered roots](asset-inventory.md#pre-voyage-package-locations). The publisher operates
-only in a disposable checkout-local directory. Canonical media migration and old-root retirement
-remain pending.
+The [tracked selection](metadata/selection.json) now reads four runtime roles through the canonical
+media junction. Debug and the metadata projection have consumed this selection. Full Windows
+export through the junction awaits execution review. Keep the previous version available for
+rollback. The incremental publisher still operates in disposable checkout-local storage.
 [#2370](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2370) has High rigor because
 a producer, two kinds of launch, multiple checkouts and irreversible source retirement share these inputs.
 
@@ -36,7 +35,7 @@ runtime overlay, a general asset service and filesystem-wide fingerprints are un
 | [Prepare-PrivateAssets](../../../tools/Prepare-PrivateAssets.ps1) and [retail preparation](presentation-assets.md#prepare-and-mount-retail-resources) | Prepare selects families, and SFX/music accept command IDs. The audio producer verifies existing command, cue, timer and WAV identities and can resume by command. Coverage joins an inventory to prepared results. | Pass the same explicit selection to discovery, Prepare, Coverage and Mount. The wrapper currently builds the inventory path under its fixed issue root. File existence or a valid *previous* result alone cannot prove an unchanged recipe. |
 | [Private asset preflight](../../../src/sf2tool/remake_assets.py) and [local product assets](presentation-assets.md#local-asset-repository) | Exact private Git identities, versioned manifests, checked source/master/runtime relationships. Keep the existing checks on real Git roots. | Import the permitted identity and derivation fields into main Git once. Retain detailed operand, byte identity and custody records with their private source. |
 | [Private package mount](../../../src/sf2tool/remake_private_package.py) and [Kiwi producer](../../../src/sf2tool/remake_kiwi_mount.py) | Existing family-specific transforms, fresh destinations, relative dependency closure and selected-file comparison. Kiwi derives six frame pairs, then writes each selected encounter's raster banks. Some mount modes already link unaffected files and copy the rest. | Separate calculation of changed outputs from role assembly. The current mount prepares a complete destination and can silently fall back to copying on link failure. Do not run a writer on a candidate tree sharing writable files with an accepted revision. |
-| [Windows input resolver](../../../src/sf2tool/remake_windows_package.py), [ordinary entry](../evidence/opening-loop-acceptance.md) | Resolve the actual world, encounter inputs, opening documents, named Witch PNG siblings and catalogs. Packaged startup reads adjacent content. Content readers check semantic admission. | The pilot uses one selection for the resolver, Debug environment and projected reader bindings. Verify the real shared entrance and ordinary Debug/Release at cutover. |
+| [Windows input resolver](../../../src/sf2tool/remake_windows_package.py), [ordinary entry](../evidence/opening-loop-acceptance.md) | Resolve the actual world, encounter inputs, opening documents, named Witch PNG siblings and catalogs. Packaged startup reads adjacent content. Content readers check semantic admission. | The pilot uses one selection for the resolver, Debug environment and projected reader bindings. Debug has consumed the real shared entrance. Junction-backed Windows export and relocated Continue are pending. |
 | Historical full successors and one-off wrappers | Existing evidence identifies a source or past observation. Atlas and the indexed opening subtree are still producer inputs. | Replace active fixed paths, including the Aqua reproduction/rollback defaults. Once supported consumers and unique sources are accounted for, retire surplus successors and scripts through the cleanup owner. Git preserves tracked recipes. |
 
 ## Tracked metadata and private records
@@ -244,27 +243,63 @@ was 303,878,144 B. The first measurement wrapper used a truncated Windows proces
 failed to report its peak after seeding. The corrected measurement is the fresh seed above.
 Logical file sizes include repeated hard-linked names and can exceed physical allocation. Recheck
 headroom before any additional trial. These observations cover the selected entry reader and
-input closure. The real shared junction, a relocated Release and other families remain for cutover.
+input closure. The runtime migration below covers the real shared junction.
 
-**2. Move the supported roots and switch real consumers.** Depends on the pilot and its checked
-selection/projection. Inventory only the exact source selections, owners and necessary production
-inputs. Measure free space for the largest concurrent transfer, validation and rollback. The first
-four runtime roles are approximately 0.39 GiB together. Stage and byte-compare selected members.
-Move independent repositories one at a time, checking HEAD, refs, status and local-only material.
-Update retail wrapper inventory/Prepare defaults, pinned inputs and private preparation records.
-Verify one required preparation from retained sources. Keep Atlas, the indexed opening subtree and
-the registered ROM while their producers need them. Do not replay every predecessor.
+### 2. Runtime migration and validation
 
-First exercise junction resolution, contained paths and unlink/cleanup with disposable data.
-Then verify the authorized real junction and read the same selection from a second worktree,
-including from outside its root. Start normal Debug on an isolated save namespace. Observe ordinary
-opening, Witch and gameplay and an affected Original/HD binding and audio selection. Package
-Windows from only the new roots, use the [exporter's disk preflight](../windows-local-candidate.md#resource-budget-and-verification),
-and launch the relocated executable with adjacent content in a clean environment. Resolve every
-input into its declared role, with legacy paths absent from the test configuration. A previous
-isolated export established closure on ordinary directories. The junction-backed Release check is
-outstanding. Respect the existing execution refusal until an authorized review resolves it.
-Keep old selection and rollback resources until Debug **and** Release pass.
+The custodian copied only the delivery closure selected by the existing Windows input resolver.
+Each file kept its source-relative name within its role. After comparing the staged files directly
+with their predecessors, the custodian renamed each checked version into its immutable directory on
+the same volume. The shared `media` junction points to the real canonical `private-media/`.
+All four final role directories are real directories inside that target. The checkout selection
+changed after the complete set was readable.
+
+**Confirmed.** The old and relocated selections resolved the same 196 delivery keys and
+408,278,969 bytes. Every pair compared equal. Of 2,836 projected rows, 2,821 changed only their
+shared-relative selection and 15 remained identical. A second checkout reproduced the tracked
+projection from outside Git with an explicit selection and table. The comparison and projection
+took 1.82 seconds and peaked at 260 MiB in the Python process. Staging and final publication used
+one payload copy. After Debug, the project volume showed roughly 0.53 GiB less free space than
+before staging, including tool caches and run output. The exporter's free-space preflight would
+reserve 4,740,314,411 bytes against 16,769,994,752 available. No export candidate was created.
+The compiled Debug adapter ran on the second checkout with an isolated namespace.
+[Ordinary opening, Witch and Continue](../evidence/opening-loop-acceptance.md#launch-and-checkpoints)
+read the relocated inputs.
+
+To repeat the comparison, save the previous selection from the checkout root:
+
+```powershell
+. ./local/private-inputs.ps1
+git show 44d4305c:remake/docs/content/metadata/selection.json > local/previous-runtime.json
+@'
+from filecmp import cmp
+from pathlib import Path
+from sf2tool.remake_media_selection import package_arguments, read_selection, shared_root
+from sf2tool.remake_windows_package import inputs
+
+root = shared_root()
+old = inputs(**package_arguments(read_selection(Path("local/previous-runtime.json")), root))
+new = inputs(**package_arguments(read_selection(), root))
+assert old.keys() == new.keys() and len(new) == 196
+assert all(cmp(old[k], new[k], shallow=False) for k in new)
+'@ | uv run --locked python -
+if ($LASTEXITCODE) { throw 'Runtime comparison failed' }
+uv run --locked python -m sf2tool.remake_media_metadata
+```
+
+For a process rollback, pass `--selection <checkout>/local/previous-runtime.json` to the Debug
+launcher or Windows recipe and restart the reader. To roll back a tracked default, restore both
+`selection.json` and `current-media.tsv` from the same accepted revision on a review branch and
+verify the private projection. Keep the four predecessor roots, the existing installation and its
+launcher available through Debug and Release acceptance.
+
+**Pending.** The full Windows candidate export through this junction was previously refused
+before process creation. The relocated executable and its clean-environment Continue remain
+unverified. The earlier ordinary-directory export covers a different input layout.
+[Windows acceptance](../windows-local-candidate.md#build-and-run) remains a prerequisite for
+retiring rollback inputs. Atlas, indexed opening, retail preparation and the three independent
+source repositories remain at their registered locations. Their producer migration is a separate
+stage with its own ownership, capacity and reproducibility checks.
 
 **3. Retire exact obsolete consumers and data.** Depends on accepted launch/build/producer checks
 and a retained rollback. Main-gate reviews the selected script and directory list. Resolve active
