@@ -1,19 +1,20 @@
 # Preview and Publish the Design Wiki
 
-Publish L0–L3 design from an accepted first-parent `origin/main` commit. The Wiki's
-[design map](../design/zh-CN/design-map.md) connects the vision, gameplay loop, system design,
-and behavior rules. Publish reviewed design excerpts with their conditions and consequences.
-The [scope agreement](../design/documentation-roadmap.md#design-and-support-scope) places
-research, ROM and source mechanics, configuration, implementation, and acceptance at their
-English repository owners. Design pages may link to those owners, including the
-[map and exploration contract](../design/contracts/world/map-exploration.md) and
-[Map3–Battle01 readiness ledger](../design/synthesis/milestones/map3-battle01-readiness.md#accepted-current-milestone).
+Publish L0–L3 Chinese design from an accepted first-parent `origin/main` commit. The Wiki's
+[design map](../design/zh-CN/design-map.md) connects vision, overall gameplay, system design,
+and mechanism rules. `Home` introduces the remake and reader routes first; source links, full
+commit identity, and issue-feedback links live in a compact footer on each page.
+
+The [scope agreement](../design/documentation-roadmap.md#design-and-support-scope) keeps research,
+ROM/source mechanics, configuration tables, implementation, and acceptance ledgers at their
+canonical English owners in the main repository. Wiki pages link directly to those owners rather
+than duplicating raw technical prose or mutable campaign counters.
 
 ## Select the source and Wiki base
 
-Run from the main repository's tooling checkout with Git and the locked `uv` environment.
-Use a dedicated Wiki clone under one publisher's control. Fetch and push using the same
-Wiki remote and default branch. Use a disposable bare target when rehearsing.
+Run from the main repository's tooling checkout with Git and the locked `uv` environment. Use a
+dedicated Wiki clone under one publisher's control. Fetch and push using the same Wiki remote and
+default branch. Use a disposable bare target when rehearsing.
 
 ```powershell
 $ErrorActionPreference = 'Stop'
@@ -23,15 +24,14 @@ $wiki = Read-Host 'Absolute path to the dedicated Wiki clone'
 git clone -- $target $wiki  # Skip for an existing dedicated clone
 ```
 
-`$source` is the full accepted main SHA. `$base` is the last reviewed, published Wiki SHA.
-Use the audited pilot base shown below for the first managed publication. For later runs,
-inspect the source SHA, page changes, and `SF2-Wiki-Page` trailers with
-`git -C $wiki log --first-parent --grep="^Publish SF2 Wiki from "` and `git -C $wiki show <SHA>`.
+`$source` is the full accepted `origin/main` SHA. `$base` is the last reviewed, published Wiki SHA.
+Always re-fetch the Wiki remote and inspect the actual latest managed publication commit (for
+example, `a46072b9ce37cdec037113f97ddd21ab341ad2c7` published source `91088c36...` prior to `#2259`
+Phase B2) instead of assuming an earlier base:
 
 ```powershell
 git fetch origin main
 $source = git rev-parse origin/main
-$base = 'c027ddb07884c481cf06d20238065051d18ed093'  # Replace after the first publication
 $branch = git -C $wiki symbolic-ref --short HEAD
 $pushUrls = @(git -C $wiki remote get-url --push --all origin)
 if ((git -C $wiki remote get-url origin) -ne $target -or
@@ -41,6 +41,8 @@ git -C $wiki merge --ff-only "origin/$branch"
 if ((git -C $wiki rev-parse HEAD) -ne (git -C $wiki rev-parse "origin/$branch")) {
     throw 'Review the unpublished commits in this clone before proceeding'
 }
+git -C $wiki log -3 --first-parent --grep="^Publish SF2 Wiki from " --oneline
+$base = git -C $wiki log -1 --first-parent --grep="^Publish SF2 Wiki from " --format="%H"
 $wikiArgs = @('run', '--locked', 'python', '-m', 'sf2tool.wiki_preview',
               '--wiki', $wiki, '--source', $source, '--base', $base)
 $candidate = & uv @wikiArgs
@@ -50,10 +52,10 @@ $diff = Join-Path $candidate 'preview.diff'
 ## Review, apply, and read back
 
 The preview writes candidate Markdown and `preview.diff` under ignored `local/wiki-preview-*/`.
-Read `Home.md`, `_Sidebar.md`, and `Design-Documentation.md` for the L0–L3 routes. Check the
-body changes, deletion list, Chinese design links, English source links, anchors, full source SHA
-and correction links. An empty diff means the selected source is already published at the
-selected base.
+Read `Home.md`, `_Sidebar.md`, `Design-Documentation.md`, and each body page for readability,
+L0–L3 navigation, compact source footers, Chinese design links, English source links, anchors,
+full source SHA, and unintended deletions. An empty diff means the selected source is already
+published at the selected base.
 
 ```powershell
 if ((Get-Item -LiteralPath $diff).Length) {
@@ -63,9 +65,9 @@ if ((Get-Item -LiteralPath $diff).Length) {
 }
 ```
 
-After review, `--apply` recomputes and checks the exact patch before creating a local Wiki
-commit. Push that commit with a normal fast-forward push, then inspect an independent readback.
-Record `$publication` as the next base once readback passes.
+After review, `--apply` recomputes and verifies the exact reviewed patch before creating a local
+Wiki commit. Push that commit with a normal fast-forward push, then inspect an independent fresh
+clone readback.
 
 ```powershell
 if ((Get-Item -LiteralPath $diff).Length) {
@@ -80,43 +82,56 @@ if ((Get-Item -LiteralPath $diff).Length) {
 }
 ```
 
-Check the readback page contents with `git -C $reader show "${publication}:Home.md"` and
-the corresponding body paths. Repeat the preview with `$publication` as `--base` and
-the same source. The diff should be empty and `--apply` should report `No managed page changes.`.
+Inspect `Home.md`, `_Sidebar.md`, and body pages from `$reader`, then repeat the preview with
+`$publication` as `--base` and the same `$source`. The diff must be empty and `--apply` must report
+`No managed page changes.`.
 
-## Managed pages and recovery
+## Managed pages and candidate rehearsal boundary
 
-`Home`, `_Sidebar`, and `Design-Documentation` are fixed entries. The body
-[mapping](wiki-mirrors.tsv) lists a tracked Chinese design excerpt, Wiki title, and Chinese
-navigation label per row in reading order. The publisher links to the corresponding English
-source and rewrites inline relative links to a selected Wiki page or the same source commit.
-Review the actual preview when adding a page or introducing new Markdown syntax.
+`Home`, `_Sidebar`, and `Design-Documentation` are fixed managed entries. The body
+[mapping](wiki-mirrors.tsv) lists each tracked Chinese L0–L3 design page, its stable Wiki title,
+and its Chinese navigation label in L0 → L1 → L2 → L3 order:
 
-Add a mapping row to publish a page and remove a row to retire it. Renaming a title creates
-a reviewed delete/add pair. Ownership comes from the last published Wiki commit, with the
-original five pages identified by the audited pilot base. `Map-Exploration-Contract` keeps its
-title and uses the [design excerpt](../design/zh-CN/contracts/world/map-exploration.md).
-`Map3-Battle01-Readiness` leaves the managed set through a normal deletion.
+- `Remake-Vision` (`L0 · 重制愿景`)
+- `Gameplay-Overview` (`L1 · 玩法总览`)
+- `Tactical-Battle-Loop` (`L2 · 战术战斗循环`)
+- `Progression-and-Economy` (`L2 · 成长与经济`)
+- `Map-Design-Principles` (`L2 · 地图设计原则`)
+- `Map-Exploration-Contract` (`L3 · 地图探索`)
 
-- If a managed path changed on the Wiki, compare `git -C $wiki diff $base HEAD` and local
-  changes. Bring edits worth keeping into the main repository. Use a normal corrective commit
-  to restore the managed paths to the reviewed Wiki base before retrying. Keep independent
-  unmanaged pages and investigate title collisions before applying.
-- If the local commit fails, retain that clone and inspect `git status` and `git diff --cached`.
-  Fix the Git identity or hook in a fresh clone, then reuse the reviewed patch if it still matches.
+Unreviewed or pending topics (such as `story-progression.md` under `#2366`) stay linked from
+`Design-Documentation` to the main repository rather than being published prematurely.
+
+**Candidate rehearsal boundary:** `Source` strictly requires `--source` to be on the fetched
+`origin/main` first-parent history and reads `wiki-mirrors.tsv` and all Markdown bodies from that
+same Git tree. Therefore:
+
+- Before a mapping PR merges, previewing against accepted `origin/main` exercises the new renderer
+  template against the currently accepted mapping.
+- To rehearse an unmerged `wiki-mirrors.tsv` change end-to-end before merge, run only against an
+  isolated local candidate fixture / bare target under ignored `local/` (never mutate real
+  `origin/main`, weaken `Source` guards, or push candidate output to the live Wiki).
+- Live publication always regenerates its reviewed preview from the post-merge accepted
+  `origin/main` commit.
+
+## Recovery
+
+- If a managed path changed on the Wiki, compare `git -C $wiki diff $base HEAD` and local changes.
+  Bring edits worth keeping into the main repository. Use a normal corrective commit to restore
+  managed paths to the reviewed Wiki base before retrying. Keep independent unmanaged pages and
+  investigate title collisions before applying.
 - If a push is rejected or interrupted, read back the same remote first to see whether the
   publication arrived. If absent, use a fresh clone and preview against the last published base
-  again. A concurrent unmanaged edit can remain in the parent of the new publication.
-- To restore an earlier design release, keep the latest Wiki publication as `--base`, select
-  the earlier compatible main SHA as `--source`, and review and publish the new diff. To undo
-  a single publication across publisher versions, review a normal `git revert <publication>`
-  and push it. Use the restored publication as the next base.
+  again.
+- To restore an earlier design release, keep the latest Wiki publication as `--base`, select the
+  earlier compatible `origin/main` SHA as `--source`, and review and publish the new diff. To undo
+  a single publication, review a normal `git revert <publication>` and push it.
 
 ## Rehearse with a bare target
 
 Use an existing read-only Wiki snapshot and a new `$lab` path under this checkout's ignored
-`local/`. Seed the local bare target with the snapshot's reviewed tip, then use the same
-preview, apply, push, and readback commands against the local target.
+`local/`. Seed the local bare target with the snapshot's reviewed tip, then run the same preview,
+apply, push, readback, and no-op checks against the local target.
 
 ```powershell
 $target = Join-Path $lab 'target.git'
