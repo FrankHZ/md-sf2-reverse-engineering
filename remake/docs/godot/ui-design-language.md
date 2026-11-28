@@ -104,6 +104,37 @@ The two gauges share aligned label and value columns. Other screens still have l
 including compact command captions. Update those with their owning screen and verify fit in
 English and Chinese.
 
+### Proposed reading size
+
+Offer one **Text and UI size** preference in **Settings → Display and text**, with **Standard**
+(the current presentation) and **Larger**. Larger is the candidate default for visual review.
+Use the current role size as the starting point. In the demo, a 30px body becomes 36px and a
+24px command caption becomes 29px. Give secondary battle information a smaller increase so the
+player can read the action first. The same preference lets each presenter use its available space.
+
+| Presenter | Response to Larger |
+| --- | --- |
+| World dialogue | Use the spare space inside the reading frame for larger body text, hints and 4 more design units between lines. Keep the speaker avoidance, portrait reservation and existing content-driven height and scrolling. A short page uses the same outer rectangle at both sizes. |
+| Battle decisions and HUD | Keep the card, four commands and reader in one column beside the board. Let measured vitals determine card height. A one-line caption fits the existing 80px hit row with its original icon. Allow wrapped captions to request more height. Increase round, land effect and footer text more gently. Check both column positions and the protected subject when measuring longer names or values. |
+| Members and inventory | Give the name, item list and adjacent description more width from the sheet's side margins. Reserve enough space for the member counter and all four slot targets. Use some row padding for type while retaining room for the icon and wrapped names. Keep the reader, accounting and footer in their own regions. |
+| Settings | Enlarge type inside the centered settings panel. Let the existing button style and text determine row height. The scrollable list gives up space before the fixed details and footer actions do. |
+| Shop, Church and other service lists | Proposed for follow-up. Measure rows against their labels, prices and actual targets. Wrap or grow the row where the text requires it, retain the provider's visible space and use the existing list scroller. |
+
+Use the caller's existing viewport and the window owner's single fit. At 1600×900 a 36px
+body on the 1920×1080 gameplay canvas occupies about 30 physical pixels and a 96px world cell
+occupies 80. At native 1080p and larger gameplay sizes, keep 96px cells and let the viewport
+reveal the world. Apply the reading choice once on high-DPI screens. Keep the same map,
+characters and camera framing when switching choices on a page.
+
+For a production implementation after review, stage the choice in the existing settings draft.
+Apply saves it across sessions and reflows the live page while preserving the current selection.
+Cancel restores the previously applied choice. Display Reset and whole-settings Reset stage the
+chosen product default until Apply. An older preferences file with the field absent loads that
+default. Use shared theme roles and the existing presenters' text measurements, native hit
+regions and scroll owners. In particular, the status card's name measurement must use the
+selected face size. The preference default, sustained comfort and adoption on additional pages
+await review of the [production preview](../../game/probes/previews/README.md#compare-ui-size).
+
 ### Panels and states
 
 | Surface or state | Design baseline at native 1080p | Use and limit |
