@@ -422,12 +422,9 @@ is450,995 stereo frames at44,100Hz (10.226644s), with looping disabled. Witch us
 `Music_10`'s repeating channels support that distinction; the modern PCM seam retains the Inferred
 limit above. No new original-game runtime observation is made.
 
-**Unknown:** the cause of the user's reported silence, physical audibility, perceived motion and
-whether a return should replay the entrance. No software playback flag proves listening approval.
-If replay is later chosen, the minimal proposed boundary is resetting the existing backdrop entrance
-when title becomes visible, with first-entry/return/reduced-flash acceptance; it needs no new art,
-idle animation or audio service. Player visual and listening acceptance remains **Unknown** under
-[#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456).
+**Confirmed:** on 2026-11-27 the user accepted the bounded #1447 title result.
+The cause of the earlier reported silence and the broader human acceptance of the opening
+under [#1456](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/1456) remain **Unknown**.
 
 <a id="proposed-opening-sequence-2247"></a>
 ### Ordinary opening sequence (#2247, #2252)
@@ -747,6 +744,39 @@ Both runs released the owner and audio to the title through Skip. Original and H
 the modulation path. **Unknown:** which entrance or later scripted actor displacement
 the player noticed. These bounded runs did not observe the player's process or establish
 the original hardware's visible sprite timing during the reset.
+
+#### Storm actor fade and reload (#2346)
+
+**Confirmed:** the earlier black modulation fix holds the incoming map black. A second
+displacement occurs in Intro2 after that load. The script resets the layout and view,
+fades in the actors against the blank terrain, then reloads the view for dialogue.
+At 1920×1080 the projected origin moved from (−120,−3) to (48,45). One visible actor
+moved from (1632,556) to (960,364) in one draw. The logical B axes moved from (0,0)
+to (2688,768) and the target was detached on both draws. This was observed via the
+single-act entrance and again after ordinary Intro1.
+
+The modern opening uses the frame staged on that map in settled black during the
+blank-layout actor fade. The rule applies to detached stationary views in the same
+area. The ordinary view resumes after the fade. This is a presentation adaptation:
+reset, fade timing, reload, logical axes and later scripted destinations remain
+authored. There is no additional curtain or wait. On both entrances, the actual
+actor origin was (48,45) throughout the visible fade and reload. The actor stayed at
+(960,364), with fade gain rising from its first nonzero value to 1.
+
+Use the [debug launch](../verification/debug-port.md#development-default) with
+`--opening-act 2` and the published #2324 opening selection. For the ordinary
+comparison select `--entry`, advance text only when the view waits for input, then
+observe the first Intro2 dialogue. At `ResourceDrawObserved`, read
+`ReadCaptureState(false,false)` and sample the first map draw, first visible actors,
+and first reload draw. Compare committed logical axes and target with background and
+actor origins, brightness, terrain presence and actor coordinates. Capture bounded
+stdout and stderr. Shift reached 1.5× in the ordinary comparison and released to
+1× before Skip. Both exits released to title. A full Intro2-only run observed the later
+logical Y step to 792 with drawn Y 46.5, then an entity-follow binding. Natural completion
+released opening audio and returned to the title.
+
+**Unknown:** exact timing of the reset presentation on original hardware and the
+precise frame from the player's prior session.
 
 #### Implementation order and acceptance
 

@@ -42,6 +42,27 @@ internal sealed partial class ExplorationPresentation : IDisposable
         _visuals?.Maps.GetValueOrDefault(map)?.HdBlocks is not null;
     private bool UsesLogicalCamera(MapId map, LogicalView? view) => view is not null &&
         (view.TargetSlot is null || _visuals?.Maps.GetValueOrDefault(map)?.ScenePalette is not null);
+
+    private (MapId Map, LogicalView View)? _openingBlackFrame;
+
+    private LogicalView? OpeningFadeView(ExplorationState world, StoryState story)
+    {
+        var view = story.LogicalView;
+        if (_owner is not ExplorationSessionView { IsOpeningSequence: true }) return view;
+        if (story.Display?.Visibility == FullFadeVisibility.Black && !world.Layout.BlankBlockZero &&
+            view is { TargetSlot: null, Scrolling: false })
+            _openingBlackFrame = (world.Map, view);
+        else if (world.Layout.BlankBlockZero &&
+            story.Wait is FullFadeWait { Kind: PresentationCueKind.FadeIn, Color: FullFadeColor.Black } &&
+            view is { TargetSlot: null, Scrolling: false } &&
+            _openingBlackFrame is { } frame && frame.Map == world.Map && frame.View.Area == view.Area)
+            // The blank-layout fade can reveal actors before the scripted reload. Keep
+            // their staged composition through the fade while the logical view resets.
+            return frame.View;
+        else if (story.Display?.Visibility != FullFadeVisibility.Black || _openingBlackFrame?.Map != world.Map)
+            _openingBlackFrame = null;
+        return view;
+    }
     internal UI.StoryDialoguePanel? DialoguePanel { get; set; }
     private readonly ExplorationVisuals? _visuals;
     private readonly MapBlockTextures _mapTextures = new();
@@ -464,8 +485,9 @@ internal sealed partial class ExplorationPresentation : IDisposable
                 // a script destination and actor following. Modern field clamping
                 // would otherwise jump between two origins on that same switch.
                 var framing = WorldViewportLayout.LogicalHalfFrame - viewport / (2 * _scale) + new Vector2(0, 24);
-                foreground = new Vector2(view!.AX.Position, view.AY.Position) / 16 + framing;
-                background = new Vector2(view.BX.Position, view.BY.Position) / 16 + framing;
+                var projected = OpeningFadeView(world, story)!;
+                foreground = new Vector2(projected.AX.Position, projected.AY.Position) / 16 + framing;
+                background = new Vector2(projected.BX.Position, projected.BY.Position) / 16 + framing;
             }
             // A deterministic bounded displacement; no gameplay RNG or motion is consumed.
             float quake = world.Quake == 0 || _reducedFlash ? 0 : (story.SimulationTick % 2 == 0 ? world.Quake : -world.Quake);

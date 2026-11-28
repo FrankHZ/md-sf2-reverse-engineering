@@ -168,7 +168,7 @@ public sealed partial class GameRoot : Node
         for (int index = 0; index < arguments.Length; index++)
         {
             string option = arguments[index];
-            if (option is not ("--authored-package" or "--private-battle-start" or "--private-exploration-start" or "--private-campaign-start" or "--input-settings" or "--load-save" or "--save-output"))
+            if (option is not ("--authored-package" or "--private-battle-start" or "--private-exploration-start" or "--private-campaign-start" or "--input-settings" or "--load-save" or "--save-output" or "--opening-act"))
             { Fail("unknown-startup-option", "Unknown game option."); return; }
             if (options.ContainsKey(option))
             { Fail("duplicate-startup-option", "Each game option may appear only once."); return; }
@@ -180,6 +180,12 @@ public sealed partial class GameRoot : Node
             "--private-exploration-start" or "--private-campaign-start");
         if (diagnostic && options.Keys.Count(key => key != "--input-settings") != 1)
         { Fail("conflicting-startup-options", "Select one session entry."); return; }
+        if (options.TryGetValue("--opening-act", out var act))
+        {
+            if (options.ContainsKey("--load-save") || options.ContainsKey("--save-output") || act is not ("1" or "2" or "3" or "4"))
+            { Fail("invalid-opening-act", "Select an opening act from 1 to 4 as the sole startup target."); return; }
+            _openingAct = act[0] - '0';
+        }
         try { ConfigureSaveFiles(options); }
         catch (Exception error) when (error is ArgumentException or System.IO.IOException or NotSupportedException)
         {

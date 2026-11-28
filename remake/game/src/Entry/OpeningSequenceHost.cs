@@ -24,6 +24,7 @@ public sealed partial class GameRoot
         internal readonly MenuPointer Pointer = new();
     }
     private OpeningOwner? _opening;
+    private int? _openingAct;
     private bool _openingPointerBarrier;
     private string? _openingResult, _openingError;
 
@@ -47,7 +48,7 @@ public sealed partial class GameRoot
             FocusMode = Control.FocusModeEnum.None, MouseFilter = Control.MouseFilterEnum.Ignore };
         owner.Surface.AddChild(owner.LoadingLabel); owner.Surface.AddChild(owner.Skip); _hostUi.AddChild(owner.Surface);
         owner.Pointer.Suspend(); DisarmInput();
-        owner.Loading = Task.Run(() => OpeningSequenceReader.Read(selected));
+        owner.Loading = Task.Run(() => OpeningSequenceReader.Read(selected, _openingAct));
         // Cancelled owners have no Godot continuation. Observe faults even after disposal.
         _ = owner.Loading.ContinueWith(task => { _ = task.Exception; }, TaskContinuationOptions.OnlyOnFaulted);
         ApplyHostPause();
@@ -143,7 +144,7 @@ public sealed partial class GameRoot
 
     public string ReadOpeningObservationJson() => System.Text.Json.JsonSerializer.Serialize(new
     {
-        active = _opening is not null, loading = _opening?.Loading is not null, result = _openingResult, error = _openingError,
+        active = _opening is not null, loading = _opening?.Loading is not null, act = _openingAct, result = _openingResult, error = _openingError,
         journey = _session?.Current.SessionId, releaseBarrier = _releaseBarrier, pointerBarrier = _openingPointerBarrier,
         session = _opening?.Session?.Current.SessionId, audio = _opening?.Audio?.ObservePlayback(),
     });
