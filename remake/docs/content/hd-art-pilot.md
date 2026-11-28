@@ -23,8 +23,8 @@ These are ROM-derived local materials. The sibling remains read-only. **Unknown:
 **Confirmed:** the reference is a new hand-specified 16×24 index grid drawn for this trial. No source-game pixels were sampled, traced or submitted. The only cloud input was its 640×960 nearest-neighbor enlargement. A and B below derive from the very same grid. C is one built-in GPT Image reference edit, requesting a restrained painted inventory icon with the same loop, flame, flat foot, palette families, margins and transparent background. One result, zero retries, zero hand corrections.
 
 Open `media/reproduction/lantern-hd-pilot-v1/comparison.png` beneath the configured shared
-input root. During the worktree retirement, the producing checkout's
-`artifacts/hd-art-pilot-1700/` holds the source copy of this comparison. The top strip magnifies each 64×96 result exactly 3×; the bottom strip shows the 64×96 result on the same checkerboard. A is nearest 4×. B runs the pinned sibling's `src/remaster/scale2x.py::edge_aware_2x` on indices then nearest 2×. C reduces the complete 1024×1536 edit with Pillow 11.3.0 Lanczos. All three use the same origin and framing, with no trimming, recentering or outline repair.
+input root. The versioned directory also holds the original, reference enlargement, model master,
+prompt and both local generation scripts. The top strip magnifies each 64×96 result exactly 3×; the bottom strip shows the 64×96 result on the same checkerboard. A is nearest 4×. B runs the pinned sibling's `src/remaster/scale2x.py::edge_aware_2x` on indices then nearest 2×. C reduces the complete 1024×1536 edit with Pillow 11.3.0 Lanczos. All three use the same origin and framing, with no trimming, recentering or outline repair.
 
 | At 64×96 | A · nearest | B · Scale2x | C · GPT Image |
 | --- | ---: | ---: | ---: |
@@ -36,7 +36,7 @@ input root. During the worktree retirement, the producing checkout's
 
 “Solid” uses alpha ≥128; “faint” uses 0<alpha<128. The 465 pixels include barely visible alpha. Look at the actual-size row before judging their impact. B rounds the loop and base corners while keeping the flat glass and small flame. C retains the turquoise/copper identity, strengthens contrast and adds reflections. Its broader flame and darker rim read differently at inventory size. The bounding box expands one pixel on each side even though horizontal centering survives. **Inferred:** B is the better first fidelity candidate; C is a plausible illustrated alternative after edge and color review. **Unknown:** player preference and resemblance to any SF2 object. The lantern is an invented control.
 
-Local replay uses the retained `source.png`, `reference.png`, `C-master.png`, `prompt.txt`, `make-sample.py` and `compare.py` in that directory. With the pinned sibling selected and Pillow 11.3.0, run `python -B make-sample.py <gfx-checkout>` then `python -B compare.py` there to rebuild A/B, reduce the retained C, measure and compose. The latter uses the Windows Microsoft YaHei font for labels. Regeneration by the model is stochastic. Keep the local master, inputs and scripts with this registered comparison.
+Local replay uses the retained `source.png`, `reference.png`, `C-master.png`, `prompt.txt`, `make-sample.py` and `compare.py` in that directory. Copy these six files to fresh checkout scratch. From that scratch, with the registered graphics checkout and Pillow 11.3.0, run `python -B make-sample.py <gfx-checkout>` then `python -B compare.py` there to rebuild A/B, reduce the retained C, measure and compose. The latter uses the Windows Microsoft YaHei font for labels. Regeneration by the model is stochastic. Keep the local master, inputs and scripts with this registered comparison.
 
 ## A switch in the same game
 

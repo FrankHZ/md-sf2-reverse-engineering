@@ -55,7 +55,7 @@ remain separate from campaign, Witch and catalog selection and from human visual
 | **Pre-voyage animated terrain** · `derived/issue2180/pre-voyage-tiles-v1` | Complete animated-terrain base. Eight map visuals extend the #2179 world with phase-specific Original and HD terrain. [Production and native replay](#pre-voyage-animated-terrain-2180) |
 | **Enemy healing successor** · `derived/issue2227/pre-voyage-healing-v1` | Complete #2180 successor with Original/HD evil-fairy artwork and shared faction selection. [Resource and native boundary](#enemy-healing-family-2227) |
 | **DETOX successor** · `derived/issue2232/pre-voyage-detox-v1` | Complete #2227 successor with 11 Original/HD DETOX frames across its declared close-ups. [Resource and closure](#detox-family-2232) |
-| **PGNT** · `derived/issue1957/pgnt-v3` | Separate registered later progression/Battle26 witness. Its older Map3 HD bank has no L1 contexts and its cue 12 is the defeat placeholder. Preserve that evidence selection. Check resource lineage when proposing a successor that combines later progression with pre-voyage corrections. [PGNT reproduction](../development-and-verification.md#high-rank-elemental-magic-observation) |
+| **PGNT** · `derived/issue1957/pgnt-v3` | Separate registered later progression/Battle26 witness. Its older Map3 HD bank has no L1 contexts and its cue 12 is the defeat placeholder. The named revision records that observation. Check resource lineage when proposing a successor that combines later progression with pre-voyage corrections. [PGNT reproduction](../development-and-verification.md#high-rank-elemental-magic-observation) |
 | **Display catalogs** · `derived/issue1957/catalogs-v1`, `media/retail-preparation/v1/catalogs-v1` | Independent prepared Chinese name overlays for the owning reproductions. Match the catalog and entry locale to the named reproduction. A catalog supplies display names and does not select world, scene or media. [PGNT catalog selection](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Retail catalog selection](presentation-assets.md#sleep-display-name) |
 | **Retail base and library** · `media/retail-preparation/v1/issue1966-original`, private asset Git `runtime/retail-v1` | Base world/entry provenance and preparation outputs used to assemble packages. Some prepared candidates have no current package binding. [Retail preparation](#retail-original-preparation) |
 
@@ -87,8 +87,8 @@ The paths in this table are relative to the configured shared input root. The `m
 points to the canonical checkout's ignored `private-media/`. Media packages keep their content
 documents with the relative image and audio payloads. Debug and Windows input discovery select the four runtime roles under this junction.
 Atlas, indexed opening and retail preparation also use this junction. The three independent Git
-repositories use real directories under the shared root. Previous media packages remain available
-for operator rollback.
+repositories use real directories under the shared root. The middle column identifies historical reproductions. Use the current column for production
+and the operator’s registered installation for delivery recovery.
 
 | Selection and consumers | Previous location | Current selection |
 | --- | --- | --- |
@@ -100,6 +100,8 @@ for operator rollback.
 | Witch entry v1 (#2255), ordinary entry and its Chinese overlay | `derived/issue2255/witch-entry-v1` | `media/entry/witch-v1` |
 | Chinese campaign display catalog (#2266), world display names | `derived/issue2266/catalogs-v1` | `media/display-catalog/campaign-zh-cn-v1` |
 | Retail preparation (#2001), prepared library, base world, inventory and generation inputs | `derived/issue2001` | `media/retail-preparation/v1` |
+| Chinese production sources, locale overlays and bilingual review | Prior operator corpus | [sources/localization/v1](../application/localization-design.md#current-full-text-chinese-corpus) |
+| Lantern source, model master, local recipes and reference comparison | Producing worktree scratch | [media/reproduction/lantern-hd-pilot-v1](hd-art-pilot.md#one-lantern-three-treatments) |
 | Independent product assets, graphics and audio repositories | Operator-selected Git roots | `sources/product-assets`, `sources/graphics`, `sources/audio` |
 
 The [private preparation records](presentation-assets.md#reuse-a-closed-private-package) keep the
@@ -111,8 +113,7 @@ available for Prepare. A receipt about a previous run can retain its original pa
 
 Kiwi contains the accepted Aqua resources. The Aqua producer regenerated the original published
 package byte for byte from the retained Atlas selection, prepared retail library and pinned
-graphics code. Retire the shared Aqua copy once its rollback and reproduction launchers select
-an available package explicitly.
+graphics code. Build Aqua into checkout scratch when that exact intermediate is needed.
 
 Keep each runtime selection's relative content paths intact. The existing Windows packager resolves
 the gameplay world/scenes, Battle01 data, opening resources, Witch assets and both catalogs before

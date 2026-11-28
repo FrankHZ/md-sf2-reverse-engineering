@@ -152,8 +152,28 @@ world, Witch and catalogs without replacing those packages.
 [HD production, palette banks and camera observations](hd-rollout.md#opening-terrain-and-palette-banks-2324)
 extend the lifecycle selection below. Human visual acceptance remains **Unknown**.
 
-The lifecycle baseline is `derived/issue2252/pre-voyage-opening-v1` beneath the configured
-shared input root. It reuses the accepted #2242 campaign, #2240 world catalog and registered Witch
+For the current four-scene indexed production input, select `media/opening/indexed-v1`.
+To regenerate the opening by itself, load the private configuration and choose a fresh output:
+
+```powershell
+. ./local/private-inputs.ps1
+$shared = $env:SF2_SHARED_INPUT_ROOT
+$pinnedSource = Join-Path (Split-Path -Parent $shared) 'upstream/SF2DISASM'
+$fresh = Join-Path $PWD ('local/indexed-opening-' + [guid]::NewGuid().ToString('N'))
+uv run --locked python -m sf2tool.remake_opening_scene --complete `
+    --base (Join-Path $shared 'media/gameplay/atlas-v1') `
+    --canonical (Join-Path $shared 'derived/canonical-map-import.json') `
+    --upstream $pinnedSource --rom (Join-Path $shared 'roms/sf2-us.bin') `
+    --corpus (Join-Path $shared 'sources/localization/v1/full-text') `
+    --party remake/reference/inputs/map3-opening-party.json --output $fresh
+```
+
+All fifteen names matched the registered input. Thirteen files were byte-identical. Only the
+world source provenance and the size/timing report differed. Use the registered indexed root
+for exact-version HD production.
+
+The original lifecycle observation used a complete campaign successor. The following configuration
+and commands record that historical selection. It reuses the accepted #2242 campaign, #2240 world catalog and registered Witch
 catalog; its `opening/` subdirectory independently contains both scene maps, all four scripts,
 all81 English/Chinese opening rows, default names, selected actors/portraits, finite audio and inputs.
 Startup reads only `opening/opening.json` and its bounded dependencies. The Witch's subsequent
@@ -1338,18 +1358,10 @@ remains unchanged; it does not itself contain the independent four-scene payload
 #### Witch Continue entry bank (#2255)
 
 Ordinary Debug selects the Witch bank and its catalog through the [runtime selection](metadata/selection.json).
-The following #2255 reproduction used `derived/issue2255/witch-entry-v1` beneath
-`SF2_SHARED_INPUT_ROOT`. Use its bank and catalog together alongside the same MMNK world, world
-catalog, six opening-battle inputs and #2252 four-scene startup above:
-
-```powershell
-. ./local/private-inputs.ps1
-$pack = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2244/pre-voyage-mmnk-v1'
-$opening = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2252/pre-voyage-opening-v1'
-$witch = Join-Path $env:SF2_SHARED_INPUT_ROOT 'derived/issue2255/witch-entry-v1'
-$env:SF2_PRIVATE_ENTRY_CONTENT = Join-Path $witch 'entry.json'
-$env:SF2_ENTRY_DISPLAY_CATALOG = Join-Path $witch 'entry.zh-CN.json'
-```
+The accepted Witch bank and its locale overlay are selected together by the
+[tracked runtime roles](asset-inventory.md#pre-voyage-package-locations). Its producer still
+requires the six-row greeting bank and overlay as inputs. The Atlas entry bank and the
+versioned localization source supply that predecessor.
 
 The producer selects 224–226 from the registered `source.jsonl` using the pinned Witch script
 and checks both source agreement and accepted translation control topology. It retains the
@@ -1360,12 +1372,15 @@ PCM tracks were directly compared with their predecessors. Preparation reads and
 and one serial preparation. The campaign and four-scene packs remain the existing selected directories.
 Six-row legacy entry banks retain their direct slot route and the current default selection rule.
 
-Use a fresh output directory and the registered pinned checkout and full-text root:
+To prepare a fresh ignored `$freshAbsoluteBank` with the registered pinned `$pinnedSource`:
 
 ```powershell
-uv run python -m sf2tool.remake_witch_continue --upstream $pinnedSource --corpus $fullTextRoot `
-    --entry (Join-Path $pack 'entry/entry.json') `
-    --catalog (Join-Path $opening 'catalogs/entry.zh-CN.json') --output $freshAbsoluteBank
+. ./local/private-inputs.ps1
+$locale = Join-Path $env:SF2_SHARED_INPUT_ROOT 'sources/localization/v1'
+$atlas = Join-Path $env:SF2_SHARED_INPUT_ROOT 'media/gameplay/atlas-v1'
+uv run --locked python -m sf2tool.remake_witch_continue --upstream $pinnedSource `
+    --corpus (Join-Path $locale 'full-text') --entry (Join-Path $atlas 'entry/entry.json') `
+    --catalog (Join-Path $locale 'witch-entry/entry.zh-CN.json') --output $freshAbsoluteBank
 ```
 
 For the native check, select the complete combination and a fresh namespace under an authorized
