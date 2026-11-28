@@ -181,8 +181,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/design-map.md",
-      "sourceSha256": "7651d78918381df1e1f68b7831a2a873da386406eb80c904bf2c8869ebcfae1a",
-      "mirrorSha256": "1a4cf45f4a0ccdf88c7a39f80259dcccfcb40b3f4ce09a6dd74ebb3712b21481",
+      "sourceSha256": "1a47abf9510162eadf4b328eb2bb94b22b5e54e4f194671b5a80797c0680a9e1",
+      "mirrorSha256": "864f5f9894cbfca9a7e6addba52a5f4ca06975ec85ae0146e1582d02f87a69de",
       "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
       "translatedDate": "2026-11-28"
     },
@@ -495,6 +495,16 @@
       "mirrorSha256": "c96d076571a4d2de5cf3e246cc9faad5a39141f1c033f2a754d9a72d6a82c5cd",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
+    },
+    {
+      "source": "docs/design/synthesis/chapters/grans-opening/chapter-overview.md",
+      "status": "translated",
+      "scope": "design-excerpt",
+      "mirror": "docs/design/zh-CN/synthesis/chapters/grans-opening/chapter-overview.md",
+      "sourceSha256": "a7f9e46438095bc82a40bf2ad84ff5857e41a6450e169ee39697a2cd3a8c62ad",
+      "mirrorSha256": "4506f1748ce2d5673a4d7048872c1ba9238dd5fc2d07afa314d6f59b1f8beea2",
+      "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
+      "translatedDate": "2026-11-28"
     },
     {
       "source": "docs/design/synthesis/chapters/grans-opening/earthquake-town-through-docks-departure.md",
@@ -1141,8 +1151,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/themes/story-progression.md",
-      "sourceSha256": "30a7c11973d52403e1c983c2c892fcb6cf544aa1bb3fad03693176208cec8e03",
-      "mirrorSha256": "a19c82a06a3a8c4262a1af406cdaa36cee3a1565e63a469d53ac927dfb706f57",
+      "sourceSha256": "923d3f71248527dc88d2d1ed3fae964ffabac329cbb64db8207b39d202063a58",
+      "mirrorSha256": "6e11ea5cbfde0bc4c20b01c1c2c246fcd071bb26652d2d20c0b904a6f8516dc8",
       "glossarySha256": "900c006ca73a287cff6037bac9cdd45930ae9dc18906bc5ae5bdf419f9ba52cd",
       "translatedDate": "2026-11-20"
     },

@@ -1,13 +1,14 @@
 # L2 · 剧情推进
 
-沿着地图、在场者、玩家选择及其后果阅读。原版**已确认**静态条件支持下列连接；幕间意义是**推断**。自然抵达、完整表现和持续性以所引观察为准，超出边界的部分仍为**未知**。参阅[玩法总览](../gameplay-overview.md)、[英文剧情推进](../../../synthesis/themes/story-progression.md)及[原版观察范围（英文源）](../../../../research/story-content-coverage.md)。
+沿着地图、在场者、玩家选择及其后果阅读。阅读渡海前完整剧情时序与人物/物品速查，请先进入[Grans 开篇与离岛章节总览](../chapters/grans-opening/chapter-overview.md)（`#2366` A 片；其余大章的时序总表与全角色/载具索引留待 `#2366` B–C 片整理）。原版**已确认**静态条件支持下列连接，幕间意义是**推断**；原版受限实测（`Map3`–`Battle01`）、重制普通流程与受控 Debug 起点保持分立——旧段级页里的原版**未知**不代表重制未实装，受控速胜也不等于自然完整通关。参阅[玩法总览](../gameplay-overview.md)、[英文剧情推进](../../../synthesis/themes/story-progression.md)及[原版观察范围（英文源）](../../../../research/story-content-coverage.md)。
 
 ## 分段阅读故事内容
 
 ### Grans 开篇与离开
 
-信使交流改变军团队伍，城堡委任连接新的遭遇。Galam 的监禁与 Slade、塔楼营救与宝石、地震撤离与选择出航，各有入场和完成条件。参阅[开篇](../chapters/grans-opening/opening-through-battle01.md)与[码头选择](../chapters/grans-opening/earthquake-town-through-docks-departure.md)。
+**推荐入口：**[Grans 开篇与离岛章节总览](../chapters/grans-opening/chapter-overview.md)按剧情时序串起开局到码头登船（`G1`–`G20`），并附本章人物/随行、关键物品及技术/场景对照。以下 11 篇段级详解按时序排列，供深入查阅各段条件与交接：
 
+- [开篇至 Battle 01：地点、人物与返回](../chapters/grans-opening/opening-through-battle01.md)
 - [Battle 01 返回至 Battle 02 准入](../chapters/grans-opening/battle01-return-through-battle02.md)
 - [Battle 02 结果至 Battle 03 准入](../chapters/grans-opening/battle02-outcome-through-battle03.md)
 - [Battle 03 结果至 Battle 04 准入](../chapters/grans-opening/battle03-outcome-through-battle04.md)
@@ -15,10 +16,9 @@
 - [Battle 05 结果至 Battle 06 准入](../chapters/grans-opening/battle05-outcomes-through-battle06.md)
 - [Battle06 结果、Granseal 内容与 Battle07 准入](../chapters/grans-opening/battle06-outcomes-through-battle07.md)
 - [Battle07 结果与探索交接](../chapters/grans-opening/battle07-outcomes-and-aftermath.md)
-- [地震城镇出口至码头出航](../chapters/grans-opening/earthquake-town-through-docks-departure.md)
-- [开篇至 Battle 01：地点、人物与返回](../chapters/grans-opening/opening-through-battle01.md)
 - [塔后返回至地震城镇入场](../chapters/grans-opening/post-tower-return-through-earthquake-entry.md)
-- [航行登陆至损坏船只控制](../chapters/grans-opening/voyage-through-damaged-ship-control.md)
+- [地震城镇出口至码头出航](../chapters/grans-opening/earthquake-town-through-docks-departure.md)
+- [航行登陆至损坏船只控制](../chapters/grans-opening/voyage-through-damaged-ship-control.md)（后续航行与登陆入口）
 
 ### New Granseal 与东部 Parmecia
 
