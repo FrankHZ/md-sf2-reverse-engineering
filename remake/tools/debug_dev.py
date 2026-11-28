@@ -3,6 +3,8 @@
 import argparse
 import json
 import os
+import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -80,7 +82,17 @@ def main():
     )
     parser.add_argument("--selection", type=Path, help="use exactly this four-role media selection")
     parser.add_argument("--shared-root", type=Path, help="root for shared-relative media roles")
+    parser.add_argument(
+        "--fixture-slot", type=Path, help="copy this numbered seed into a fresh --entry --journey"
+    )
     args = parser.parse_args()
+    if args.fixture_slot and (
+        not args.journey
+        or not args.fixture_slot.is_file()
+        or not re.fullmatch(r"slot[1-9][0-9]{0,9}\.json", args.fixture_slot.name)
+        or int(args.fixture_slot.stem[4:]) > 2**31 - 1
+    ):
+        parser.error("--fixture-slot requires --entry --journey and an existing numbered slot JSON")
     if not 1 <= args.port <= 65535:
         parser.error("port must be in 1..65535")
     if (args.journey or args.continue_journey) and not args.entry:
@@ -115,6 +127,8 @@ def main():
             parser.error("--opening-act requires the registered SF2_PRIVATE_OPENING_CONTENT")
         options.extend(("--opening-act", str(args.opening_act)))
     root = Path(__file__).resolve().parents[1]
+    if any(p.is_symlink() or p.is_junction() for p in (args.run_dir, *args.run_dir.parents)):
+        parser.error("select a run directory without links")
     run = args.run_dir.resolve()
     if any((parent / ".git").exists() for parent in (run, *run.parents)):
         parser.error("run-dir must be outside Git checkouts (the ordinary save/settings boundary)")
@@ -146,6 +160,10 @@ def main():
             preferences = save_root / "debug-dev" / "sf2-preferences"
             preferences.mkdir(parents=True)
             (preferences / "input.json").write_text(json.dumps(values), encoding="utf-8")
+            if args.fixture_slot:
+                slots = preferences.parent / "sf2-opening"
+                slots.mkdir()
+                shutil.copyfile(args.fixture_slot, slots / args.fixture_slot.name)
             (run / "entry-journey").touch()
             settings = None
         else:

@@ -129,12 +129,11 @@ available and MUSIC_BOSS_ATTACK playing. The background instance used the silent
 exited through Quit with code 0 and empty stderr.
 
 A packaged Release uses its own adjacent content, as in the archived #2336 observation. For that
-route, load `local/private-inputs.ps1` first to select the shared inputs used by the seed recipe
-below. Use the same disposable copy and settings preparation for either host.
+route, use the registered player fixture root for the seed recipe below. Use the same disposable copy and settings preparation for either host.
 
 ```powershell
 $repoRoot = (Get-Location).Path # Run at the owning checkout's root.
-$shared = $env:SF2_SHARED_INPUT_ROOT
+$fixtureRoot = Join-Path $operatorRoot 'local/player-data/fixtures'
 $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = 'false'
 $env:DOTNET_ROOT = Split-Path -Parent $env:DOTNET_BIN
 $env:DOTNET_ROOT_X64 = $env:DOTNET_ROOT
@@ -142,12 +141,12 @@ Remove-Item Env:SF2_PRIVATE_CONTROLLED_START -ErrorAction SilentlyContinue
 # Supply the absolute disposable $saveRoot, $namespace and a fresh $runName for each process.
 $env:SF2_SAVE_ROOT = $saveRoot
 $env:SF2_SAVE_NAMESPACE = $namespace
-# Set $checkpoint to a shared selection from the table on the first launch of that segment.
+# Set $checkpoint to a fixture-relative slot from the scenario table on its first launch.
 # Use $null for New Game and subsequent launches in the same namespace.
 if ($checkpoint) {
     $namespaceRoot = Join-Path $saveRoot $namespace
     if (Test-Path -LiteralPath $namespaceRoot) { throw 'Select a fresh disposable namespace' }
-    $source = Get-Item -LiteralPath (Join-Path $shared $checkpoint) -ErrorAction Stop
+    $source = Get-Item -LiteralPath (Join-Path $fixtureRoot $checkpoint) -ErrorAction Stop
     $slotDirectory = Join-Path $namespaceRoot 'sf2-opening'
     [void][IO.Directory]::CreateDirectory($slotDirectory)
     $destination = Join-Path $slotDirectory $source.Name
@@ -329,8 +328,9 @@ python -B remake/tools/debug_dev.py --port 42332 --run-dir "$runs/cold" --entry 
 python -B remake/tools/pre_voyage_showcase_journey.py 42332 cold --battle-witness "$runs/continuous/battle.json"
 ```
 
-Use a new `--run-dir` for each take. Resolve `$map16` and `$tower` using the
-[named records](../application/pre-voyage-campaign.md#showcase-starts-and-continuity).
+Use a new `--run-dir` for each take. Copy the [named records](../application/pre-voyage-campaign.md#showcase-starts-and-continuity)
+from the fixture root into fresh staging directories under the run owner. Set `$map16` and
+`$tower` to those independent copies.
 The seed reader mounts a read-only record directly. In a staging run, explicitly enable
 the existing Save output. It writes the new `staged-save.json` in that run after normal
 Save and Quit. Use the published records for the short spell and boarding takes.

@@ -319,6 +319,59 @@ scratch cleanup. A cleanup of the shared parent must skip reparse points. To ret
 verify that exact link and unlink the entry only. Retirement of the entity requires a separate
 decision for the canonical media directory.
 
+### Player profiles, fixtures and runs
+
+| Relative to the operator project root | Writer and lifetime |
+| --- | --- |
+| `local/player-data/saves/<profile>/` | The player owns one writable namespace across builds. Numbered slots, sidecars and ordinary settings travel together. Choose the same existing directory when changing checkout or installation. |
+| `local/player-data/backups/` | Keep a complete independent copy before migration or repair. Label it with the source profile, compatible build or content selection, reason and recovery window in private operator records. The store already rotates a slot's previous primary into its adjacent `.bak` on ordinary replacement. |
+| `local/player-data/fixtures/<scenario>/slotN.json` | Custodian-owned, read-only private seed for a named current replay that needs serialized history. The [scenario table](../../remake/docs/application/pre-voyage-campaign.md#showcase-starts-and-continuity) records intent and provenance. A controlled campaign-field start supplies reconstructible flags, actors and position. Retain a seed when the claim depends on saved party resources, a battle snapshot, legacy compatibility or the original reported state. |
+| `local/runs/<owner>/<run>/saves/<namespace>/` | One disposable writer per journey. Copy a numbered fixture or a profile into a fresh namespace before testing. Cold Continue reuses only that journey's saves. Each process gets its own logs and TEMP. |
+
+**Manual selection.** From the intended checkout, set `$profileDirectory` to the absolute existing
+`saves/<profile>` directory in the operator's ignored manual-play configuration, then run:
+
+```powershell
+& ./remake/tools/select_save_profile.ps1 -ProfileDirectory $profileDirectory
+```
+
+The [selector](../../remake/tools/select_save_profile.ps1) checks the existing directory and
+sets both `SF2_SAVE_ROOT` (its parent) and `SF2_SAVE_NAMESPACE` (its basename) in this process.
+Choose this profile explicitly for ordinary Debug or Release. An installation launcher that clears
+development variables must pass those two selected values into its child environment after clearing.
+Keep build-specific executable and media selections independent. The tracked selector reads no slots
+and creates no profile. An unconfigured export retains its [standalone storage default](../../remake/docs/windows-local-candidate.md#build-and-run).
+[Automated Debug journeys](../../remake/docs/verification/debug-port.md#development-default) create their
+own namespace even when launched from a shell with an active manual selection.
+
+**Confirmed.** The operator's ordinary Debug and Release launchers now read the same manual
+profile selection. Their resolved values and child-environment selection were checked without
+starting either player launcher. An independent checkout's Debug build continued and saved on a
+complete disposable profile copy. The prior primary became its byte-identical slot backup, and
+the installed Release restored the saved field in a fresh process. All files in the real
+namespace, including preferences and backups, matched the pre-run baseline byte for byte.
+A separate fixture journey restored the registered Battle01 snapshot to first-round Movement.
+The cold battle process quit normally and Godot reported two ObjectDB instances at shutdown.
+The original fixture bytes remained unchanged. These observations cover the selected save
+formats and builds. Other content versions retain their ordinary admission checks.
+
+**Recovery.** Stop all writers to the selected namespace. Preserve its current contents, including
+preferences and the newest progress, before opening a backup. Copy the backup into a fresh run;
+use the intended build/content and the ordinary slot list, recovery confirmation and Continue.
+Keep the original slot number. The existing slot lock, compatibility checks, rotating backup and
+incompatible-record preservation remain in force. If a launcher or executable must roll back,
+first try the previous build on a copy of the newest progress. Switch only after comparing the
+results and resolving incompatible or divergent progress with the player. A saved backup predating
+the switch can be retired by its owner after recovery is verified, newer progress is reconciled
+and the agreed rollback window ends.
+
+**Cleanup.** Main-gate reviews exact completed run paths. Require an idle writer, resolved
+containment within the designated runs root, no reparse points in the target or ancestors, and
+release of any sibling cold-Continue dependency. Exclude player data, fixture sources, video
+projects and independent repositories. An old handoff may contain a historical seed or other
+unique work. Retire only the reviewed seed file after a byte comparison and consumer switch.
+Keep a still-consumed seed even when its originating Issue has closed.
+
 ### Cut over a local selection
 
 Plan space for the largest concurrent copy, validation scratch and rollback copies. Enumerate the

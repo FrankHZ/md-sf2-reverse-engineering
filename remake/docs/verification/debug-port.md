@@ -30,9 +30,11 @@ and rejected startup remain in the run's logs; an unshown window is not evidence
 
 ```powershell
 . ./local/private-inputs.ps1
-python remake/tools/debug_dev.py --port 42332 --run-dir G:/md-sf2/disposable-saves/debug-save-01 --save $seedCopy
+# $operatorRoot is the configured absolute operator project root.
+$runs = Join-Path $operatorRoot 'local/runs/debug-review'
+python remake/tools/debug_dev.py --port 42332 --run-dir "$runs/debug-save-01" --save $seedCopy
 # Or start directly at an authored E2E scenario:
-python remake/tools/debug_dev.py --port 42332 --run-dir G:/md-sf2/disposable-saves/debug-scenario-01 --scenario remake/content/authored/harbor-arrival.json
+python remake/tools/debug_dev.py --port 42332 --run-dir "$runs/debug-scenario-01" --scenario remake/content/authored/harbor-arrival.json
 ```
 
 `--save` uses the ordinary seed reader and restore validation, without mounting the opening,
@@ -57,7 +59,7 @@ Opening/title/Witch validation is a deliberate exception: select `--entry` expli
 add `--audio` only if listening is part of acceptance. For example:
 
 ```powershell
-python remake/tools/debug_dev.py --port 42332 --run-dir G:/md-sf2/disposable-saves/debug-entry-01 --entry --foreground --audio
+python remake/tools/debug_dev.py --port 42332 --run-dir "$runs/debug-entry-01" --entry --foreground --audio
 ```
 
 To inspect a single opening act, select the complete registered opening package with
@@ -65,7 +67,7 @@ To inspect a single opening act, select the complete registered opening package 
 configuration and Debug build as above.
 
 ```powershell
-python remake/tools/debug_dev.py --opening-act 2 --port 42332 --run-dir G:/md-sf2/disposable-saves/issue2346-rework/storm-act2
+python remake/tools/debug_dev.py --opening-act 2 --port 42332 --run-dir "$runs/storm-act2"
 python remake/tools/debug_client.py 42332 "observe host" "observe state"
 ```
 
@@ -85,6 +87,18 @@ For the [showcase journey](../evidence/opening-loop-acceptance.md#pre-voyage-sho
 The settings input is copied and becomes ordinary local preferences for that journey. After
 the first game exits, select the same run with `--entry --continue-journey` and a fresh sibling
 `--run-dir`. This reuses the saves and editable preferences while keeping each process's logs.
+Use `--fixture-slot` with `--entry --journey` to start ordinary Continue with a numbered seed.
+The launcher copies its bytes into `saves/debug-dev/sf2-opening/` before starting the game.
+The copy can be overwritten through ordinary Save, and keeps its original slot number. Use fresh
+run names each time. For campaign-field construction use the [progression table](#preparing-a-progression-start).
+
+```powershell
+$fixture = Join-Path $operatorRoot 'local/player-data/fixtures/battle01-movement/slot1.json'
+python remake/tools/debug_dev.py --entry --journey --fixture-slot $fixture --port 42332 --run-dir "$runs/battle-take"
+# After Quit, from the same checkout:
+python remake/tools/debug_dev.py --entry --continue-journey "$runs/battle-take" --port 42332 --run-dir "$runs/battle-cold"
+```
+
 Default background Continue keeps the playback clock running for this launch, even if
 the journey's saved Run in Background preference is Off. An explicit `--foreground`
 Continue follows the saved preference. The override belongs to the debug launch and
