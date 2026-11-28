@@ -114,8 +114,8 @@ names in English.
   [`remake/docs/application/localization-design.md`](../../remake/docs/application/localization-design.md#current-full-text-chinese-corpus))
   is the authority for adopted Chinese proper nouns. In Chinese L0–L3 prose, you may use an
   accepted Chinese name directly and optionally annotate the English name at first occurrence when
-  helpful for cross-referencing English specs or in-game English mode (e.g., `波伊（Bowie）`、
-  `治疗术（HEAL）`).
+  helpful for cross-referencing English specs or in-game English mode (e.g., `鲍伊（Bowie）`、
+  `治疗（HEAL）`).
 - **Do not invent ad-hoc Chinese proper nouns.** If a proper noun has no accepted Chinese name in
   the `#1468` corpus or an explicitly reviewed glossary row, keep its English name in the body
   until localization or glossary review settles it.
@@ -169,16 +169,16 @@ Use these three short examples to calibrate tone and precision when revising L0�
 ### 1. 行动与回合（区分 `round` / `individual turn` / `action`）
 
 - **避免（反汇编直译腔）：**
-  > 每回合先按修正敏捷建立队列；首次单次行动交接后，行动提交、构建与回放依次执行，二连与反击有各自守卫，持续时间由行动者自己的已完成队列项推进。
-- **推荐（自然策划语言，语义无损）：**
-  > 每一整轮战斗回合开始时，系统按当前敏捷与乱数排定敌我出手顺序。轮到某名队员行动时，可以先移动并预览目标，在最终确认攻击、施法、使用物品或待机前，取消都不会消耗资源。二连击与反击各自按触发条件判定；增益或异常状态的持续回合，只在该角色自己完成一次行动后递减。
+  > 每回合建立队列后，首次单次行动交接进入该行动者的动作选择；提交动作或取消目标选择分别走不同分支。
+- **推荐（自然策划语言，保留 `round` / `individual turn` / `action` 区别）：**
+  > 每一整轮战斗回合开始时，系统排定敌我出手顺序。轮到某名队员行动时，可以先移动并查看可选目标；在最终确认攻击、施法、使用物品或待机这类具体行动前，取消选择不会消耗资源。
 
 ### 2. 专名与源码标识（遵循 `#1468` 已定译名，不自造、不改写标识）
 
 - **避免（生硬中英夹杂或擅自臆造译名）：**
-  > Bowie 在 Ribble 面对树使用 Wooden Panel 打开通道后，可在宝箱拿到 Achilles Sword；若后续某件尚未定名的后期道具在原版表里叫 `MysteryItem`，就先顺手翻成“神秘圣物”。
-- **推荐（采用已定译名、未定名保留英文、标识原样保留）：**
-  > 若 `#1468` 名称库已定名，正文可直接使用已接受的中文名（首次出现可括号附英文原名以便对照英文规则，如“波伊（Bowie）”）；尚未定名的专名保持英文原名，不自行创造译名。源码/剧情标记与英文规则链接（如 `F401`、英文契约锚点）放在技术追踪列或文末链接中，原样保留不翻译。
+  > Bowie 受伤后，同伴施放 HEAL 给他回血；若某件尚未核对定名的道具叫 `Wooden Panel`，顺手自造译名写成“神秘木板”。
+- **推荐（采用 `#1468` 已定译名、未核对专名保留英文、标识原样保留）：**
+  > 鲍伊（Bowie）受伤后，同伴可以施放治疗（HEAL）为他回血；尚未核对定名的专名（如 `Wooden Panel`）保持英文原名，不自行创造译名。剧情标记和英文规则链接（如 `F401`、英文契约锚点）留在技术追踪列或文末链接中，原样保留不翻译。
 
 ### 3. 证据说明与未知边界（通用说明集中，关键未知紧邻结论）
 
