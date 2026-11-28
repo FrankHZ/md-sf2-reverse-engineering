@@ -277,6 +277,44 @@ after same-process input configuration. It reuses the performance recipe with on
 `path-probe-report.json`, comparison report and `shared-backup/` record actual writes
 and restoration. No generic environment-variable redirect or new binary was used.
 
+## Single-volume local layout
+
+[#2370](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/2370) defines the target for
+the Windows operator host. Consolidation uses the configured project volume. The configured
+selections and their owners still describe current operation until each cutover is verified.
+Keep machine paths in ignored configuration and receipts.
+
+| Location relative to the operator's project root | Owner and contents |
+| --- | --- |
+| `local/shared/roms/` | Registered immutable ROM selection, with its existing identity check |
+| `local/shared/sources/<role>/` | Durable private corpora and independent asset, graphics or audio repositories. Each retains its own history, writable ownership and private boundary. |
+| `local/shared/packages/<role>/<version>/` | Read-only closed selections such as gameplay, opening, Witch entry, catalogs, prepared retail assets, reproduction witnesses and Windows candidates. Use the [asset registration](../../remake/docs/content/asset-inventory.md#shared-package-retention). |
+| `local/shared/toolchains/` and `local/shared/dotnet-cli-home/` | Selected installations, required distributions and SDK-owned CLI state. Keep the existing root contracts and update their configured selections together. |
+| `local/player-data/` | Operator-owned writable save roots and their backups. Keep real namespaces, settings and backups separate from installed builds and disposable saves. |
+| `local/runs/<owner>/<run>/` | Explicit external namespaces for probes and disposable saves that must sit outside Git. The checkout or operator holding the run owns their cleanup. Other checkout scratch stays in that checkout. |
+
+Use an existing role directory when possible. Keep independent repositories outside removable
+worktrees, preserve Git metadata and local-only files, and verify the expected commit and working
+state before redirecting a producer. Existing selectors may remain temporarily at their old roots
+during staged cutover. Preserve separately designated media projects, source recordings and masters
+at their operator-owned paths.
+
+### Cut over a local selection
+
+Plan space for the largest concurrent copy, validation scratch and rollback copies. Enumerate the
+actual consumers, including launchers, templates, private manifests, build inputs, save namespaces
+and package-relative resources. Record which version or location each change replaces.
+
+With the owning writer quiesced, copy into a fresh destination and verify the complete selection.
+Use the existing selection or package checker and byte comparison where required. For player
+storage compare relative files and bytes, including settings, then exercise read/Continue and a
+write/reload on a disposable copy. Keep a versioned backup and one authoritative writable namespace.
+Switch the owner-approved launchers and configuration, then validate the affected ordinary entry
+point with the old source unavailable to that launch. Record the tested selection and fallback.
+If new saves were written after the switch, stop the writer and reconcile them with the retained
+backup before reverting the launcher. Retire old sources only after acceptance and the authorized
+[cleanup checks](github-project-governance.md#worktree-selection-and-retirement).
+
 ## Local State and Promotion
 
 Keep writable source/build checkouts, Python/uv/NuGet environments and caches, TEMP, emulator state,

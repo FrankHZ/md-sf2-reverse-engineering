@@ -56,6 +56,28 @@ remain separate from campaign, Witch and catalog selection and from human visual
 | **Display catalogs** · `derived/issue1957/catalogs-v1`, `derived/issue2001/catalogs-v1` | Independent prepared Chinese name overlays for the owning reproductions. Match the catalog and entry locale to the named reproduction. A catalog supplies display names and does not select world, scene or media. [PGNT catalog selection](../domain/support-spell-status-design.md#battle26-ordinary-input-and-reproduction) · [Retail catalog selection](presentation-assets.md#sleep-display-name) |
 | **Retail base and library** · `derived/issue2001/issue1966-original`, private asset Git `runtime/retail-v1` | Base world/entry provenance and preparation outputs used to assemble packages. Some prepared candidates have no current package binding. [Retail preparation](#retail-original-preparation) |
 
+### Shared package retention
+
+For the [single-volume target layout](../../../docs/operations/local-private-inputs.md#single-volume-local-layout),
+organize promoted packages by consumer role and immutable version. The selections above continue
+to identify the registered operating inputs until a verified cutover. Use issue and PR references
+as provenance in the package record. Reserve a separate namespace for short-lived acceptance runs.
+
+Reuse the package's existing private manifest or preparation record. For a retained shared
+selection record its identity, purpose, version, source and producer command or manual source
+custody, dependency selections and compatible code/asset revisions, current launch or reproduction
+consumers, private handling, rebuild route and retention or supersession relationship. One record
+can cover the whole selection. Use existing payload identity and closure checks.
+
+Trace the configured launch and preparation paths separately. A closed consumer package may run
+without its producer's base. A recipe can still require that base, an independent catalog or a seed
+in another pack. Check both before pruning. Preserve selected originals and irreproducible inputs.
+For retained reproductions keep the minimum sufficient inputs and a working route from accepted
+Git and registered source material. Before removing an inherited full pack, reproduce its maintained
+consumer or successor from the retained inputs without the old selection. Keep completed failures
+and decisive receipts with their owner at the required scope. Retire redundant builds, logs and
+disposable saves after review. Package size, age and search results alone cannot establish closure.
+
 ## Resource families and owners
 
 The private asset Git entries below use `manifests/retail-v1-coverage.csv` for preparation

@@ -395,6 +395,21 @@ Do not hand the script back to the user merely because an earlier command was re
 blocker only if the current execution is actually blocked. This does not authorize bypassing a
 rejection by rewriting the command or switching tools.
 
+Keep the integration checkout and a small pool of reusable environments on the configured
+project volume. The Windows operator target is three or four linked worktrees, including the
+operator-owned maintenance checkout when it is used for manual play. The remaining slots serve
+active development, independent review or a named reproduction. Reassign an idle slot before adding
+one. Retain an extra environment only while a concrete consumer or concurrent ownership requires it.
+
+For storage consolidation, inventory registered worktrees and other Git roots, then check tracked
+and untracked state, ignored operator data, task ownership and processes. For squash merges,
+verify that the accepted PR includes the checkout's tip. Check current consumers of shared
+publications and external disposable namespaces, including configuration outside the code repo.
+A clean Git status only describes tracked and visible untracked state. Keep protected saves,
+independent repositories, source media and still-selected package dependencies outside every
+retirement target. Use the [local cutover checks](local-private-inputs.md#cut-over-a-local-selection)
+before retiring any moved selection.
+
 For an accepted idle checkout selected for retirement, resolve uncommitted work and nested Git
 ownership, then use Git's worktree removal command. The operator authorizes this removal after
 the same checks. Keep reusable checkouts that still have a consumer.
