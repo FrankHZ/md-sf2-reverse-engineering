@@ -501,8 +501,8 @@
       "status": "translated",
       "scope": "design-excerpt",
       "mirror": "docs/design/zh-CN/synthesis/chapters/grans-opening/chapter-overview.md",
-      "sourceSha256": "00682ab7dbc8779d780dda6dc9f87736cff1c3023c2b311a7dd9b3fbbedd81f2",
-      "mirrorSha256": "4764998bc776a63acecd17de8e4c457455d3a52ede5f7e2a0d83048b49f283b9",
+      "sourceSha256": "a7f9e46438095bc82a40bf2ad84ff5857e41a6450e169ee39697a2cd3a8c62ad",
+      "mirrorSha256": "4506f1748ce2d5673a4d7048872c1ba9238dd5fc2d07afa314d6f59b1f8beea2",
       "glossarySha256": "7058949fbf0d2e1e6fea19864efdc3e4dd0adc9d38efb585235b77f8a9489be1",
       "translatedDate": "2026-11-28"
     },
